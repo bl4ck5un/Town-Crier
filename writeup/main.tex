@@ -27,6 +27,10 @@ The Authenticated Data Feed (ADF) needs some method to identify and serve prospe
 \subsection{Off Chain Communication}
 	The ADF may be notified of prospective clients by any manner of off-chain communication however there will be no public record of this request.  The ADF may then selectively deny service.  Malicious clients may also have an easier time flooding the ADF with requests, compared to the other two methods which have an Ether cost (contract creation).\\
 
+\subsection{Migration Path}
+
+Ultimately, we expect sources themselves to act as ADFs. The migration path is : (1) Town Crier; (2) XML labels on data; (3) Integration of Town Crier features into source directly
+
 \section{Payment Methods}	
 \subsection{Separate Fair Exchange Contracts}
     The ADF or the client contract creates or uses an existing \emph{fair exchange contract} for each data request.  This contract requires input from the client in the form of some amount of Ether (this can happen during the creation of the contract), and the signed data from the ADF.  Once both inputs have been received, the contract sends the Ether to the ADF and the data to the client. Note the client should send the currency first as once the ADF publishes the signed data it will be publicly visible (unless we use zero-knowledge proofs). If the ADF fails to deliver the data within a time period then the client's money is refunded.\\
