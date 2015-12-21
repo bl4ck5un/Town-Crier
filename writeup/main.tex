@@ -1,18 +1,43 @@
-\documentclass{article}
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{usenix,epsfig,endnotes}
 \usepackage[utf8]{inputenc}
 \usepackage{color}
-\usepackage[letterpaper]{geometry}
-% \usepackage{parskip}
+\usepackage{graphicx}
 
-\title{Town Crier}
-\author{Fan Zhang, Kyle Croman}
 
 \newcommand{\kyle}[1]{\textcolor{blue}{[[\textsf{Kyle:  #1}]]}}
 \newcommand{\fan}[1]{\textcolor{red}{[\textsf{Fan:  #1}]}}
 \newcommand{\ari}[1]{\textcolor{green}{[\textsf{Ari:  #1}]}}
-\begin{document}
 
+%don't want date printed
+\date{}
+
+%make title bold and 14 pt font (Latex default is non-bold, 16 pt)
+\title{\Large \bf Town Crier}
+
+%for single author (just remove % characters)
+\author{
+{\rm Your N.\ Here}\\
+Your Institution
+\and
+{\rm Second Name}\\
+Second Institution
+\and
+{\rm Name}\\
+Name Institution
+} % end author
+
+
+\begin{document}
 \maketitle
+
+% Use the following at camera-ready time to suppress page numbers.
+% Comment it out when you first submit the paper for review.
+% \thispagestyle{empty}
+
+\subsection*{Abstract}
+Your Abstract Text Goes Here.  Just a few facts.
+Whet our appetites.
 
 \section{Introduction}
 
@@ -31,10 +56,25 @@ The Authenticated Data Feed (ADF) needs some method to identify and serve prospe
 
 Ultimately, we expect sources themselves to act as ADFs. The migration path is : (1) Town Crier; (2) XML labels on data; (3) Integration of Town Crier features into source directly
 
+\section{Trusted Hardware}
+Placeholder: Intel SGX~\cite{anati2013innovative,sgxmanual} is a
+soon-to-be-released trusted hardware.
+
+\section{Architecture}
+
+\begin{figure*}[h]
+\centering
+\includegraphics[width=\textwidth]{figures/arch}
+\caption{Town Crier Architecture}
+\label{fig:arch}
+\end{figure*}
+
+
 \section{Payment Methods}	
 \subsection{Separate Fair Exchange Contracts}
     The ADF or the client contract creates or uses an existing \emph{fair exchange contract} for each data request.  This contract requires input from the client in the form of some amount of Ether (this can happen during the creation of the contract), and the signed data from the ADF.  Once both inputs have been received, the contract sends the Ether to the ADF and the data to the client. Note the client should send the currency first as once the ADF publishes the signed data it will be publicly visible (unless we use zero-knowledge proofs). If the ADF fails to deliver the data within a time period then the client's money is refunded.\\
-    \indent The main benefit of this method is that the fair exchange contract should be easier to verify for both parties.  Depending on the specifics of the attestation it needs to check, it may be possible for the contracts to be completely templated.  Also note that creating a new contract will incur a transaction fee.  These data fair exchange contracts can potentially batch data requests and verification and can be re-used for subsequent requests if desired. \fan{the client and the ADF should agree on the content of this contract. In my mind this template could be provided by an ADF service provider along with other information on their website. For example, clients can browse ADF's website for pricing info, the public address, an template for generating request and ensuring fair exchange and the public key. Then clients can embed these information in there own contract.}\\
+    \indent The main benefit of this method is that the fair exchange contract should be easier to verify for both parties.  Depending on the specifics of the attestation it needs to check, it may be possible for the contracts to be completely templated.  Also note that creating a new contract will incur a transaction fee.  These data fair exchange contracts can potentially batch data requests and verification and can be re-used for subsequent requests if desired. 
+    
     \kyle{This is my thought as well.  A client may extract the address, pricing info, and a code template for fair exchange from the ADF website.  The issue I was trying to get at was that verifying the bytecode of one function in a contract may be more difficult than simply verifying an entire contract's bytecode due to having to isolate the function.  I don't know whether isolating a function is hard or if the bytecode may change depending on the client contract (offsets, compilers, etc), but at the very least it involves the extra step of checking the function entry point in addition to simply matching the hash of the bytecode}
     
 \subsection{Payment Built-in to the Client Contract}
@@ -110,5 +150,8 @@ An insurance company may provide insurance for canceled flights by maintaining a
 \item Think about IoT applications of ADFs
 \end{itemize}
 \end{itemize}
+
+{\footnotesize \bibliographystyle{acm}
+\bibliography{sgx.bib}}
 
 \end{document}
