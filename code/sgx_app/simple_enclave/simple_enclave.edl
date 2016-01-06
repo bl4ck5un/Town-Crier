@@ -1,0 +1,11 @@
+enclave {
+    trusted {
+        /* define ECALLs here. */
+		public void load_from_enc([out, size=len] char* buf, size_t len);
+    };
+
+    untrusted {
+        /* define OCALLs here. */
+    
+    };
+};
