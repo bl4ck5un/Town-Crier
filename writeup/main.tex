@@ -1,20 +1,41 @@
-\documentclass{article}
+\documentclass[letterpaper,twocolumn,10pt]{article}
+\usepackage{usenix,epsfig,endnotes}
 \usepackage[utf8]{inputenc}
 \usepackage{color}
-\usepackage[letterpaper]{geometry}
-% \usepackage{parskip}
+\usepackage{graphicx}
 
-\title{Town Crier}
-\author{Fan Zhang, Kyle Croman}
 
 \newcommand{\kyle}[1]{\textcolor{blue}{[[\textsf{Kyle:  #1}]]}}
 \newcommand{\fan}[1]{\textcolor{red}{[\textsf{Fan:  #1}]}}
 \newcommand{\ari}[1]{\textcolor{green}{[\textsf{Ari:  #1}]}}
-\begin{document}
 
+%don't want date printed
+\date{}
+
+%make title bold and 14 pt font (Latex default is non-bold, 16 pt)
+\title{\Large \bf Town Crier}
+
+%for single author (just remove % characters)
+\author{
+{\rm Your N.\ Here}\\
+Your Institution
+\and
+{\rm Second Name}\\
+Second Institution
+\and
+{\rm Name}\\
+Name Institution
+} % end author
+
+
+\begin{document}
 \maketitle
 
-\begin{abstract}
+% Use the following at camera-ready time to suppress page numbers.
+% Comment it out when you first submit the paper for review.
+% \thispagestyle{empty}
+
+\subsection*{Abstract}
 Smart contracts are programs that execute autonomously on blockchains. Many of their envisioned uses (e.g., as financial instruments) require them to consume data (e.g., equity and commodity prices) from outside the blockchain. Trustworthy data feeds that can interface with smart contracts will thus be a critical component of any smart-contract ecosystem, but exist today in only very limited forms.
 
 	We present an authenticated data feed system called Town Crier (TC). TC builds on the observation that many web sites, such as major news and finance sites, already serve today in effect as trusted data sources for non-blockchain uses. TC acts as a bridge between such servers and relying smart contracts, using trusted hardware to authenticate and scrape data from HTTPS-enabled websites. TC delivers digitally signed, source-authenticated, and timestamped datagrams to consuming smart contracts. 
@@ -22,7 +43,7 @@ Smart contracts are programs that execute autonomously on blockchains. Many of t
 	On top of its basic service, TC offers mechanisms to ensure fair payment by smart contracts for datagrams, including cryptographic protection against reuse of datagrams by freeloaders. TC also provides features to enable confidential datagram consumption by contracts. The system supports a rich array of trust models for data feeds, including options to combine data from multiple sources and mechanisms for revocation should a TC server be compromised. TC services are designed for cost-effectiveness and make minimal use of blockchain resources (e.g., ``gas'' in Ethereum).
 	
 	We describe the TC architecture, provide supporting formal trust models, and report on an implementation that uses the newly released SGX software development kit. 
-\end{abstract}
+
 
 \section{Introduction}
 
