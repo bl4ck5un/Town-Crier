@@ -36,8 +36,14 @@ Name Institution
 % \thispagestyle{empty}
 
 \subsection*{Abstract}
-Your Abstract Text Goes Here.  Just a few facts.
-Whet our appetites.
+Smart contracts are programs that execute autonomously on blockchains. Many of their envisioned uses (e.g., as financial instruments) require them to consume data (e.g., equity and commodity prices) from outside the blockchain. Trustworthy data feeds that can interface with smart contracts will thus be a critical component of any smart-contract ecosystem, but exist today in only very limited forms.
+
+	We present an authenticated data feed system called Town Crier (TC). TC builds on the observation that many web sites, such as major news and finance sites, already serve today in effect as trusted data sources for non-blockchain uses. TC acts as a bridge between such servers and relying smart contracts, using trusted hardware to authenticate and scrape data from HTTPS-enabled websites. TC delivers digitally signed, source-authenticated, and timestamped datagrams to consuming smart contracts. 
+	
+	On top of its basic service, TC offers mechanisms to ensure fair payment by smart contracts for datagrams, including cryptographic protection against reuse of datagrams by freeloaders. TC also provides features to enable confidential datagram consumption by contracts. The system supports a rich array of trust models for data feeds, including options to combine data from multiple sources and mechanisms for revocation should a TC server be compromised. TC services are designed for cost-effectiveness and make minimal use of blockchain resources (e.g., ``gas'' in Ethereum).
+	
+	We describe the TC architecture, provide supporting formal trust models, and report on an implementation that uses the newly released SGX software development kit. 
+
 
 \section{Introduction}
 
@@ -56,25 +62,10 @@ The Authenticated Data Feed (ADF) needs some method to identify and serve prospe
 
 Ultimately, we expect sources themselves to act as ADFs. The migration path is : (1) Town Crier; (2) XML labels on data; (3) Integration of Town Crier features into source directly
 
-\section{Trusted Hardware}
-Placeholder: Intel SGX~\cite{anati2013innovative,sgxmanual} is a
-soon-to-be-released trusted hardware.
-
-\section{Architecture}
-
-\begin{figure*}[h]
-\centering
-\includegraphics[width=\textwidth]{figures/arch}
-\caption{Town Crier Architecture}
-\label{fig:arch}
-\end{figure*}
-
-
 \section{Payment Methods}	
 \subsection{Separate Fair Exchange Contracts}
     The ADF or the client contract creates or uses an existing \emph{fair exchange contract} for each data request.  This contract requires input from the client in the form of some amount of Ether (this can happen during the creation of the contract), and the signed data from the ADF.  Once both inputs have been received, the contract sends the Ether to the ADF and the data to the client. Note the client should send the currency first as once the ADF publishes the signed data it will be publicly visible (unless we use zero-knowledge proofs). If the ADF fails to deliver the data within a time period then the client's money is refunded.\\
-    \indent The main benefit of this method is that the fair exchange contract should be easier to verify for both parties.  Depending on the specifics of the attestation it needs to check, it may be possible for the contracts to be completely templated.  Also note that creating a new contract will incur a transaction fee.  These data fair exchange contracts can potentially batch data requests and verification and can be re-used for subsequent requests if desired. 
-    
+    \indent The main benefit of this method is that the fair exchange contract should be easier to verify for both parties.  Depending on the specifics of the attestation it needs to check, it may be possible for the contracts to be completely templated.  Also note that creating a new contract will incur a transaction fee.  These data fair exchange contracts can potentially batch data requests and verification and can be re-used for subsequent requests if desired. \fan{the client and the ADF should agree on the content of this contract. In my mind this template could be provided by an ADF service provider along with other information on their website. For example, clients can browse ADF's website for pricing info, the public address, an template for generating request and ensuring fair exchange and the public key. Then clients can embed these information in there own contract.}\\
     \kyle{This is my thought as well.  A client may extract the address, pricing info, and a code template for fair exchange from the ADF website.  The issue I was trying to get at was that verifying the bytecode of one function in a contract may be more difficult than simply verifying an entire contract's bytecode due to having to isolate the function.  I don't know whether isolating a function is hard or if the bytecode may change depending on the client contract (offsets, compilers, etc), but at the very least it involves the extra step of checking the function entry point in addition to simply matching the hash of the bytecode}
     
 \subsection{Payment Built-in to the Client Contract}
@@ -150,8 +141,5 @@ An insurance company may provide insurance for canceled flights by maintaining a
 \item Think about IoT applications of ADFs
 \end{itemize}
 \end{itemize}
-
-{\footnotesize \bibliographystyle{acm}
-\bibliography{sgx.bib}}
 
 \end{document}
