@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{98886615-b3e1-4285-a22f-3dc347a0a592}</UniqueIdentifier>
+      <Extensions>cpp;c;edl;def; .. and other options</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{369ee865-dc8d-43f2-b00f-7bc9e144c4ae}</UniqueIdentifier>
+      <Extensions>h;hpp; .. and other options</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{97bba242-ca51-49d1-a681-cd165a765dbf}</UniqueIdentifier>
+      <Extensions>rc;xml;pem; .. and other options</Extensions>
+    </Filter>
+    <Filter Include="Edger8r Syntax">
+      <UniqueIdentifier>{c46481f3-b80c-4e01-bf85-0870fb2651ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Trusted Library">
+      <UniqueIdentifier>{e5d12f77-86ff-4117-b185-5bf8a5fccbce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{416edd81-83d3-442a-ae6f-e2f869c1d9f0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Enclave.edl">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Enclave.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TrustedLibrary\Libc.cpp">
+      <Filter>Trusted Library</Filter>
+    </ClCompile>
+    <ClCompile Include="TrustedLibrary\Libcxx.cpp">
+      <Filter>Trusted Library</Filter>
+    </ClCompile>
+    <ClCompile Include="TrustedLibrary\Thread.cpp">
+      <Filter>Trusted Library</Filter>
+    </ClCompile>
+    <ClCompile Include="Edger8rSyntax\Arrays.cpp">
+      <Filter>Edger8r Syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="Edger8rSyntax\Functions.cpp">
+      <Filter>Edger8r Syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="Edger8rSyntax\Pointers.cpp">
+      <Filter>Edger8r Syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="Edger8rSyntax\Types.cpp">
+      <Filter>Edger8r Syntax</Filter>
+    </ClCompile>
+    <ClCompile Include="Enclave_t.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Enclave_private.pem">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Edger8rSyntax\Arrays.edl">
+      <Filter>Edger8r Syntax</Filter>
+    </None>
+    <None Include="Edger8rSyntax\Functions.edl">
+      <Filter>Edger8r Syntax</Filter>
+    </None>
+    <None Include="Edger8rSyntax\Pointers.edl">
+      <Filter>Edger8r Syntax</Filter>
+    </None>
+    <None Include="Edger8rSyntax\Types.edl">
+      <Filter>Edger8r Syntax</Filter>
+    </None>
+    <None Include="TrustedLibrary\Libc.edl">
+      <Filter>Trusted Library</Filter>
+    </None>
+    <None Include="TrustedLibrary\Libcxx.edl">
+      <Filter>Trusted Library</Filter>
+    </None>
+    <None Include="TrustedLibrary\Thread.edl">
+      <Filter>Trusted Library</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="Enclave.config.xml">
+      <Filter>Resource Files</Filter>
+    </Xml>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Enclave_t.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Enclave.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
