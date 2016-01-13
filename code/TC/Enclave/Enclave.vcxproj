@@ -157,7 +157,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level4</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\stlport;$(SGXSDKInstallPath)include\epid;$(SolutionDir)\Enclave;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\TLSlib;$(SolutionDir)\TLSlib\include;$(SolutionDir)\Include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\stlport;$(SGXSDKInstallPath)include\epid;$(SolutionDir)\Enclave;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
       <FunctionLevelLinking>
       </FunctionLevelLinking>
@@ -408,29 +408,15 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Edger8rSyntax\Arrays.cpp" />
-    <ClCompile Include="Edger8rSyntax\Functions.cpp" />
-    <ClCompile Include="Edger8rSyntax\Pointers.cpp" />
-    <ClCompile Include="Edger8rSyntax\Types.cpp" />
     <ClCompile Include="Enclave.cpp" />
     <ClCompile Include="Enclave_t.c" />
-    <ClCompile Include="TrustedLibrary\Libc.cpp" />
-    <ClCompile Include="TrustedLibrary\Libcxx.cpp" />
-    <ClCompile Include="TrustedLibrary\Thread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Enclave.h" />
     <ClInclude Include="Enclave_t.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Edger8rSyntax\Arrays.edl" />
-    <None Include="Edger8rSyntax\Functions.edl" />
-    <None Include="Edger8rSyntax\Pointers.edl" />
-    <None Include="Edger8rSyntax\Types.edl" />
     <None Include="Enclave_private.pem" />
-    <None Include="TrustedLibrary\Libc.edl" />
-    <None Include="TrustedLibrary\Libcxx.edl" />
-    <None Include="TrustedLibrary\Thread.edl" />
   </ItemGroup>
   <ItemGroup>
     <Xml Include="Enclave.config.xml" />

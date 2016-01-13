@@ -1,11 +1,21 @@
 enclave {
+
     trusted {
         /* define ECALLs here. */
-    
+		
+		include "mbedtls/net.h"
+		include "mbedtls/debug.h"
+		include "mbedtls/ssl.h"
+		include "mbedtls/entropy.h"
+		include "mbedtls/ctr_drbg.h"
+		include "mbedtls/error.h"
+		include "mbedtls/certs.h"
+		
+		include "TLSlib.h"
     };
 
     untrusted {
         /* define OCALLs here. */
-    
+        void ocall_print_string([in, string] const char *str);
     };
 };

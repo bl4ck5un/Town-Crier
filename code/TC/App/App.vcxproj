@@ -267,10 +267,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
-    <ClCompile Include="Edger8rSyntax\Arrays.cpp" />
-    <ClCompile Include="Edger8rSyntax\Functions.cpp" />
-    <ClCompile Include="Edger8rSyntax\Pointers.cpp" />
-    <ClCompile Include="Edger8rSyntax\Types.cpp" />
     <ClCompile Include="Enclave_u.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">
       </PrecompiledHeader>
@@ -289,9 +285,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="TrustedLibrary\Libc.cpp" />
-    <ClCompile Include="TrustedLibrary\Libcxx.cpp" />
-    <ClCompile Include="TrustedLibrary\Thread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
