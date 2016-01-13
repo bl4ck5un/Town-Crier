@@ -13,30 +13,24 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="mbedTLS">
+      <UniqueIdentifier>{18ab19ee-4b3f-4c3c-a780-060616b93106}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TLSlibSupport.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\TLSlib\include\mbedtls\net.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\net.h">
+      <Filter>mbedTLS</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\TLSlib\library\net.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\mbedtls-2.2.1\library\net.c">
+      <Filter>mbedTLS</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

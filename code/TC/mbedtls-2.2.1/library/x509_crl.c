@@ -57,7 +57,7 @@
 #endif
 
 #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
-#include <windows.h>
+//#include <windows.h>
 #else
 #include <time.h>
 #endif
