@@ -16,9 +16,7 @@
 extern "C" {
 #endif
 
-int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_print_string, (const char* str));
-void SGX_UBRIDGE(SGX_NOCONVENTION, mbedtls_net_init, (mbedtls_net_context* ctx));
-int SGX_UBRIDGE(SGX_NOCONVENTION, mbedtls_net_connect, (mbedtls_net_context* ctx, const char* host, const char* port, int proto));
+int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_connect, (mbedtls_net_context* ctx, const char* host, const char* port, int proto));
 int SGX_UBRIDGE(SGX_NOCONVENTION, mbedtls_net_set_block, (mbedtls_net_context* ctx));
 int SGX_UBRIDGE(SGX_NOCONVENTION, mbedtls_net_set_nonblock, (mbedtls_net_context* ctx));
 void SGX_UBRIDGE(SGX_NOCONVENTION, mbedtls_net_usleep, (unsigned long int usec));
@@ -31,6 +29,8 @@ unsigned long int SGX_UBRIDGE(SGX_NOCONVENTION, mbedtls_timing_get_timer, (struc
 void SGX_UBRIDGE(SGX_NOCONVENTION, mbedtls_set_alarm, (int seconds));
 void SGX_UBRIDGE(SGX_NOCONVENTION, mbedtls_timing_set_delay, (mbedtls_timing_delay_context* data, uint32_t int_ms, uint32_t fin_ms));
 int SGX_UBRIDGE(SGX_NOCONVENTION, mbedtls_timing_get_delay, (mbedtls_timing_delay_context* data));
+int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_hardware_poll, (unsigned char* output, size_t len, size_t* olen));
+int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_print_string, (const char* str));
 
 sgx_status_t ecall_connect(sgx_enclave_id_t eid, int* retval);
 

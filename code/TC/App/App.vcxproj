@@ -266,6 +266,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\mbedtls-2.2.1\library\timing.c" />
+    <ClCompile Include="..\TLSLibSupport\misc.c" />
     <ClCompile Include="Enclave_u.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">
       </PrecompiledHeader>
@@ -284,9 +286,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="connect.cpp" />
+    <ClCompile Include="connect.c" />
+    <ClCompile Include="net_u.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_f.h" />
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_v.h" />
+    <ClInclude Include="..\TLSLibSupport\TLSlibSupport.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="Enclave_u.h" />
   </ItemGroup>

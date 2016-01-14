@@ -92,6 +92,7 @@
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(SolutionDir)\TLSlibSupport;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\stlport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessToFile>false</PreprocessToFile>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
@@ -173,6 +174,8 @@
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\md5.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\md_internal.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\memory_buffer_alloc.h" />
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\net_f.h" />
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\net_v.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\oid.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\padlock.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\pem.h" />
@@ -200,6 +203,7 @@
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\x509_crt.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\x509_csr.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\xtea.h" />
+    <ClInclude Include="Defs.h" />
     <ClInclude Include="TLSlib.h" />
     <ClInclude Include="TLSlib_t.h" />
   </ItemGroup>
@@ -254,6 +258,7 @@
     <ClCompile Include="..\mbedtls-2.2.1\library\md5.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\md_wrap.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\memory_buffer_alloc.c" />
+    <ClCompile Include="..\mbedtls-2.2.1\library\net.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\oid.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\padlock.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\pem.c" />
@@ -288,7 +293,7 @@
     <ClCompile Include="..\mbedtls-2.2.1\library\x509_crt.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\x509_csr.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\xtea.c" />
-    <ClCompile Include="Ocalls.cpp" />
+    <ClCompile Include="Ocalls.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\mbedtls-2.2.1\library\.gitignore" />

@@ -49,7 +49,8 @@ int main( void )
 }
 #else
 
-//#include "mbedtls/net.h"
+#include "mbedtls/net_v.h"
+#include "mbedtls/net_f.h"
 #include "mbedtls/debug.h"
 #include "mbedtls/ssl.h"
 #include "mbedtls/entropy.h"
