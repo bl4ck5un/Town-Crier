@@ -32,7 +32,8 @@
 
 #if defined(MBEDTLS_TIMING_C)
 #include <string.h>
-#include "mbedtls/timing.h"
+#include "mbedtls/timing_v.h"
+#include "mbedtls/timing_f.h"
 #endif
 #if defined(MBEDTLS_HAVEGE_C)
 #include "mbedtls/havege.h"

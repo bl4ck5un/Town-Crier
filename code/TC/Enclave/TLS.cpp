@@ -1,9 +1,23 @@
-#include <stdarg.h>
-#include <stdio.h> 
-
-#include "Enclave.h"
-#include "Enclave_t.h" 
-
+/*
+ *  SSL client demonstration program
+ *
+ *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  SPDX-License-Identifier: Apache-2.0
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may
+ *  not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  This file is part of mbed TLS (https://tls.mbed.org)
+ */
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"
@@ -35,13 +49,16 @@ int main( void )
 }
 #else
 
-#include "mbedtls/net.h"
+//#include "mbedtls/net.h"
 #include "mbedtls/debug.h"
 #include "mbedtls/ssl.h"
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/error.h"
 #include "mbedtls/certs.h"
+
+#include "Enclave_t.h"
+#include "Enclave.h"
 
 #include <string.h>
 
@@ -51,13 +68,16 @@ int main( void )
 
 #define DEBUG_LEVEL 1
 
-//static void my_debug( const char *file, int line,
-//                      const char *str )
-//{
-//    mbedtls_printf("%s:%04d: %s", file, line, str );
-//}
+static void my_debug( void * ctx, int level, 
+					 const char *file, int line,
+                      const char *str )
+{
+	(void) (level);
+	(void) (ctx);
+    mbedtls_printf("%s:%04d: %s", file, line, str );
+}
 
-int connect( void )
+int ecall_connect( void )
 {
     int ret, len;
     mbedtls_net_context server_fd;
@@ -85,6 +105,7 @@ int connect( void )
     mbedtls_ctr_drbg_init( &ctr_drbg );
 
     mbedtls_printf( "\n  . Seeding the random number generator..." );
+   
 
     mbedtls_entropy_init( &entropy );
     if( ( ret = mbedtls_ctr_drbg_seed( &ctr_drbg, mbedtls_entropy_func, &entropy,
@@ -101,6 +122,7 @@ int connect( void )
      * 0. Initialize certificates
      */
     mbedtls_printf( "  . Loading the CA root certificate ..." );
+   
 
     ret = mbedtls_x509_crt_parse( &cacert, (const unsigned char *) mbedtls_test_cas_pem,
                           mbedtls_test_cas_pem_len );
@@ -116,14 +138,14 @@ int connect( void )
      * 1. Start the connection
      */
     mbedtls_printf( "  . Connecting to tcp/%s/%s...", SERVER_NAME, SERVER_PORT );
-    
+   
+    mbedtls_net_connect(&ret, &server_fd, SERVER_NAME, SERVER_PORT, MBEDTLS_NET_PROTO_TCP);
 
-    if( ( ret = mbedtls_net_connect( &server_fd, SERVER_NAME,
-                                         SERVER_PORT, MBEDTLS_NET_PROTO_TCP ) ) != 0 )
+    if(!ret)
     {
         mbedtls_printf( " failed\n  ! mbedtls_net_connect returned %d\n\n", ret );
         goto exit;
-    }
+    } 
 
     mbedtls_printf( " ok\n" );
 
@@ -131,7 +153,7 @@ int connect( void )
      * 2. Setup stuff
      */
     mbedtls_printf( "  . Setting up the SSL/TLS structure..." );
-    
+   
 
     if( ( ret = mbedtls_ssl_config_defaults( &conf,
                     MBEDTLS_SSL_IS_CLIENT,
@@ -149,7 +171,7 @@ int connect( void )
     mbedtls_ssl_conf_authmode( &conf, MBEDTLS_SSL_VERIFY_OPTIONAL );
     mbedtls_ssl_conf_ca_chain( &conf, &cacert, NULL );
     mbedtls_ssl_conf_rng( &conf, mbedtls_ctr_drbg_random, &ctr_drbg );
-    //mbedtls_ssl_conf_dbg( &conf, my_debug, stdout );
+    mbedtls_ssl_conf_dbg( &conf, my_debug, 0 );
 
     if( ( ret = mbedtls_ssl_setup( &ssl, &conf ) ) != 0 )
     {
@@ -163,13 +185,13 @@ int connect( void )
         goto exit;
     }
 
-    mbedtls_ssl_set_bio( &ssl, &server_fd, mbedtls_net_send, mbedtls_net_recv, NULL );
+	mbedtls_ssl_set_bio( &ssl, &server_fd, ocall_net_send, ocall_net_recv, NULL );
 
     /*
      * 4. Handshake
      */
     mbedtls_printf( "  . Performing the SSL/TLS handshake..." );
-    
+   
 
     while( ( ret = mbedtls_ssl_handshake( &ssl ) ) != 0 )
     {
@@ -205,10 +227,10 @@ int connect( void )
      * 3. Write the GET request
      */
     mbedtls_printf( "  > Write to server:" );
-    
+   
 
 	len = strlen(GET_REQUEST);
-	strncpy( (char*) buf, GET_REQUEST, len);
+	strncpy((char*) buf, GET_REQUEST, len);
 
     while( ( ret = mbedtls_ssl_write( &ssl, buf, len ) ) <= 0 )
     {
@@ -226,7 +248,7 @@ int connect( void )
      * 7. Read the HTTP response
      */
     mbedtls_printf( "  < Read from server:" );
-    
+   
 
     do
     {
@@ -288,3 +310,5 @@ exit:
           MBEDTLS_SSL_CLI_C && MBEDTLS_NET_C && MBEDTLS_RSA_C &&
           MBEDTLS_CERTS_C && MBEDTLS_PEM_PARSE_C && MBEDTLS_CTR_DRBG_C &&
           MBEDTLS_X509_CRT_PARSE_C */
+
+

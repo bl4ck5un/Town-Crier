@@ -4,7 +4,7 @@ enclave {
 	from "..\TLSlib\TLSlib.edl" import *; 
 
 	trusted {
-		public int connect(void);	
+		public int ecall_connect(void);	
     };
 
     untrusted {

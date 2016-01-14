@@ -133,13 +133,13 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\debug.h" />
-    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\net.h" />
-    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing.h" />
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\net_f.h" />
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\net_v.h" />
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_f.h" />
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_v.h" />
     <ClInclude Include="TLSlibSupport.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\mbedtls-2.2.1\library\debug.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\net.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\timing.c" />
   </ItemGroup>

@@ -4,8 +4,6 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "../TLSLibSupport/TLSLibSupport.h"
-
 #define _vsnprintf vsnprintf
 
 #if defined(__cplusplus)

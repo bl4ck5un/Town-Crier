@@ -1,41 +1,32 @@
 enclave {
+	include "mbedtls/net_v.h"
+	include "mbedtls/timing_v.h"
+	// include "../TLSlibSupport/print.h"
 
-    trusted {
-        /* define ECALLs here. */
-		
-		
-		/*
-		include "mbedtls/debug.h"
-		include "mbedtls/ssl.h"
-		include "mbedtls/entropy.h"
-		include "mbedtls/ctr_drbg.h"
-		include "mbedtls/error.h"
-		include "mbedtls/certs.h"
-		/*
+	trusted {
     };
 
-	// from "sgx_tae_service.edl" import *;
-
     untrusted {
-		include "mbedtls/x509.h" /* mbedtls_x509_time */
-		include "mbedtls/net.h"
 
         int ocall_print_string([in, string] const char *str);
-		int ocall_get_current_time([out] mbedtls_x509_time *now );
 
 		// net.h
-		
 		void mbedtls_net_init([in, out] mbedtls_net_context *ctx );
 		int mbedtls_net_connect([in, out] mbedtls_net_context *ctx, [in] const char *host, [in] const char *port, int proto );
-
-		/*
-		int mbedtls_net_set_block( mbedtls_net_context *ctx );
-		int mbedtls_net_set_nonblock( mbedtls_net_context *ctx );
+		int mbedtls_net_set_block([in,out] mbedtls_net_context *ctx );
+		int mbedtls_net_set_nonblock( [in,out] mbedtls_net_context *ctx );
 		void mbedtls_net_usleep( unsigned long usec );
-		int mbedtls_net_recv( void *ctx, unsigned char *buf, size_t len );
-		int mbedtls_net_send( void *ctx, const unsigned char *buf, size_t len );
-		int mbedtls_net_recv_timeout( void *ctx, unsigned char *buf, size_t len, uint32_t timeout );
-		void mbedtls_net_free( mbedtls_net_context *ctx );
-		*/
+		int mbedtls_net_recv( [in,out] mbedtls_net_context *ctx, [out, size=len] unsigned char *buf, size_t len );
+		int mbedtls_net_send( [in,out] mbedtls_net_context *ctx, [in, size=len] const unsigned char *buf, size_t len );
+		int mbedtls_net_recv_timeout( [in,out] mbedtls_net_context *ctx, [out, size=len] unsigned char *buf, size_t len, uint32_t timeout );
+		void mbedtls_net_free( [in, out] mbedtls_net_context *ctx );
+
+
+		// timing.h
+		unsigned long mbedtls_timing_hardclock( void );
+		unsigned long mbedtls_timing_get_timer([in,out] struct mbedtls_timing_hr_time *val, int reset );
+		void mbedtls_set_alarm( int seconds );
+		void mbedtls_timing_set_delay( [in,out] mbedtls_timing_delay_context *data, uint32_t int_ms, uint32_t fin_ms );
+		int mbedtls_timing_get_delay( [in, out] mbedtls_timing_delay_context *data );
     };
 };

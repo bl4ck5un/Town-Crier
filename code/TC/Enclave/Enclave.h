@@ -28,11 +28,14 @@
 #include <stdlib.h>
 #include <assert.h>
 
+#include "../TLSlib/TLSlib.h"
+
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-void printf(const char *fmt, ...);
+int ocall_net_send (void *ctx, const unsigned char *buf, size_t len);
+int ocall_net_recv (void *ctx, unsigned char *buf, size_t len);
 
 #if defined(__cplusplus)
 }

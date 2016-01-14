@@ -20,8 +20,8 @@
  *
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
-#ifndef MBEDTLS_TIMING_H
-#define MBEDTLS_TIMING_H
+#ifndef MBEDTLS_TIMING_F_H
+#define MBEDTLS_TIMING_F_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "config.h"
@@ -33,31 +33,12 @@
 // Regular implementation
 //
 
+#include "mbedtls/timing_v.h"
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-/**
- * \brief          timer structure
- */
-struct mbedtls_timing_hr_time
-{
-    unsigned char opaque[32];
-};
-
-/**
- * \brief          Context for mbedtls_timing_set/get_delay()
- */
-typedef struct
-{
-    struct mbedtls_timing_hr_time   timer;
-    uint32_t                        int_ms;
-    uint32_t                        fin_ms;
-} mbedtls_timing_delay_context;
-
-extern volatile int mbedtls_timing_alarmed;
 
 /**
  * \brief          Return the CPU cycle counter value

@@ -2,6 +2,7 @@
 #include <stdio.h>      /* vsnprintf */
 
 #include "TLSlib_t.h"  /* print_string */
+#include "TLSlib.h"
 
 /* 
  * printf: 
@@ -15,5 +16,8 @@ int printf__x(const char *fmt, ...)
     vsnprintf(buf, BUFSIZ, fmt, ap);
     va_end(ap);
 
-	return ocall_print_string(buf);
+	int ret;
+	ocall_print_string(&ret, buf);
+
+	return ret;
 }

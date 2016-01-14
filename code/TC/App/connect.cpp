@@ -263,14 +263,7 @@ int initialize_enclave(void)
     return 0;
 }
 
-/* OCall functions */
-void ocall_print_string(const char *str)
-{
-    /* Proxy/Bridge will check the length and null-terminate 
-     * the input string to prevent buffer overflow. 
-     */
-    printf("%s", str);
-}
+
 
 #if defined(_MSC_VER)
 /* query and enable SGX device*/
@@ -303,7 +296,15 @@ int query_sgx_status()
 }
 #endif
 
-/* Application entry */
+/* OCall functions */
+int ocall_print_string(const char *str)
+{
+    /* Proxy/Bridge will check the length and null-terminate 
+     * the input string to prevent buffer overflow. 
+     */
+    return printf("%s", str);
+}
+
 int SGX_CDECL main(int argc, char *argv[])
 {
     (void)(argc);
@@ -325,19 +326,12 @@ int SGX_CDECL main(int argc, char *argv[])
         return -1; 
     }
  
-    /* Utilize edger8r attributes */
-    edger8r_array_attributes();
-    edger8r_pointer_attributes();
-    edger8r_type_attributes();
-    edger8r_function_attributes();
-    
-    /* Utilize trusted libraries */
-    ecall_libc_functions();
-    ecall_libcxx_functions();
-    ecall_thread_functions();
+	int ret;
+	sgx_status_t st = ecall_connect(global_eid, &ret);
 
-    /* Destroy the enclave */
-    sgx_destroy_enclave(global_eid);
+	if (st != SGX_SUCCESS) {
+		printf("connect failed!\n");
+	}
     
     printf("Info: SampleEnclave successfully returned.\n");
 

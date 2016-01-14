@@ -32,9 +32,14 @@
 #define mbedtls_printf     printf
 #endif
 
+// added by Fan
+// have no access to platform.c
+#define mbedtls_printf     printf
+
 #if defined(MBEDTLS_TIMING_C)
 
-#include "mbedtls/timing.h"
+#include "mbedtls/timing_v.h"
+#include "mbedtls/timing_f.h"
 
 #if !defined(MBEDTLS_TIMING_ALT)
 

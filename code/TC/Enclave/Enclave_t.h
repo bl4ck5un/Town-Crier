@@ -6,14 +6,8 @@
 #include <stddef.h>
 #include "sgx_edger8r.h" /* for sgx_ocall etc. */
 
-#include "mbedtls/net.h"
-#include "mbedtls/debug.h"
-#include "mbedtls/ssl.h"
-#include "mbedtls/entropy.h"
-#include "mbedtls/ctr_drbg.h"
-#include "mbedtls/error.h"
-#include "mbedtls/certs.h"
-#include "TLSlib.h"
+#include "mbedtls/net_v.h"
+#include "mbedtls/timing_v.h"
 
 #define SGX_CAST(type, item) ((type)(item))
 
@@ -22,19 +16,23 @@ extern "C" {
 #endif
 
 
-int connect();
+int ecall_connect();
 
 sgx_status_t SGX_CDECL ocall_print_string(int* retval, const char* str);
-sgx_status_t SGX_CDECL ocall_get_current_time(int* retval, mbedtls_x509_time* now);
-sgx_status_t SGX_CDECL create_session_ocall(sgx_status_t* retval, uint32_t* sid, uint8_t* dh_msg1, uint32_t dh_msg1_size, uint32_t timeout);
-sgx_status_t SGX_CDECL exchange_report_ocall(sgx_status_t* retval, uint32_t sid, uint8_t* dh_msg2, uint32_t dh_msg2_size, uint8_t* dh_msg3, uint32_t dh_msg3_size, uint32_t timeout);
-sgx_status_t SGX_CDECL close_session_ocall(sgx_status_t* retval, uint32_t sid, uint32_t timeout);
-sgx_status_t SGX_CDECL invoke_service_ocall(sgx_status_t* retval, uint8_t* pse_message_req, uint32_t pse_message_req_size, uint8_t* pse_message_resp, uint32_t pse_message_resp_size, uint32_t timeout);
-sgx_status_t SGX_CDECL sgx_oc_cpuidex(int cpuinfo[4], int leaf, int subleaf);
-sgx_status_t SGX_CDECL sgx_thread_wait_untrusted_event_ocall(int* retval, const void* self);
-sgx_status_t SGX_CDECL sgx_thread_set_untrusted_event_ocall(int* retval, const void* waiter);
-sgx_status_t SGX_CDECL sgx_thread_setwait_untrusted_events_ocall(int* retval, const void* waiter, const void* self);
-sgx_status_t SGX_CDECL sgx_thread_set_multiple_untrusted_events_ocall(int* retval, const void** waiters, size_t total);
+sgx_status_t SGX_CDECL mbedtls_net_init(mbedtls_net_context* ctx);
+sgx_status_t SGX_CDECL mbedtls_net_connect(int* retval, mbedtls_net_context* ctx, const char* host, const char* port, int proto);
+sgx_status_t SGX_CDECL mbedtls_net_set_block(int* retval, mbedtls_net_context* ctx);
+sgx_status_t SGX_CDECL mbedtls_net_set_nonblock(int* retval, mbedtls_net_context* ctx);
+sgx_status_t SGX_CDECL mbedtls_net_usleep(unsigned long int usec);
+sgx_status_t SGX_CDECL mbedtls_net_recv(int* retval, mbedtls_net_context* ctx, unsigned char* buf, size_t len);
+sgx_status_t SGX_CDECL mbedtls_net_send(int* retval, mbedtls_net_context* ctx, const unsigned char* buf, size_t len);
+sgx_status_t SGX_CDECL mbedtls_net_recv_timeout(int* retval, mbedtls_net_context* ctx, unsigned char* buf, size_t len, uint32_t timeout);
+sgx_status_t SGX_CDECL mbedtls_net_free(mbedtls_net_context* ctx);
+sgx_status_t SGX_CDECL mbedtls_timing_hardclock(unsigned long int* retval);
+sgx_status_t SGX_CDECL mbedtls_timing_get_timer(unsigned long int* retval, struct mbedtls_timing_hr_time* val, int reset);
+sgx_status_t SGX_CDECL mbedtls_set_alarm(int seconds);
+sgx_status_t SGX_CDECL mbedtls_timing_set_delay(mbedtls_timing_delay_context* data, uint32_t int_ms, uint32_t fin_ms);
+sgx_status_t SGX_CDECL mbedtls_timing_get_delay(int* retval, mbedtls_timing_delay_context* data);
 
 #ifdef __cplusplus
 }

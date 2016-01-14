@@ -216,6 +216,9 @@
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\xtea.h">
       <Filter>mbedTLS</Filter>
     </ClInclude>
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\debug.h">
+      <Filter>mbedTLS</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\mbedtls-2.2.1\library\aes.c">
@@ -421,6 +424,9 @@
     </ClCompile>
     <ClCompile Include="Ocalls.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mbedtls-2.2.1\library\debug.c">
+      <Filter>mbedTLS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -27,7 +27,8 @@
 
 #if defined(MBEDTLS_NET_C)
 
-#include "mbedtls/net.h"
+#include "mbedtls/net_v.h"
+#include "mbedtls/net_f.h"
 
 #include <string.h>
 

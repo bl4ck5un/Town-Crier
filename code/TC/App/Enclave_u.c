@@ -1,76 +1,90 @@
 #include "Enclave_u.h"
 
+typedef struct ms_ecall_connect_t {
+	int ms_retval;
+} ms_ecall_connect_t;
 
 typedef struct ms_ocall_print_string_t {
 	int ms_retval;
 	char* ms_str;
 } ms_ocall_print_string_t;
 
-typedef struct ms_ocall_get_current_time_t {
-	int ms_retval;
-	mbedtls_x509_time* ms_now;
-} ms_ocall_get_current_time_t;
+typedef struct ms_mbedtls_net_init_t {
+	mbedtls_net_context* ms_ctx;
+} ms_mbedtls_net_init_t;
 
-typedef struct ms_create_session_ocall_t {
-	sgx_status_t ms_retval;
-	uint32_t* ms_sid;
-	uint8_t* ms_dh_msg1;
-	uint32_t ms_dh_msg1_size;
+typedef struct ms_mbedtls_net_connect_t {
+	int ms_retval;
+	mbedtls_net_context* ms_ctx;
+	char* ms_host;
+	char* ms_port;
+	int ms_proto;
+} ms_mbedtls_net_connect_t;
+
+typedef struct ms_mbedtls_net_set_block_t {
+	int ms_retval;
+	mbedtls_net_context* ms_ctx;
+} ms_mbedtls_net_set_block_t;
+
+typedef struct ms_mbedtls_net_set_nonblock_t {
+	int ms_retval;
+	mbedtls_net_context* ms_ctx;
+} ms_mbedtls_net_set_nonblock_t;
+
+typedef struct ms_mbedtls_net_usleep_t {
+	unsigned long int ms_usec;
+} ms_mbedtls_net_usleep_t;
+
+typedef struct ms_mbedtls_net_recv_t {
+	int ms_retval;
+	mbedtls_net_context* ms_ctx;
+	unsigned char* ms_buf;
+	size_t ms_len;
+} ms_mbedtls_net_recv_t;
+
+typedef struct ms_mbedtls_net_send_t {
+	int ms_retval;
+	mbedtls_net_context* ms_ctx;
+	unsigned char* ms_buf;
+	size_t ms_len;
+} ms_mbedtls_net_send_t;
+
+typedef struct ms_mbedtls_net_recv_timeout_t {
+	int ms_retval;
+	mbedtls_net_context* ms_ctx;
+	unsigned char* ms_buf;
+	size_t ms_len;
 	uint32_t ms_timeout;
-} ms_create_session_ocall_t;
+} ms_mbedtls_net_recv_timeout_t;
 
-typedef struct ms_exchange_report_ocall_t {
-	sgx_status_t ms_retval;
-	uint32_t ms_sid;
-	uint8_t* ms_dh_msg2;
-	uint32_t ms_dh_msg2_size;
-	uint8_t* ms_dh_msg3;
-	uint32_t ms_dh_msg3_size;
-	uint32_t ms_timeout;
-} ms_exchange_report_ocall_t;
+typedef struct ms_mbedtls_net_free_t {
+	mbedtls_net_context* ms_ctx;
+} ms_mbedtls_net_free_t;
 
-typedef struct ms_close_session_ocall_t {
-	sgx_status_t ms_retval;
-	uint32_t ms_sid;
-	uint32_t ms_timeout;
-} ms_close_session_ocall_t;
+typedef struct ms_mbedtls_timing_hardclock_t {
+	unsigned long int ms_retval;
+} ms_mbedtls_timing_hardclock_t;
 
-typedef struct ms_invoke_service_ocall_t {
-	sgx_status_t ms_retval;
-	uint8_t* ms_pse_message_req;
-	uint32_t ms_pse_message_req_size;
-	uint8_t* ms_pse_message_resp;
-	uint32_t ms_pse_message_resp_size;
-	uint32_t ms_timeout;
-} ms_invoke_service_ocall_t;
+typedef struct ms_mbedtls_timing_get_timer_t {
+	unsigned long int ms_retval;
+	struct mbedtls_timing_hr_time* ms_val;
+	int ms_reset;
+} ms_mbedtls_timing_get_timer_t;
 
-typedef struct ms_sgx_oc_cpuidex_t {
-	int* ms_cpuinfo;
-	int ms_leaf;
-	int ms_subleaf;
-} ms_sgx_oc_cpuidex_t;
+typedef struct ms_mbedtls_set_alarm_t {
+	int ms_seconds;
+} ms_mbedtls_set_alarm_t;
 
-typedef struct ms_sgx_thread_wait_untrusted_event_ocall_t {
+typedef struct ms_mbedtls_timing_set_delay_t {
+	mbedtls_timing_delay_context* ms_data;
+	uint32_t ms_int_ms;
+	uint32_t ms_fin_ms;
+} ms_mbedtls_timing_set_delay_t;
+
+typedef struct ms_mbedtls_timing_get_delay_t {
 	int ms_retval;
-	void* ms_self;
-} ms_sgx_thread_wait_untrusted_event_ocall_t;
-
-typedef struct ms_sgx_thread_set_untrusted_event_ocall_t {
-	int ms_retval;
-	void* ms_waiter;
-} ms_sgx_thread_set_untrusted_event_ocall_t;
-
-typedef struct ms_sgx_thread_setwait_untrusted_events_ocall_t {
-	int ms_retval;
-	void* ms_waiter;
-	void* ms_self;
-} ms_sgx_thread_setwait_untrusted_events_ocall_t;
-
-typedef struct ms_sgx_thread_set_multiple_untrusted_events_ocall_t {
-	int ms_retval;
-	void** ms_waiters;
-	size_t ms_total;
-} ms_sgx_thread_set_multiple_untrusted_events_ocall_t;
+	mbedtls_timing_delay_context* ms_data;
+} ms_mbedtls_timing_get_delay_t;
 
 static sgx_status_t SGX_CDECL Enclave_ocall_print_string(void* pms)
 {
@@ -79,100 +93,134 @@ static sgx_status_t SGX_CDECL Enclave_ocall_print_string(void* pms)
 	return SGX_SUCCESS;
 }
 
-static sgx_status_t SGX_CDECL Enclave_ocall_get_current_time(void* pms)
+static sgx_status_t SGX_CDECL Enclave_mbedtls_net_init(void* pms)
 {
-	ms_ocall_get_current_time_t* ms = SGX_CAST(ms_ocall_get_current_time_t*, pms);
-	ms->ms_retval = ocall_get_current_time(ms->ms_now);
+	ms_mbedtls_net_init_t* ms = SGX_CAST(ms_mbedtls_net_init_t*, pms);
+	mbedtls_net_init(ms->ms_ctx);
 	return SGX_SUCCESS;
 }
 
-static sgx_status_t SGX_CDECL Enclave_create_session_ocall(void* pms)
+static sgx_status_t SGX_CDECL Enclave_mbedtls_net_connect(void* pms)
 {
-	ms_create_session_ocall_t* ms = SGX_CAST(ms_create_session_ocall_t*, pms);
-	ms->ms_retval = create_session_ocall(ms->ms_sid, ms->ms_dh_msg1, ms->ms_dh_msg1_size, ms->ms_timeout);
+	ms_mbedtls_net_connect_t* ms = SGX_CAST(ms_mbedtls_net_connect_t*, pms);
+	ms->ms_retval = mbedtls_net_connect(ms->ms_ctx, (const char*)ms->ms_host, (const char*)ms->ms_port, ms->ms_proto);
 	return SGX_SUCCESS;
 }
 
-static sgx_status_t SGX_CDECL Enclave_exchange_report_ocall(void* pms)
+static sgx_status_t SGX_CDECL Enclave_mbedtls_net_set_block(void* pms)
 {
-	ms_exchange_report_ocall_t* ms = SGX_CAST(ms_exchange_report_ocall_t*, pms);
-	ms->ms_retval = exchange_report_ocall(ms->ms_sid, ms->ms_dh_msg2, ms->ms_dh_msg2_size, ms->ms_dh_msg3, ms->ms_dh_msg3_size, ms->ms_timeout);
+	ms_mbedtls_net_set_block_t* ms = SGX_CAST(ms_mbedtls_net_set_block_t*, pms);
+	ms->ms_retval = mbedtls_net_set_block(ms->ms_ctx);
 	return SGX_SUCCESS;
 }
 
-static sgx_status_t SGX_CDECL Enclave_close_session_ocall(void* pms)
+static sgx_status_t SGX_CDECL Enclave_mbedtls_net_set_nonblock(void* pms)
 {
-	ms_close_session_ocall_t* ms = SGX_CAST(ms_close_session_ocall_t*, pms);
-	ms->ms_retval = close_session_ocall(ms->ms_sid, ms->ms_timeout);
+	ms_mbedtls_net_set_nonblock_t* ms = SGX_CAST(ms_mbedtls_net_set_nonblock_t*, pms);
+	ms->ms_retval = mbedtls_net_set_nonblock(ms->ms_ctx);
 	return SGX_SUCCESS;
 }
 
-static sgx_status_t SGX_CDECL Enclave_invoke_service_ocall(void* pms)
+static sgx_status_t SGX_CDECL Enclave_mbedtls_net_usleep(void* pms)
 {
-	ms_invoke_service_ocall_t* ms = SGX_CAST(ms_invoke_service_ocall_t*, pms);
-	ms->ms_retval = invoke_service_ocall(ms->ms_pse_message_req, ms->ms_pse_message_req_size, ms->ms_pse_message_resp, ms->ms_pse_message_resp_size, ms->ms_timeout);
+	ms_mbedtls_net_usleep_t* ms = SGX_CAST(ms_mbedtls_net_usleep_t*, pms);
+	mbedtls_net_usleep(ms->ms_usec);
 	return SGX_SUCCESS;
 }
 
-static sgx_status_t SGX_CDECL Enclave_sgx_oc_cpuidex(void* pms)
+static sgx_status_t SGX_CDECL Enclave_mbedtls_net_recv(void* pms)
 {
-	ms_sgx_oc_cpuidex_t* ms = SGX_CAST(ms_sgx_oc_cpuidex_t*, pms);
-	sgx_oc_cpuidex(ms->ms_cpuinfo, ms->ms_leaf, ms->ms_subleaf);
+	ms_mbedtls_net_recv_t* ms = SGX_CAST(ms_mbedtls_net_recv_t*, pms);
+	ms->ms_retval = mbedtls_net_recv(ms->ms_ctx, ms->ms_buf, ms->ms_len);
 	return SGX_SUCCESS;
 }
 
-static sgx_status_t SGX_CDECL Enclave_sgx_thread_wait_untrusted_event_ocall(void* pms)
+static sgx_status_t SGX_CDECL Enclave_mbedtls_net_send(void* pms)
 {
-	ms_sgx_thread_wait_untrusted_event_ocall_t* ms = SGX_CAST(ms_sgx_thread_wait_untrusted_event_ocall_t*, pms);
-	ms->ms_retval = sgx_thread_wait_untrusted_event_ocall((const void*)ms->ms_self);
+	ms_mbedtls_net_send_t* ms = SGX_CAST(ms_mbedtls_net_send_t*, pms);
+	ms->ms_retval = mbedtls_net_send(ms->ms_ctx, (const unsigned char*)ms->ms_buf, ms->ms_len);
 	return SGX_SUCCESS;
 }
 
-static sgx_status_t SGX_CDECL Enclave_sgx_thread_set_untrusted_event_ocall(void* pms)
+static sgx_status_t SGX_CDECL Enclave_mbedtls_net_recv_timeout(void* pms)
 {
-	ms_sgx_thread_set_untrusted_event_ocall_t* ms = SGX_CAST(ms_sgx_thread_set_untrusted_event_ocall_t*, pms);
-	ms->ms_retval = sgx_thread_set_untrusted_event_ocall((const void*)ms->ms_waiter);
+	ms_mbedtls_net_recv_timeout_t* ms = SGX_CAST(ms_mbedtls_net_recv_timeout_t*, pms);
+	ms->ms_retval = mbedtls_net_recv_timeout(ms->ms_ctx, ms->ms_buf, ms->ms_len, ms->ms_timeout);
 	return SGX_SUCCESS;
 }
 
-static sgx_status_t SGX_CDECL Enclave_sgx_thread_setwait_untrusted_events_ocall(void* pms)
+static sgx_status_t SGX_CDECL Enclave_mbedtls_net_free(void* pms)
 {
-	ms_sgx_thread_setwait_untrusted_events_ocall_t* ms = SGX_CAST(ms_sgx_thread_setwait_untrusted_events_ocall_t*, pms);
-	ms->ms_retval = sgx_thread_setwait_untrusted_events_ocall((const void*)ms->ms_waiter, (const void*)ms->ms_self);
+	ms_mbedtls_net_free_t* ms = SGX_CAST(ms_mbedtls_net_free_t*, pms);
+	mbedtls_net_free(ms->ms_ctx);
 	return SGX_SUCCESS;
 }
 
-static sgx_status_t SGX_CDECL Enclave_sgx_thread_set_multiple_untrusted_events_ocall(void* pms)
+static sgx_status_t SGX_CDECL Enclave_mbedtls_timing_hardclock(void* pms)
 {
-	ms_sgx_thread_set_multiple_untrusted_events_ocall_t* ms = SGX_CAST(ms_sgx_thread_set_multiple_untrusted_events_ocall_t*, pms);
-	ms->ms_retval = sgx_thread_set_multiple_untrusted_events_ocall((const void**)ms->ms_waiters, ms->ms_total);
+	ms_mbedtls_timing_hardclock_t* ms = SGX_CAST(ms_mbedtls_timing_hardclock_t*, pms);
+	ms->ms_retval = mbedtls_timing_hardclock();
+	return SGX_SUCCESS;
+}
+
+static sgx_status_t SGX_CDECL Enclave_mbedtls_timing_get_timer(void* pms)
+{
+	ms_mbedtls_timing_get_timer_t* ms = SGX_CAST(ms_mbedtls_timing_get_timer_t*, pms);
+	ms->ms_retval = mbedtls_timing_get_timer(ms->ms_val, ms->ms_reset);
+	return SGX_SUCCESS;
+}
+
+static sgx_status_t SGX_CDECL Enclave_mbedtls_set_alarm(void* pms)
+{
+	ms_mbedtls_set_alarm_t* ms = SGX_CAST(ms_mbedtls_set_alarm_t*, pms);
+	mbedtls_set_alarm(ms->ms_seconds);
+	return SGX_SUCCESS;
+}
+
+static sgx_status_t SGX_CDECL Enclave_mbedtls_timing_set_delay(void* pms)
+{
+	ms_mbedtls_timing_set_delay_t* ms = SGX_CAST(ms_mbedtls_timing_set_delay_t*, pms);
+	mbedtls_timing_set_delay(ms->ms_data, ms->ms_int_ms, ms->ms_fin_ms);
+	return SGX_SUCCESS;
+}
+
+static sgx_status_t SGX_CDECL Enclave_mbedtls_timing_get_delay(void* pms)
+{
+	ms_mbedtls_timing_get_delay_t* ms = SGX_CAST(ms_mbedtls_timing_get_delay_t*, pms);
+	ms->ms_retval = mbedtls_timing_get_delay(ms->ms_data);
 	return SGX_SUCCESS;
 }
 
 static const struct {
 	size_t nr_ocall;
-	void * func_addr[11];
+	void * func_addr[15];
 } ocall_table_Enclave = {
-	11,
+	15,
 	{
 		(void*)(uintptr_t)Enclave_ocall_print_string,
-		(void*)(uintptr_t)Enclave_ocall_get_current_time,
-		(void*)(uintptr_t)Enclave_create_session_ocall,
-		(void*)(uintptr_t)Enclave_exchange_report_ocall,
-		(void*)(uintptr_t)Enclave_close_session_ocall,
-		(void*)(uintptr_t)Enclave_invoke_service_ocall,
-		(void*)(uintptr_t)Enclave_sgx_oc_cpuidex,
-		(void*)(uintptr_t)Enclave_sgx_thread_wait_untrusted_event_ocall,
-		(void*)(uintptr_t)Enclave_sgx_thread_set_untrusted_event_ocall,
-		(void*)(uintptr_t)Enclave_sgx_thread_setwait_untrusted_events_ocall,
-		(void*)(uintptr_t)Enclave_sgx_thread_set_multiple_untrusted_events_ocall,
+		(void*)(uintptr_t)Enclave_mbedtls_net_init,
+		(void*)(uintptr_t)Enclave_mbedtls_net_connect,
+		(void*)(uintptr_t)Enclave_mbedtls_net_set_block,
+		(void*)(uintptr_t)Enclave_mbedtls_net_set_nonblock,
+		(void*)(uintptr_t)Enclave_mbedtls_net_usleep,
+		(void*)(uintptr_t)Enclave_mbedtls_net_recv,
+		(void*)(uintptr_t)Enclave_mbedtls_net_send,
+		(void*)(uintptr_t)Enclave_mbedtls_net_recv_timeout,
+		(void*)(uintptr_t)Enclave_mbedtls_net_free,
+		(void*)(uintptr_t)Enclave_mbedtls_timing_hardclock,
+		(void*)(uintptr_t)Enclave_mbedtls_timing_get_timer,
+		(void*)(uintptr_t)Enclave_mbedtls_set_alarm,
+		(void*)(uintptr_t)Enclave_mbedtls_timing_set_delay,
+		(void*)(uintptr_t)Enclave_mbedtls_timing_get_delay,
 	}
 };
 
-sgx_status_t connect(sgx_enclave_id_t eid)
+sgx_status_t ecall_connect(sgx_enclave_id_t eid, int* retval)
 {
 	sgx_status_t status;
-	status = sgx_ecall(eid, 0, &ocall_table_Enclave, NULL);
+	ms_ecall_connect_t ms;
+	status = sgx_ecall(eid, 0, &ocall_table_Enclave, &ms);
+	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
 }
 
