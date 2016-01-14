@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(NoInherit)</IncludePath>
+    <IncludePath>$(ProjectDir)</IncludePath>
     <LibraryPath>$(NoInherit)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">
@@ -91,7 +91,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\stlport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\TLSlibSupport;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\stlport;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <LinkTimeCodeGeneration>true</LinkTimeCodeGeneration>
@@ -154,7 +154,6 @@
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\compat-1.3.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\config.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\ctr_drbg.h" />
-    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\debug.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\des.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\dhm.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\ecdh.h" />
@@ -194,7 +193,6 @@
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\ssl_internal.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\ssl_ticket.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\threading.h" />
-    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\version.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\x509.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\x509_crl.h" />
@@ -235,7 +233,6 @@
     <ClCompile Include="..\mbedtls-2.2.1\library\cipher.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\cipher_wrap.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\ctr_drbg.c" />
-    <ClCompile Include="..\mbedtls-2.2.1\library\debug.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\des.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\dhm.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\ecdh.c" />
@@ -279,7 +276,6 @@
     <ClCompile Include="..\mbedtls-2.2.1\library\ssl_ticket.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\ssl_tls.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\threading.c" />
-    <ClCompile Include="..\mbedtls-2.2.1\library\timing.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\version.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\version_features.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\x509.c" />
@@ -290,7 +286,7 @@
     <ClCompile Include="..\mbedtls-2.2.1\library\x509_crt.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\x509_csr.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\xtea.c" />
-    <ClCompile Include="print.cpp" />
+    <ClCompile Include="Ocalls.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\mbedtls-2.2.1\library\.gitignore" />

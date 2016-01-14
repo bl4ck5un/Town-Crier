@@ -1,12 +1,10 @@
 /* Enclave.edl - Top EDL file. */
 
 enclave {
-    
-    include "user_types.h" /* buffer_t */
 	from "..\TLSlib\TLSlib.edl" import *; 
 
 	trusted {
-		public void connect(void);	
+		public int connect(void);	
     };
 
     untrusted {

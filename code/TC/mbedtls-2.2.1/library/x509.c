@@ -35,6 +35,8 @@
 #include MBEDTLS_CONFIG_FILE
 #endif
 
+#include "TLSlib_t.h"
+
 #if defined(MBEDTLS_X509_USE_C)
 
 #include "mbedtls/x509.h"
@@ -60,7 +62,7 @@
 #endif
 
 #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
-#include <windows.h>
+//#include <windows.h>
 #else
 #include <time.h>
 #endif
@@ -73,6 +75,8 @@
 #include <dirent.h>
 #endif
 #endif
+
+#include "sgx_tae_service.h" // for timing stuff
 
 #define CHECK(code) if( ( ret = code ) != 0 ){ return( ret ); }
 
@@ -826,18 +830,24 @@ int mbedtls_x509_key_size_helper( char *buf, size_t buf_size, const char *name )
 #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)
 static int x509_get_current_time( mbedtls_x509_time *now )
 {
-    SYSTEMTIME st;
+	// TODO FIXME
+	// replace with SGX time source
+    //SYSTEMTIME st;
 
-    GetSystemTime( &st );
+    //GetSystemTime( &st );
 
-    now->year = st.wYear;
-    now->mon  = st.wMonth;
-    now->day  = st.wDay;
-    now->hour = st.wHour;
-    now->min  = st.wMinute;
-    now->sec  = st.wSecond;
+    //now->year = st.wYear;
+    //now->mon  = st.wMonth;
+    //now->day  = st.wDay;
+    //now->hour = st.wHour;
+    //now->min  = st.wMinute;
+    //now->sec  = st.wSecond;
 
-    return( 0 );
+	int ret;
+
+	ocall_get_current_time(&ret, now);
+
+    return ret;
 }
 #else
 static int x509_get_current_time( mbedtls_x509_time *now )

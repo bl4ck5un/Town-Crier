@@ -7,13 +7,6 @@
 #include "sgx_edger8r.h" /* for sgx_ocall etc. */
 
 #include "mbedtls/net.h"
-#include "mbedtls/debug.h"
-#include "mbedtls/ssl.h"
-#include "mbedtls/entropy.h"
-#include "mbedtls/ctr_drbg.h"
-#include "mbedtls/error.h"
-#include "mbedtls/certs.h"
-#include "TLSlib.h"
 
 #define SGX_CAST(type, item) ((type)(item))
 
@@ -22,8 +15,11 @@ extern "C" {
 #endif
 
 
+int ocall_print_string(const char* str);
+int ocall_get_current_time(mbedtls_x509_time* now);
+void mbedtls_net_init(mbedtls_net_context* ctx);
+int mbedtls_net_connect(mbedtls_net_context* ctx, const char* host, const char* port, int proto);
 
-sgx_status_t SGX_CDECL ocall_print_string(const char* str);
 
 #ifdef __cplusplus
 }

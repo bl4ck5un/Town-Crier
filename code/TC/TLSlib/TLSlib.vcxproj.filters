@@ -81,9 +81,6 @@
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\ctr_drbg.h">
       <Filter>mbedTLS</Filter>
     </ClInclude>
-    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\debug.h">
-      <Filter>mbedTLS</Filter>
-    </ClInclude>
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\des.h">
       <Filter>mbedTLS</Filter>
     </ClInclude>
@@ -201,9 +198,6 @@
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\threading.h">
       <Filter>mbedTLS</Filter>
     </ClInclude>
-    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing.h">
-      <Filter>mbedTLS</Filter>
-    </ClInclude>
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\version.h">
       <Filter>mbedTLS</Filter>
     </ClInclude>
@@ -224,9 +218,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="print.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\mbedtls-2.2.1\library\aes.c">
       <Filter>mbedTLS</Filter>
     </ClCompile>
@@ -267,9 +258,6 @@
       <Filter>mbedTLS</Filter>
     </ClCompile>
     <ClCompile Include="..\mbedtls-2.2.1\library\ctr_drbg.c">
-      <Filter>mbedTLS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mbedtls-2.2.1\library\debug.c">
       <Filter>mbedTLS</Filter>
     </ClCompile>
     <ClCompile Include="..\mbedtls-2.2.1\library\des.c">
@@ -401,9 +389,6 @@
     <ClCompile Include="..\mbedtls-2.2.1\library\threading.c">
       <Filter>mbedTLS</Filter>
     </ClCompile>
-    <ClCompile Include="..\mbedtls-2.2.1\library\timing.c">
-      <Filter>mbedTLS</Filter>
-    </ClCompile>
     <ClCompile Include="..\mbedtls-2.2.1\library\version.c">
       <Filter>mbedTLS</Filter>
     </ClCompile>
@@ -433,6 +418,9 @@
     </ClCompile>
     <ClCompile Include="..\mbedtls-2.2.1\library\xtea.c">
       <Filter>mbedTLS</Filter>
+    </ClCompile>
+    <ClCompile Include="Ocalls.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-void printf(const char *fmt, ...);
+int printf__x(const char *fmt, ...);
 
 #if defined(__cplusplus)
 }

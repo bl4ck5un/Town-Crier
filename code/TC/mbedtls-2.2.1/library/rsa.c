@@ -1568,7 +1568,8 @@ static int myrand( void *rng_state, unsigned char *output, size_t len )
         rng_state  = NULL;
 
     for( i = 0; i < len; ++i )
-        output[i] = rand();
+		// TODO fix with sgx rand
+        output[i] = 0;
 #else
     if( rng_state != NULL )
         rng_state = NULL;

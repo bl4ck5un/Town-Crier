@@ -74,6 +74,7 @@
  * Comment if your system does not support time functions
  */
 #define MBEDTLS_HAVE_TIME
+#undef MBEDTLS_HAVE_TIME
 
 /**
  * \def MBEDTLS_HAVE_TIME_DATE
@@ -86,6 +87,7 @@
  * Comment if your system does not have a correct clock.
  */
 #define MBEDTLS_HAVE_TIME_DATE
+#undef MBEDTLS_HAVE_TIME_DATE
 
 /**
  * \def MBEDTLS_PLATFORM_MEMORY
@@ -153,7 +155,7 @@
  */
 //#define MBEDTLS_PLATFORM_EXIT_ALT
 //#define MBEDTLS_PLATFORM_FPRINTF_ALT
-//#define MBEDTLS_PLATFORM_PRINTF_ALT
+#define MBEDTLS_PLATFORM_PRINTF_ALT printf__x
 //#define MBEDTLS_PLATFORM_SNPRINTF_ALT
 
 /**
@@ -2449,7 +2451,7 @@
 //#define MBEDTLS_PLATFORM_STD_FREE            free /**< Default free to use, can be undefined */
 //#define MBEDTLS_PLATFORM_STD_EXIT            exit /**< Default exit to use, can be undefined */
 //#define MBEDTLS_PLATFORM_STD_FPRINTF      fprintf /**< Default fprintf to use, can be undefined */
-//#define MBEDTLS_PLATFORM_STD_PRINTF        printf /**< Default printf to use, can be undefined */
+#define MBEDTLS_PLATFORM_STD_PRINTF        printf__x /**< Default printf to use, can be undefined */
 /* Note: your snprintf must correclty zero-terminate the buffer! */
 //#define MBEDTLS_PLATFORM_STD_SNPRINTF    snprintf /**< Default snprintf to use, can be undefined */
 

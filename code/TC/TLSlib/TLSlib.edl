@@ -3,19 +3,39 @@ enclave {
     trusted {
         /* define ECALLs here. */
 		
-		include "mbedtls/net.h"
+		
+		/*
 		include "mbedtls/debug.h"
 		include "mbedtls/ssl.h"
 		include "mbedtls/entropy.h"
 		include "mbedtls/ctr_drbg.h"
 		include "mbedtls/error.h"
 		include "mbedtls/certs.h"
-		
-		include "TLSlib.h"
+		/*
     };
 
+	// from "sgx_tae_service.edl" import *;
+
     untrusted {
-        /* define OCALLs here. */
-        void ocall_print_string([in, string] const char *str);
+		include "mbedtls/x509.h" /* mbedtls_x509_time */
+		include "mbedtls/net.h"
+
+        int ocall_print_string([in, string] const char *str);
+		int ocall_get_current_time([out] mbedtls_x509_time *now );
+
+		// net.h
+		
+		void mbedtls_net_init([in, out] mbedtls_net_context *ctx );
+		int mbedtls_net_connect([in, out] mbedtls_net_context *ctx, [in] const char *host, [in] const char *port, int proto );
+
+		/*
+		int mbedtls_net_set_block( mbedtls_net_context *ctx );
+		int mbedtls_net_set_nonblock( mbedtls_net_context *ctx );
+		void mbedtls_net_usleep( unsigned long usec );
+		int mbedtls_net_recv( void *ctx, unsigned char *buf, size_t len );
+		int mbedtls_net_send( void *ctx, const unsigned char *buf, size_t len );
+		int mbedtls_net_recv_timeout( void *ctx, unsigned char *buf, size_t len, uint32_t timeout );
+		void mbedtls_net_free( mbedtls_net_context *ctx );
+		*/
     };
 };

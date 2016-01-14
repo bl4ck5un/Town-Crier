@@ -12,4 +12,6 @@
 //        };
 //typedef struct _iobuf FILE;
 
-#include "net.h"
+#include "mbedtls/net.h"
+#include "mbedtls/timing.h"
+#include "mbedtls/debug.h"
