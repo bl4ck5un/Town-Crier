@@ -20,29 +20,4 @@
   <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="TLSlibSupport.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\net_v.h">
-      <Filter>mbedTLS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\net_f.h">
-      <Filter>mbedTLS</Filter>
-    </ClInclude>
-    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_f.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_v.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\mbedtls-2.2.1\library\net.c">
-      <Filter>mbedTLS</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mbedtls-2.2.1\library\timing.c">
-      <Filter>mbedTLS</Filter>
-    </ClCompile>
-  </ItemGroup>
 </Project>

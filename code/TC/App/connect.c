@@ -296,15 +296,6 @@ int query_sgx_status()
 }
 #endif
 
-/* OCall functions */
-int ocall_print_string(const char *str)
-{
-    /* Proxy/Bridge will check the length and null-terminate 
-     * the input string to prevent buffer overflow. 
-     */
-    return printf("%s", str);
-}
-
 int SGX_CDECL main(int argc, char *argv[])
 {
     (void)(argc);

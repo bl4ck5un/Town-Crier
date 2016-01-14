@@ -16,13 +16,25 @@
     <Filter Include="Generated Files">
       <UniqueIdentifier>{e392c9e8-4ffa-4fff-92ae-266babb954bb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="TLSSupport">
+      <UniqueIdentifier>{e1a73113-54af-42a1-b99a-47faf1ea4f00}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Enclave_u.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="connect.cpp">
+    <ClCompile Include="..\mbedtls-2.2.1\library\timing.c">
+      <Filter>TLSSupport</Filter>
+    </ClCompile>
+    <ClCompile Include="..\TLSLibSupport\misc.c">
+      <Filter>TLSSupport</Filter>
+    </ClCompile>
+    <ClCompile Include="connect.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="net_u.c">
+      <Filter>TLSSupport</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -31,6 +43,15 @@
     </ClInclude>
     <ClInclude Include="Enclave_u.h">
       <Filter>Generated Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_f.h">
+      <Filter>TLSSupport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_v.h">
+      <Filter>TLSSupport</Filter>
+    </ClInclude>
+    <ClInclude Include="..\TLSLibSupport\TLSlibSupport.h">
+      <Filter>TLSSupport</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
