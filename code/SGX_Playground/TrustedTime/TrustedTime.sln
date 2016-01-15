@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Enclave", "Enclave\Enclave.vcxproj", "{77FF74FC-D811-430E-9725-720D9E11B50B}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "App", "App\App.vcxproj", "{513306C9-257C-4BD4-B52F-1A3103B27EE7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{77FF74FC-D811-430E-9725-720D9E11B50B} = {77FF74FC-D811-430E-9725-720D9E11B50B}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Prerelease|Win32 = Prerelease|Win32
+		Release|Win32 = Release|Win32
+		Simulation|Win32 = Simulation|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{77FF74FC-D811-430E-9725-720D9E11B50B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{77FF74FC-D811-430E-9725-720D9E11B50B}.Debug|Win32.Build.0 = Debug|Win32
+		{77FF74FC-D811-430E-9725-720D9E11B50B}.Prerelease|Win32.ActiveCfg = Prerelease|Win32
+		{77FF74FC-D811-430E-9725-720D9E11B50B}.Prerelease|Win32.Build.0 = Prerelease|Win32
+		{77FF74FC-D811-430E-9725-720D9E11B50B}.Release|Win32.ActiveCfg = Release|Win32
+		{77FF74FC-D811-430E-9725-720D9E11B50B}.Release|Win32.Build.0 = Release|Win32
+		{77FF74FC-D811-430E-9725-720D9E11B50B}.Simulation|Win32.ActiveCfg = Simulation|Win32
+		{77FF74FC-D811-430E-9725-720D9E11B50B}.Simulation|Win32.Build.0 = Simulation|Win32
+		{513306C9-257C-4BD4-B52F-1A3103B27EE7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{513306C9-257C-4BD4-B52F-1A3103B27EE7}.Debug|Win32.Build.0 = Debug|Win32
+		{513306C9-257C-4BD4-B52F-1A3103B27EE7}.Prerelease|Win32.ActiveCfg = Prerelease|Win32
+		{513306C9-257C-4BD4-B52F-1A3103B27EE7}.Prerelease|Win32.Build.0 = Prerelease|Win32
+		{513306C9-257C-4BD4-B52F-1A3103B27EE7}.Release|Win32.ActiveCfg = Release|Win32
+		{513306C9-257C-4BD4-B52F-1A3103B27EE7}.Release|Win32.Build.0 = Release|Win32
+		{513306C9-257C-4BD4-B52F-1A3103B27EE7}.Simulation|Win32.ActiveCfg = Simulation|Win32
+		{513306C9-257C-4BD4-B52F-1A3103B27EE7}.Simulation|Win32.Build.0 = Simulation|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
