@@ -263,8 +263,6 @@ int initialize_enclave(void)
     return 0;
 }
 
-
-
 #if defined(_MSC_VER)
 /* query and enable SGX device*/
 int query_sgx_status()
@@ -317,12 +315,12 @@ int SGX_CDECL main(int argc, char *argv[])
         return -1; 
     }
  
-	int ret;
-	sgx_status_t st = ecall_connect(global_eid, &ret);
+    int ret;
+    sgx_status_t st = ecall_connect(global_eid, &ret, "google.com", "443");
 
-	if (st != SGX_SUCCESS) {
-		printf("connect failed!\n");
-	}
+    if (st != SGX_SUCCESS) {
+        printf("connect failed!\n");
+    }
     
     printf("Info: SampleEnclave successfully returned.\n");
 

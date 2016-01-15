@@ -63,22 +63,20 @@ int main( void )
 
 #include <string.h>
 
-#define SERVER_PORT "4433"
-#define SERVER_NAME "localhost"
 #define GET_REQUEST "GET / HTTP/1.0\r\n\r\n"
 
 #define DEBUG_LEVEL 1
 
 static void my_debug( void * ctx, int level, 
-					 const char *file, int line,
+                     const char *file, int line,
                       const char *str )
 {
-	(void) (level);
-	(void) (ctx);
+    (void) (level);
+    (void) (ctx);
     mbedtls_printf("%s:%04d: %s", file, line, str );
 }
 
-int ecall_connect( void )
+int ecall_connect(const char* server, const char* port)
 {
     int ret, len;
     mbedtls_net_context server_fd;
@@ -138,11 +136,11 @@ int ecall_connect( void )
     /*
      * 1. Start the connection
      */
-    mbedtls_printf( "  . Connecting to tcp/%s/%s...", SERVER_NAME, SERVER_PORT );
+    mbedtls_printf( "  . Connecting to tcp/%s/%s...", server, port );
    
-    mbedtls_net_connect(&ret, &server_fd, SERVER_NAME, SERVER_PORT, MBEDTLS_NET_PROTO_TCP);
+    ret = mbedtls_net_connect(&server_fd, server, port, MBEDTLS_NET_PROTO_TCP);
 
-    if(!ret)
+    if(ret != 0)
     {
         mbedtls_printf( " failed\n  ! mbedtls_net_connect returned %d\n\n", ret );
         goto exit;
@@ -186,7 +184,7 @@ int ecall_connect( void )
         goto exit;
     }
 
-	mbedtls_ssl_set_bio( &ssl, &server_fd, ocall_net_send, ocall_net_recv, NULL );
+    mbedtls_ssl_set_bio( &ssl, &server_fd, mbedtls_net_send, mbedtls_net_recv, NULL );
 
     /*
      * 4. Handshake
@@ -220,6 +218,7 @@ int ecall_connect( void )
         mbedtls_x509_crt_verify_info( vrfy_buf, sizeof( vrfy_buf ), "  ! ", flags );
 
         mbedtls_printf( "%s\n", vrfy_buf );
+        //goto exit;
     }
     else
         mbedtls_printf( " ok\n" );
@@ -229,9 +228,9 @@ int ecall_connect( void )
      */
     mbedtls_printf( "  > Write to server:" );
    
-
-	len = strlen(GET_REQUEST);
-	strncpy((char*) buf, GET_REQUEST, len);
+    memset(buf, 0, 1024);
+    len = strlen(GET_REQUEST);
+    strncpy((char*) buf, GET_REQUEST, len);
 
     while( ( ret = mbedtls_ssl_write( &ssl, buf, len ) ) <= 0 )
     {

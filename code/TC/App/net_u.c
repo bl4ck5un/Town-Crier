@@ -524,7 +524,7 @@ int ocall_mbedtls_net_recv_timeout( void *ctx, unsigned char *buf, size_t len,
 /*
  * Write at most 'len' characters
  */
-int ocall_mbedtls_net_send( void *ctx, const unsigned char *buf, size_t len )
+int ocall_mbedtls_net_send( mbedtls_net_context *ctx, const unsigned char *buf, size_t len )
 {
     int ret;
     int fd = ((mbedtls_net_context *) ctx)->fd;

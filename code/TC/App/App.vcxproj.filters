@@ -24,17 +24,14 @@
     <ClCompile Include="Enclave_u.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mbedtls-2.2.1\library\timing.c">
-      <Filter>TLSSupport</Filter>
-    </ClCompile>
     <ClCompile Include="..\TLSLibSupport\misc.c">
       <Filter>TLSSupport</Filter>
     </ClCompile>
-    <ClCompile Include="connect.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="net_u.c">
       <Filter>TLSSupport</Filter>
+    </ClCompile>
+    <ClCompile Include="test.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -43,12 +40,6 @@
     </ClInclude>
     <ClInclude Include="Enclave_u.h">
       <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_f.h">
-      <Filter>TLSSupport</Filter>
-    </ClInclude>
-    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_v.h">
-      <Filter>TLSSupport</Filter>
     </ClInclude>
     <ClInclude Include="..\TLSLibSupport\TLSlibSupport.h">
       <Filter>TLSSupport</Filter>

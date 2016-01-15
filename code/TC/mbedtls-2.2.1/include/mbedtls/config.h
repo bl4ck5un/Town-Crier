@@ -2278,6 +2278,11 @@
  * This module is used by the HAVEGE random number generator.
  */
 #define MBEDTLS_TIMING_C
+#undef MBEDTLS_TIMING_C
+/*
+ * Undefine by Fan
+ * Seems not necessary since we're not using HAVEGE anyway
+*/
 
 /**
  * \def MBEDTLS_VERSION_C

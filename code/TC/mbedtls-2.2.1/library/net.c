@@ -188,7 +188,9 @@ int mbedtls_net_recv_timeout( void *ctx, unsigned char *buf, size_t len,
  */
 int mbedtls_net_send( void *ctx, const unsigned char *buf, size_t len )
 {
-    MKOCALL_INT(mbedtls_net_send, (mbedtls_net_context*) ctx, buf, len);
+    int ret;
+    ocall_mbedtls_net_send(&ret, (mbedtls_net_context*) ctx, buf, len);
+    return ret;
 }
 
 /*

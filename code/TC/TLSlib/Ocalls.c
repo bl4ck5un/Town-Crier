@@ -20,11 +20,3 @@ int printf__x(const char *fmt, ...)
 	ocall_print_string(&ret, buf);
     return ret;
 }
-
-int mbedtls_hardware_poll(void *data, unsigned char *output, size_t len, size_t *olen )
-{
-	int ret;
-    (void)(data);
-    ocall_mbedtls_hardware_poll(& ret, output, len, olen);
-    return ret;
-}

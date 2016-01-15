@@ -197,6 +197,8 @@
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\ssl_internal.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\ssl_ticket.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\threading.h" />
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_f.h" />
+    <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_v.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\version.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\x509.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\x509_crl.h" />
@@ -283,6 +285,7 @@
     <ClCompile Include="..\mbedtls-2.2.1\library\ssl_ticket.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\ssl_tls.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\threading.c" />
+    <ClCompile Include="..\mbedtls-2.2.1\library\timing.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\version.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\version_features.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\x509.c" />
@@ -293,6 +296,7 @@
     <ClCompile Include="..\mbedtls-2.2.1\library\x509_crt.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\x509_csr.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\xtea.c" />
+    <ClCompile Include="entropy_sgx.c" />
     <ClCompile Include="Ocalls.c" />
   </ItemGroup>
   <ItemGroup>

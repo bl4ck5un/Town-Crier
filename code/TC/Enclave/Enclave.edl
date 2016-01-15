@@ -1,13 +1,13 @@
 /* Enclave.edl - Top EDL file. */
 
 enclave {
-	from "..\TLSlib\TLSlib.edl" import *; 
-
-	trusted {
-		public int ecall_connect(void);	
+    trusted {
+        public int ecall_connect([in, string] const char* server, [in, string] const char* port);	
     };
 
     untrusted {
     };
+
+    from "..\TLSlib\TLSlib.edl" import *; 
 
 };

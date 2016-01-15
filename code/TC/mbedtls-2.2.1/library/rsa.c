@@ -25,6 +25,9 @@
  *  http://www.cacr.math.uwaterloo.ca/hac/about/chap8.pdf
  */
 
+#include "sgx_trts.h"
+#include "sgx_error.h"
+
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"
 #else
@@ -1562,14 +1565,22 @@ void mbedtls_rsa_free( mbedtls_rsa_context *ctx )
 static int myrand( void *rng_state, unsigned char *output, size_t len )
 {
 #if !defined(__OpenBSD__)
-    size_t i;
-
+    // size_t i;
+    sgx_status_t st = SGX_SUCCESS;
     if( rng_state != NULL )
         rng_state  = NULL;
 
+    /*
+     * Replace by sgx_read_rand
+
     for( i = 0; i < len; ++i )
-		// TODO fix with sgx rand
-        output[i] = 0;
+        output[i] = rand();
+    */
+    
+    st = sgx_read_rand(output, len);
+    if (st != SGX_SUCCESS) {
+        mbedtls_printf("sgx_read_rand returns %d\n", st);
+    }
 #else
     if( rng_state != NULL )
         rng_state = NULL;
