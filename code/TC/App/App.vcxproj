@@ -133,7 +133,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;TLSLibSupport.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\Debug;$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
@@ -267,7 +267,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\TLSLibSupport\misc.c" />
     <ClCompile Include="Enclave_u.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">
       </PrecompiledHeader>
@@ -286,13 +285,14 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="misc.c" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="net_u.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\TLSLibSupport\TLSlibSupport.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="Enclave_u.h" />
+    <ClInclude Include="TLSlibSupport.h" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
