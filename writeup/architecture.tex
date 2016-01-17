@@ -8,14 +8,16 @@ The \encname and \medname reside on the \tc server. The \encname runs in an encl
 
 The \encname ingests and fulfills datagram requests. To obtain the data composing datagrams, it queries external data sources, specifically HTTPS-enabled internet services. To obtain and keep track of the state of datagram requests, it monitors the state of \tcontract on the blockchain; thus \tcontract forwards datagram requests implicitly to the \tc server. (In the initial version of \tcontract, the \encname's view of the blockchain also comes from a data source.) Additionally, the \encname may be queried by a client to provide supplies off-chain, hardware-backed \emph{attestations} on the state of the \encname---both its executing code and its clock. It is to support this service that \medname includes a web server.
 
-Briefly, then, the end-to-end processing of a datagram request is initiated by a requester \reqcont sending a datagram request to \tcont on the blockchain. (For example, the request may specify in \dgform the value of the DJIA index at time $t$ = the close of market on 15 Jan 2016.) Using network services provided by the \medname, the \encname obtains the request from the blockchain. It contacts a data source (e.g., https://www.google.com/finance) to obtain the requested data at time $t$, and composes a datagram $\dgm$, which it sends back to \reqcont.
+Briefly, then, the end-to-end processing of a datagram request is initiated by a requester \reqcont sending a datagram request to \tcont on the blockchain. (For example, the request may specify in \dgform the value of the DJIA index at the close of market on 15 Jan 2016.) Using network services provided by the \medname, the \encname obtains the request from the blockchain. It contacts a data source (e.g., https://www.google.com/finance) to obtain the requested data and composes a datagram $\dgm$, which it sends back to \reqcont. Figure~\ref{fig:overview} shows a basic schematic.
 
-\begin{figure}[t]
+\vspace{-2mm}
+\begin{figure}[h!]
 \centering
 \includegraphics[width=\columnwidth]{OverviewFig}
 \caption{{\bf Basic Town Crier architecture.}}
-\label{fig:schematic}
+\label{fig:overview}
 \end{figure}
+\vspace{-2mm}
 
 We now explain in detail the data flow around a datagram request. 
 
