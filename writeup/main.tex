@@ -45,11 +45,11 @@ Name Institution
 % \thispagestyle{empty}
 
 \subsection*{Abstract}
-Smart contracts are programs that execute autonomously on blockchains. Many of their envisioned uses (e.g., as financial instruments) require them to consume data (e.g., equity prices) from outside the blockchain. Trustworthy data feeds that can interface with smart contracts will thus be a critical component of any smart-contract ecosystem, but are scarcely available today.
+Smart contracts are programs that execute autonomously on blockchains. Many of their envisioned uses (e.g., as financial instruments) require them to consume data (e.g., equity prices) from outside the blockchain. Trustworthy data feeds that can interface with smart contracts will thus be a critical component of any smart-contract ecosystem.
 
-	We present an authenticated data feed system called Town Crier (TC). TC builds on the observation that many web sites, such as major news and finance sites, already serve as trusted data sources for non-blockchain uses. TC acts as a bridge between such servers and smart contract systems, using trusted hardware to authenticate and scrape data from HTTPS-enabled websites. 
+	We present an authenticated data feed system called Town Crier (TC). TC builds on the observation that many web sites, such as major news and finance sites, already serve as trusted data sources for non-blockchain uses. TC acts as a bridge between such servers and smart contract systems, using trusted hardware to authenticate and scrape data from HTTPS-enabled websites. While initially designed specifically for the cryptocurrency Ethereum, TC is generalizable to any smart-contract setting and is the first [what can we claim?].
 	
-	TC delivers authenticated, timestamped datagrams to relying smart contracts. It also includes a range of advanced features, such as private datagrams, which are produced by evaluating encrypted, contract-supplied predicates within TC's hardware.
+	TC delivers authenticated, timestamped datagrams to relying smart contracts. It also includes a range of advanced features, such as private datagrams, which are produced by evaluating encrypted functions supplied by relying contracts within TC's hardware.
 	
 	%, support for a rich array of trust models on data sources, including options to combine data from multiple sources, and a feature (``deniable datagrams'') for preventing freeloaders from recycling datagrams in a fee-for-service version of TC.
 	
