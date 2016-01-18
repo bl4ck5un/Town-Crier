@@ -25,9 +25,13 @@ In addition to servicing datagram requests, the \encname may be queried by a cli
 
 We now explain in detail the data flow around a datagram request. 
 
-\subsection{Design choices}
+\subsection{Design rationale}
 
-Several features of our architecture merit discussion. In principle, \reqcont could verify a TC attestation directly. This would result in a simpler protocol and also ensure that the attestation is fresh. In practice, though, opcodes for in-contract cryptographic operations are very limited (without support for public-key cryptography). Additionally, because all entities verifying blocks in the system must execute all contracts, computationally expensive operations are cost-prohibitive. 
+Several of our design choices merit discussion. 
+
+It is not immediately evident, to begin with, why the contract \tcont is needed to intermediate between \reqcont and the \encname. In principle the \tc service could scrape the blockchain, identify contracts with state explicitly indicating a request for datagrams and send them datagrams and accompanying attestations directly.  This would result in a conceptually simpler protocol and also ensure that \reqcont consumes only fresh attestations. 
+
+The reason for using \tcont is twofold: First, \tcont manages the payment of fees (ether and gas) for the \tc service, creating a fair exchange of datagrams for fees. Second, although \reqcont could in principle verify a TC attestation directly, in practice, this would not be practical today. In Ethereum, opcodes for in-contract cryptographic operations are very limited and do not currently support public-key cryptography. (Digital signatures are supported only for messages from non-contract accounts.) Revocation in the case of a compromised enclave would also be challenging to support in a smart contract. 
 
 Similarly, messages sent from wallets are authenticated by the Ethereum system using digital signatures. Within the blockchain, messages sent from contracts are authenticated based on their source addresses (without the need for digital signatures). Contracts in \tc are designed accordingly.
 
@@ -37,7 +41,7 @@ We denote a datagram instance, namely the set of message values associated with 
 
 A datagram request by \reqcont takes the form of a message $\dgreq$ to \tcont on the blockchain. This message $\dgreq$ includes both a specification $\dgform$ of the requested datagram (e.g., a stock ticker and desired time) and a payment $\dgpay$, which includes (in Ethereum) gas to cover the cost of the request as well as a fee. \tcont receives a return message $\dgret$ from the $\tc$ service. On receiving $\dgret$, \tcont returns the data $\dgm$ it contains (e.g., the desired stock ticker value) to \reqcont. 
 
-We use $\dgi$ to indicate a unique index for a datagram instance. Messages from wallet addresses are authenticated via digital signatures. We use $(\skA, \pkA)$ to denote the private / public key pair associated with \tcadd. The key $\skA$ is stored inside the \encname. (For simplicity, we assume an ability to send signed messages directly to \tcont. Later we explain how Ethereum requires a slightly different approach.)
+We use $\dgi$ to indicate a unique index for a datagram instance. Messages from wallet addresses are authenticated via digital signatures. We use $(\skTC, \pkTC)$ to denote the private / public key pair associated with \tcadd. The key $\skTC$ is stored inside the \encname. (For simplicity, we assume an ability to send signed messages directly to \tcont. Later we explain how Ethereum requires a slightly different approach.)
 
 
 \subsection{Client API}
