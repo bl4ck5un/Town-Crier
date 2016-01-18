@@ -17,8 +17,6 @@
 \definecolor{purple}{rgb}{0.75,0,1}
 \newcommand{\ethan}[1]{\textcolor{purple}{[\textsf{Ethan: #1}]}}
 
-\newtheorem{lemma}{Lemma}
-
 %don't want date printed
 \date{}
 
@@ -60,6 +58,11 @@ Name Institution
 \newcommand {\dgm} {{\sf d.data}\xspace}
 \newcommand {\dgi} {{\sf d.index}\xspace}
 
+\newcommand{\Ctc}{\mathcal{C}_\mathrm{TC}}
+\newcommand{\Psgx}{\mathcal{P}_\mathrm{SGX}}
+
+\newtheorem{lemma}{Lemma}
+
 %*****************************
 
 \begin{document}
@@ -80,7 +83,7 @@ Smart contracts are programs that execute autonomously on blockchains. Many of t
 	%, support for a rich array of trust models on data sources, including options to combine data from multiple sources, and a feature (``deniable datagrams'') for preventing freeloaders from recycling datagrams in a fee-for-service version of TC.
 	
 	We describe the TC architecture, its underlying trust model, and its applications, and report on an implementation that uses the newly released SGX software development kit. We will soon launch TC as an online public service.
-	
+
 
 \input{introduction}
 \input{background}

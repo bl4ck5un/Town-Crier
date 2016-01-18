@@ -41,6 +41,88 @@ We use $\dgi$ to indicate a unique index for a datagram instance. Messages from 
 \subsubsection{Untrusted executable}
 \subsection{TC Blockchain resources}
 These include the TC contract and the addresses from which it sends messages and manages its wallet
-\subsection{Security model}
+
+There are two parts to the Town Crier blockchain resources:
+\begin{itemize}
+  \item $\Psgx$ -- An Ethereum wallet whose private key is generated and controlled by the SGX enclave.
+  
+  \item $\Ctc$ -- An Ethereum contract with two entry points, described in Table~\ref{tbl:tc-contract}.
+\end{itemize}
+The Town Crier server is responsible for identifying calls to $\Ctc$'s Request request method by scraping the contract activity on the blockchain.
+It then replies to those requests through Deliver once it has acquired the necessary data and packaged it into a response.
+
+\begin{table}
+\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
+  \hline
+
+  \multicolumn{2}{|c|}{The Town Crier contract $\Ctc$} \\ [1ex]
+  {\bf Request:} & Upon receiving $({\sf type}, {\sf callback}, \${\sf fee})$ from a user $\mathcal{P}$: \\
+                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
+                 & \hspace*{1em} Return $\${\sf fee}$ to $\mathcal{P}$ \\
+                 & Otherwise do nothing. \\
+  {\bf Deliver:} & Upon receiving $({\sf callback}, {\sf data}, \${\sf fee})$ from a user $\mathcal{P}$: \\
+                 & If $\mathcal{P} \neq \Psgx$ \\
+                 & \hspace*{1em} Return with no effect. \\
+                 & Call ${\sf callback}({\sf data})$ providing $\${\sf fee} - F_{\rm min}$ ether as the maximum gas. \\
+                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
+
+  \hline
+\end{tabularx}
+\caption{Definition of the Town Crier contract $\Ctc$.
+  Here the minimum fee, $F_{\rm min}$, is the amount of ether necessary to cover the gas costs of Deliver not including the execution of ${\sf callback}$
+  and the maximum fee, $F_{\rm max}$, is the maximum amount of ether Town Crier can send as gas to a single execution of Deliver.}
+\label{tbl:tc-contract}
+\end{table}
+
+\section{Security Model}
+
+Here we assume an adversary which is active on the blockchain, the network, and within the untrusted executable running on the Town Crier server.
+However, we assume that the adversary will not execute an arbitrary denial of service attack, but will rather delay messages indefinitely and deliver bogus data whenever such data will be accepted as valid.
+Because operations on the blockchain are verifiable and the SGX enclave can attest to what it is running, we assume those are honest.
+
+In this model we show that, for every request which provides a sufficient fee,
+a valid authenticated datagram will be delivered to the requested callback location in finite time.
+If the request includes an insufficient fee (but is otherwise valid),
+the datagram will not be delivered, but the (too-small) fee will still be collected.
+
+\begin{lemma} \label{lem:non-bankrupt-p_sgx}
+If seeded with at least $F_{\rm max}$ ether, the $\Psgx$ wallet will have
+at least as much money after each transaction as it had before that transaction.
+\end{lemma}
+
+\begin{proof}
+\ethan{This is actually a proof sketch, I just put it in a proof tag.}
+
+Because all blockchain transactions from $\Psgx$ must be initiated by the SGX enclave and the SGX only calls $\Ctc.{\rm Deliver}$,
+we need only reason about what happens inside that function.
+Because transactions including $\Ctc$ are transmitted securely into the SGX enclave, it will only see valid requests (ones for which $F_{\rm min} \leq \${\sf fee} \leq F_{\rm max}$) and the arguments it sees for those requests will be correct.
+Moreover, it saves the transaction ID of each request it fulfills and never fulfills a request with the same transaction ID twice.
+This means that whenever deliver is called, it will be called in connection with a valid request that has not already been delivered.
+Thus it suffices to show that:
+\begin{enumerate}
+  \item The first time a valid request is delivered, $\Ctc$ will contain at least $\${\sf fee}$ ether.
+  \item $\${\sf fee}$ is never lower than the amount $\Psgx$ must spend in gas.
+  \item The execution of Deliver will never run out of gas (and thus always succeed).
+\end{enumerate}
+
+To prove claim 1 we first note that ether can only be removed from $\Ctc$ as part of a call to Deliver from $\Psgx$.
+Because $\Psgx$ is honest, it will only make this call in connection with a valid request, and the specified value of $\${\sf fee}$ will always be the fee submitted with that request.
+Because $\Ctc$ pays out the specified $\${\sf fee}$ on the call to Deliver, the ether is always exactly the ether stored from a previous, valid, undelivered request, and thus will always be present in $\Ctc$.
+
+To prove claim 2 first note that a request is only considered valid if $\${\sf fee} \geq F_{\rm min}$.
+$F_{\rm min}$ is defined so that it is high enough to cover gas costs for all of Deliver except the execution of the provided ${\sf callback}$.
+However, ${\sf callback}$ is only given $\${\sf fee} - F_{\rm min}$ ether worth of gas to execute.
+Therefore it is impossible for the entire call of Deliver to spend more than $F_{\rm min} + (\${\sf fee} - F_{\rm min}) = \${\sf fee}$ ether on gas.
+
+To prove claim 3 we note that $\${\sf fee} \leq F_{\rm max}$ and, by construction, $\Psgx$ will always provide at least $F_{\rm max}$ in gas for the execution of Deliver.
+Therefore we have that $\Psgx$ will always provide at least $\${\sf fee}$ in gas to execute Deliver.
+By the argument above, Deliver can never use more than $\${\sf fee}$ in gas, so therefore an SGX-initialized call to Deliver will never run out of gas.
+\end{proof}
+
+
+
+\begin{lemma} \label{lem:authentic-delivery}
+Any data given as an argument to ${\sf callback}$ in $\Ctc$'s Deliver method is verifiably authentic.
+\end{lemma}
 
 

@@ -82,12 +82,20 @@ An insurance company may provide insurance for canceled flights by maintaining a
 
 
 
-\section{Version 0}
+\section{Version 1}
 
-Here we define version 0 of the Town Crier protocol.
-In order to simplify the implementation, we support only direct client requests for data which include payment to the ADF contract.
+Here we define and discuss proposed extensions to the Town Crier protocol.
 
-For notational simplicity, we use four functions to access storage on the blockchain.
+\subsection{Request Cancellation}
+
+In order to provide recourse if the system is compromised and disabled or datagrams are delayed beyond a reasonable time,
+there can be a way to cancel requests for a refund.
+The refund must withhold a fixed fee of $F_{\rm min}$ in order to ensure that malicious aborts cannot bankrupt the ADF, but the rest of the fee can be refunded at any time.
+If the ADF attempts to deliver a datagram for a canceled request, it will simply receive the $F_{\rm min}$ needed to cover its gas costs for the attempted delivery and not deliver any data.
+
+In order to safely handle request cancellations, we now have to store verification data on the blockchain itself.
+This will be considerably more expensive, but the Ethereum protocol supports it cleanly.
+For notational simplicity, we use four blockchain storage functions.
 They functions create a map from integers to arbitrary data values in the domain $V$.
 \begin{itemize}
   \item {${\sf store} : \mathbb{N} \times V \to \emptyset$.}
@@ -102,156 +110,52 @@ They functions create a map from integers to arbitrary data values in the domain
   \item {${\sf remove} : \mathbb{N} \to \emptyset$.}
     This removes the key and its associated value if it is in the map and otherwise does nothing.
 \end{itemize}
-The following values are considered constants and can be hard-coded into the contract.
-For this we assume a fixed exchange rate between gas and ether, as that is the case in practice at this time.
-\begin{itemize}
-  \item $\mathcal{P}_{\rm SGX}$: An identity whose private key is controlled by the SGX enclave with a public attestation to that ownership.
+Table~\ref{tbl:Ctc-with-cancellation} describes the new $\Ctc$ blockchain.
+The rest of the protocol need to change (save for calls to Deliver requiring slightly different arguments).
 
-  \item $F_{\rm min}$: The minimum fee. The amount of ether necessary to cover the gas costs to execute Deliver, not including the execution of ${\sf callback}$ (as defined below).
-
-  \item $F_{\rm max}$: The maximum fee. The maximum amount of ether Town Crier is capable of sending as gas to a single execution of Deliver.
-\end{itemize}
-Using the above defined functions and values, we define the version 0 contract's behavior in Table~\ref{0:defn}.
-
-\begin{table}
+\begin{table}[htb]
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
   \hline
 
-  \multicolumn{2}{|c|}{Contract $\large {\sf TownCrier}(\mathcal{P}_{\rm SGX})$} \\ [1ex]
+  \multicolumn{2}{|c|}{$\Ctc$ with Cancellation} \\ [1ex]
   {\bf Init:} & Set ${\sf reqs} := \emptyset$ and ${\sf reqCnt := 0}$ \\
   {\bf Request:} & Upon receiving $({\sf type}, {\sf callback}, \${\sf fee})$ from a user $\mathcal{P}$: \\
                  & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
                  & \hspace*{1em} Return with no effect. \\
                  & Set ${\sf reqID} := {\sf reqCnt}$. \\
                  & Set ${\sf reqCnt} := {\sf reqCnt} + 1$. \\
-                 & ${\sf store}({\sf reqID} \mapsto ({\sf callback}, \${\sf fee}))$. \\
+                 & ${\sf store}({\sf reqID} \mapsto (\mathcal{P}, \${\sf fee}))$. \\
                  & Return ${\sf reqID}$. \\
-  {\bf Deliver:} & Upon receiving $({\sf reqID}, {\sf data})$ from a user $\mathcal{P}$: \\
-                 & If $(\mathcal{P} \neq \mathcal{P}_{\rm SGX}$ or $!{\sf storeContains}({\sf reqID}))$ \\
+  {\bf Deliver:} & Upon receiving $({\sf reqID}, {\sf data}, {\sf callback})$ from a user $\mathcal{P}$: \\
+                 & If $\mathcal{P} \neq \Psgx$ \\
                  & \hspace*{1em} Return with no effect. \\
-                 & $({\sf callback}, \${\sf fee}) \leftarrow {\sf load}({\sf reqID})$. \\
+                 & If $!{\sf storeContains}({\sf reqID})$ \\
+                 & \hspace*{1em} Send $F_{\rm min}$ to $\Psgx$. \\
+                 & \hspace*{1em} Return with no further effect. \\
+                 & $(*, \${\sf fee}) \leftarrow {\sf load}({\sf reqID})$. \\
                  & Call ${\sf callback}({\sf data})$ providing $\${\sf fee} - F_{\rm min}$ ether as the maximum gas. \\
-                 & Send $\${\sf fee}$ ether to $\mathcal{P}_{\rm SGX}$. \\
+                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
+                 & ${\sf remove}({\sf reqID})$. \\
+  {\bf Cancel:}  & Upon receiving $({\sf reqID})$ from a user $\mathcal{P}$: \\
+                 & If $!{\sf storeContains}({\sf reqID})$ \\
+                 & \hspace*{1em} Return with no effect. \\
+                 & $(\mathcal{R}, \${\sf fee}) \leftarrow {\sf load}({\sf reqID})$. \\
+                 & If $\mathcal{P} \neq \mathcal{R}$ \\
+                 & \hspace*{1em} Return with no effect. \\
+                 & Send $\${\sf fee} - F_{\rm min}$ to $\mathcal{P}$. \\
                  & ${\sf remove}({\sf reqID})$. \\
 
   \hline
 \end{tabularx}
-\caption{Definition of the {\sf TownCrier} contract.}
-\label{0:defn}
+\caption{Definition of the $\Ctc$ contract with cancellation.}
+\label{tbl:Ctc-with-cancellation}
 \end{table}
 
-\subsection{Security Guarantees}
+Using the same adversarial model, we can make the same guarantees of this new system as we did for the original Town Crier system.
+Even if a malicious user cancels their request just as Deliver is being called, the cancellation fee is enough to reimburse $\Psgx$ for any gas costs.
 
-To prove meaningful security guarantees of version 0, we make three trust assumptions.
-\begin{enumerate}
-  \item \label{0:sec:sgx}
-    {\it SGX is Trusted.}
-    We must assume that computation which occurs inside the SGX enclave is trusted.
-    Assuming the code is bug-free, this is largely the reason to use an SGX enclave and is thus reasonable.
-
-  \item \label{0:sec:untrusted-tc}
-    {\it Town Crier server is correct.}
-    We must also assume that computation done on the Town Crier server but outside the SGX enclave is correct.
-    This is a much stronger assumption as this system is much easier to compromise than an SGX enclave.
-    We will later discuss how to maintain lesser guarantees without this assumption.
-    In practice, this assumption is reasonable as this server will be running on hardware controlled by the Town Crier operators.
-
-  \item \label{0:sec:network}
-    {\it Network requests can be delayed arbitrarily but not dropped or modified.}
-    The network must not be completely adversarial and must be reliable, even if slow.
-    We will later discuss how to maintain lesser guarantees if the network can drop or modify traffic.
-\end{enumerate}
-Under these assumptions, we will prove that, for every request that provides a sufficient fee,
-a valid authenticated datagram will be delivered to the requested callback location.
-If the requests includes an insufficient fee, the datagram will not be delivered but the (too-small) fee will still be collected.
-Moreover, if Property~\ref{0:sec:untrusted-tc} is removed, then clients can detect any attack more damaging that denial of service.
-
-\ethan{I'm really not sure where we're going to lay out the behavior of the code running on the Town Crier server (both inside and outside the enclave).
-  For right now, I'm going to put the high-level assumptions I need for the proof sketch here.}
-
-Part of assuming correct operation of the Town Crier server involves specifying what that operation entails.
-In particular, we will assume the following behavior of the insecure server code:
-\begin{itemize}
-  \item It properly forwards all network requests to/from the SGX enclave.
-  \item It properly scrapes the ${\sf TownCrier}$ contract on the blockchain for new requests and forwards those requests with the appropriate data type to the SGX enclave.
-  \item It does not create bogus requests for the SGX enclave to fulfill.
-\end{itemize}
-Next, we make the following assumptions about the SGX enclave behavior:
-\begin{itemize}
-  \item It never initiates any blockchain operations other than calling the ${\sf TownCrier}$ contract's Deliver method from $\mathcal{P}_{\rm SGX}$.
-  \item It never attempts to fulfill the same request ID multiple times.
-  \item It attempts to fulfill every request it receives.
-  \item All delivered responses are of the correct data type.
-\end{itemize}
-
-\begin{lemma} \label{0:non-bankrupt-adf}
-If seeded with at least $F_{\rm max}$ ether, the $\mathcal{P}_{\rm SGX}$ wallet will have
-at least as much money after each transaction as it had before that transaction.
-\end{lemma}
-
-\begin{proof}
-\ethan{This is actually a proof sketch, I just put it in a proof tag.}
-
-Because all blockchain transactions from $\mathcal{P}_{\rm SGX}$ must be initiated by the SGX and the SGX only calls ${\sf TownCrier}.{\rm Deliver}$,
-we need only reason about what happens inside that function.
-Since the SGX is never given bogus requests and never fulfills the same request twice,
-the delivered ${\sf reqID}$ will always be present in the persistent map.
-In this case, if the execution succeeds, the SGX wallet always receives the $\${\sf fee}$ value that was saved as being submitted with the request.
-Therefore it suffices to show that:
-\begin{enumerate}
-  \item The contract always has at least $\${\sf fee}$ available at the time Deliver is called.
-  \item $\${\sf fee}$ is never lower than the amount $\mathcal{P}_{\rm SGX}$ must spend in gas.
-  \item The execution of Deliver will never run out of gas (and thus always succeed).
-\end{enumerate}
-
-To prove 1 we note that whenever a new request ID is added to the map, a fee is payed with it and that is precisely the value saved.
-Because the ID is removed after Deliver is called and Deliver is the only method that transfers money out of the ${\sf TownCrier}$ contract,
-that money must still be in the contract for Deliver to transfer.
-
-To prove 2 we examine two specified bounds.
-First, $F_{\rm min}$ is defined so that it is high enough to cover gas costs for all of Deliver except the execution of the provided ${\sf callback}$.
-However, ${\sf callback}$ is only given $\${\sf fee} - F_{\rm min}$ gas to execute.
-Therefore it is impossible for the entire call of Deliver to spend more than $F_{\rm min} + (\${\sf fee} - F_{\rm min}) = \${\sf fee}$ ether on gas.
-
-To prove 3 we note that $\${\sf fee} \leq F_{\rm max}$ and, by construction, $\mathcal{P}_{\rm SGX}$ will always provide at least
-$F_{\rm max}$ in gas for the execution of Deliver.
-Therefore we have that $\mathcal{P}_{\rm SGX}$ will always provide at least $\${\sf fee}$ in gas to execute Deliver.
-By the argument above, Deliver can never use more than $\${\sf fee}$ in gas, so therefore an SGX-initialized call to Deliver will never run out of gas.
-\end{proof}
-
-Due to Lemma~\ref{0:non-bankrupt-adf}, the SGX will always have the funds to deliver a valid request.
-A datagram will always be delivered in finite time because the network can only delay traffic, not drop or change it,
-so a valid request will always eventually get to the SGX enclave and its response will always eventually get back to the blockchain.
-The delivered datagram will be authenticated because the SGX enclave is the sole owner of the private key associated with $\mathcal{P}_{\rm SGX}$ (and there is an off-chain attestation to that).
-Therefore, any message received from that address must have come from the SGX enclave, which means it is considered authentic.
-Because Deliver only accepts deliveries from $\mathcal{P}_{\rm SGX}$, all deliveries are authenticated.
-
-
-
-
-\section{Version 1}
-
-\ethan{I feel like version 1 might include other payment methods. Maybe this is version 0.5?}
-
-While this paper does not implement and test version 1, we do discuss improvements and the guarantees those might provide.
-The guarantees provided for version 0 still hold under the assumptions made by version 0, but we are able to make stronger statements when we loosen the assumptions.
-
-
-\subsection{Request Cancellation}
-
-In order to provide recourse if the system is compromised and disabled or datagrams are delayed beyond a reasonable time,
-there can be a way to cancel requests for a refund.
-The refund must withhold a fixed fee of $F_{\rm min}$ in order to ensure that malicious aborts cannot bankrupt the ADF, but the rest of the fee can be refunded at any time.
-If the ADF attempts to deliver a datagram for a cancelled request, it will simply receive the $F_{\rm min}$ needed to cover its gas costs for the attempted delivery and not deliver any data.
-
-This mechanism coupled with the fact that the blockchain is self-validating allows us to handle arbitrary network adversaries in a reasonable fashion.
-However, we are still relying on the honesty of the non-enclave computation executed by the Town Crier server.
-If that code become corrupted, then it can send bogus request IDs to the enclave which will then attempt to respond and steal $F_{\rm min}$ gas from the contract.
-This could not only run $\mathcal{P}_{\rm SGX}$ out of money, but also drain the contract of funds, thereby preventing legitimate users from acquiring refunds.
-
-By adding a set of cancelled requests that have not been delivered, we can reduce the scope of the attack to only the $\mathcal{P}_{\rm SGX}$ wallet.
-In this case, the SGX wallet could still be exhausted by adversarial untrusted Town Crier code, however it would be unable to drain funds from the contract itself.
-This means that, while the SGX would be unable to deliver datagrams, users would still be able to receive cancellation refunds.
+If we expand the adversarial model to allow for arbitrary denial of service attacks against the Town Crier system (but not the blockchain),
+the new Cancel functionality allows affected users to recover most of their fee with no action from the Town Crier system.
 
 
 \subsection{Service-level Agreements}
@@ -264,7 +168,7 @@ Note that if this happens, the cancellation fee could remain simply enough to re
 
 In this system, and SLA could consist of a maximum amount of time before a datagram is delivered.
 If the user wishes to cancel a request before that time, it would be considered a voluntary cancellation and incur a cancellation fee high enough to cover gas costs of an attempted delivery.
-If, however, the SLA has expired before the request is cancelled, then not only would a cancellation not incur a fee, the user would be returned their entire initial fee and an SLA-violation recompense.
+If, however, the SLA has expired before the request is canceled, then not only would a cancellation not incur a fee, the user would be returned their entire initial fee and an SLA-violation recompense.
 This could be a small value that would be need to later be paid back by Town Crier system out of the profits from successfully-deliver requests in order to prevent the contract from going bankrupt.
 
 This mechanism presents some danger if a large number of SLAs are violated at the same time and the Town Crier system is unable to provide enough funds to the contract to make all of the recompense payments.
