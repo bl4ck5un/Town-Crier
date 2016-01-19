@@ -1,4 +1,5 @@
 \newcommand{\pkM}{\ensuremath{{\sf pk}_{\mathcal{M}}}}
+\newcommand{\pkU}{\ensuremath{{\sf pk}_{\mathcal{U}}}}
 \newcommand{\pksgx}{\ensuremath{{\sf pk}_{\textrm{sgx}}}}
 \newcommand{\rl}{\ensuremath{{\sf RL}}}
 %\newcommand{\digest}{\ensuremath{{\sf digest}}}
@@ -24,9 +25,34 @@ Assert $\Ctc$ is correct and parametrized w/ \pksgx\\
 {\it //~now okay to rely on $\Ctc$}
 \end{tabular}
 \end{boxedminipage}
+\caption{A user checks the Town Crier blockchain contract $\Ctc$, 
+and verifies an SGX attestation of the enclave's code and its public key $\pksgx$ before 
+entering a contract that calls $\Ctc$.
+} 
 \end{figure}
 
 
+\begin{figure}
+\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
+  \hline
+
+  \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract $\Ctc$}} \\ [1ex]
+  {\bf Request:} & On recv $({\sf id}, {\sf callback})$ from some user $\pkU$: \\
+%                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
+%                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
+                 & Record $({\sf id}, {\sf callback})$. \\
+  {\bf Deliver:} & On recv $({\sf id}, {\sf data})$ from $\pksgx$: \\
+		 & Let $({\sf id}, {\sf callback})$ be the most recently recorded tuple for ${\sf id}$\\
+                 & Call ${\sf callback}({\sf data})$ \\
+%                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
+
+  \hline
+\end{tabularx}
+\caption{
+A simple, fee-free version of the Town Crier contract $\Ctc$.
+}
+\label{tbl:tc-contract}
+\end{figure}
 
 
 
