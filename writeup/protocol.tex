@@ -70,7 +70,8 @@ are not explicitly expressed in our notation).
 %{\bf Inputs}:  ${\sf params}$, \\[5pt]
 {\bf Initialization}:\\
 \quad $(\pksgx, \sksgx) := \Sigma.{\sf KeyGen}(1^\lambda)$\\
-\quad Record $(\pksgx, \sksgx)$\\[5pt]
+\quad Record $(\pksgx, \sksgx)$\\
+\quad Output $\pksgx$   {\it //~incl. in measurement \& attestation }\\[5pt]
 
 {\bf Request:} On receive ${\sf params} := (\weburl, \pkurl, T) $:\\
 %\quad Parse ${\sf params} := (\weburl, \pkurl, T)$ \\
