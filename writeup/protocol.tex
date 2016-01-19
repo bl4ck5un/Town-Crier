@@ -1,0 +1,32 @@
+\newcommand{\pkM}{\ensuremath{{\sf pk}_{\mathcal{M}}}}
+\newcommand{\pksgx}{\ensuremath{{\sf pk}_{\textrm{sgx}}}}
+\newcommand{\rl}{\ensuremath{{\sf RL}}}
+%\newcommand{\digest}{\ensuremath{{\sf digest}}}
+\newcommand{\enclaveprog}{\ensuremath{{\sf prog}_{\textrm{encl}}}}
+\newcommand{\sigatt}{\ensuremath{\ensuremath{\sigma_{\textrm{att}}}}}
+\newcommand{\sigsgx}{\ensuremath{\ensuremath{\Sigma_{\textrm{sgx}}}}}
+
+\section{Protocol}
+\elaine{to be merged into main body}
+
+
+\begin{figure}
+\begin{boxedminipage}{\columnwidth}
+\begin{center}
+{\bf User: offline attestation of SGX enclave}
+\end{center}
+\begin{tabular}{l}
+{\bf Inputs}: $\pkM$, $\rl$, $\pksgx$, $\enclaveprog$, $\sigatt$ \\[5pt]
+{\bf Checks:} \\
+Assert $\enclaveprog$ is the expected enclave code\\
+Assert $\sigsgx.{\sf Verify}(\pkM, \rl, \sigatt, (\enclaveprog, \pksgx))$ \\
+Assert $\Ctc$ is correct and parametrized w/ \pksgx\\
+{\it //~now okay to rely on $\Ctc$}
+\end{tabular}
+\end{boxedminipage}
+\end{figure}
+
+
+
+
+
