@@ -1,10 +1,12 @@
 \newcommand{\fsgx}{\ensuremath{\mathcal{F}_{\textrm{sgx}}}}
 \newcommand{\pkM}{\ensuremath{{\sf pk}_{\mathcal{M}}}}
+\newcommand{\skM}{\ensuremath{{\sf sk}_{\mathcal{M}}}}
 \newcommand{\pkU}{\ensuremath{{\sf pk}_{\mathcal{U}}}}
 \newcommand{\pksgx}{\ensuremath{{\sf pk}_{\textrm{sgx}}}}
 \newcommand{\sksgx}{\ensuremath{{\sf sk}_{\textrm{sgx}}}}
 \newcommand{\pkurl}{\ensuremath{{\sf pk}_{\textrm{url}}}}
 \newcommand{\rl}{\ensuremath{{\sf RL}}}
+\newcommand{\relay}{\ensuremath{\mathcal{R}}}
 %\newcommand{\digest}{\ensuremath{{\sf digest}}}
 \newcommand{\enclaveprog}{\ensuremath{{\sf prog}_{\textrm{encl}}}}
 \newcommand{\sigatt}{\ensuremath{{\sigma_{\textrm{att}}}}}
@@ -96,20 +98,22 @@ SGX enclave's code.
 \begin{figure}
 \begin{boxedminipage}{\columnwidth}
 \begin{center}
-{\bf Town Crier's untrusted relay}
+{\bf Town Crier's untrusted relay $\relay$}
 \end{center}
 \begin{tabular}{l}
 {\bf Initialize}:\\
-Send ``initialize'' to $\fsgx[\enclaveprog]$\\
-On receive $(\pksgx, \sigatt)$ from $\fsgx[\enclaveprog]$:\\
+Send ``initialize'' to $\fsgx[\enclaveprog, \relay]$\\
+On receive $(\pksgx, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 \quad Publish $(\pksgx, \sigatt)$\\[5pt]
 
 {\bf  Loop forever}: \\
 When $\Ctc$ receives new request $({\sf id}, \_, {\sf params})$:\\
 \quad Parse ${\sf params} := (\weburl, \pkurl, T)$\\
-\quad At time $T$: send ${\sf params}$ to the $\fsgx[\enclaveprog]$ \\
-\quad On receive $({\sf data}, \sigma)$ from $\fsgx[\enclaveprog]$:\\ 
-\quad \quad  {\sf AuthSend} $({\sf id}, {\sf data})$ to $\Ctc$
+\quad Fork: \\
+\quad \quad Wait till time $T$\\
+\quad \quad Send $(\text{``resume''}, {\sf params})$ to the $\fsgx[\enclaveprog, \relay]$ \\
+\quad \quad On receive $({\sf data}, \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
+\quad \quad \quad  {\sf AuthSend} $({\sf id}, {\sf data})$ to $\Ctc$
 \end{tabular}
 \end{boxedminipage}
 \caption{Town Crier untrusted relay. For simplicity, here we assume that there is only 
@@ -120,4 +124,25 @@ In this case, the Town Crier relay also initialize all enclave instances
 and route the request to the correct enclave instance.}
 \end{figure}
 
+\begin{figure}
+\begin{boxedminipage}{\columnwidth}
+\begin{center}
+{\bf $\fsgx[\enclaveprog, \relay]$: abstraction for SGX}
+\end{center}
+\begin{tabular}{l}
+{\bf Assume:} \\ 
+$\enclaveprog$ has entry points {\bf Initialize} and {\bf Resume}\\[5pt]
 
+{\bf Initialize:}\\
+On receive ``initialize'' from $\relay$: \\
+\quad Let ${\sf outp} := \enclaveprog.{\bf Initalize}()$  \\
+\quad $\sigatt := \sigsgx.{\sf Sign}(\skM, (\enclaveprog, {\sf outp}))$ \\[-1pt]
+\qquad \qquad {\it //~models group sig.}\\
+\quad Output  $({\sf outp}, \sigatt)$\\[5pt]
+
+On receive (``resume'', ${\sf params}$) from $\relay$: \\
+\quad Let ${\sf outp} := \enclaveprog.{\bf Resume}({\sf params})$  \\
+\quad Output ${\sf outp}$ 
+\end{tabular}
+\end{boxedminipage}
+\end{figure}
