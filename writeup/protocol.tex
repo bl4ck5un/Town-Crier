@@ -1,3 +1,4 @@
+\newcommand{\fsgx}{\ensuremath{\mathcal{F}_{\textrm{sgx}}}}
 \newcommand{\pkM}{\ensuremath{{\sf pk}_{\mathcal{M}}}}
 \newcommand{\pkU}{\ensuremath{{\sf pk}_{\mathcal{U}}}}
 \newcommand{\pksgx}{\ensuremath{{\sf pk}_{\textrm{sgx}}}}
@@ -68,12 +69,13 @@ are not explicitly expressed in our notation).
 \end{center}
 \begin{tabular}{l}
 %{\bf Inputs}:  ${\sf params}$, \\[5pt]
-{\bf Initialization}:\\
+{\bf Initialize}:  On receive ``initialize'': \\ %{\it //~called only once upfront}\\
 \quad $(\pksgx, \sksgx) := \Sigma.{\sf KeyGen}(1^\lambda)$\\
 \quad Record $(\pksgx, \sksgx)$\\
-\quad Output $\pksgx$   {\it //~incl. in measurement \& attestation }\\[5pt]
+\quad Output $\pksgx$   {\it //~incl. in measurement \& attestation } 
+\\[5pt]
 
-{\bf Request:} On receive ${\sf params} := (\weburl, \pkurl, T) $:\\
+{\bf Resume:} On receive ${\sf params} := (\weburl, \pkurl, T) $:\\
 %\quad Parse ${\sf params} := (\weburl, \pkurl, T)$ \\
 \quad $T_{\textrm{start}} := \clock()$\\
 \quad Establish secure channel w/ $\weburl$ w/ public key $\pkurl$ \\
@@ -82,7 +84,7 @@ are not explicitly expressed in our notation).
 \quad Assert ${\sf round}(T_{\textrm{start}}) = {\sf round}(T_{\textrm{end}}) = T$\\
 \quad Parse webpage and extract ${\sf data}$\\
 \quad $\sigma := \Sigma.{\sf Sign}({\sksgx}, ({\sf params}, {\sf data}))$\\
-\quad return $({\sf data}, \sigma)$
+\quad Output $({\sf data}, \sigma)$
 \end{tabular}
 \end{boxedminipage}
 \caption{
@@ -91,5 +93,31 @@ SGX enclave's code.
 \end{figure}
 
 
+\begin{figure}
+\begin{boxedminipage}{\columnwidth}
+\begin{center}
+{\bf Town Crier's untrusted relay}
+\end{center}
+\begin{tabular}{l}
+{\bf Initialize}:\\
+Send ``initialize'' to $\fsgx[\enclaveprog]$\\
+On receive $(\pksgx, \sigatt)$ from $\fsgx[\enclaveprog]$:\\
+\quad Publish $(\pksgx, \sigatt)$\\[5pt]
+
+{\bf  Loop forever}: \\
+When $\Ctc$ receives new request $({\sf id}, \_, {\sf params})$:\\
+\quad Parse ${\sf params} := (\weburl, \pkurl, T)$\\
+\quad At time $T$: send ${\sf params}$ to the $\fsgx[\enclaveprog]$ \\
+\quad On receive $({\sf data}, \sigma)$ from $\fsgx[\enclaveprog]$:\\ 
+\quad \quad  {\sf AuthSend} $({\sf id}, {\sf data})$ to $\Ctc$
+\end{tabular}
+\end{boxedminipage}
+\caption{Town Crier untrusted relay. For simplicity, here we assume that there is only 
+a single enclave program. When multiple data feed sources 
+are supported, 
+we need multiple enclaves that instantiate different parsers for different sites.
+In this case, the Town Crier relay also initialize all enclave instances
+and route the request to the correct enclave instance.}
+\end{figure}
 
 
