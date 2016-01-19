@@ -1,11 +1,15 @@
 \newcommand{\pkM}{\ensuremath{{\sf pk}_{\mathcal{M}}}}
 \newcommand{\pkU}{\ensuremath{{\sf pk}_{\mathcal{U}}}}
 \newcommand{\pksgx}{\ensuremath{{\sf pk}_{\textrm{sgx}}}}
+\newcommand{\sksgx}{\ensuremath{{\sf sk}_{\textrm{sgx}}}}
+\newcommand{\pkurl}{\ensuremath{{\sf pk}_{\textrm{url}}}}
 \newcommand{\rl}{\ensuremath{{\sf RL}}}
 %\newcommand{\digest}{\ensuremath{{\sf digest}}}
 \newcommand{\enclaveprog}{\ensuremath{{\sf prog}_{\textrm{encl}}}}
-\newcommand{\sigatt}{\ensuremath{\ensuremath{\sigma_{\textrm{att}}}}}
-\newcommand{\sigsgx}{\ensuremath{\ensuremath{\Sigma_{\textrm{sgx}}}}}
+\newcommand{\sigatt}{\ensuremath{{\sigma_{\textrm{att}}}}}
+\newcommand{\sigsgx}{\ensuremath{{\Sigma_{\textrm{sgx}}}}}
+\newcommand{\weburl}{\ensuremath{{{\sf url}}}}
+\newcommand{\clock}{\ensuremath{{{\sf clock}}}}
 
 \section{Protocol}
 \elaine{to be merged into main body}
@@ -37,12 +41,12 @@ entering a contract that calls $\Ctc$.
   \hline
 
   \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract $\Ctc$}} \\ [1ex]
-  {\bf Request:} & On recv $({\sf id}, {\sf callback})$ from some user $\pkU$: \\
+  {\bf Request:} & On recv $({\sf id}, {\sf callback}, {\sf params})$ from some user $\pkU$: \\
 %                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
 %                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
-                 & Record $({\sf id}, {\sf callback})$. \\
+                 & Record $({\sf id}, {\sf callback}, {\sf params})$ \\
   {\bf Deliver:} & On recv $({\sf id}, {\sf data})$ from $\pksgx$: \\
-		 & Let $({\sf id}, {\sf callback})$ be the most recently recorded tuple for ${\sf id}$\\
+		 & Let $({\sf id}, {\sf callback}, \_)$ be the most recently recorded tuple for ${\sf id}$\\
                  & Call ${\sf callback}({\sf data})$ \\
 %                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
 
@@ -50,9 +54,41 @@ entering a contract that calls $\Ctc$.
 \end{tabularx}
 \caption{
 A simple, fee-free version of the Town Crier contract $\Ctc$.
+Note that communication 
+with $\Ctc$ is through an authenticated channel implemented through digital signatures (which
+are not explicitly expressed in our notation).
 }
 \label{tbl:tc-contract}
 \end{figure}
+
+\begin{figure}
+\begin{boxedminipage}{\columnwidth}
+\begin{center}
+{\bf Town Crier's enclave program}
+\end{center}
+\begin{tabular}{l}
+%{\bf Inputs}:  ${\sf params}$, \\[5pt]
+{\bf Initialization}:\\
+\quad $(\pksgx, \sksgx) := \Sigma.{\sf KeyGen}(1^\lambda)$\\
+\quad Record $(\pksgx, \sksgx)$\\[5pt]
+
+{\bf Request:} On receive ${\sf params} := (\weburl, \pkurl, T) $:\\
+%\quad Parse ${\sf params} := (\weburl, \pkurl, T)$ \\
+\quad $T_{\textrm{start}} := \clock()$\\
+\quad Establish secure channel w/ $\weburl$ w/ public key $\pkurl$ \\
+\quad Download the webpage at $\weburl$\\
+\quad $T_{\textrm{end}}: = \clock()$\\
+\quad Assert ${\sf round}(T_{\textrm{start}}) = {\sf round}(T_{\textrm{end}}) = T$\\
+\quad Parse webpage and extract ${\sf data}$\\
+\quad $\sigma := \Sigma.{\sf Sign}({\sksgx}, ({\sf params}, {\sf data}))$\\
+\quad return $({\sf data}, \sigma)$
+\end{tabular}
+\end{boxedminipage}
+\caption{
+SGX enclave's code.
+} 
+\end{figure}
+
 
 
 
