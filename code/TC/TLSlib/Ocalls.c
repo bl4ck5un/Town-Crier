@@ -8,15 +8,15 @@
  * printf: 
  *   Invokes OCALL to display the enclave buffer to the terminal.
  */
-int printf__x(const char *fmt, ...)
+int printf(const char *fmt, ...)
 {
     int ret;
     va_list ap;
-	char buf[BUFSIZ] = {'\0'};
+    char buf[BUFSIZ] = {'\0'};
     va_start(ap, fmt);
     vsnprintf(buf, BUFSIZ, fmt, ap);
     va_end(ap);
 
-	ocall_print_string(&ret, buf);
+    ocall_print_string(&ret, buf);
     return ret;
 }

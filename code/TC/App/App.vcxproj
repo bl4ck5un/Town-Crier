@@ -285,9 +285,11 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
       </PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="misc.c" />
-    <ClCompile Include="test.cpp" />
+    <ClCompile Include="testsuite.cpp" />
     <ClCompile Include="net_u.c" />
+    <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />

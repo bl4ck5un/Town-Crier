@@ -50,7 +50,7 @@
 #include "mbedtls/pkcs5.h"
 #include "mbedtls/ecp.h"
 #include "mbedtls/ecjpake.h"
-#include "mbedtls/timing.h"
+// #include "mbedtls/timing.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -97,7 +97,7 @@ static int run_test_snprintf( void )
             test_snprintf( 5, "123",         3 ) != 0 );
 }
 
-int main( int argc, char *argv[] )
+int ecall_self_test()
 {
     int ret = 0, v;
 #if defined(MBEDTLS_MEMORY_BUFFER_ALLOC_C)
@@ -126,13 +126,8 @@ int main( int argc, char *argv[] )
         return( 0 );
     }
 
-    if( argc == 2 && strcmp( argv[1], "-quiet" ) == 0 )
-        v = 0;
-    else
-    {
-        v = 1;
-        mbedtls_printf( "\n" );
-    }
+    v = 1;
+    mbedtls_printf( "\n" );
 
 #if defined(MBEDTLS_SELF_TEST)
 
@@ -290,14 +285,14 @@ int main( int argc, char *argv[] )
         return( ret );
 #endif
 
-    if( v != 0 )
-    {
-        mbedtls_printf( "  [ All tests passed ]\n\n" );
-#if defined(_WIN32)
-        mbedtls_printf( "  Press Enter to exit this program.\n" );
-        fflush( stdout ); getchar();
-#endif
-    }
+//    if( v != 0 )
+//    {
+//        mbedtls_printf( "  [ All tests passed ]\n\n" );
+//#if defined(_WIN32)
+//        mbedtls_printf( "  Press Enter to exit this program.\n" );
+//        fflush( stdout ); getchar();
+//#endif
+//    }
 
     return( ret );
 }

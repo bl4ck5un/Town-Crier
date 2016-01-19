@@ -32,6 +32,12 @@
     <ClCompile Include="TLS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\mbedtls-2.2.1\programs\test\selftest.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Client.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Enclave_private.pem">

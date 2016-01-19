@@ -2457,7 +2457,7 @@
 //#define MBEDTLS_PLATFORM_STD_FREE            free /**< Default free to use, can be undefined */
 //#define MBEDTLS_PLATFORM_STD_EXIT            exit /**< Default exit to use, can be undefined */
 //#define MBEDTLS_PLATFORM_STD_FPRINTF      fprintf /**< Default fprintf to use, can be undefined */
-#define MBEDTLS_PLATFORM_STD_PRINTF        printf__x /**< Default printf to use, can be undefined */
+// #define MBEDTLS_PLATFORM_STD_PRINTF        printf__x /**< Default printf to use, can be undefined */
 /* Note: your snprintf must correclty zero-terminate the buffer! */
 //#define MBEDTLS_PLATFORM_STD_SNPRINTF    snprintf /**< Default snprintf to use, can be undefined */
 

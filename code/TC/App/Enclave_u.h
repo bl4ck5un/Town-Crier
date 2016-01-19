@@ -28,6 +28,8 @@ void SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_free, (mbedtls_net_context*
 int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_print_string, (const char* str));
 
 sgx_status_t ecall_connect(sgx_enclave_id_t eid, int* retval, const char* server, const char* port);
+sgx_status_t ecall_self_test(sgx_enclave_id_t eid, int* retval);
+sgx_status_t ecall_client(sgx_enclave_id_t eid, int* retval, const char* server, const char* port);
 
 #ifdef __cplusplus
 }

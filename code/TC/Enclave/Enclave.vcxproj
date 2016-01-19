@@ -409,6 +409,8 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\mbedtls-2.2.1\programs\test\selftest.c" />
+    <ClCompile Include="Client.cpp" />
     <ClCompile Include="TLS.cpp" />
     <ClCompile Include="Enclave_t.c" />
     <ClCompile Include="Ocalls.cpp" />

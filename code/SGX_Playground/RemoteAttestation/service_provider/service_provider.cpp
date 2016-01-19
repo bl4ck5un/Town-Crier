@@ -99,8 +99,8 @@ sample_spid_t g_spid;
 
 // Verify message 1 then generate and return message 2 to isv.
 int sp_ra_proc_msg1_req(const sample_ra_msg1_t *p_msg1,
-						uint32_t msg1_size,
-						ra_samp_response_header_t **pp_msg2)
+                        uint32_t msg1_size,
+                        ra_samp_response_header_t **pp_msg2)
 {
     int ret = 0;
     ra_samp_response_header_t* p_msg2_full = NULL;
@@ -110,11 +110,11 @@ int sp_ra_proc_msg1_req(const sample_ra_msg1_t *p_msg1,
     bool derive_ret = false;
 
     if(!p_msg1 ||
-	   !pp_msg2 ||
-	   (msg1_size != sizeof(sample_ra_msg1_t)))
-	{
+       !pp_msg2 ||
+       (msg1_size != sizeof(sample_ra_msg1_t)))
+    {
         return -1;
-	}
+    }
 
     do
     {
@@ -169,7 +169,7 @@ int sp_ra_proc_msg1_req(const sample_ra_msg1_t *p_msg1,
         if(0 != ret)
         {
             fprintf(stderr, "\nError, ias_get_sigrl [%s].", __FUNCTION__);
-			ret = SP_IAS_FAILED;
+            ret = SP_IAS_FAILED;
             break;
         }
 
@@ -237,7 +237,7 @@ int sp_ra_proc_msg1_req(const sample_ra_msg1_t *p_msg1,
             break;
         }
 
-		// The rest of the keys are the shared secrets for future communication.
+        // The rest of the keys are the shared secrets for future communication.
         derive_ret = derive_key(&dh_key, SAMPLE_RA_KEY_MK,
                                 (uint8_t*)&g_sp_db.mk_key);
         if(derive_ret != true)
@@ -275,12 +275,12 @@ int sp_ra_proc_msg1_req(const sample_ra_msg1_t *p_msg1,
             break;
         }
         memset(p_msg2_full, 0, msg2_size + sizeof(ra_samp_response_header_t));
-		p_msg2_full->type = TYPE_RA_MSG2;
-		p_msg2_full->size = msg2_size;
-		// @TODO: Set the status properly based on real protocol communication.
-		p_msg2_full->status[0] = 0;
-		p_msg2_full->status[1] = 0;
-		p_msg2 = (sample_ra_msg2_t *)p_msg2_full->body;
+        p_msg2_full->type = TYPE_RA_MSG2;
+        p_msg2_full->size = msg2_size;
+        // @TODO: Set the status properly based on real protocol communication.
+        p_msg2_full->status[0] = 0;
+        p_msg2_full->status[1] = 0;
+        p_msg2 = (sample_ra_msg2_t *)p_msg2_full->body;
 
         // Assemble MSG2
         if(memcpy_s(&p_msg2->g_b, sizeof(p_msg2->g_b), &g_sp_db.g_b,
@@ -324,7 +324,7 @@ int sp_ra_proc_msg1_req(const sample_ra_msg1_t *p_msg1,
         // Generate the CMACsmk for gb||SPID||TYPE||Sigsp(gb,ga)
         uint8_t mac[SAMPLE_EC_MAC_SIZE] = {0};
         uint32_t cmac_size = offsetof(sample_ra_msg2_t, mac);
-		sample_ret = sample_rijndael128_cmac_msg(&g_sp_db.smk_key,
+        sample_ret = sample_rijndael128_cmac_msg(&g_sp_db.smk_key,
             (uint8_t *)&p_msg2->g_b, cmac_size, &mac);
         if(SAMPLE_SUCCESS != sample_ret)
         {
@@ -339,8 +339,8 @@ int sp_ra_proc_msg1_req(const sample_ra_msg1_t *p_msg1,
             break;
         }
 
-		if(memcpy_s(&p_msg2->sig_rl[0], sig_rl_size, sig_rl, sig_rl_size))
-		{
+        if(memcpy_s(&p_msg2->sig_rl[0], sig_rl_size, sig_rl, sig_rl_size))
+        {
             fprintf(stderr,"\nError, memcpy failed in [%s].", __FUNCTION__);
             ret = SP_INTERNAL_ERROR;
             break;
