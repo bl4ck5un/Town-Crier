@@ -48,8 +48,9 @@ entering a contract that calls $\Ctc$.
 %                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
 %                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
                  & Record $({\sf id}, {\sf callback}, {\sf params})$ \\
-  {\bf Deliver:} & On recv $({\sf id}, {\sf data})$ from $\pksgx$: \\
-		 & Let $({\sf id}, {\sf callback}, \_)$ be the most recently recorded tuple for ${\sf id}$\\
+  {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data})$ from $\pksgx$: \\
+		 & Let $({\sf id}, {\sf callback}, {\sf params'})$ be the most recently recorded tuple for ${\sf id}$\\
+		 & Assert ${\sf params} = {\sf params}'$\\
                  & Call ${\sf callback}({\sf data})$ \\
 %                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
 
@@ -77,7 +78,8 @@ are not explicitly expressed in our notation).
 \quad Output $\pksgx$   {\it //~incl. in measurement \& attestation } 
 \\[5pt]
 
-{\bf Resume:} On receive ${\sf params} := (\weburl, \pkurl, T) $:\\
+{\bf Resume:} On receive $({\sf id}, {\sf params})$\\
+\quad Parse ${\sf params} := (\weburl, \pkurl, T) $:\\
 %\quad Parse ${\sf params} := (\weburl, \pkurl, T)$ \\
 \quad $T_{\textrm{start}} := \clock()$\\
 \quad Establish secure channel w/ $\weburl$ w/ public key $\pkurl$ \\
@@ -85,8 +87,8 @@ are not explicitly expressed in our notation).
 \quad $T_{\textrm{end}}: = \clock()$\\
 \quad Assert ${\sf round}(T_{\textrm{start}}) = {\sf round}(T_{\textrm{end}}) = T$\\
 \quad Parse webpage and extract ${\sf data}$\\
-\quad $\sigma := \Sigma.{\sf Sign}({\sksgx}, ({\sf params}, {\sf data}))$\\
-\quad Output $({\sf data}, \sigma)$
+\quad $\sigma := \Sigma.{\sf Sign}({\sksgx}, ({\sf id}, {\sf params}, {\sf data}))$\\
+\quad Output $(({\sf id}, {\sf params}, {\sf data}), \sigma)$
 \end{tabular}
 \end{boxedminipage}
 \caption{
@@ -110,10 +112,10 @@ On receive $(\pksgx, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 When $\Ctc$ receives new request $({\sf id}, \_, {\sf params})$:\\
 \quad Parse ${\sf params} := (\weburl, \pkurl, T)$\\
 \quad Fork: \\
-\quad \quad Wait till time $T$\\
-\quad \quad Send $(\text{``resume''}, {\sf params})$ to the $\fsgx[\enclaveprog, \relay]$ \\
-\quad \quad On receive $({\sf data}, \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
-\quad \quad \quad  {\sf AuthSend} $({\sf id}, {\sf data})$ to $\Ctc$
+\ \quad Wait till time $T$\\
+\ \quad Send $(\text{``resume''}, {\sf params})$ to $\fsgx[\enclaveprog, \relay]$ \\
+\ \quad On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
+\ \quad \quad  {\sf AuthSend} $({\sf id}, {\sf params}, {\sf data})$ to $\Ctc$
 \end{tabular}
 \end{boxedminipage}
 \caption{Town Crier untrusted relay. For simplicity, here we assume that there is only 
