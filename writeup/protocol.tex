@@ -28,13 +28,13 @@
 {\bf Checks:} \\
 Assert $\enclaveprog$ is the expected enclave code\\
 Assert $\sigsgx.{\sf Verify}(\pkM, \rl, \sigatt, (\enclaveprog, \pksgx))$ \\
-Assert $\Ctc$ is correct and parametrized w/ \pksgx\\
-{\it //~now okay to rely on $\Ctc$}
+Assert \tcont is correct and parametrized w/ \pksgx\\
+{\it //~now okay to rely on \tcont}
 \end{tabular}
 \end{boxedminipage}
-\caption{A user checks the Town Crier blockchain contract $\Ctc$, 
+\caption{A user checks the Town Crier blockchain contract \tcont, 
 and verifies an SGX attestation of the enclave's code and its public key $\pksgx$ before 
-entering a contract that calls $\Ctc$.
+entering a contract that calls \tcont.
 } 
 \end{figure}
 
@@ -43,7 +43,7 @@ entering a contract that calls $\Ctc$.
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
   \hline
 
-  \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract $\Ctc$}} \\ [1ex]
+  \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont}} \\ [1ex]
   {\bf Request:} & On recv $({\sf id}, {\sf callback}, {\sf params})$ from some user $\pkU$: \\
 %                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
 %                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
@@ -57,9 +57,9 @@ entering a contract that calls $\Ctc$.
   \hline
 \end{tabularx}
 \caption{
-A simple, fee-free version of the Town Crier contract $\Ctc$.
+A simple, fee-free version of the Town Crier contract \tcont.
 Note that communication 
-with $\Ctc$ is through an authenticated channel implemented through digital signatures (which
+with \tcont is through an authenticated channel implemented through digital signatures (which
 are not explicitly expressed in our notation).
 }
 \label{tbl:tc-contract}
@@ -109,13 +109,13 @@ On receive $(\pksgx, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 \quad Publish $(\pksgx, \sigatt)$\\[5pt]
 
 {\bf  Loop forever}: \\
-When $\Ctc$ receives new request $({\sf id}, \_, {\sf params})$:\\
+When \tcont receives new request $({\sf id}, \_, {\sf params})$:\\
 \quad Parse ${\sf params} := (\weburl, \pkurl, T)$\\
 \quad Fork: \\
 \ \quad Wait till time $T$\\
 \ \quad Send $(\text{``resume''}, {\sf params})$ to $\fsgx[\enclaveprog, \relay]$ \\
 \ \quad On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
-\ \quad \quad  {\sf AuthSend} $({\sf id}, {\sf params}, {\sf data})$ to $\Ctc$
+\ \quad \quad  {\sf AuthSend} $({\sf id}, {\sf params}, {\sf data})$ to \tcont
 \end{tabular}
 \end{boxedminipage}
 \caption{Town Crier untrusted relay. For simplicity, here we assume that there is only 

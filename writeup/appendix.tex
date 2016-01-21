@@ -110,14 +110,14 @@ They functions create a map from integers to arbitrary data values in the domain
   \item {${\sf remove} : \mathbb{N} \to \emptyset$.}
     This removes the key and its associated value if it is in the map and otherwise does nothing.
 \end{itemize}
-Table~\ref{tbl:Ctc-with-cancellation} describes the new $\Ctc$ blockchain.
+Table~\ref{tbl:Ctc-with-cancellation} describes the new \tcont blockchain.
 The rest of the protocol need to change (save for calls to Deliver requiring slightly different arguments).
 
 \begin{table}[htb]
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
   \hline
 
-  \multicolumn{2}{|c|}{$\Ctc$ with Cancellation} \\ [1ex]
+  \multicolumn{2}{|c|}{\tcont with Cancellation} \\ [1ex]
   {\bf Init:} & Set ${\sf reqs} := \emptyset$ and ${\sf reqCnt := 0}$ \\
   {\bf Request:} & Upon receiving $({\sf type}, {\sf callback}, \${\sf fee})$ from a user $\mathcal{P}$: \\
                  & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
@@ -127,14 +127,14 @@ The rest of the protocol need to change (save for calls to Deliver requiring sli
                  & ${\sf store}({\sf reqID} \mapsto (\mathcal{P}, \${\sf fee}))$. \\
                  & Return ${\sf reqID}$. \\
   {\bf Deliver:} & Upon receiving $({\sf reqID}, {\sf data}, {\sf callback})$ from a user $\mathcal{P}$: \\
-                 & If $\mathcal{P} \neq \Psgx$ \\
+                 & If $\mathcal{P} \neq \textrm{\sgxadd}$ \\
                  & \hspace*{1em} Return with no effect. \\
                  & If $!{\sf storeContains}({\sf reqID})$ \\
-                 & \hspace*{1em} Send $F_{\rm min}$ to $\Psgx$. \\
+                 & \hspace*{1em} Send $F_{\rm min}$ to \sgxadd. \\
                  & \hspace*{1em} Return with no further effect. \\
                  & $(*, \${\sf fee}) \leftarrow {\sf load}({\sf reqID})$. \\
                  & Call ${\sf callback}({\sf data})$ providing $\${\sf fee} - F_{\rm min}$ ether as the maximum gas. \\
-                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
+                 & Send $\${\sf fee}$ ether to \sgxadd. \\
                  & ${\sf remove}({\sf reqID})$. \\
   {\bf Cancel:}  & Upon receiving $({\sf reqID})$ from a user $\mathcal{P}$: \\
                  & If $!{\sf storeContains}({\sf reqID})$ \\
@@ -147,12 +147,12 @@ The rest of the protocol need to change (save for calls to Deliver requiring sli
 
   \hline
 \end{tabularx}
-\caption{Definition of the $\Ctc$ contract with cancellation.}
+\caption{Definition of the \tcont contract with cancellation.}
 \label{tbl:Ctc-with-cancellation}
 \end{table}
 
 Using the same adversarial model, we can make the same guarantees of this new system as we did for the original Town Crier system.
-Even if a malicious user cancels their request just as Deliver is being called, the cancellation fee is enough to reimburse $\Psgx$ for any gas costs.
+Even if a malicious user cancels their request just as Deliver is being called, the cancellation fee is enough to reimburse \sgxadd for any gas costs.
 
 If we expand the adversarial model to allow for arbitrary denial of service attacks against the Town Crier system (but not the blockchain),
 the new Cancel functionality allows affected users to recover most of their fee with no action from the Town Crier system.
