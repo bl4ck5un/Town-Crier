@@ -1,4 +1,6 @@
 \newcommand{\fsgx}{\ensuremath{\mathcal{F}_{\textrm{sgx}}}\xspace}
+\newcommand{\pk}{\ensuremath{{\sf pk}}}
+\newcommand{\sk}{\ensuremath{{\sf sk}}}
 \newcommand{\pkM}{\ensuremath{{\sf pk}_{\mathcal{M}}}}
 \newcommand{\skM}{\ensuremath{{\sf sk}_{\mathcal{M}}}}
 \newcommand{\pkU}{\ensuremath{{\sf pk}_{\mathcal{U}}}}
@@ -14,6 +16,7 @@
 \newcommand{\weburl}{\ensuremath{{{\sf url}}}\xspace}
 \newcommand{\clock}{\ensuremath{{{\sf clock}}}}
 \newcommand{\algA}{\ensuremath{\mathcal{A}}}
+\newcommand{\algB}{\ensuremath{\mathcal{B}}}
 
 \section{Protocol}
 \elaine{to be merged into main body}
@@ -220,10 +223,61 @@ for any probablistic polynomial-time adversary $\algA$
 
 
 \begin{theorem}[Authenticity]
-The above protocol achieves authenticity of data feed by Definition~\ref{defn:auth}.
+Assume that $\sigsgx$
+and $\Sigma$ are secure signature schemes (recall
+that we follow Shi et al. \elaine{cite} who show
+how to abstractly  
+model SGX's group signature as a regular signature
+scheme under a manufacturer public key $\pkM$),
+%and assume that the cryptographic protocol used to realize the secure channel
+%with $\pkurl$ is secure;
+then, the above 
+protocol achieves authenticity of data feed by Definition~\ref{defn:auth}.
 \end{theorem}
-\begin{proof}
-\elaine{fill in here.}
+\begin{proof} (sketch.)
+We show that if the 
+adversary $\algA$ succeeds in a forgery with non-negligible probability,
+we can construct an adversary $\algB$ that can either
+break $\sigsgx$ or $\Sigma$ with non-neligible probability.
+We consider two cases. 
+The reduction $\algB$ will flip a random coin to guess which
+case it is, and if the guess is wrong, simply abort.
+\begin{itemize}[leftmargin=5mm]
+\item
+Case 1: $\algA$ outputs a signature $\sigma$ that uses the same  
+$\pksgx$ as the SGX functionality $\fsgx$.
+In this case, $\algB$ will try to break $\Sigma$. 
+$\algB$ interacts with a signature challenger ${\sf Ch}$ who generates
+some $(\pk^*, \sk^*)$ pair, and gives to $\algB$ the public key
+$\pk^*$. $\algB$ simulates 
+$\fsgx$ by implicitly letting $\pksgx := \pk^*$.
+Whenever $\fsgx$ needs to sign a query, $\algB$ passes the signing query
+onto the signature challenger ${\sf Ch}$.
+
+Since ${\sf data} \neq \enclaveprog({\sf params})$,
+$\algB$ cannot have queried ${\sf Ch}$  
+on a tuple of the form $(\_, {\sf params}, {\sf data})$. 
+Therefore, $\algB$ simply outputs 
+what $\algA$ 
+outputs (suppressing unnecessary terms) as the signature forgery. 
+
+\item
+Case 2:
+ $\algA$ outputs a signature $\sigma$ that uses a different 
+$\pksgx$ as the SGX functionality $\fsgx$.
+In this case, $\algB$ will seek to break $\sigsgx$.
+$\algB$ interacts with a signature challenger ${\sf Ch}$, who generates
+some $(\pk^*, \sk^*)$ pair, and gives to $\algB$ the public key
+$\pk^*$. $\algB$ simulates $\fsgx$ by implicitly setting
+$\pkM := \pk^*$.
+Whenever $\fsgx$ needs to make a signature
+with $\skM$, 
+$\algB$ simply passes the signature query onto ${\sf Ch}$.
+In this case, in order for $\algA$ to succeed,
+it must produce a valid signature $\sigatt$ 
+for a different public key $\pk'$.
+Therefore, $\algB$ simply outputs this as a signature forgery.
+\end{itemize}
 \end{proof}
 
 
