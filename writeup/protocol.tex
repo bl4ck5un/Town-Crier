@@ -1,18 +1,19 @@
-\newcommand{\fsgx}{\ensuremath{\mathcal{F}_{\textrm{sgx}}}}
+\newcommand{\fsgx}{\ensuremath{\mathcal{F}_{\textrm{sgx}}}\xspace}
 \newcommand{\pkM}{\ensuremath{{\sf pk}_{\mathcal{M}}}}
 \newcommand{\skM}{\ensuremath{{\sf sk}_{\mathcal{M}}}}
 \newcommand{\pkU}{\ensuremath{{\sf pk}_{\mathcal{U}}}}
 \newcommand{\pksgx}{\ensuremath{{\sf pk}_{\textrm{sgx}}}}
 \newcommand{\sksgx}{\ensuremath{{\sf sk}_{\textrm{sgx}}}}
-\newcommand{\pkurl}{\ensuremath{{\sf pk}_{\textrm{url}}}}
+\newcommand{\pkurl}{\ensuremath{{\sf pk}_{\textrm{url}}}\xspace}
 \newcommand{\rl}{\ensuremath{{\sf RL}}}
 \newcommand{\relay}{\ensuremath{\mathcal{R}}}
 %\newcommand{\digest}{\ensuremath{{\sf digest}}}
 \newcommand{\enclaveprog}{\ensuremath{{\sf prog}_{\textrm{encl}}}}
 \newcommand{\sigatt}{\ensuremath{{\sigma_{\textrm{att}}}}}
 \newcommand{\sigsgx}{\ensuremath{{\Sigma_{\textrm{sgx}}}}}
-\newcommand{\weburl}{\ensuremath{{{\sf url}}}}
+\newcommand{\weburl}{\ensuremath{{{\sf url}}}\xspace}
 \newcommand{\clock}{\ensuremath{{{\sf clock}}}}
+\newcommand{\algA}{\ensuremath{\mathcal{A}}}
 
 \section{Protocol}
 \elaine{to be merged into main body}
@@ -24,10 +25,10 @@
 {\bf User: offline attestation of SGX enclave}
 \end{center}
 \begin{tabular}{l}
-{\bf Inputs}: $\pkM$, $\rl$, $\pksgx$, $\enclaveprog$, $\sigatt$ \\[5pt]
+{\bf Inputs}: $\pkM$, $\pksgx$, $\enclaveprog$, $\sigatt$ \\[5pt]
 {\bf Checks:} \\
 Assert $\enclaveprog$ is the expected enclave code\\
-Assert $\sigsgx.{\sf Verify}(\pkM, \rl, \sigatt, (\enclaveprog, \pksgx))$ \\
+Assert $\sigsgx.{\sf Verify}(\pkM, \sigatt, (\enclaveprog, \pksgx))$ \\
 Assert \tcont is correct and parametrized w/ \pksgx\\
 {\it //~now okay to rely on \tcont}
 \end{tabular}
@@ -35,6 +36,10 @@ Assert \tcont is correct and parametrized w/ \pksgx\\
 \caption{A user checks the Town Crier blockchain contract \tcont, 
 and verifies an SGX attestation of the enclave's code and its public key $\pksgx$ before 
 entering a contract that calls \tcont.
+\elaine{here we use a simplified abstraction, but the actual implementation
+also involves verifying the revocation list.}
+%\elaine{there is a notational mismatch here. here we write RL explicitly, but
+%not in the Fsgx abstraction}
 } 
 \end{figure}
 
@@ -159,6 +164,64 @@ that is sufficient for our formalism.
 }
 \end{figure}
 
+
+\subsection{Formal Guarantees}
+
+\paragraph{Authenticity.}
+Roughly speaking, authenticity means that 
+an adversary cannot convince   
+the Town Crier blockchain contract 
+$\tcont$ to accept 
+a wrong data feed. 
+Here a wrong data feed means any content
+that differs from the expected content
+obtained by crawling the specified \weburl at 
+the specified time $T$.
+
+In formally defining 
+authenticity, 
+we assume that the user and the blockchain
+contract $\tcont$ behave honestly.
+Recall that the user must verify 
+upfront the attestation $\sigatt$ 
+that vouches 
+for the enclave's public key $\pksgx$.
+
+\begin{definition}[Authenticity]
+We say that the Town Crier protocol 
+satisifies {\it authenticity} of data feed,
+if for any polynomial-time adversary
+that can interact arbitrarily with $\fsgx$,
+it cannot 
+persuade an honest verifier to accept
+a tuple $(\pksgx, \sigatt, {\sf params}:=(\weburl, \pkurl, T), {\sf data}, \sigma)$
+%${\sf params} := (\weburl, \pkurl, T)$).
+where ${\sf data}$ is not 
+the contents of 
+\weburl with the public key $\pkurl$ at time $T$.
+More formally, 
+for any probablistic polynomial-time adversary $\algA$
+\[
+\begin{array}{l}
+\Pr\left[
+\begin{array}{l}
+(\pksgx, \sigatt, {\sf id}, {\sf params}, {\sf data}, \sigma) \leftarrow 
+\algA^{\fsgx}(1^\lambda) :\\
+\quad \left(\sigsgx.{\sf Verify}(\pkM, \sigatt, (\enclaveprog, \pksgx)) = 1\right) \wedge \\
+\quad \left(\Sigma.{\sf Verify}(\pksgx, {\sf id}, {\sf params}, {\sf data})  = 1\right) \wedge\\
+\quad {\sf data} \neq \enclaveprog({\sf params}) 
+\end{array}
+\right] \\[3pt] 
+\leq {\sf negl}(\lambda)
+\end{array}
+\]
+\label{defn:auth}
+\end{definition}
+
+
+\begin{theorem}
+The above protocol achieves authenticity of data feed by Definition~\ref{defn:auth}.
+\end{theorem}
 
 
 
