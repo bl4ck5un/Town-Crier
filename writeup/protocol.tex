@@ -122,6 +122,41 @@ appropriate SGX attestation before interacting with the $\tcont$
 blockchain contract.
 
 \paragraph{Instantiating trusted absolute clock.}
+Since SGX's trusted clock provides only relative time with 
+respect to a reference point, 
+we will rely on 
+the following mechanism to realize a trusted {\it absolute} clock. 
+\begin{itemize}[leftmargin=5mm]
+\item
+{\bf Offline calibration.}
+In an offline phase, a user $U$ performs the following calibration protocol
+with the SGX enclave:
+
+\elaine{this formal notation needs to be changed, it is not compatible
+with other formal notation.}
+
+\begin{tabular}{rl}
+$\mathcal{U}$: & get absolute $T_0$ from a trusted source \\
+$\mathcal{U}$: & pick random ${\sf nonce}$\\
+$\mathcal{U} \rightarrow \fsgx$: & ${\sf nonce}$\\
+$\fsgx \rightarrow \mathcal{U}$: & (${\sf clock\_ref}$, $\Delta T_0$, ${\sf nonce}$)\\
+$\mathcal{U}$: & record ${\sf clock\_ref}$, $\Delta T_0$
+\end{tabular}
+
+\elaine{the above assumes that 
+an authenticated channel has been established.}
+
+\item
+{\bf Online trusted absolute clock.}
+Whenever $\fsgx$ gives the relative time $\Delta T$ with respect
+to ${\sf clock\_ref}$, the user 
+{\it i)} checks that ${\sf clock\_ref}$ agrees with the saved
+reference point, and 
+{\it ii)}
+computes $T_0 + \Delta T - \Delta T_0$
+as the absolute time.
+\end{itemize}
+
 
 \paragraph{Formal protocol description.}
 
