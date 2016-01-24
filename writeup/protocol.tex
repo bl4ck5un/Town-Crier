@@ -61,6 +61,38 @@ if verification succeeds, proceeds to make use of
 the resulting datagram ${\sf data}$.
 \end{itemize}
 
+\paragraph{Problems with the strawman scheme.}
+The above strawman scheme has a few drawbacks. 
+
+First, the blockchain contract
+$\tcont$ must verify an SGX group signature.  
+This could be wasteful in terms of on-chain cost, 
+\elaine{things like on-chain cost and gas should be mentioned in a 
+background section}
+since the group signature verification requires inputing 
+to $\tcont$ the latest revocation list 
+for SGX's group signature scheme.
+Moreover, 
+this also gives rise to a practical engineering issue if we
+were 
+to build $\tcont$ atop Ethereum,
+since implementing group signature verification in Ethereum's Serpent
+or Solidity language is non-trivial and wasteful in terms of gas.
+
+Second, for the SGX enclave to  
+attest to the time $T$ at which the data source is fetched, 
+we need the SGX enclave to provide a trusted clock that provides absolute time. 
+Although Intel's SGX provides a 
+trusted clock API, the trusted clock does not provide absolute time,
+but rather, relative time with respect to a certain reference point.  
+Therefore, it is not immediately clear how to realize 
+a trusted absolute clock.
+
+\subsection{A Gas-Free Basic Protocol}
+For simplicity, we first describe a gas-free version of our basic protocol.
+This basic protocol improves the strawman solution 
+by resolving the aforementioned two issues.
+
 \begin{figure}
 \begin{boxedminipage}{\columnwidth}
 \begin{center}
