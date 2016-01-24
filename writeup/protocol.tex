@@ -18,9 +18,48 @@
 \newcommand{\algA}{\ensuremath{\mathcal{A}}}
 \newcommand{\algB}{\ensuremath{\mathcal{B}}}
 
-\section{Protocol}
+\section{Basic Protocol}
 \elaine{to be merged into main body}
 
+
+\subsection{Strawman Scheme}
+A naive strawman solution is the following:
+\begin{itemize}[leftmargin=5mm]
+\item
+{\bf Monitor and relay.}
+The Town Crier relay $\relay$    
+monitors the blockchain for 
+contracts that require authenticated data feeds (e.g., those
+that make calls to $\tcont$).
+
+Suppose a contract requires 
+an authenticated 
+data feed with the following parameters ${\sf params} := (\weburl, \pkurl, T)$,
+where $\weburl$ denotes the site's URL,
+$\pkurl$ denotes the site's cryptographic 
+identity, and $T$ denotes a time at which the site should be scraped.
+Town Crier's relay $\relay$ will then send
+a request ${\sf params}$ 
+to the SGX enclave at time $T$.
+\item
+{\bf Securely fetch feed.}
+The SGX enclave will now fetch the webpage at $\weburl$ by establishing
+an HTTPS secure channel with 
+the cryptographic entity $\pkurl$.
+After fetching the contents of the page, 
+the enclave parses the webpage's contents and extracts the datagram requested
+denoted ${\sf data}$.
+Finally, the SGX enclave produces an attestation 
+vouching for the tuple $(\weburl, \pkurl, T, {\sf data})$.
+Specifically, note that the SGX enclave also vouches
+for the time $T$ at which the data source is fetched.
+\item
+{\bf Verify}.
+Now, the blockchain contract $\tcont$ verifies the attestation
+produced by the SGX enclave, and 
+if verification succeeds, proceeds to make use of 
+the resulting datagram ${\sf data}$.
+\end{itemize}
 
 \begin{figure}
 \begin{boxedminipage}{\columnwidth}
