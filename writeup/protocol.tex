@@ -93,6 +93,38 @@ For simplicity, we first describe a gas-free version of our basic protocol.
 This basic protocol improves the strawman solution 
 by resolving the aforementioned two issues.
 
+\paragraph{Enclave-specific keys.}
+To avoid having to verify a group signature on the blockchain,  
+during enclave initialization, 
+we have each enclave generate its enclave-specific 
+key pair denoted $(\pksgx, \sksgx)$.
+The $\sksgx$ is retained within the enclave and used
+to sign the datagrams extracted from data sources during the request phase.
+Since Ethereum itself 
+already verifies signatures on messages sent from users (i.e.,
+users interact with the 
+Ethereum blockchain through an authenticated channel), 
+we devise a trick to {\it piggyback the signature 
+verification on top of Ethereum's already existing signature verfication mechanism}.
+This means that the SGX enclave must sign datagrams using the \elaine{fill in name}
+signature scheme that is compatible with Ethereum's signature verification.
+This way, we need not implement a separate signature verification
+in the user-defined $\tcont$ contract.
+This saves 
+not only software engineering effort, but more importantly, gas.
+
+To make this idea fully work, in an offline phase, 
+a user must verify an SGX attestation vouching for its own enclave-specific 
+public key  $\pksgx$.
+This $\pksgx$ is hardcoded inside the blockchain contract $\tcont$. 
+The user is responsible for making sure that this hardcoded $\pksgx$ has an 
+appropriate SGX attestation before interacting with the $\tcont$ 
+blockchain contract.
+
+\paragraph{Instantiating trusted absolute clock.}
+
+\paragraph{Formal protocol description.}
+
 \begin{figure}
 \begin{boxedminipage}{\columnwidth}
 \begin{center}
