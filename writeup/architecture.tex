@@ -1,18 +1,6 @@
 \section{Architectural Overview: Basic TC System}
 
-The \tcs system includes three main components: The \tcontract, the \encname, and the \medname.
-
-The \tcontract (denoted more concisely by \tcont) is a smart contract that acts as the blockchain front-end of the \tc service, and thus an interface between relying contracts and \tc. It accepts datagram requests from requesters and returns corresponding datagrams from \tc. Additionally, the \tcontract manages \tc monetary resources, both fees and gas (in Ethereum). 
-
-The \encname and \medname reside on the \tc server. The \encname runs in an enclave, an SGX-protected execution environment in the server. As enclaves lack network access, the \medname handles bidirectional network traffic on behalf of the \encname, providing network connectivity to the blockchain (the Ethereum system) and to data sources queried by \encname. Additionally, \medname acts as a web server handling off-chain service requests from clients. The \medname is an ordinary user-space application. It does not benefit from special hardware protection and thus, unlike the \encname, can be subverted by an adversarial OS on the \tc server, causing network delays or failures.
-
-The \encname ingests and fulfills datagram requests. To obtain the data composing datagrams, it queries external data sources, specifically HTTPS-enabled internet services. To obtain and keep track of the state of datagram requests, it monitors the state of \tcontract on the blockchain (via scraping). Thus \tcontract forwards datagram requests implicitly to the \tc server. (In the initial version of \tcontract, the \encname's view of the blockchain also comes from a data source.) 
-
-Briefly, then, the end-to-end processing of a datagram request is initiated by a requester \reqcont. \reqcont sends a datagram request to \tcont on the blockchain. Using network services provided by the \medname, the \encname obtains the request from the blockchain. It contacts a data source to obtain the requested data and composes a datagram, which it sends back to \reqcont. Figure~\ref{fig:overview} shows a basic schematic of the \tc system.
-
-As a simple example, \reqcont might request a stock ticker value (e.g., the price of IBM at 3 p.m. on 15 Jan 2016). The \encname would fetch the requested data from an online service (e.g., https://www.google.com/finance) and place it in a datagram for transmission via \tcont to \reqcont.
-
-In addition to servicing datagram requests, the \encname may be queried by a client to provide an off-chain, hardware-backed attestation $\att$ on the state of the \encname---both its executing code and its clock. It is to support this service that \medname includes a web server. We do not depict this service in Figure~\ref{fig:overview}, and defer its discussion to later in the paper.
+The \tcs system includes three main components: The \tcontract, the \encname, and the \medname. The \encname and \medname reside on the \tc server, while the \tcontract resides on the blockchain. Their roles, which we now briefly explain, are shown in the architectural schematic in Figure~\ref{fig:overview}.
 
 \vspace{-2mm}
 \begin{figure}[h!]
@@ -22,6 +10,29 @@ In addition to servicing datagram requests, the \encname may be queried by a cli
 \label{fig:overview}
 \end{figure}
 \vspace{-2mm}
+
+\paragraph{The \tcontract (\tcont).} The \tcontract (denoted by \tcont) is a smart contract that acts as the blockchain front-end of the \tc service, and thus an interface between relying contracts and \tc. It accepts datagram requests from a requester \reqcont and returns corresponding datagrams from \tc. Additionally, the \tcontract manages \tc monetary resources, which in Ethereum take the form of ether (money) and gas (``fuel'' for contracts). 
+
+\paragraph{The \encname.}
+The \encname ingests and fulfills datagram requests. To obtain the data composing datagrams, it queries external data sources, specifically HTTPS-enabled internet services. To obtain and keep track of the state of datagram requests, it monitors the state of \tcontract on the blockchain (via scraping). Thus \tcontract forwards datagram requests implicitly to the \tc server. The \encname runs in an SGX enclave, and is thus secured against an adversarial OS as well as other process on the host. 
+
+\paragraph{The \medname.} As an enclave process, the \encname lacks direct network access. Thus the \medname handles bidirectional network traffic on behalf of the \encname. Specifically, the \medname provides network connectivity from the \encname to three different types of entities: 
+
+\begin{enumerate}
+\item {\em The Blockchain (the Ethereum system):}  The \medname scrapes the blockchain in order to monitor the state of \tcont. In this way, it performs implicit message passing from \tcont to the \encname, as neither component itself has network connectivity. Additionally, the \medname places messages emitted from the \encname on the blockchain.
+\item {\em Clients:} The \medname acts as a web server handling off-chain service requests from clients. Specifically, it services requests from clients for attestations from the \encname.
+\item {\em Data sources:} The \medname relays traffic to and from data sources (HTTPS-enabled servers) queried by \encname. 
+\end{enumerate}
+
+The \medname is an ordinary user-space application. It does not benefit from integrity protection by trusted hardware and thus, unlike the \encname, can be subverted by an adversarial OS on the \tc server, causing network delays or failures. As we explain in detail later in the paper, however, a key design aim of \tc is that \medname should be unable to cause incorrect datagrams to be produced or users to lose money. In general, the \medname {\em can only mount denial-of-service attacks}. 
+
+\paragraph{End-to-end datagram processing.}
+In summary, then, a datagram request is initiated by a requester \reqcont. \reqcont sends a datagram request to \tcont on the blockchain. Using network services provided by the \medname, the \encname obtains the request from the blockchain. It contacts a data source to obtain the requested data and composes a datagram, which it sends back to \reqcont.
+
+As a simple example, \reqcont might request a stock ticker value (e.g., the price of IBM at 3 p.m. on 15 Jan 2016). The \encname would fetch the requested data from an online service (e.g., https://www.google.com/finance) and place it in a datagram for transmission via \tcont to \reqcont.
+
+In addition to servicing datagram requests, the \encname may be queried by a client to provide an off-chain, hardware-backed attestation $\att$ on the state of the \encname---both its executing code and its clock. It is to support this service that \medname includes a web server. We do not depict this service in Figure~\ref{fig:overview}, and defer its discussion to later in the paper.
+
 
 
 

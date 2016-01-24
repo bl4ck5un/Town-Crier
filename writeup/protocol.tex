@@ -61,6 +61,105 @@ if verification succeeds, proceeds to make use of
 the resulting datagram ${\sf data}$.
 \end{itemize}
 
+\paragraph{Problems with the strawman scheme.}
+The above strawman scheme has a few drawbacks. 
+
+First, the blockchain contract
+$\tcont$ must verify an SGX group signature.  
+This could be wasteful in terms of on-chain cost, 
+\elaine{things like on-chain cost and gas should be mentioned in a 
+background section}
+since the group signature verification requires inputing 
+to $\tcont$ the latest revocation list 
+for SGX's group signature scheme.
+Moreover, 
+this also gives rise to a practical engineering issue if we
+were 
+to build $\tcont$ atop Ethereum,
+since implementing group signature verification in Ethereum's Serpent
+or Solidity language is non-trivial and wasteful in terms of gas.
+
+Second, for the SGX enclave to  
+attest to the time $T$ at which the data source is fetched, 
+we need the SGX enclave to provide a trusted clock that provides absolute time. 
+Although Intel's SGX provides a 
+trusted clock API, the trusted clock does not provide absolute time,
+but rather, relative time with respect to a certain reference point.  
+Therefore, it is not immediately clear how to realize 
+a trusted absolute clock.
+
+\subsection{A Gas-Free Basic Protocol}
+For simplicity, we first describe a gas-free version of our basic protocol.
+This basic protocol improves the strawman solution 
+by resolving the aforementioned two issues.
+
+\paragraph{Enclave-specific keys.}
+To avoid having to verify a group signature on the blockchain,  
+during enclave initialization, 
+we have each enclave generate its enclave-specific 
+key pair denoted $(\pksgx, \sksgx)$.
+The $\sksgx$ is retained within the enclave and used
+to sign the datagrams extracted from data sources during the request phase.
+Since Ethereum itself 
+already verifies signatures on messages sent from users (i.e.,
+users interact with the 
+Ethereum blockchain through an authenticated channel), 
+we devise a trick to {\it piggyback the signature 
+verification on top of Ethereum's already existing signature verfication mechanism}.
+This means that the SGX enclave must sign datagrams using the \elaine{fill in name}
+signature scheme that is compatible with Ethereum's signature verification.
+This way, we need not implement a separate signature verification
+in the user-defined $\tcont$ contract.
+This saves 
+not only software engineering effort, but more importantly, gas.
+
+To make this idea fully work, in an offline phase, 
+a user must verify an SGX attestation vouching for its own enclave-specific 
+public key  $\pksgx$.
+This $\pksgx$ is hardcoded inside the blockchain contract $\tcont$. 
+The user is responsible for making sure that this hardcoded $\pksgx$ has an 
+appropriate SGX attestation before interacting with the $\tcont$ 
+blockchain contract.
+
+\paragraph{Instantiating trusted absolute clock.}
+Since SGX's trusted clock provides only relative time with 
+respect to a reference point, 
+we will rely on 
+the following mechanism to realize a trusted {\it absolute} clock. 
+\begin{itemize}[leftmargin=5mm]
+\item
+{\bf Offline calibration.}
+In an offline phase, a user $U$ performs the following calibration protocol
+with the SGX enclave:
+
+\elaine{this formal notation needs to be changed, it is not compatible
+with other formal notation.}
+
+\begin{tabular}{rl}
+$\mathcal{U}$: & get absolute $T_0$ from a trusted source \\
+$\mathcal{U}$: & pick random ${\sf nonce}$\\
+$\mathcal{U} \rightarrow \fsgx$: & ${\sf nonce}$\\
+$\fsgx \rightarrow \mathcal{U}$: & (${\sf clock\_ref}$, $\Delta T_0$, ${\sf nonce}$)\\
+$\mathcal{U}$: & record ${\sf clock\_ref}$, $\Delta T_0$
+\end{tabular}
+
+\elaine{the above assumes that 
+an authenticated channel has been established.}
+
+\item
+{\bf Online trusted absolute clock.}
+Whenever $\fsgx$ gives the relative time $\Delta T$ with respect
+to ${\sf clock\_ref}$, the user 
+{\it i)} checks that ${\sf clock\_ref}$ agrees with the saved
+reference point, and 
+{\it ii)}
+computes $T_0 + \Delta T - \Delta T_0$
+as the absolute time.
+\end{itemize}
+
+
+\paragraph{Formal protocol description.}
+
 \begin{figure}
 \begin{boxedminipage}{\columnwidth}
 \begin{center}
@@ -318,6 +417,14 @@ for a different public key $\pk'$.
 Therefore, $\algB$ simply outputs this as a signature forgery.
 \end{itemize}
 \end{proof}
+
+
+\section{Extensions}
+
+\subsection{Handling Transaction Fees}
+
+\subsection{Support for Cancellation}
+
 
 
 
