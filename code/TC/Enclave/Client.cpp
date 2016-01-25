@@ -49,6 +49,8 @@ int main( void )
 #include "Enclave.h"
 #include "Enclave_t.h"
 
+#include "RootCerts.h"
+
 #include "mbedtls/net_v.h"
 #include "mbedtls/net_f.h"
 #include "mbedtls/ssl.h"
@@ -957,7 +959,9 @@ int ecall_client( const char* server, const char* port )
         }
 #else
     {
-        ret = 1;
+        ret = mbedtls_x509_crt_parse( &cacert,
+            (const unsigned char *) root_cas_pem,
+            root_cas_pem_len);
         mbedtls_printf("MBEDTLS_CERTS_C not defined.");
     }
 #endif
@@ -969,60 +973,12 @@ int ecall_client( const char* server, const char* port )
 
     mbedtls_printf( " ok (%d skipped)\n", ret );
 
-    /*
-     * 1.2. Load own certificate and private key
-     *
-     * (can be skipped if client authentication is not required)
-     */
-    mbedtls_printf( "  . Loading the client cert. and key..." );
-
-#if defined(MBEDTLS_FS_IO)
-    if( strlen( opt.crt_file ) )
-        if( strcmp( opt.crt_file, "none" ) == 0 )
-            ret = 0;
-        else
-            ret = mbedtls_x509_crt_parse_file( &clicert, opt.crt_file );
-    else
-#endif
-#if defined(MBEDTLS_CERTS_C)
-        ret = mbedtls_x509_crt_parse( &clicert, (const unsigned char *) mbedtls_test_cli_crt,
-                mbedtls_test_cli_crt_len );
-#else
-    {
-        ret = 1;
-        mbedtls_printf("MBEDTLS_CERTS_C not defined.");
-    }
-#endif
-    if( ret != 0 )
-    {
-        mbedtls_printf( " failed\n  !  mbedtls_x509_crt_parse returned -0x%x\n\n", -ret );
-        goto exit;
-    }
-
-#if defined(MBEDTLS_FS_IO)
-    if( strlen( opt.key_file ) )
-        if( strcmp( opt.key_file, "none" ) == 0 )
-            ret = 0;
-        else
-            ret = mbedtls_pk_parse_keyfile( &pkey, opt.key_file, "" );
-    else
-#endif
-#if defined(MBEDTLS_CERTS_C)
-        ret = mbedtls_pk_parse_key( &pkey, (const unsigned char *) mbedtls_test_cli_key,
-                mbedtls_test_cli_key_len, NULL, 0 );
-#else
-    {
-        ret = 1;
-        mbedtls_printf("MBEDTLS_CERTS_C not defined.");
-    }
-#endif
     if( ret != 0 )
     {
         mbedtls_printf( " failed\n  !  mbedtls_pk_parse_key returned -0x%x\n\n", -ret );
         goto exit;
     }
 
-    mbedtls_printf( " ok\n" );
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
     /*

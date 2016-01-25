@@ -1611,6 +1611,7 @@
  * This module is used for testing (ssl_client/server).
  */
 #define MBEDTLS_CERTS_C
+#undef  MBEDTLS_CERTS_C
 
 /**
  * \def MBEDTLS_CIPHER_C

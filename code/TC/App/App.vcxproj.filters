@@ -33,9 +33,6 @@
     <ClCompile Include="net_u.c">
       <Filter>TLSSupport</Filter>
     </ClCompile>
-    <ClCompile Include="misc.c">
-      <Filter>TLSSupport</Filter>
-    </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -84,13 +81,13 @@
     <ClCompile Include="App.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="printf.c">
+      <Filter>Misc</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Enclave_u.h">
       <Filter>Generated Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TLSlibSupport.h">
-      <Filter>TLSSupport</Filter>
     </ClInclude>
     <ClInclude Include="App.h">
       <Filter>Source Files</Filter>

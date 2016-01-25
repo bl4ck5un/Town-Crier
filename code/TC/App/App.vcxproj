@@ -298,7 +298,7 @@
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="App.cpp" />
-    <ClCompile Include="misc.c" />
+    <ClCompile Include="printf.c" />
     <ClCompile Include="snprintf.c" />
     <ClCompile Include="testsuite.cpp" />
     <ClCompile Include="net_u.c" />
@@ -320,7 +320,6 @@
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\system.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="Enclave_u.h" />
-    <ClInclude Include="TLSlibSupport.h" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
