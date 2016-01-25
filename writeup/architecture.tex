@@ -37,11 +37,11 @@ As a simple example, \reqcont might request a stock ticker  (e.g., the price of 
 
 %In addition to servicing datagram requests, the \encname may be queried by a client to provide an off-chain, hardware-backed attestation $\att$ on the state of the \encname---both its executing code and its clock. It is to support this service that \medname includes a web server. We do not depict this service in Figure~\ref{fig:overview}, and defer its discussion to later in the paper.
 
-We now make this data flow more precise and formal. 
+We now make this data flow more precise. 
 
 \subsection{Datagram processing: Data flow}
 
-We denote a datagram instance, namely the set of message values associated with a datagram request, by $\dg$. 
+We denote a datagram instance, namely the set of message values associated with a datagram request, by $\dgi$, where $i$ is a unique instance index. (We explain in Section~\ref{sec:implementation} how this index is computed.) Where clear from context, we drop the subscript $i$ and write $\dg$.
 
 A datagram request by \reqcont takes the form of a message $\dgreq$ to \tcont on the blockchain. This message $\dgreq = (\dgform, \dgpay)$ includes both a specification $\dgform$ of the requested datagram (e.g., a stock ticker and desired time) and a payment $\dgpay$, which in Ethereum may include gas to cover the execution cost of the request as well as a service fee. \tcont receives a return message $\dgret = (\dgform, \dgm)$ from the $\tc$ service where $\dgm$ contains the data (e.g., the desired stock ticker price). \tcont checks the consistency of $\dgform$ on the incoming and outgoing messages, and if they match forwards $\dgm$ to \reqcont. 
 
@@ -53,8 +53,6 @@ A datagram request by \reqcont takes the form of a message $\dgreq$ to \tcont on
 \label{fig:overview}
 \end{figure}
 \vspace{-2mm}
-
-Later in the paper, we use $\dgi$ to indicate a unique index for a datagram instance. (We explain in Section~\ref{sec:implementation} how this index is computed.)
 
 Digital signatures are needed to authenticated messages, such as $\dgret$, entering the blockchain from an external source. We let $(\skTC, \pkTC)$ denote the private / public keypair associated with the \encname for such message authentication. For simplicity, we assume for the time that the \encname can send signed messages directly to \tcont. Later we explain how Ethereum requires a slightly different approach.
 
