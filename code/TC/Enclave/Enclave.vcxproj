@@ -411,13 +411,13 @@
   <ItemGroup>
     <ClCompile Include="..\mbedtls-2.2.1\programs\test\selftest.c" />
     <ClCompile Include="Client.cpp" />
-    <ClCompile Include="TLS.cpp" />
+    <ClCompile Include="RootCerts.c" />
     <ClCompile Include="Enclave_t.c" />
-    <ClCompile Include="Ocalls.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Enclave.h" />
     <ClInclude Include="Enclave_t.h" />
+    <ClInclude Include="RootCerts.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Enclave_private.pem" />

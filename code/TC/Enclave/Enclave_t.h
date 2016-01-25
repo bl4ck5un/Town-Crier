@@ -16,7 +16,6 @@ extern "C" {
 #endif
 
 
-int ecall_connect(const char* server, const char* port);
 int ecall_self_test();
 int ecall_client(const char* server, const char* port);
 

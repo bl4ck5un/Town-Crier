@@ -31,7 +31,7 @@ int main()
  
     // test_self_test();
     int ret;
-    // ecall_client(global_eid, &ret, "google.com", "443");
+    ecall_client(global_eid, &ret, "google.com", "443");
 
     printf("Info: SampleEnclave successfully returned.\n");
 

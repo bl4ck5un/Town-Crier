@@ -26,16 +26,13 @@
     <ClCompile Include="Enclave_t.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="Ocalls.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TLS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\mbedtls-2.2.1\programs\test\selftest.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Client.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RootCerts.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -55,6 +52,9 @@
     </ClInclude>
     <ClInclude Include="Enclave.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RootCerts.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

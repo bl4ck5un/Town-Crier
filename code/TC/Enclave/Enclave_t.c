@@ -26,12 +26,6 @@
 } while (0)
 
 
-typedef struct ms_ecall_connect_t {
-	int ms_retval;
-	char* ms_server;
-	char* ms_port;
-} ms_ecall_connect_t;
-
 typedef struct ms_ecall_self_test_t {
 	int ms_retval;
 } ms_ecall_self_test_t;
@@ -109,49 +103,6 @@ typedef struct ms_ocall_print_string_t {
 #pragma warning(disable: 4200)
 #endif
 
-static sgx_status_t SGX_CDECL sgx_ecall_connect(void* pms)
-{
-	ms_ecall_connect_t* ms = SGX_CAST(ms_ecall_connect_t*, pms);
-	sgx_status_t status = SGX_SUCCESS;
-	char* _tmp_server = ms->ms_server;
-	size_t _len_server = _tmp_server ? strlen(_tmp_server) + 1 : 0;
-	char* _in_server = NULL;
-	char* _tmp_port = ms->ms_port;
-	size_t _len_port = _tmp_port ? strlen(_tmp_port) + 1 : 0;
-	char* _in_port = NULL;
-
-	CHECK_REF_POINTER(pms, sizeof(ms_ecall_connect_t));
-	CHECK_UNIQUE_POINTER(_tmp_server, _len_server);
-	CHECK_UNIQUE_POINTER(_tmp_port, _len_port);
-
-	if (_tmp_server != NULL) {
-		_in_server = (char*)malloc(_len_server);
-		if (_in_server == NULL) {
-			status = SGX_ERROR_OUT_OF_MEMORY;
-			goto err;
-		}
-
-		memcpy((void*)_in_server, _tmp_server, _len_server);
-		_in_server[_len_server - 1] = '\0';
-	}
-	if (_tmp_port != NULL) {
-		_in_port = (char*)malloc(_len_port);
-		if (_in_port == NULL) {
-			status = SGX_ERROR_OUT_OF_MEMORY;
-			goto err;
-		}
-
-		memcpy((void*)_in_port, _tmp_port, _len_port);
-		_in_port[_len_port - 1] = '\0';
-	}
-	ms->ms_retval = ecall_connect((const char*)_in_server, (const char*)_in_port);
-err:
-	if (_in_server) free((void*)_in_server);
-	if (_in_port) free((void*)_in_port);
-
-	return status;
-}
-
 static sgx_status_t SGX_CDECL sgx_ecall_self_test(void* pms)
 {
 	ms_ecall_self_test_t* ms = SGX_CAST(ms_ecall_self_test_t*, pms);
@@ -210,11 +161,10 @@ err:
 
 SGX_EXTERNC const struct {
 	size_t nr_ecall;
-	struct {void* call_addr; uint8_t is_priv;} ecall_table[3];
+	struct {void* call_addr; uint8_t is_priv;} ecall_table[2];
 } g_ecall_table = {
-	3,
+	2,
 	{
-		{(void*)(uintptr_t)sgx_ecall_connect, 0},
 		{(void*)(uintptr_t)sgx_ecall_self_test, 0},
 		{(void*)(uintptr_t)sgx_ecall_client, 0},
 	}
@@ -222,20 +172,20 @@ SGX_EXTERNC const struct {
 
 SGX_EXTERNC const struct {
 	size_t nr_ocall;
-	uint8_t entry_table[10][3];
+	uint8_t entry_table[10][2];
 } g_dyn_entry_table = {
 	10,
 	{
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
+		{0, 0, },
+		{0, 0, },
+		{0, 0, },
+		{0, 0, },
+		{0, 0, },
+		{0, 0, },
+		{0, 0, },
+		{0, 0, },
+		{0, 0, },
+		{0, 0, },
 	}
 };
 
