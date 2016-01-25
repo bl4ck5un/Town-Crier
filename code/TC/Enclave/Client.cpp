@@ -959,10 +959,10 @@ int ecall_client( const char* server, const char* port )
         }
 #else
     {
+        // load trusted crts
         ret = mbedtls_x509_crt_parse( &cacert,
             (const unsigned char *) root_cas_pem,
             root_cas_pem_len);
-        mbedtls_printf("MBEDTLS_CERTS_C not defined.");
     }
 #endif
     if( ret < 0 )
