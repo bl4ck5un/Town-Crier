@@ -44,6 +44,10 @@
 #if defined(_MSC_VER)
 # define TOKEN_FILENAME   "Enclave.token"
 # define ENCLAVE_FILENAME "Enclave.signed.dll"
+
+#define snprintf c99_snprintf
+#define vsnprintf c99_vsnprintf
+
 #elif defined(__GNUC__)
 # define TOKEN_FILENAME   "enclave.token"
 # define ENCLAVE_FILENAME "enclave.signed.so"
@@ -155,7 +159,12 @@ int query_sgx_status();
 int test_connect(void);
 int test_self_test(void);
 
+int test_rpc(void);
 
+/* misc */
+
+int c99_vsnprintf(char *outBuf, size_t size, const char *format, va_list ap);
+int c99_snprintf(char *outBuf, size_t size, const char *format, ...);
 
 #if defined(__cplusplus)
 }

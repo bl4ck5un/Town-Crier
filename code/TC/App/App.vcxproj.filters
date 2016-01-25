@@ -19,6 +19,12 @@
     <Filter Include="TLSSupport">
       <UniqueIdentifier>{e1a73113-54af-42a1-b99a-47faf1ea4f00}</UniqueIdentifier>
     </Filter>
+    <Filter Include="jsonrpc-cpp">
+      <UniqueIdentifier>{8fcbbe58-e0c5-4edf-a9eb-d083253303e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Misc">
+      <UniqueIdentifier>{621c17ad-8cfc-4802-a1fe-dfc87d791ee5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Enclave_u.c">
@@ -33,22 +39,100 @@
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="testsuite.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="testsuite.cpp">
+    <ClCompile Include="..\jsonrpc-cpp-0.5\examples\tcp-client.cpp">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_client.cpp">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_handler.cpp">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_httpclient.cpp">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_server.cpp">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_tcpclient.cpp">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_tcpserver.cpp">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_udpclient.cpp">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_udpserver.cpp">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\netstring.cpp">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\networking.cpp">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\system.cpp">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="snprintf.c">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="App.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="App.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Enclave_u.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="TLSlibSupport.h">
       <Filter>TLSSupport</Filter>
+    </ClInclude>
+    <ClInclude Include="App.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc.h">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_client.h">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_common.h">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_handler.h">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_httpclient.h">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_server.h">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_tcpclient.h">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_tcpserver.h">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_udpclient.h">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_udpserver.h">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\netstring.h">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\networking.h">
+      <Filter>jsonrpc-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\system.h">
+      <Filter>jsonrpc-cpp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
