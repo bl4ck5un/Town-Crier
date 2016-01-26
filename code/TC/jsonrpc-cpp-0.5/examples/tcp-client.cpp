@@ -41,7 +41,7 @@
 
 int test_rpc()
 {
-  Json::Rpc::HttpClient HttpClient(std::string("52.23.173.127"), 8201);
+  Json::Rpc::HttpClient HttpClient(std::string("52.23.173.127"), 8200);
   Json::Value query;
   Json::FastWriter writer;
   std::string queryStr;
@@ -57,6 +57,14 @@ int test_rpc()
   query["jsonrpc"] = "2.0";
   query["id"] = 1;
   query["method"] = "web3_clientVersion";
+
+  Json::Value params;
+  params["from"] = "0x45dddcecab2cca54dfefa84755d55b0e0d941cf2";
+  params["to"] = "0x9c2f904145733405bc297713bb91d0ceb19ca74b";
+  params["value"] = "0x100";
+
+  query["method"] = "eth_sendTransaction";
+  query["params"][0] = params;
 
   queryStr = writer.write(query);
   std::cout << "Query is: " << queryStr << std::endl;
