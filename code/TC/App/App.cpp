@@ -8,10 +8,13 @@
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
 
-#define RPC_TEST
+//#define RPC_TEST
+#define ECDSA_TEST
+#define SCRAPER_TEST
 
 int main()
 {
+    int ret;
 
 #ifdef RPC_TEST
     test_rpc();
@@ -30,12 +33,19 @@ int main()
         return -1; 
     }
  
-    // test_self_test();
-    int ret;
+#if defined(SCRAPER_TEST)
     test_yahoo_finance(global_eid, &ret);
     if (ret != 0) {
         printf("test_yahoo_finance returned %d\n", ret);
     }
+#endif
+
+#if defined(ECDSA_TEST)
+    test_ecdsa(global_eid, &ret);
+    if (ret != 0) {
+        printf("test_yahoo_finance returned %d\n", ret);
+    }
+#endif
 
     printf("Info: SampleEnclave successfully returned.\n");
     printf("Enter a character before exit ...\n");

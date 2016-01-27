@@ -411,6 +411,7 @@
   <ItemGroup>
     <ClCompile Include="..\mbedtls-2.2.1\programs\test\mbedTLS_selftest.c" />
     <ClCompile Include="Client.c" />
+    <ClCompile Include="ECDAS.c" />
     <ClCompile Include="Scraper_lib.c" />
     <ClCompile Include="RootCerts.c" />
     <ClCompile Include="Enclave_t.c" />
@@ -418,6 +419,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Client.h" />
+    <ClInclude Include="ECDSA.h" />
     <ClInclude Include="Enclave.h" />
     <ClInclude Include="Enclave_t.h" />
     <ClInclude Include="RootCerts.h" />

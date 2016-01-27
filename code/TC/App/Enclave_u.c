@@ -8,6 +8,10 @@ typedef struct ms_test_yahoo_finance_t {
 	int ms_retval;
 } ms_test_yahoo_finance_t;
 
+typedef struct ms_test_ecdsa_t {
+	int ms_retval;
+} ms_test_ecdsa_t;
+
 typedef struct ms_ocall_mbedtls_net_connect_t {
 	int ms_retval;
 	mbedtls_net_context* ms_ctx;
@@ -172,6 +176,15 @@ sgx_status_t test_yahoo_finance(sgx_enclave_id_t eid, int* retval)
 	sgx_status_t status;
 	ms_test_yahoo_finance_t ms;
 	status = sgx_ecall(eid, 1, &ocall_table_Enclave, &ms);
+	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
+	return status;
+}
+
+sgx_status_t test_ecdsa(sgx_enclave_id_t eid, int* retval)
+{
+	sgx_status_t status;
+	ms_test_ecdsa_t ms;
+	status = sgx_ecall(eid, 2, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
 }

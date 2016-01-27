@@ -34,6 +34,10 @@ typedef struct ms_test_yahoo_finance_t {
 	int ms_retval;
 } ms_test_yahoo_finance_t;
 
+typedef struct ms_test_ecdsa_t {
+	int ms_retval;
+} ms_test_ecdsa_t;
+
 typedef struct ms_ocall_mbedtls_net_connect_t {
 	int ms_retval;
 	mbedtls_net_context* ms_ctx;
@@ -127,33 +131,47 @@ static sgx_status_t SGX_CDECL sgx_test_yahoo_finance(void* pms)
 	return status;
 }
 
+static sgx_status_t SGX_CDECL sgx_test_ecdsa(void* pms)
+{
+	ms_test_ecdsa_t* ms = SGX_CAST(ms_test_ecdsa_t*, pms);
+	sgx_status_t status = SGX_SUCCESS;
+
+	CHECK_REF_POINTER(pms, sizeof(ms_test_ecdsa_t));
+
+	ms->ms_retval = test_ecdsa();
+
+
+	return status;
+}
+
 SGX_EXTERNC const struct {
 	size_t nr_ecall;
-	struct {void* call_addr; uint8_t is_priv;} ecall_table[2];
+	struct {void* call_addr; uint8_t is_priv;} ecall_table[3];
 } g_ecall_table = {
-	2,
+	3,
 	{
 		{(void*)(uintptr_t)sgx_ecall_self_test, 0},
 		{(void*)(uintptr_t)sgx_test_yahoo_finance, 0},
+		{(void*)(uintptr_t)sgx_test_ecdsa, 0},
 	}
 };
 
 SGX_EXTERNC const struct {
 	size_t nr_ocall;
-	uint8_t entry_table[10][2];
+	uint8_t entry_table[10][3];
 } g_dyn_entry_table = {
 	10,
 	{
-		{0, 0, },
-		{0, 0, },
-		{0, 0, },
-		{0, 0, },
-		{0, 0, },
-		{0, 0, },
-		{0, 0, },
-		{0, 0, },
-		{0, 0, },
-		{0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
 	}
 };
 

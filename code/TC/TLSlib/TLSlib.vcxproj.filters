@@ -461,9 +461,4 @@
       <Filter>Source Files</Filter>
     </CustomBuild>
   </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\mbedtls-2.2.1\library\CMakeLists.txt">
-      <Filter>mbedTLS</Filter>
-    </Text>
-  </ItemGroup>
 </Project>
