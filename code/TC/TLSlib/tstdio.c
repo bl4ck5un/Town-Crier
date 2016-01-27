@@ -1,13 +1,9 @@
 #include <stdarg.h>
 #include <stdio.h>      /* vsnprintf */
+#include <string.h>
 
-#include "TLSlib_t.h"  /* print_string */
-#include "TLSlib.h"
+#include "tstdio.h"
 
-/* 
- * printf: 
- *   Invokes OCALL to display the enclave buffer to the terminal.
- */
 int printf(const char *fmt, ...)
 {
     int ret;
@@ -19,4 +15,15 @@ int printf(const char *fmt, ...)
 
     ocall_print_string(&ret, buf);
     return ret;
+}
+
+char* strcat(char *dest, const char *src)
+{
+    size_t i,j;
+    for (i = 0; dest[i] != '\0'; i++)
+        ;
+    for (j = 0; src[j] != '\0'; j++)
+        dest[i+j] = src[j];
+    dest[i+j] = '\0';
+    return dest;
 }

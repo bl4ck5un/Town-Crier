@@ -234,6 +234,9 @@
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_v.h">
       <Filter>mbedTLS</Filter>
     </ClInclude>
+    <ClInclude Include="tstdio.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\mbedtls-2.2.1\library\aes.c">
@@ -443,13 +446,13 @@
     <ClCompile Include="..\mbedtls-2.2.1\library\net.c">
       <Filter>mbedTLS</Filter>
     </ClCompile>
-    <ClCompile Include="Ocalls.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\mbedtls-2.2.1\library\timing.c">
       <Filter>mbedTLS</Filter>
     </ClCompile>
     <ClCompile Include="entropy_sgx.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tstdio.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -457,14 +460,6 @@
     <CustomBuild Include="TLSlib.edl">
       <Filter>Source Files</Filter>
     </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\mbedtls-2.2.1\library\.gitignore">
-      <Filter>mbedTLS</Filter>
-    </None>
-    <None Include="..\mbedtls-2.2.1\library\Makefile">
-      <Filter>mbedTLS</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="..\mbedtls-2.2.1\library\CMakeLists.txt">

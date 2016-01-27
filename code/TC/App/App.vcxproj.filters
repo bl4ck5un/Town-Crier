@@ -75,9 +75,6 @@
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\system.cpp">
       <Filter>jsonrpc-cpp</Filter>
     </ClCompile>
-    <ClCompile Include="snprintf.c">
-      <Filter>Misc</Filter>
-    </ClCompile>
     <ClCompile Include="App.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

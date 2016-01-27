@@ -16,18 +16,7 @@
 #include "Enclave_u.h"
 
 
-int test_connect()
-{
-    int ret;
-    sgx_status_t st = ecall_client(global_eid, &ret, "google.com", "443");
 
-    if (st != SGX_SUCCESS) {
-        printf("connect failed!\n");
-    }
-
-    return ret;
-
-}
 
 int test_self_test()
 {

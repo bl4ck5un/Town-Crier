@@ -59,6 +59,22 @@ extern sgx_enclave_id_t global_eid;    /* global enclave id */
 extern "C" {
 #endif
 
+// Utils.cpp
+void print_error_message(sgx_status_t ret);
+int initialize_enclave(void);
+
+// printf etc
+int c99_vsnprintf(char *outBuf, size_t size, const char *format, va_list ap);
+int c99_snprintf(char *outBuf, size_t size, const char *format, ...);
+
+#if defined(_MSC_VER)
+int query_sgx_status();
+#endif
+
+/* test suite */
+int test_connect(void);
+int test_self_test(void);
+int test_rpc(void);
 
 typedef struct _sgx_errlist_t {
     sgx_status_t err;
@@ -144,27 +160,6 @@ static sgx_errlist_t sgx_errlist[] = {
         NULL
     },
 };
-
-void print_error_message(sgx_status_t ret);
-int initialize_enclave(void);
-
-#if defined(_MSC_VER)
-/* query and enable SGX device*/
-int query_sgx_status();
-#endif
-
-
-/* test suite */
-
-int test_connect(void);
-int test_self_test(void);
-
-int test_rpc(void);
-
-/* misc */
-
-int c99_vsnprintf(char *outBuf, size_t size, const char *format, va_list ap);
-int c99_snprintf(char *outBuf, size_t size, const char *format, ...);
 
 #if defined(__cplusplus)
 }

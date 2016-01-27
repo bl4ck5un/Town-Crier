@@ -299,7 +299,6 @@
     </ClCompile>
     <ClCompile Include="App.cpp" />
     <ClCompile Include="printf.c" />
-    <ClCompile Include="snprintf.c" />
     <ClCompile Include="testsuite.cpp" />
     <ClCompile Include="net_u.c" />
     <ClCompile Include="Utils.cpp" />

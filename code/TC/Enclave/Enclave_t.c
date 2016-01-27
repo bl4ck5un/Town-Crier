@@ -30,11 +30,9 @@ typedef struct ms_ecall_self_test_t {
 	int ms_retval;
 } ms_ecall_self_test_t;
 
-typedef struct ms_ecall_client_t {
+typedef struct ms_test_yahoo_finance_t {
 	int ms_retval;
-	char* ms_server;
-	char* ms_port;
-} ms_ecall_client_t;
+} ms_test_yahoo_finance_t;
 
 typedef struct ms_ocall_mbedtls_net_connect_t {
 	int ms_retval;
@@ -116,45 +114,15 @@ static sgx_status_t SGX_CDECL sgx_ecall_self_test(void* pms)
 	return status;
 }
 
-static sgx_status_t SGX_CDECL sgx_ecall_client(void* pms)
+static sgx_status_t SGX_CDECL sgx_test_yahoo_finance(void* pms)
 {
-	ms_ecall_client_t* ms = SGX_CAST(ms_ecall_client_t*, pms);
+	ms_test_yahoo_finance_t* ms = SGX_CAST(ms_test_yahoo_finance_t*, pms);
 	sgx_status_t status = SGX_SUCCESS;
-	char* _tmp_server = ms->ms_server;
-	size_t _len_server = _tmp_server ? strlen(_tmp_server) + 1 : 0;
-	char* _in_server = NULL;
-	char* _tmp_port = ms->ms_port;
-	size_t _len_port = _tmp_port ? strlen(_tmp_port) + 1 : 0;
-	char* _in_port = NULL;
 
-	CHECK_REF_POINTER(pms, sizeof(ms_ecall_client_t));
-	CHECK_UNIQUE_POINTER(_tmp_server, _len_server);
-	CHECK_UNIQUE_POINTER(_tmp_port, _len_port);
+	CHECK_REF_POINTER(pms, sizeof(ms_test_yahoo_finance_t));
 
-	if (_tmp_server != NULL) {
-		_in_server = (char*)malloc(_len_server);
-		if (_in_server == NULL) {
-			status = SGX_ERROR_OUT_OF_MEMORY;
-			goto err;
-		}
+	ms->ms_retval = test_yahoo_finance();
 
-		memcpy((void*)_in_server, _tmp_server, _len_server);
-		_in_server[_len_server - 1] = '\0';
-	}
-	if (_tmp_port != NULL) {
-		_in_port = (char*)malloc(_len_port);
-		if (_in_port == NULL) {
-			status = SGX_ERROR_OUT_OF_MEMORY;
-			goto err;
-		}
-
-		memcpy((void*)_in_port, _tmp_port, _len_port);
-		_in_port[_len_port - 1] = '\0';
-	}
-	ms->ms_retval = ecall_client((const char*)_in_server, (const char*)_in_port);
-err:
-	if (_in_server) free((void*)_in_server);
-	if (_in_port) free((void*)_in_port);
 
 	return status;
 }
@@ -166,7 +134,7 @@ SGX_EXTERNC const struct {
 	2,
 	{
 		{(void*)(uintptr_t)sgx_ecall_self_test, 0},
-		{(void*)(uintptr_t)sgx_ecall_client, 0},
+		{(void*)(uintptr_t)sgx_test_yahoo_finance, 0},
 	}
 };
 
