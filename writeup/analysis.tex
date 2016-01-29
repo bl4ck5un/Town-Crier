@@ -1,0 +1,52 @@
+\section{Security Analysis}
+
+Here we assume an adversary which is active on the blockchain, the network, and within the untrusted executable running on the Town Crier server.
+However, we assume that the adversary will not execute an arbitrary denial of service attack, but will rather delay messages indefinitely and deliver bogus data whenever such data will be accepted as valid.
+Because operations on the blockchain are verifiable and the SGX enclave can attest to what it is running, we assume those are honest.
+
+In this model we show that, for every request which provides a sufficient fee,
+a valid authenticated datagram will be delivered to the requested callback location in finite time.
+If the request includes an insufficient fee (but is otherwise valid),
+the datagram will not be delivered, but the (too-small) fee will still be collected.
+
+\begin{lemma} \label{lem:non-bankrupt-p_sgx}
+If seeded with at least $F_{\rm max}$ ether, the \sgxadd wallet will have
+at least as much money after each transaction as it had before that transaction.
+\end{lemma}
+
+\begin{proof}
+\ethan{This is actually a proof sketch, I just put it in a proof tag.}
+
+Because all blockchain transactions from \sgxadd must be initiated by the SGX enclave and the SGX only calls \tcont.Deliver,
+we need only reason about what happens inside that function.
+Because transactions including \tcont are transmitted securely into the SGX enclave, it will only see valid requests (ones for which $F_{\rm min} \leq \${\sf fee} \leq F_{\rm max}$) and the arguments it sees for those requests will be correct.
+Moreover, it saves the transaction ID of each request it fulfills and never fulfills a request with the same transaction ID twice.
+This means that whenever deliver is called, it will be called in connection with a valid request that has not already been delivered.
+Thus it suffices to show that:
+\begin{enumerate}
+  \item The first time a valid request is delivered, \tcont will contain at least $\${\sf fee}$ ether.
+  \item $\${\sf fee}$ is never lower than the amount \sgxadd must spend in gas.
+  \item The execution of Deliver will never run out of gas (and thus always succeed).
+\end{enumerate}
+
+To prove claim 1 we first note that ether can only be removed from \tcont as part of a call to Deliver from \sgxadd.
+Because \sgxadd is honest, it will only make this call in connection with a valid request, and the specified value of $\${\sf fee}$ will always be the fee submitted with that request.
+Because \tcont pays out the specified $\${\sf fee}$ on the call to Deliver, the ether is always exactly the ether stored from a previous, valid, undelivered request, and thus will always be present in \tcont.
+
+To prove claim 2 first note that a request is only considered valid if $\${\sf fee} \geq F_{\rm min}$.
+$F_{\rm min}$ is defined so that it is high enough to cover gas costs for all of Deliver except the execution of the provided ${\sf callback}$.
+However, ${\sf callback}$ is only given $\${\sf fee} - F_{\rm min}$ ether worth of gas to execute.
+Therefore it is impossible for the entire call of Deliver to spend more than $F_{\rm min} + (\${\sf fee} - F_{\rm min}) = \${\sf fee}$ ether on gas.
+
+To prove claim 3 we note that $\${\sf fee} \leq F_{\rm max}$ and, by construction, \sgxadd will always provide at least $F_{\rm max}$ in gas for the execution of Deliver.
+Therefore we have that \sgxadd will always provide at least $\${\sf fee}$ in gas to execute Deliver.
+By the argument above, Deliver can never use more than $\${\sf fee}$ in gas, so therefore an SGX-initialized call to Deliver will never run out of gas.
+\end{proof}
+
+
+
+\begin{lemma} \label{lem:authentic-delivery}
+Any data given as an argument to ${\sf callback}$ in \tcont's Deliver method is verifiably authentic.
+\end{lemma}
+
+
