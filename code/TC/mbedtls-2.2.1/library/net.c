@@ -22,6 +22,7 @@
 #include "Defs.h"
 #include "TLSlib.h"
 #include "TLSlib_t.h"
+#include "tstdio.h"
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"

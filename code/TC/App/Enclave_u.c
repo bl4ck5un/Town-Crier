@@ -4,11 +4,13 @@ typedef struct ms_ecall_self_test_t {
 	int ms_retval;
 } ms_ecall_self_test_t;
 
-typedef struct ms_ecall_client_t {
+typedef struct ms_test_yahoo_finance_t {
 	int ms_retval;
-	char* ms_server;
-	char* ms_port;
-} ms_ecall_client_t;
+} ms_test_yahoo_finance_t;
+
+typedef struct ms_test_ecdsa_t {
+	int ms_retval;
+} ms_test_ecdsa_t;
 
 typedef struct ms_ocall_mbedtls_net_connect_t {
 	int ms_retval;
@@ -169,13 +171,20 @@ sgx_status_t ecall_self_test(sgx_enclave_id_t eid, int* retval)
 	return status;
 }
 
-sgx_status_t ecall_client(sgx_enclave_id_t eid, int* retval, const char* server, const char* port)
+sgx_status_t test_yahoo_finance(sgx_enclave_id_t eid, int* retval)
 {
 	sgx_status_t status;
-	ms_ecall_client_t ms;
-	ms.ms_server = (char*)server;
-	ms.ms_port = (char*)port;
+	ms_test_yahoo_finance_t ms;
 	status = sgx_ecall(eid, 1, &ocall_table_Enclave, &ms);
+	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
+	return status;
+}
+
+sgx_status_t test_ecdsa(sgx_enclave_id_t eid, int* retval)
+{
+	sgx_status_t status;
+	ms_test_ecdsa_t ms;
+	status = sgx_ecall(eid, 2, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
 }

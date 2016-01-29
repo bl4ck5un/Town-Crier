@@ -2,9 +2,9 @@
 
 enclave {
     trusted {
-        // public int ecall_connect([in, string] const char* server, [in, string] const char* port);
         public int ecall_self_test();
-        public int ecall_client([in, string] const char* server, [in, string] const char* port);
+        public int test_yahoo_finance();
+        public int test_ecdsa();
     };
 
     untrusted {

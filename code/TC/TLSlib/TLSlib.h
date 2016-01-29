@@ -12,7 +12,6 @@
 extern "C" {
 #endif
 
-int printf (const char *fmt, ...);
 
 #if defined(__cplusplus)
 }

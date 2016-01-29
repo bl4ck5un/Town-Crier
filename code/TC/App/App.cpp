@@ -8,35 +8,46 @@
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
 
-#define RPC_ONLY
+//#define RPC_TEST
+#define ECDSA_TEST
+#define SCRAPER_TEST
 
 int main()
 {
+    int ret;
 
+#ifdef RPC_TEST
     test_rpc();
+#endif
 
-#if !defined(RPC_ONLY)
 #if defined(_MSC_VER)
     if (query_sgx_status() < 0) {
-        /* either SGX is disabled, or a reboot is required to enable SGX */
         printf("Enter a character before exit ...\n");
         getchar();
         return -1; 
     }
 #endif 
-
-    /* Initialize the enclave */
     if(initialize_enclave() < 0){
         printf("Enter a character before exit ...\n");
         getchar();
         return -1; 
     }
  
-    // test_self_test();
-    int ret;
-    ecall_client(global_eid, &ret, "google.com", "443");
-    printf("Info: SampleEnclave successfully returned.\n");
+#if defined(SCRAPER_TEST)
+    test_yahoo_finance(global_eid, &ret);
+    if (ret != 0) {
+        printf("test_yahoo_finance returned %d\n", ret);
+    }
 #endif
+
+#if defined(ECDSA_TEST)
+    test_ecdsa(global_eid, &ret);
+    if (ret != 0) {
+        printf("test_yahoo_finance returned %d\n", ret);
+    }
+#endif
+
+    printf("Info: SampleEnclave successfully returned.\n");
     printf("Enter a character before exit ...\n");
     getchar();
     return 0;

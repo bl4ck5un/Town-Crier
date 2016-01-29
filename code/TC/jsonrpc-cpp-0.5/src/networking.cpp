@@ -26,6 +26,7 @@
 #include <cstring>
 
 #include "networking.h"
+#include "App.h"
 
 namespace networking
 {

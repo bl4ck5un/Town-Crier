@@ -206,6 +206,7 @@
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\x509_csr.h" />
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\xtea.h" />
     <ClInclude Include="Defs.h" />
+    <ClInclude Include="tstdio.h" />
     <ClInclude Include="TLSlib.h" />
     <ClInclude Include="TLSlib_t.h" />
   </ItemGroup>
@@ -297,14 +298,7 @@
     <ClCompile Include="..\mbedtls-2.2.1\library\x509_csr.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\xtea.c" />
     <ClCompile Include="entropy_sgx.c" />
-    <ClCompile Include="Ocalls.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\mbedtls-2.2.1\library\.gitignore" />
-    <None Include="..\mbedtls-2.2.1\library\Makefile" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="..\mbedtls-2.2.1\library\CMakeLists.txt" />
+    <ClCompile Include="tstdio.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
