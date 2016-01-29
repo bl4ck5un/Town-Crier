@@ -1,5 +1,8 @@
 \section{Security Analysis}
 
+
+\subsection{Gas neutrality}
+
 Here we assume an adversary which is active on the blockchain, the network, and within the untrusted executable running on the Town Crier server.
 However, we assume that the adversary will not execute an arbitrary denial of service attack, but will rather delay messages indefinitely and deliver bogus data whenever such data will be accepted as valid.
 Because operations on the blockchain are verifiable and the SGX enclave can attest to what it is running, we assume those are honest.
@@ -48,5 +51,9 @@ By the argument above, Deliver can never use more than $\${\sf fee}$ in gas, so 
 \begin{lemma} \label{lem:authentic-delivery}
 Any data given as an argument to ${\sf callback}$ in \tcont's Deliver method is verifiably authentic.
 \end{lemma}
+
+
+\subsection{Other security concerns}
+We treat side-channel attacks as outside the scope of our initial \tc architecture. Such attacks would be of particular concern should the \medname be compromised. Intel explicitly disclaims protections against side-channel attacks in SGX. The ability for the OS to monitor page faults incurred by a process running in an enclave is an example shown to be potentially serious in practice~\cite{}. Additionally, the \medname or any network adversary can potentially perform traffic analysis to determine what content the \encname is retrieving from a remote server~\cite{}, a potential threat to the confidentiality of private datagrams.
 
 
