@@ -1,6 +1,8 @@
 \section{Architectural Overview: Basic TC System}
 
-\subsection{View of a client / requester}
+The blockchain interface to \tc is the smart contract \tcont. \tcont is designed to present a simple API to a relying contract / requester \reqcont. \reqcont sends to \tcont a specification of the datagram it is requesting, along with payment. The datagram specification includes the data being sought and may also include parameters, such as the time at which the data should be retrieved, the target source or sources, and so forth. \tcont simply returns the requested data to \reqcont. The interaction between \reqcont and \tcont takes place entirely on the blockchain.
+
+The complexity of \tc resides primarily in its backend, which must monitor, keep track of, and fulfill datagram requests passing from requesters through \tcont. Additionally, to validate the trustworthiness of \tc, the entity or entities creating \reqcont must verify a hardware- (SGX-)generated attestation. So \tc must also support a service to fulfill attestation requests off-chain. 
 
 \subsection{Architecture}
 
@@ -41,9 +43,9 @@ We now make this data flow more precise.
 
 \subsection{Datagram processing: Data flow}
 
-We denote a datagram instance, namely the set of message values associated with a datagram request, by $\dgi$, where $i$ is a unique instance index. (We explain in Section~\ref{sec:implementation} how this index is computed.) Where clear from context, we drop the subscript $i$ and write $\dg$.
+We denote a datagram instance, namely the set of message values associated with a datagram request, by $\dgi$, where $i$ is a unique instance index. (We explain in Section~\ref{sec:implementation} how this index is computed.) 
 
-A datagram request by \reqcont takes the form of a message $\dgreq$ to \tcont on the blockchain. This message $\dgreq = (\dgform, \dgpay)$ includes both a specification $\dgform$ of the requested datagram (e.g., a stock ticker and desired time) and a payment $\dgpay$, which in Ethereum may include gas to cover the execution cost of the request as well as a service fee. \tcont receives a return message $\dgret = (\dgform, \dgm)$ from the $\tc$ service where $\dgm$ contains the data (e.g., the desired stock ticker price). \tcont checks the consistency of $\dgform$ on the incoming and outgoing messages, and if they match forwards $\dgm$ to \reqcont. 
+A datagram request by \reqcont takes the form of a message $\dgi.\dgreq$ to \tcont on the blockchain. This message $\dgi.\dgreq = (\dgi.\dgform, \dgi.\dgpay)$ includes both a specification $\dgi.\dgform$ of the requested datagram (e.g., a stock ticker and desired time) and a payment $\dgi.\dgpay$, which in Ethereum may include gas to cover the execution cost of the request as well as a service fee. \tcont receives a return message $\dgi.\dgret = (\dgi.\dgform, \dgi.\dgm)$ from the $\tc$ service where $\dgm$ contains the data (e.g., the desired stock ticker price). \tcont checks the consistency of $\dgi.\dgform$ on the incoming and outgoing messages, and if they match forwards $\dgi.\dgm$ to \reqcont. Where clear from context, we omit the prefix $\dgi$ from our notation.
 
 Figure~\ref{fig:dataflow} shows the data flows involved in processing a datagram request. For simplicity, the figure omits the \medname, which is only responsible for data passing.
 
