@@ -1,10 +1,91 @@
-\section{Architectural Overview: Basic TC System}
+\section{\tc Design}
 
-The blockchain interface to \tc is the smart contract \tcont. \tcont is designed to present a simple API to a relying contract / requester \reqcont. \reqcont sends to \tcont a specification of the datagram it is requesting, along with payment. The datagram specification includes the data being sought and may also include parameters, such as the time at which the data should be retrieved, the target source or sources, and so forth. \tcont simply returns the requested data to \reqcont. The interaction between \reqcont and \tcont takes place entirely on the blockchain.
+We now present our \tc architecture. First, we present a strawman architecture that illustrates some of the technical challenges that arise in the design of \tc. We then present our \tc architecture, first describing the interface available to a relying contract \reqcont, then the back end, and finally an overview of the security model.
 
-The complexity of \tc resides primarily in its backend, which must monitor, keep track of, and fulfill datagram requests passing from requesters through \tcont. Additionally, to validate the trustworthiness of \tc, the entity or entities creating \reqcont must verify a hardware- (SGX-)generated attestation. So \tc must also support a service to fulfill attestation requests off-chain. 
+\subsection{Strawman architecture}
 
-\subsection{Architecture}
+A naive strawman solution is the following:
+\begin{itemize}[leftmargin=5mm]
+\item
+{\bf Monitor and relay.}
+The Town Crier relay $\relay$    
+monitors the blockchain for 
+contracts that require authenticated data feeds (e.g., those
+that make calls to $\tcont$).
+
+Suppose a contract requires 
+an authenticated 
+data feed with the following parameters ${\sf params} := (\weburl, \pkurl, T)$,
+where $\weburl$ denotes the site's URL,
+$\pkurl$ denotes the site's cryptographic 
+identity, and $T$ denotes a time at which the site should be scraped.
+Town Crier's relay $\relay$ will then send
+a request ${\sf params}$ 
+to the SGX enclave at time $T$.
+\item
+{\bf Securely fetch feed.}
+The SGX enclave will now fetch the webpage at $\weburl$ by establishing
+an HTTPS secure channel with 
+the cryptographic entity $\pkurl$.
+After fetching the contents of the page, 
+the enclave parses the webpage's contents and extracts the datagram requested
+denoted ${\sf data}$.
+Finally, the SGX enclave produces an attestation 
+vouching for the tuple $(\weburl, \pkurl, T, {\sf data})$.
+Specifically, note that the SGX enclave also vouches
+for the time $T$ at which the data source is fetched.
+\item
+{\bf Verify}.
+Now, the blockchain contract $\tcont$ verifies the attestation
+produced by the SGX enclave, and 
+if verification succeeds, proceeds to make use of 
+the resulting datagram ${\sf data}$.
+\end{itemize}
+
+\paragraph{Problems with the strawman scheme.}
+The above strawman scheme has a few drawbacks. 
+
+First, the blockchain contract
+$\tcont$ must verify an SGX group signature.  
+This could be wasteful in terms of on-chain cost, 
+\elaine{things like on-chain cost and gas should be mentioned in a 
+background section}
+since the group signature verification requires inputing 
+to $\tcont$ the latest revocation list 
+for SGX's group signature scheme.
+Moreover, 
+this also gives rise to a practical engineering issue if we
+were 
+to build $\tcont$ atop Ethereum,
+since implementing group signature verification in Ethereum's Serpent
+or Solidity language is non-trivial and wasteful in terms of gas.
+
+Second, for the SGX enclave to  
+attest to the time $T$ at which the data source is fetched, 
+we need the SGX enclave to provide a trusted clock that provides absolute time. 
+Although Intel's SGX provides a 
+trusted clock API, the trusted clock does not provide absolute time,
+but rather, relative time with respect to a certain reference point.  
+Therefore, it is not immediately clear how to realize 
+a trusted absolute clock.
+
+
+\iffalse
+
+At first glance, a simple architecture might be envisioned in which \tc has no explicit blockchain presence such as a smart contract or account. Instead, the \tc host scrapes the blockchain, searching for any contract \reqcont whose state contains a datagram request or an attestation request. The \tc sends datagrams or fresh attestations to \reqcont accordingly. A trusted component, which we will call an \encname, runs in an SGX enclave. To ensure data integrity, the \encname obtains data from data sources via an HTTPS. This general design approach would have a number of benefits, including: no need for contracts to send explicit requests to \tc (saving gas and potentially complexity), ensuring that a relying contract \reqcont consumes only fresh SGX attestations from \tc, and conceptual simplicity.
+
+This approach, however, is unworkable for several reasons. First, it is desirable for \tc to accept on-blockchain payments via a smart contract in order to permit payment in the system's cryptocurrency (e.g., Ether) and to ensure a {\em fair exchange} between payments and datagrams. Even a not-for-profit \tc service might accept small gas payments to cover the cost of datagram transmission. Without enforcement of fair exchange, relying contracts or the \tc service would risk being defrauded by the other party. Second, because an SGX enclave does not have direct network connectivity (and our adversarial model includes general network adversaries), an adversarial OS on the SGX host could {\em corrupt blockchain data furnished to the \encname}, resulting in the construction of incorrect datagrams. (Datagram specifications could be sent from the \encname to \reqcont for verification, but the resulting, weak security model for \tc would create unneeded complexity for relying contract creators.) It is to address these two concerns that we design \tc with a blockchain front end in the form of a contract \tcont.
+
+A third reason for the infeasibility of our strawman architecture results from the limitations in the current specification of Ethereum.In Ethereum, opcodes for in-contract cryptographic operations are very limited and do not currently support any form of public-key cryptography, let alone the proprietary EPID group-signature scheme present in SGX attestations. (Digital signatures are supported only for messages from non-contract accounts.) On-blockchain verification of attestations is feasible in principle, as the Ethereum virtual machine is Turing-complete, but would be prohibitively expensive for contracts, imposing exorbitant gas costs. For this reason, our \tc design favors off-chain verification of attestations.
+\fi
+
+\subsection{The \tc interface}
+
+The blockchain interface to \tc is the smart contract \tcont. \tcont is designed to present a simple API to a relying contract / requester \reqcont. \reqcont sends to \tcont a specification of the datagram it is requesting, along with payment. The datagram specification includes the data being sought and may also include datagram parameters, such as the time at which the data should be retrieved, the target source or sources, and so forth. \tcont simply returns the requested data to \reqcont. The interaction between \reqcont and \tcont takes place entirely on the blockchain.
+
+The complexity of \tc resides primarily in its backend, which must monitor, keep track of, and fulfill datagram requests passing from requesters through \tcont. Additionally, \tc supports an off-chain service, specifically, a web service, to furnish SGX attestations to clients.
+
+\subsection{The \tc architecture}
 
 The \tcs system includes three main components: The \tcontract, the \encname, and the \medname. The \encname and \medname reside on the \tc server, while the \tcontract resides on the blockchain. An architectural schematic showing the roles of these components is given in Figure~\ref{fig:overview}.
 
@@ -65,22 +146,16 @@ Digital signatures are needed to authenticated messages, such as $\dgret$, enter
 Here we given an overview of our security model for \tc, providing more details in our security analysis in section~\ref{}. We assume the following:
 
 \begin{itemize}
-\item {\em \encname security:} We make three assumptions about \encname : (1) \enname behaves honestly, i.e., correctly executes the \tc protocol; (2) The private key $\skTC$ is known only the \encname; and (3) The \encname has an accurate (internal) real-time clock; specifically, it is accurate to within the round-trip
+\item {\em \encname security:} We make three assumptions about \encname : (1) \encname behaves honestly, i.e., correctly executes the \tc protocol; (2) The private key $\skTC$ is known only the \encname; and (3) The \encname has an accurate (internal) real-time clock. (Specifically, the clock is accurate to within XXX, as we show experimentally.)
 
-Leveraging the basic properties of SGX, an attestation $\att$ proves to a verifier (client) about an \encname instance that: (1) The instance is executing correct code, i.e., behaves honestly; (2) For a public key $\pkTC$ included in the attestation, the corresponding private key $\skTC$ is known only to the instance; and (3) The SGX / enclave clock is set to absolute (wall-clock) time $T$ asserted in $\att$, where $T$ is verifiable by a client (requesting a fresh attestation) to within accuracy $\Delta$ (e.g., 100ms).
+These three properties are achieved under the security model presumed by SGX. Specifically, they are asserted by an SGX attestation $\att$ generated on an instance of the \encname. We make the additional simplifying assumption that an attestation remains valid throughout its lifetime of use. (Later in the paper, we discuss ways in which later incarnations of Ethereum may support fresher attestations and also issues such as SGX host revocation.)
 
-\item {\em Network communication:} The \medname (and other untrusted components of the \tc server) can tamper with or delay communications to and from the \encname, but cannot otherwise observe or alter the behavior of the \encname. Thus the \medname is simply subsumed by an adversary that controls the network. 
+\item {\em Network communication:} The \medname (and other untrusted components of the \tc server) can tamper with or delay communications to and from the \encname, but cannot otherwise observe or alter the behavior of the \encname. This assumption is again consistent with the SGX security model. Thus the \medname is subsumed by an adversary that controls the network. 
 
-\item {\em Blockchain communication:} Message sources are authenticable, i.e., the originating blockchain address of a message can be correctly identified, and messages are integrity protected, but not confidential. This includes messages sent from the \encname, whose public key $\pkTC$ is bound in \tc to a blockchain account. 
+\item {\em Blockchain communication:} Message sources are authenticable, i.e., the originating blockchain address of a message can be correctly identified, and messages are integrity protected, but not confidential. This assumption includes messages sent from the \encname, whose public key $\pkTC$ is bound in \tc to a blockchain account. 
 \end{itemize}
 
-\subsection{Design rationale: Role of \tcont}
 
-One could imagine an alternative strawman protocol such as the following...
-
-It is perhaps not immediately evident why our architecture makes use of the contract \tcont to intermediate between \reqcont and the \encname. In principle the \tc service could scrape the blockchain, identify contracts with state explicitly indicating a request for datagrams and send them datagrams and accompanying attestations directly.  This would result in a conceptually simpler protocol, eliminate some in-blockchain message passing, and also ensure that \reqcont consumes only fresh SGX attestations. In contrast, in our design, it is most practical for users to verify an SGX attestation offline at the time \reqcont is created, raising the risk that the attestation goes stale. (Of course, revocation must be handled in either case.)
-
-The rationale for this design choice is twofold: First, \tcont manages the payment of fees (ether and gas) for the \tc service, creating a fair exchange of datagrams for fees. Second, although \reqcont could in principle verify a TC attestation directly, in practice, this would not be practical today. In Ethereum, opcodes for in-contract cryptographic operations are very limited and do not currently support public-key cryptography. (Digital signatures are supported only for messages from non-contract accounts.) 
 
 
 
