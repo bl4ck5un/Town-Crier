@@ -44,6 +44,9 @@
     <ClCompile Include="ECDAS.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RemoteAtt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Enclave_private.pem">

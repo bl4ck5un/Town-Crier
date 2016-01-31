@@ -1,10 +1,13 @@
 /* Enclave.edl - Top EDL file. */
 
 enclave {
+        include "sgx_report.h"
     trusted {
+
         public int ecall_self_test();
         public int test_yahoo_finance();
         public int test_ecdsa();
+        public sgx_status_t ecall_create_report ([in]sgx_target_info_t* quote_enc_info, [out]sgx_report_t* report);
     };
 
     untrusted {

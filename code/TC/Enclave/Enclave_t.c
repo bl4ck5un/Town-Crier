@@ -38,6 +38,12 @@ typedef struct ms_test_ecdsa_t {
 	int ms_retval;
 } ms_test_ecdsa_t;
 
+typedef struct ms_ecall_create_report_t {
+	sgx_status_t ms_retval;
+	sgx_target_info_t* ms_quote_enc_info;
+	sgx_report_t* ms_report;
+} ms_ecall_create_report_t;
+
 typedef struct ms_ocall_mbedtls_net_connect_t {
 	int ms_retval;
 	mbedtls_net_context* ms_ctx;
@@ -144,34 +150,78 @@ static sgx_status_t SGX_CDECL sgx_test_ecdsa(void* pms)
 	return status;
 }
 
+static sgx_status_t SGX_CDECL sgx_ecall_create_report(void* pms)
+{
+	ms_ecall_create_report_t* ms = SGX_CAST(ms_ecall_create_report_t*, pms);
+	sgx_status_t status = SGX_SUCCESS;
+	sgx_target_info_t* _tmp_quote_enc_info = ms->ms_quote_enc_info;
+	size_t _len_quote_enc_info = sizeof(*_tmp_quote_enc_info);
+	sgx_target_info_t* _in_quote_enc_info = NULL;
+	sgx_report_t* _tmp_report = ms->ms_report;
+	size_t _len_report = sizeof(*_tmp_report);
+	sgx_report_t* _in_report = NULL;
+
+	CHECK_REF_POINTER(pms, sizeof(ms_ecall_create_report_t));
+	CHECK_UNIQUE_POINTER(_tmp_quote_enc_info, _len_quote_enc_info);
+	CHECK_UNIQUE_POINTER(_tmp_report, _len_report);
+
+	if (_tmp_quote_enc_info != NULL) {
+		_in_quote_enc_info = (sgx_target_info_t*)malloc(_len_quote_enc_info);
+		if (_in_quote_enc_info == NULL) {
+			status = SGX_ERROR_OUT_OF_MEMORY;
+			goto err;
+		}
+
+		memcpy(_in_quote_enc_info, _tmp_quote_enc_info, _len_quote_enc_info);
+	}
+	if (_tmp_report != NULL) {
+		if ((_in_report = (sgx_report_t*)malloc(_len_report)) == NULL) {
+			status = SGX_ERROR_OUT_OF_MEMORY;
+			goto err;
+		}
+
+		memset((void*)_in_report, 0, _len_report);
+	}
+	ms->ms_retval = ecall_create_report(_in_quote_enc_info, _in_report);
+err:
+	if (_in_quote_enc_info) free(_in_quote_enc_info);
+	if (_in_report) {
+		memcpy(_tmp_report, _in_report, _len_report);
+		free(_in_report);
+	}
+
+	return status;
+}
+
 SGX_EXTERNC const struct {
 	size_t nr_ecall;
-	struct {void* call_addr; uint8_t is_priv;} ecall_table[3];
+	struct {void* call_addr; uint8_t is_priv;} ecall_table[4];
 } g_ecall_table = {
-	3,
+	4,
 	{
 		{(void*)(uintptr_t)sgx_ecall_self_test, 0},
 		{(void*)(uintptr_t)sgx_test_yahoo_finance, 0},
 		{(void*)(uintptr_t)sgx_test_ecdsa, 0},
+		{(void*)(uintptr_t)sgx_ecall_create_report, 0},
 	}
 };
 
 SGX_EXTERNC const struct {
 	size_t nr_ocall;
-	uint8_t entry_table[10][3];
+	uint8_t entry_table[10][4];
 } g_dyn_entry_table = {
 	10,
 	{
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
 	}
 };
 

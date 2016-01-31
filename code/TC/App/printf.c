@@ -1,6 +1,17 @@
 #include <stdio.h>
 #include "App.h"
 
+
+#include <stdio.h>
+#include <stdarg.h>
+#include <limits.h>
+#include <string.h>
+
+
+#if defined(__cplusplus)
+extern "C" {
+#endif
+
 /* OCall functions */
 int ocall_print_string(const char *str)
 {
@@ -9,21 +20,12 @@ int ocall_print_string(const char *str)
      */
     int ret = printf("%s", str);
     fflush(stdout);
-
     return ret;
 }
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <limits.h>
-#include <string.h>
+
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
-
 int c99_vsnprintf(char *outBuf, size_t size, const char *format, va_list ap)
 {
     int count = -1;
@@ -47,9 +49,19 @@ int c99_snprintf(char *outBuf, size_t size, const char *format, ...)
 
     return count;
 }
+#endif // (_MSC_VER) && _MSC_VER < 1900
+
+void dump_buf( const char *title, unsigned char *buf, size_t len )
+{
+    size_t i;
+
+    printf( "%s", title );
+    for( i = 0; i < len; i++ )
+        printf("%c%c", "0123456789ABCDEF" [buf[i] / 16],
+                       "0123456789ABCDEF" [buf[i] % 16] );
+    printf( "\n" );
+}
 
 #if defined(__cplusplus)
 }
 #endif
-
-#endif // (_MSC_VER) && _MSC_VER < 1900
