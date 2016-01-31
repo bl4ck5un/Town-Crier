@@ -10,7 +10,7 @@
 sgx_enclave_id_t global_eid = 0;
 
 //#define RPC_TEST
-//#define ECDSA_TEST
+#define ECDSA_TEST
 //#define SCRAPER_TEST
 
 int main()

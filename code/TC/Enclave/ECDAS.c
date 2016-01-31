@@ -147,82 +147,72 @@ int test_ecdsa()
 {
     int ret;
     mbedtls_ecdsa_context ctx_sign, ctx_verify;
-
-    char message[] = "This should be the hash of a message.";
+    mbedtls_entropy_context entropy;
+    mbedtls_ctr_drbg_context ctr_drbg;
     unsigned char hash[32];
+    char msg[] = "message";
     unsigned char sig[512];
     size_t sig_len;
+    const char *pers = "ecdsa";
 
-    // generate hash
-    mbedtls_sha256 ((const unsigned char*) message, strlen(message), hash, 0);
-    
+    mbedtls_mpi r, s;
+    char v;
+
+    // here begins statements
+
+    mbedtls_mpi_init(&r);
+    mbedtls_mpi_init(&s);
     mbedtls_ecdsa_init( &ctx_sign );
     mbedtls_ecdsa_init( &ctx_verify );
-
-    keygen( &ctx_sign );
+    mbedtls_ctr_drbg_init( &ctr_drbg );
 
     memset(sig, 0, sizeof( sig ) );
     ret = 1;
 
-    /*
-     * Sign some message hash
-     */
-    mbedtls_printf( "Signing message..." );
+    mbedtls_sha256((unsigned char*) msg, strlen(msg), hash, 0);
 
-    if( ( ret = mbedtls_ecdsa_write_signature( &ctx_sign, MBEDTLS_MD_SHA256,
-                                       hash, sizeof( hash ),
-                                       sig, &sig_len,
-                                       NULL, NULL ) ) != 0 )
+    mbedtls_entropy_init( &entropy );
+    if( ( ret = mbedtls_ctr_drbg_seed( &ctr_drbg, mbedtls_entropy_func, &entropy,
+                               (const unsigned char *) pers,
+                               strlen( pers ) ) ) != 0 )
     {
-        mbedtls_printf( "Error: mbedtls_ecdsa_genkey returned %d\n", ret );
-        goto exit;
-    }
-    mbedtls_printf( "Done (signature length = %u)\n", (unsigned int) sig_len );
-
-    dump_buf( "+ Hash: ", hash, sizeof hash );
-    dump_buf( "+ Signature: ", sig, sig_len );
-
-    /*
-     * Transfer public information to verifying context
-     *
-     * We could use the same context for verification and signatures, but we
-     * chose to use a new one in order to make it clear that the verifying
-     * context only needs the public key (Q), and not the private key (d).
-     */
-    mbedtls_printf( "Preparing verification context..." );
-
-    if( ( ret = mbedtls_ecp_group_copy( &ctx_verify.grp, &ctx_sign.grp ) ) != 0 )
-    {
-        mbedtls_printf( "Error: mbedtls_ecp_group_copy returned %d\n", ret );
+        mbedtls_printf( " failed\n  ! mbedtls_ctr_drbg_seed returned %d\n", ret );
         goto exit;
     }
 
-    if( ( ret = mbedtls_ecp_copy( &ctx_verify.Q, &ctx_sign.Q ) ) != 0 )
+    if( ( ret = mbedtls_ecdsa_genkey( &ctx_sign, ECPARAMS,
+                              mbedtls_ctr_drbg_random, &ctr_drbg ) ) != 0 )
     {
-        mbedtls_printf( "Error: mbedtls_ecp_copy returned %d\n", ret );
+        mbedtls_printf( " failed\n  ! mbedtls_ecdsa_genkey returned %d\n", ret );
         goto exit;
     }
 
-    ret = 0;
+    dump_pubkey( "pk: ", &ctx_sign );
 
-    /*
-     * Verify signature
-     */
-    mbedtls_printf( "Verifying signature...\n" );
-
-    if( ( ret = mbedtls_ecdsa_read_signature( &ctx_verify,
-                                      hash, sizeof( hash ),
-                                      sig, sig_len ) ) != 0 )
-    {
-        mbedtls_printf( "Error: mbedtls_ecdsa_read_signature returned %d\n", ret );
+    // sign
+    ret = mbedtls_ecdsa_sign_bitcoin(&ctx_sign.grp, &r, &s, &v, &ctx_sign.d, hash, 32, MBEDTLS_MD_SHA256);
+    if (ret != 0) {
+        mbedtls_printf("Error: mbedtls_ecdsa_sign_bitcoin returned %d\n", ret);
         goto exit;
     }
+    dump_buf("hash: ", hash, 32);
+    dump_mpi("r: ", &r);
+    dump_mpi("s: ", &s);
+    printf  ("v: %d\n", v);
 
-    mbedtls_printf( "Verification passed\n" );
+    ret = mbedtls_ecdsa_verify(&ctx_sign.grp, hash, sizeof hash, &ctx_sign.Q, &r, &s);
+    if (ret != 0) {
+        mbedtls_printf("Error: mbedtls_ecdsa_verify returned %d\n", ret);
+    }
+    else {
+        mbedtls_printf("Verified!\n");
+    }
 
 exit:
-
     mbedtls_ecdsa_free( &ctx_verify );
     mbedtls_ecdsa_free( &ctx_sign );
+    mbedtls_ctr_drbg_free( &ctr_drbg );
+    mbedtls_entropy_free( &entropy );
+
     return( ret );
 }

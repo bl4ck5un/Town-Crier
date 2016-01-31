@@ -97,6 +97,10 @@ int mbedtls_ecdsa_sign_det( mbedtls_ecp_group *grp, mbedtls_mpi *r, mbedtls_mpi 
                     mbedtls_md_type_t md_alg );
 #endif /* MBEDTLS_ECDSA_DETERMINISTIC */
 
+int mbedtls_ecdsa_sign_bitcoin( mbedtls_ecp_group *grp, mbedtls_mpi *r, mbedtls_mpi *s, char* v,
+                            const mbedtls_mpi *d, const unsigned char *buf, size_t blen,
+                            mbedtls_md_type_t md_alg );
+
 /**
  * \brief           Verify ECDSA signature of a previously hashed message
  *
