@@ -242,3 +242,6 @@ _Pvt_Extensions
 /code/TC/mbedtls-2.2.1/doxygen/input
 /code/TC/mbedtls-2.2.1/html
 /code/TC/mbedtls-2.2.1/latex
+
+*.tar
+*.tar.gz

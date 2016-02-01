@@ -25,6 +25,9 @@
     <Filter Include="Misc">
       <UniqueIdentifier>{621c17ad-8cfc-4802-a1fe-dfc87d791ee5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="RemoteAtt">
+      <UniqueIdentifier>{909ff6bf-71e5-4cc4-9b56-a8f2371c2ed3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Enclave_u.c">
@@ -32,12 +35,6 @@
     </ClCompile>
     <ClCompile Include="net_u.c">
       <Filter>TLSSupport</Filter>
-    </ClCompile>
-    <ClCompile Include="Utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="testsuite.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\jsonrpc-cpp-0.5\examples\tcp-client.cpp">
       <Filter>jsonrpc-cpp</Filter>
@@ -75,11 +72,20 @@
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\system.cpp">
       <Filter>jsonrpc-cpp</Filter>
     </ClCompile>
-    <ClCompile Include="App.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="printf.c">
       <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="RemoteAtt.c">
+      <Filter>RemoteAtt</Filter>
+    </ClCompile>
+    <ClCompile Include="App.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="testsuite.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -127,6 +133,12 @@
     </ClInclude>
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\system.h">
       <Filter>jsonrpc-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="printf.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoteAtt.h">
+      <Filter>RemoteAtt</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

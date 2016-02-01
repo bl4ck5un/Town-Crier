@@ -297,9 +297,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="App.cpp" />
+    <ClCompile Include="App.c" />
     <ClCompile Include="printf.c" />
-    <ClCompile Include="testsuite.cpp" />
+    <ClCompile Include="RemoteAtt.c" />
+    <ClCompile Include="testsuite.c" />
     <ClCompile Include="net_u.c" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
@@ -319,6 +320,8 @@
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\system.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="Enclave_u.h" />
+    <ClInclude Include="printf.h" />
+    <ClInclude Include="RemoteAtt.h" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

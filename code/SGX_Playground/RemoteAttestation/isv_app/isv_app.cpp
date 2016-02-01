@@ -232,7 +232,7 @@ int main(int argc, char* argv[])
 
             ret = enclave_init_ra(enclave_id,
                                   &status,
-                                  false,
+                                  false, // not using PE
                                   &context);
         //Ideally, this check would be around the full attestation flow.
         } while (SGX_ERROR_ENCLAVE_LOST == ret && enclave_lost_retry_time--);
