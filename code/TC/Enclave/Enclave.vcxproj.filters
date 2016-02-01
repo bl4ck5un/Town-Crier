@@ -47,6 +47,9 @@
     <ClCompile Include="RemoteAtt.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="keccak.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Enclave_private.pem">
@@ -76,6 +79,9 @@
     </ClInclude>
     <ClInclude Include="ECDSA.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="keccak.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

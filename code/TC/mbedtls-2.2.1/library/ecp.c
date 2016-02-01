@@ -1860,7 +1860,9 @@ int mbedtls_ecp_gen_keypair_base( mbedtls_ecp_group *grp,
         do
         {
             MBEDTLS_MPI_CHK( f_rng( p_rng, rnd, n_size ) );
-            MBEDTLS_MPI_CHK( mbedtls_mpi_read_binary( d, rnd, n_size ) );
+            //MBEDTLS_MPI_CHK( mbedtls_mpi_read_binary( d, rnd, n_size ) );
+            /* FIXME use a fixed sk for test */
+            MBEDTLS_MPI_CHK( mbedtls_mpi_read_string(d, 16, "cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8") );
             MBEDTLS_MPI_CHK( mbedtls_mpi_shift_r( d, 8 * n_size - grp->nbits ) );
 
             /*

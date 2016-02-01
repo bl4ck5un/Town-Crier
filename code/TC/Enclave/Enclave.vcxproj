@@ -412,6 +412,7 @@
     <ClCompile Include="..\mbedtls-2.2.1\programs\test\mbedTLS_selftest.c" />
     <ClCompile Include="Client.c" />
     <ClCompile Include="ECDAS.c" />
+    <ClCompile Include="keccak.c" />
     <ClCompile Include="RemoteAtt.c" />
     <ClCompile Include="Scraper_lib.c" />
     <ClCompile Include="RootCerts.c" />
@@ -423,6 +424,7 @@
     <ClInclude Include="ECDSA.h" />
     <ClInclude Include="Enclave.h" />
     <ClInclude Include="Enclave_t.h" />
+    <ClInclude Include="keccak.h" />
     <ClInclude Include="RootCerts.h" />
     <ClInclude Include="Scraper_lib.h" />
   </ItemGroup>

@@ -1,4 +1,5 @@
 #include "ECDSA.h"
+#include "keccak.h"
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"
@@ -34,6 +35,28 @@
  */
 #define ECPARAMS    MBEDTLS_ECP_DP_SECP256K1
 
+// pubkey: 64 Bytes
+// SHA3-256: 32 Bytes
+// use lower 160 bits as address
+/*
+---- ADDRESS -------------------------------
+SEC: cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8
+PUB: bb48ae3726c5737344a54b3463fec499cb108a7d11ba137ba3c7d043bd6d7e14994f60462a3f91550749bb2ae5411f22b7f9bee79956a463c308ad508f3557df
+ADR: 89b44e4d3c81ede05d0f5de8d1a68f754d73d997
+*/
+static int pubkey_to_address (unsigned char *pubkey, size_t pubkey_len, unsigned char* addr)
+{
+    int ret;
+    if (pubkey_len != 64) {
+        mbedtls_printf("Error: wrong pubkey length\n");
+        return -1;
+    }
+
+    keccak(pubkey, pubkey_len, addr, 32);
+    return 0;
+}
+
+
 #if defined(VERBOSE)
 static void dump_buf( const char *title, unsigned char *buf, size_t len )
 {
@@ -48,7 +71,10 @@ static void dump_buf( const char *title, unsigned char *buf, size_t len )
 
 static void dump_pubkey( const char *title, mbedtls_ecdsa_context *key )
 {
-    unsigned char buf[300];
+    // each point on our curve is 256 bit (32 Bytes)
+    // two points plus the leading 0x04 byte
+    unsigned char buf[2*32 + 1];
+    unsigned char addr[32];
     size_t len;
 
     if( mbedtls_ecp_point_write_binary( &key->grp, &key->Q,
@@ -58,7 +84,10 @@ static void dump_pubkey( const char *title, mbedtls_ecdsa_context *key )
         return;
     }
 
-    dump_buf( title, buf, len );
+    // buf + 1 to skip the first 0x04 byte
+    dump_buf( title, buf + 1, len -1);
+    pubkey_to_address(buf + 1, sizeof buf - 1, addr);
+    dump_buf( "address: ", addr + 12, 32 - 12);
 }
 
 static void dump_mpi (const char* title, mbedtls_mpi* X)
