@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include "sgx_edger8r.h" /* for sgx_ocall etc. */
 
+#include "sgx_report.h"
 #include "mbedtls/net_v.h"
 #include "mbedtls/timing_v.h"
 
@@ -16,9 +17,10 @@ extern "C" {
 #endif
 
 
-int ecall_connect(const char* server, const char* port);
 int ecall_self_test();
-int ecall_client(const char* server, const char* port);
+int test_yahoo_finance();
+int test_ecdsa();
+sgx_status_t ecall_create_report(sgx_target_info_t* quote_enc_info, sgx_report_t* report);
 
 sgx_status_t SGX_CDECL ocall_mbedtls_net_connect(int* retval, mbedtls_net_context* ctx, const char* host, const char* port, int proto);
 sgx_status_t SGX_CDECL ocall_mbedtls_net_bind(int* retval, mbedtls_net_context* ctx, const char* bind_ip, const char* port, int proto);

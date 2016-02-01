@@ -1,6 +1,5 @@
 #include "sgx_urts.h"
 #include "sgx_uae_service.h"
-#include "App.h"
 #include "Enclave_u.h"
 #include "App.h"
 

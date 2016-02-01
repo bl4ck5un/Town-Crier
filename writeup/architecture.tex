@@ -1,159 +1,138 @@
-\section{Architectural Overview: Basic TC System}
+\section{\tc Design}
 
-The \tcs system includes three main components: The \tcontract, the \encname, and the \medname. The \encname and \medname reside on the \tc server, while the \tcontract resides on the blockchain. Their roles, which we now briefly explain, are shown in the architectural schematic in Figure~\ref{fig:overview}.
+In this section, we discuss the general design of \tc. First we present a strawman architecture that illustrates some of the technical challenges that arise in the design of \tc. We then present our \tc architecture, describing the front-end (blockchain) and back-end (off-chain) components, the data flows among them, and the security model underpinning our design.
+
+\subsection{Strawman architecture}
+
+Here we sketch a simple (but, as we show, na\"{i}ve) strawman architecture that provides authenticated data feeds along with accompanying attestations. To harmonize with terminology introduced shortly in the paper, we refer to the untrusted component of a \tc host as the \medname and the code running in an SGX enclave as the \encname.
+
+The strawman solution is as follows:
+
+\begin{itemize}[leftmargin=5mm]
+\item
+{\bf Monitor and relay.}
+The \tc system
+monitors the blockchain for 
+datagram requests. A contract \reqcont 
+requests a datagram by including a distinguished message in its state (e.g., ``\tc service \#123 request:''), along with
+a specification \dgform of the requested datagram.
+Monitoring happens in the \medname, which controls the network stack. The
+\medname forwards ${\sf params}$ 
+to the \encname.
+\item
+{\bf Securely fetch feed.}
+Based on the \dgform, the \encname contacts a data source, establishing an HTTPS channel to a suitable target web page $\weburl$ (which might, e.g., be specified in \dgform). 
+The \encname verifies that the validity of the certificate for the host serving \weburl.
+It then fetches page contents, parses them, and extracts a datagram \dgm as specified in \dgform.
+
+Finally, the \encname produces an attestation $\att$ on: its code in the enclave, $\dgform$, a timestamp $T$ on the fetched data, and $\dgm$. 
+It sends $\att$ to $\reqcont$.
+\item
+{\bf Verify}.
+\reqcont verifies the attestation $\att$. If successful, \reqcont consumes \dgm (potentially matching \dgform against an internal queue of datagram requests).
+\end{itemize}
+
+This strawman scheme has a few nice features: conceptual simplicity, no need to maintain a \tc contract on the blockchain, and the ability for \reqcont to check the freshness of \att. It has a few serious drawbacks, however.
+
+\paragraph{Problems with the strawman scheme.}
+Our strawman scheme is unworkable for several reasons. First, verification of \att in the requesting contract \reqcont is not practical. Although SGX provides a 
+trusted clock, the clock does not provide absolute time, but only time relative to a host-specific reference point.
+Thus it is not clear in our strawman scheme how to produce a timestamp $T$ in absolute time. Futhermore, in Ethereum, opcodes for in-contract cryptographic operations are very limited and do not support the proprietary EPID group-signature scheme present in SGX attestations. While achievable in principle, as the Ethereum virtual machine is Turing-complete, verification of attestations would impose prohibitively expensive gas costs on \reqcont. 
+
+To address these problems, our \tc architecture supports only off-chain verification of attestations.
+
+Another problem with our strawman scheme is that it lacks an on-blockchain mechanism to enforce payment for datagrams. It is desirable for \tc to accept payments via a smart contract in order to permit payment in the system's cryptocurrency (e.g., Ether) and to ensure a {\em fair exchange} between payments and datagrams. Even a not-for-profit \tc service might accept small gas payments to cover the cost of datagram transmission. Without enforcement of fair exchange, relying contracts or the \tc service would risk being defrauded by the other party. \tc could attempt to deliver datagrams only to contracts whose code guarantees payment to \tc, but verifying this property even in templated code would be challenging, given the many complicated dependencies in a smart-contract system (e.g., a contract might attempt to make payment but lack gas or ether). 
+
+To address these problems, our \tc architecture uses a smart contract \tcont as a blockchain front end.
+
+\subsection{The \tc architecture}
+
+The \tcs system includes three main components: The \tcontract (\tcont), the \encname, and the \medname. The \encname and \medname reside on the \tc server, while the \tcontract  resides on the blockchain. An architectural schematic showing the roles of these components is given in Figure~\ref{fig:overview}.
 
 \vspace{-2mm}
 \begin{figure}[h!]
 \centering
-\includegraphics[width=\columnwidth]{OverviewFig}
+\includegraphics[width=\columnwidth]{figures/OverviewFig}
 \caption{{\bf Basic Town Crier architecture.}}
 \label{fig:overview}
 \end{figure}
 \vspace{-2mm}
 
-\paragraph{The \tcontract (\tcont).} The \tcontract (denoted by \tcont) is a smart contract that acts as the blockchain front-end of the \tc service, and thus an interface between relying contracts and \tc. It accepts datagram requests from a requester \reqcont and returns corresponding datagrams from \tc. Additionally, the \tcontract manages \tc monetary resources, which in Ethereum take the form of ether (money) and gas (``fuel'' for contracts). 
+\paragraph{The \tcontract (\tcont).} The \tcontract (denoted by \tcont) is a smart contract that acts as the blockchain front end of the \tc service. It is designed to present a simple API to a relying contract \reqcont for its requests from \tc. Very simply, \tcont accepts datagram requests from a requester \reqcont and returns corresponding datagrams from \tc. Additionally, \tcont manages \tc monetary resources, which in Ethereum take the form of ether (money) and gas (``fuel'' for contracts).
 
 \paragraph{The \encname.}
-The \encname ingests and fulfills datagram requests. To obtain the data composing datagrams, it queries external data sources, specifically HTTPS-enabled internet services. To obtain and keep track of the state of datagram requests, it monitors the state of \tcontract on the blockchain (via scraping). Thus \tcontract forwards datagram requests implicitly to the \tc server. The \encname runs in an SGX enclave, and is thus secured against an adversarial OS as well as other process on the host. 
+The \encname ingests and fulfills datagram requests from the blockchain. To obtain the data for inclusion in datagrams, it queries external data sources, specifically HTTPS-enabled internet services. It returns a datagram to a requesting contract \reqcont as a digitally signed blockchain message. The \encname runs in an SGX enclave, and is thus secured against an adversarial OS as well as other process on the host. 
 
 \paragraph{The \medname.} As an enclave process, the \encname lacks direct network access. Thus the \medname handles bidirectional network traffic on behalf of the \encname. Specifically, the \medname provides network connectivity from the \encname to three different types of entities: 
 
 \begin{enumerate}
-\item {\em The Blockchain (the Ethereum system):}  The \medname scrapes the blockchain in order to monitor the state of \tcont. In this way, it performs implicit message passing from \tcont to the \encname, as neither component itself has network connectivity. Additionally, the \medname places messages emitted from the \encname on the blockchain.
-\item {\em Clients:} The \medname acts as a web server handling off-chain service requests from clients. Specifically, it services requests from clients for attestations from the \encname.
+\item {\em The Blockchain (the Ethereum system):}  The \medname scrapes the blockchain in order to monitor the state of the \tcontract  \tcont. In this way, it performs implicit message passing from \tcont to the \encname, as neither component itself has network connectivity. Additionally, the \medname places messages emitted from the \encname (datagrams) on the blockchain.
+\item {\em Clients:} The \medname runs a web server to handle off-chain service requests from clients, specifically, requests for attestations from the \encname. As we soon explain, an attestation provides a unique public key for the \encname instance to the  client and proves that the \encname is executing correct code in an enclave and that its clock is correct in terms of absolute (wall-clock time). A client that successfully verifies an attestation can then safely create a relying contract \reqcont that uses the \tc.
 \item {\em Data sources:} The \medname relays traffic to and from data sources (HTTPS-enabled servers) queried by \encname. 
 \end{enumerate}
 
-The \medname is an ordinary user-space application. It does not benefit from integrity protection by trusted hardware and thus, unlike the \encname, can be subverted by an adversarial OS on the \tc server, causing network delays or failures. As we explain in detail later in the paper, however, a key design aim of \tc is that \medname should be unable to cause incorrect datagrams to be produced or users to lose money. In general, the \medname {\em can only mount denial-of-service attacks}. 
+The \medname is an ordinary user-space application. It does not benefit from integrity protection by trusted hardware and thus, unlike the \encname, can be subverted by an adversarial OS on the \tc server, causing network delays or failures. As we explain in detail later in the paper, however, a key design aim of \tc is that \medname should be unable to cause incorrect datagrams to be produced or users to lose fees paid to \tc for datagrams (although they may lose gas used to fuel their requests). In general, the \medname~{\em can only mount denial-of-service attacks against \tc}. 
 
 \paragraph{End-to-end datagram processing.}
-In summary, then, a datagram request is initiated by a requester \reqcont. \reqcont sends a datagram request to \tcont on the blockchain. Using network services provided by the \medname, the \encname obtains the request from the blockchain. It contacts a data source to obtain the requested data and composes a datagram, which it sends back to \reqcont.
 
-As a simple example, \reqcont might request a stock ticker value (e.g., the price of IBM at 3 p.m. on 15 Jan 2016). The \encname would fetch the requested data from an online service (e.g., https://www.google.com/finance) and place it in a datagram for transmission via \tcont to \reqcont.
+The lifecycle of a datagram may be summarized in the following steps:
 
-In addition to servicing datagram requests, the \encname may be queried by a client to provide an off-chain, hardware-backed attestation $\att$ on the state of the \encname---both its executing code and its clock. It is to support this service that \medname includes a web server. We do not depict this service in Figure~\ref{fig:overview}, and defer its discussion to later in the paper.
+\begin{itemize}
+\item {\bf Initiate request.} \reqcont sends a datagram request to \tcont on the blockchain.
+
+\item {\bf Monitor and relay.} The \medname monitors \tcont and relays incoming datagram requests to the \encname.
+
+\item {\bf Securely fetch feed.} Based on \dgform, the \encname contacts a data source via HTTPS and obtains the requested datagram. It forwards the datagram via the Relay to \tcont.
+
+\item {\bf Return datagram.} \tcont checks the correctness of \dgform and returns the datagram to \reqcont.
+\end{itemize}
 
 
+%In addition to servicing datagram requests, the \encname may be queried by a client to provide an off-chain, hardware-backed attestation $\att$ on the state of the \encname---both its executing code and its clock. It is to support this service that \medname includes a web server. We do not depict this service in Figure~\ref{fig:overview}, and defer its discussion to later in the paper.
 
+We now make this data flow more precise. 
+
+\subsection{Datagram processing: Data flow}
+
+We denote a datagram instance, namely the set of message values associated with a datagram request, by $\dgi$, where $i$ is a unique instance index. (We explain in Section~\ref{sec:implementation} how this index is computed.) 
+
+A datagram request by \reqcont takes the form of a message $\dgi.\dgreq$ to \tcont on the blockchain. This message $\dgi.\dgreq = (\dgi.\dgform, \dgi.\dgpay)$ includes both a specification $\dgi.\dgform$ of the requested datagram (e.g., a stock ticker and desired time) and a payment $\dgi.\dgpay$, which in Ethereum may include gas to cover the execution cost of the request as well as a service fee. \tcont receives a return message $\dgi.\dgret = (\dgi.\dgform, \dgi.\dgm)$ from the $\tc$ service where $\dgm$ contains the data (e.g., the desired stock ticker price). \tcont checks the consistency of $\dgi.\dgform$ on the incoming and outgoing messages, and if they match forwards $\dgi.\dgm$ to \reqcont. Where clear from context, we omit the prefix $\dgi$ from our notation.
+
+Figure~\ref{fig:dataflow} shows the data flows involved in processing a datagram request. For simplicity, the figure omits the \medname, which is only responsible for data passing.
+
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\columnwidth]{figures/DataflowFig}
+\caption{{\bf Data flows in datagram processing.}}
+\label{fig:dataflow}
+\end{figure}
+
+
+Digital signatures are needed to authenticated messages, such as $\dgret$, entering the blockchain from an external source. We let $(\skTC, \pkTC)$ denote the private / public keypair associated with the \encname for such message authentication. For simplicity, we assume for the time that the \encname can send signed messages directly to \tcont. Later we explain how Ethereum requires a slightly different approach in which \tc sends messages via an Ethereum wallet.
 
 \subsection{Security model}
 
-Here we given an overview of our security model for \tc, providing more details in our security analysis in section~\ref{}. We assume the following:
+Here we give an overview of our security model for \tc, providing more details in our security analysis in section~\ref{}. We assume the following:
 
 \begin{itemize}
-\item {\em \encname security:} Leveraging the basic properties of SGX, an attestation $\att$ proves to a verifier (client) about an \encname instance that: (1) The instance is executing correct code, i.e., behaves honestly; (2) For a public key $\pkTC$ included in the attestation, the corresponding private key $\skTC$ is known only to the instance; and (3) The SGX / enclave clock is set to absolute (wall-clock) time $T$ asserted in $\att$, where $T$ is verifiable by a client (requesting a fresh attestation) to within accuracy $\Delta$ (e.g., 100ms).
+\item {\em \encname security:} We make three assumptions about \encname : (1) \encname behaves honestly, i.e., correctly executes the \tc protocol; (2) The private key $\skTC$ is known only the \encname; and (3) The \encname has an accurate (internal) real-time clock. (Specifically, the clock is accurate to within XXX, as we show experimentally.)
 
-\item {\em Network communication:} The \medname (and other untrusted components of the \tc server) can tamper with or delay communications to and from the \encname, but cannot otherwise observe or alter the behavior of the \encname. Thus the \medname is simply subsumed by an adversary that controls the network. 
+These three properties are achieved under the security model presumed by SGX. Specifically, they are asserted by an SGX attestation $\att$ generated on an instance of the \encname. We make the additional simplifying assumption that an attestation remains valid throughout its lifetime of use. (Later in the paper, we discuss ways in which later incarnations of Ethereum may support fresher attestations and also issues such as SGX host revocation.)
 
-\item {\em Blockchain communication:} Message sources are authenticable, i.e., the originating blockchain address of a message can be correctly identified, and messages are integrity protected, but not confidential. This includes messages sent from the \encname, whose public key $\pkTC$ is bound in \tc to a blockchain account. 
+\item {\em Network communication:} The \medname (and other untrusted components of the \tc server) can tamper with or delay communications to and from the \encname, but cannot otherwise observe or alter the behavior of the \encname. This assumption is again consistent with the SGX security model. Thus the \medname is subsumed by an adversary that controls the network. 
+
+\item {\em Blockchain communication:} Message sources are authenticable, i.e., the originating blockchain address of a message can be correctly identified, and messages are integrity protected, but not confidential. This assumption includes messages sent from the \encname, whose public key $\pkTC$ is bound in \tc to a blockchain account. 
 \end{itemize}
 
-\subsection{Design rationale: Role of \tcont}
-
-It is perhaps not immediately evident why our architecture makes use of the contract \tcont to intermediate between \reqcont and the \encname. In principle the \tc service could scrape the blockchain, identify contracts with state explicitly indicating a request for datagrams and send them datagrams and accompanying attestations directly.  This would result in a conceptually simpler protocol, eliminate some in-blockchain message passing, and also ensure that \reqcont consumes only fresh SGX attestations. In contrast, in our design, it is most practical for users to verify an SGX attestation offline at the time \reqcont is created, raising the risk that the attestation goes stale. (Of course, revocation must be handled in either case.)
-
-The rationale for this design choice is twofold: First, \tcont manages the payment of fees (ether and gas) for the \tc service, creating a fair exchange of datagrams for fees. Second, although \reqcont could in principle verify a TC attestation directly, in practice, this would not be practical today. In Ethereum, opcodes for in-contract cryptographic operations are very limited and do not currently support public-key cryptography. (Digital signatures are supported only for messages from non-contract accounts.) 
 
 
 
-\subsection{Data flow and notation}
-
-We denote a datagram instance, namely the set of message values associated with a datagram request, by $\dg$. Due to the idiosyncracies of Ethereum and the use of digital signatures for message authentication, the full cycle of datagram processing involves a number of messages. 
-
-A datagram request by \reqcont takes the form of a message $\dgreq$ to \tcont on the blockchain. This message $\dgreq$ includes both a specification $\dgform$ of the requested datagram (e.g., a stock ticker and desired time) and a payment $\dgpay$, which includes (in Ethereum) gas to cover the cost of the request as well as a fee. \tcont receives a return message $\dgret$ from the $\tc$ service. On receiving $\dgret$, \tcont returns the data $\dgm$ it contains (e.g., the desired stock ticker value) to \reqcont. 
-
-We use $\dgi$ to indicate a unique index for a datagram instance. Messages from wallet addresses are authenticated via digital signatures. We use $(\skTC, \pkTC)$ to denote the private / public key pair associated with \tcadd. The key $\skTC$ is stored inside the \encname. (For simplicity, we assume an ability to send signed messages directly to \tcont. Later we explain how Ethereum requires a slightly different approach.)
 
 
 
-\subsection{Client API}
-\subsection{TC server}
-\subsubsection{Trusted executable}
-\subsubsection{Untrusted executable}
-\subsection{TC Blockchain resources}
-These include the TC contract and the addresses from which it sends messages and manages its wallet
-
-There are two parts to the Town Crier blockchain resources:
-\begin{itemize}
-  \item \sgxadd -- An Ethereum wallet whose private key is generated and controlled by the SGX enclave.
-  
-  \item \tcont -- An Ethereum contract with two entry points, described in Table~\ref{tbl:tc-contract}.
-\end{itemize}
-The Town Crier server is responsible for identifying calls to \tcont's Request request method by scraping the contract activity on the blockchain.
-It then replies to those requests through Deliver once it has acquired the necessary data and packaged it into a response.
-
-\begin{table}
-\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
-  \hline
-
-  \multicolumn{2}{|c|}{The Town Crier contract \tcont} \\ [1ex]
-  {\bf Request:} & Upon receiving $({\sf type}, {\sf callback}, \${\sf fee})$ from a user $\mathcal{P}$: \\
-                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
-                 & \hspace*{1em} Return $\${\sf fee}$ to $\mathcal{P}$ \\
-                 & Otherwise do nothing. \\
-  {\bf Deliver:} & Upon receiving $({\sf callback}, {\sf data}, \${\sf fee})$ from a user $\mathcal{P}$: \\
-                 & If $\mathcal{P} \neq \textrm{\sgxadd}$ \\
-                 & \hspace*{1em} Return with no effect. \\
-                 & Call ${\sf callback}({\sf data})$ providing $\${\sf fee} - F_{\rm min}$ ether as the maximum gas. \\
-                 & Send $\${\sf fee}$ ether to \sgxadd. \\
-
-  \hline
-\end{tabularx}
-\caption{Definition of the Town Crier contract \tcont.
-  Here the minimum fee, $F_{\rm min}$, is the amount of ether necessary to cover the gas costs of Deliver not including the execution of ${\sf callback}$
-  and the maximum fee, $F_{\rm max}$, is the maximum amount of ether Town Crier can send as gas to a single execution of Deliver.}
-\label{tbl:tc-contract}
-\end{table}
-
-\section{Security Model}
-
-Here we assume an adversary which is active on the blockchain, the network, and within the untrusted executable running on the Town Crier server.
-However, we assume that the adversary will not execute an arbitrary denial of service attack, but will rather delay messages indefinitely and deliver bogus data whenever such data will be accepted as valid.
-Because operations on the blockchain are verifiable and the SGX enclave can attest to what it is running, we assume those are honest.
-
-In this model we show that, for every request which provides a sufficient fee,
-a valid authenticated datagram will be delivered to the requested callback location in finite time.
-If the request includes an insufficient fee (but is otherwise valid),
-the datagram will not be delivered, but the (too-small) fee will still be collected.
-
-\begin{lemma} \label{lem:non-bankrupt-p_sgx}
-If seeded with at least $F_{\rm max}$ ether, the \sgxadd wallet will have
-at least as much money after each transaction as it had before that transaction.
-\end{lemma}
-
-\begin{proof}
-\ethan{This is actually a proof sketch, I just put it in a proof tag.}
-
-Because all blockchain transactions from \sgxadd must be initiated by the SGX enclave and the SGX only calls \tcont.Deliver,
-we need only reason about what happens inside that function.
-Because transactions including \tcont are transmitted securely into the SGX enclave, it will only see valid requests (ones for which $F_{\rm min} \leq \${\sf fee} \leq F_{\rm max}$) and the arguments it sees for those requests will be correct.
-Moreover, it saves the transaction ID of each request it fulfills and never fulfills a request with the same transaction ID twice.
-This means that whenever deliver is called, it will be called in connection with a valid request that has not already been delivered.
-Thus it suffices to show that:
-\begin{enumerate}
-  \item The first time a valid request is delivered, \tcont will contain at least $\${\sf fee}$ ether.
-  \item $\${\sf fee}$ is never lower than the amount \sgxadd must spend in gas.
-  \item The execution of Deliver will never run out of gas (and thus always succeed).
-\end{enumerate}
-
-To prove claim 1 we first note that ether can only be removed from \tcont as part of a call to Deliver from \sgxadd.
-Because \sgxadd is honest, it will only make this call in connection with a valid request, and the specified value of $\${\sf fee}$ will always be the fee submitted with that request.
-Because \tcont pays out the specified $\${\sf fee}$ on the call to Deliver, the ether is always exactly the ether stored from a previous, valid, undelivered request, and thus will always be present in \tcont.
-
-To prove claim 2 first note that a request is only considered valid if $\${\sf fee} \geq F_{\rm min}$.
-$F_{\rm min}$ is defined so that it is high enough to cover gas costs for all of Deliver except the execution of the provided ${\sf callback}$.
-However, ${\sf callback}$ is only given $\${\sf fee} - F_{\rm min}$ ether worth of gas to execute.
-Therefore it is impossible for the entire call of Deliver to spend more than $F_{\rm min} + (\${\sf fee} - F_{\rm min}) = \${\sf fee}$ ether on gas.
-
-To prove claim 3 we note that $\${\sf fee} \leq F_{\rm max}$ and, by construction, \sgxadd will always provide at least $F_{\rm max}$ in gas for the execution of Deliver.
-Therefore we have that \sgxadd will always provide at least $\${\sf fee}$ in gas to execute Deliver.
-By the argument above, Deliver can never use more than $\${\sf fee}$ in gas, so therefore an SGX-initialized call to Deliver will never run out of gas.
-\end{proof}
 
 
 
-\begin{lemma} \label{lem:authentic-delivery}
-Any data given as an argument to ${\sf callback}$ in \tcont's Deliver method is verifiably authentic.
-\end{lemma}
 
 

@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "../TLSlib/TLSlib.h"
+#include "../TLSlib/tstdio.h"
 
 #if defined(__cplusplus)
 extern "C" {

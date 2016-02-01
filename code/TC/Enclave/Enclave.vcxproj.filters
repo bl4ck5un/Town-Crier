@@ -26,16 +26,28 @@
     <ClCompile Include="Enclave_t.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="Ocalls.cpp">
+    <ClCompile Include="RootCerts.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TLS.cpp">
+    <ClCompile Include="Scraper_lib.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\mbedtls-2.2.1\programs\test\selftest.c">
+    <ClCompile Include="Client.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Client.cpp">
+    <ClCompile Include="Scraper.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mbedtls-2.2.1\programs\test\mbedTLS_selftest.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ECDAS.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RemoteAtt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="keccak.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,8 +65,23 @@
     <ClInclude Include="Enclave_t.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="RootCerts.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
     <ClInclude Include="Enclave.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Client.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Scraper_lib.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ECDSA.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="keccak.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

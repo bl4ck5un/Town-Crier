@@ -33,6 +33,8 @@
 #include "sgx_error.h"       /* sgx_status_t */
 #include "sgx_eid.h"     /* sgx_enclave_id_t */
 
+#include "printf.h"
+
 #ifndef TRUE
 # define TRUE 1
 #endif
@@ -44,17 +46,30 @@
 #if defined(_MSC_VER)
 # define TOKEN_FILENAME   "Enclave.token"
 # define ENCLAVE_FILENAME "Enclave.signed.dll"
+
 #elif defined(__GNUC__)
 # define TOKEN_FILENAME   "enclave.token"
 # define ENCLAVE_FILENAME "enclave.signed.so"
 #endif
 
-extern sgx_enclave_id_t global_eid;    /* global enclave id */
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
+extern sgx_enclave_id_t global_eid;    /* global enclave id */
+// Utils.cpp
+void print_error_message(sgx_status_t ret);
+int initialize_enclave(void);
+
+#if defined(_MSC_VER)
+int query_sgx_status();
+#endif
+
+/* test suite */
+int test_connect(void);
+int test_self_test(void);
+int test_rpc(void);
 
 typedef struct _sgx_errlist_t {
     sgx_status_t err;
@@ -140,22 +155,6 @@ static sgx_errlist_t sgx_errlist[] = {
         NULL
     },
 };
-
-void print_error_message(sgx_status_t ret);
-int initialize_enclave(void);
-
-#if defined(_MSC_VER)
-/* query and enable SGX device*/
-int query_sgx_status();
-#endif
-
-
-/* test suite */
-
-int test_connect(void);
-int test_self_test(void);
-
-
 
 #if defined(__cplusplus)
 }

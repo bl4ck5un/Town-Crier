@@ -125,17 +125,17 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)\include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\win32-deps\include;$(SolutionDir)\jsonrpc-cpp-0.5\include;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)\include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
       <DisableSpecificWarnings>4389;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\Debug;$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;jsoncpp.lib;libcurl_imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\win32-deps\lib;$(SolutionDir)\Debug;$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
@@ -267,6 +267,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\jsonrpc-cpp-0.5\examples\tcp-client.cpp" />
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_client.cpp" />
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_handler.cpp" />
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_httpclient.cpp" />
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_server.cpp" />
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_tcpclient.cpp" />
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_tcpserver.cpp" />
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_udpclient.cpp" />
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_udpserver.cpp" />
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\netstring.cpp" />
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\networking.cpp" />
+    <ClCompile Include="..\jsonrpc-cpp-0.5\src\system.cpp" />
     <ClCompile Include="Enclave_u.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">
       </PrecompiledHeader>
@@ -285,16 +297,31 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="misc.c" />
-    <ClCompile Include="testsuite.cpp" />
+    <ClCompile Include="App.c" />
+    <ClCompile Include="printf.c" />
+    <ClCompile Include="RemoteAtt.c" />
+    <ClCompile Include="testsuite.c" />
     <ClCompile Include="net_u.c" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc.h" />
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_client.h" />
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_common.h" />
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_handler.h" />
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_httpclient.h" />
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_server.h" />
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_tcpclient.h" />
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_tcpserver.h" />
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_udpclient.h" />
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_udpserver.h" />
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\netstring.h" />
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\networking.h" />
+    <ClInclude Include="..\jsonrpc-cpp-0.5\include\system.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="Enclave_u.h" />
-    <ClInclude Include="TLSlibSupport.h" />
+    <ClInclude Include="printf.h" />
+    <ClInclude Include="RemoteAtt.h" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -332,6 +359,5 @@
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets">
-  </ImportGroup>
+  <ImportGroup Label="ExtensionTargets" />
 </Project>

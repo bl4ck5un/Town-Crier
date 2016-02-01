@@ -53,22 +53,42 @@ Name Institution
 \newcommand {\encname} {{Engine}\xspace}
 \newcommand {\medname} {{Relay}\xspace}
 
-\newcommand {\reqcont} {${\cal C}_R$\xspace}
+\newcommand {\reqcont} {\ensuremath{{\cal C}_R}\xspace}
 \newcommand {\tcont} {\ensuremath{{\cal C}_{TC}}\xspace}
 \newcommand {\tcadd} {${\cal P}_{TC}$\xspace}
 \newcommand {\sgxadd} {${\cal P}_{SGX}$\xspace}
 \newcommand {\pkTC} {{\sf pk}_{TC}\xspace}
 \newcommand {\skTC} {{{\sf sk}_{TC}}\xspace}
 
-\newcommand {\dgreq} {{\sf d.req}\xspace}
-\newcommand {\dgform} {{\sf d.form}\xspace}
-\newcommand {\dgpay} {{\sf d.pay}\xspace}
+\newcommand {\dgreq} {{\sf req}\xspace}
+\newcommand {\dgform} {{\sf spec}\xspace}
+\newcommand {\dgpay} {{\sf \$fee}\xspace}
 \newcommand {\dg} {{\sf d}\xspace}
-\newcommand {\dgret} {{\sf d.ret}\xspace}
-\newcommand {\dgm} {{\sf d.data}\xspace}
-\newcommand {\dgi} {{\sf d.index}\xspace}
+\newcommand {\dgret} {{\sf ans}\xspace}
+\newcommand {\dgm} {{\sf data}\xspace}
+\newcommand {\dgi} {{\sf d_{\mbox{$i$}}}\xspace}
 
 \newcommand {\att} {{\sf att}\xspace}
+
+\newcommand{\fsgx}{\ensuremath{\mathcal{F}_{\textrm{sgx}}}\xspace}
+\newcommand{\pk}{\ensuremath{{\sf pk}}}
+\newcommand{\sk}{\ensuremath{{\sf sk}}}
+\newcommand{\pkM}{\ensuremath{{\sf pk}_{\mathcal{M}}}}
+\newcommand{\skM}{\ensuremath{{\sf sk}_{\mathcal{M}}}}
+\newcommand{\pkU}{\ensuremath{{\sf pk}_{\mathcal{U}}}}
+\newcommand{\pksgx}{\ensuremath{{\sf pk}_{\textrm{sgx}}}}
+\newcommand{\sksgx}{\ensuremath{{\sf sk}_{\textrm{sgx}}}}
+\newcommand{\pkurl}{\ensuremath{{\sf pk}_{\textrm{url}}}\xspace}
+\newcommand{\rl}{\ensuremath{{\sf RL}}}
+\newcommand{\relay}{\ensuremath{\mathcal{R}}}
+%\newcommand{\digest}{\ensuremath{{\sf digest}}}
+\newcommand{\enclaveprog}{\ensuremath{{\sf prog}_{\textrm{encl}}}}
+\newcommand{\sigatt}{\ensuremath{{\sigma_{\textrm{att}}}}}
+\newcommand{\sigsgx}{\ensuremath{{\Sigma_{\textrm{sgx}}}}}
+\newcommand{\weburl}{\ensuremath{{{\sf url}}}\xspace}
+\newcommand{\clock}{\ensuremath{{{\sf clock}}}}
+\newcommand{\algA}{\ensuremath{\mathcal{A}}}
+\newcommand{\algB}{\ensuremath{\mathcal{B}}}
 
 %*****************************
 
@@ -81,9 +101,9 @@ Name Institution
 % \thispagestyle{empty}
 
 \subsection*{Abstract}
-Smart contracts are programs that execute autonomously on blockchains. Many of their envisioned uses (e.g., as financial instruments) require them to consume data (e.g., equity prices) from outside the blockchain. Trustworthy data feeds that can interface with smart contracts will thus be critical to any smart-contract system.
+Smart contracts are programs that execute autonomously on blockchains. Many of their envisioned uses require them to consume data from outside the blockchain. (e.g., financial instruments rely on equity prices.) Trustworthy data feeds that can interface with smart contracts will thus be critical to any smart-contract system. 
 
-	We present an authenticated data feed system called Town Crier (TC). TC builds on the observation that many web sites, such as major news and finance sites, already serve as trusted data sources for non-blockchain uses. TC acts as a bridge between such servers and smart contract systems, using trusted hardware to authenticate and scrape data from HTTPS-enabled websites and delivering authenticated, timestamped datagrams to relying smart contracts. It also includes a range of advanced features, such as private datagrams, which are produced by evaluating encrypted requests within TC's hardware.
+	We present an authenticated data feed system called Town Crier (TC). TC builds on the observation that many web sites, such as major news and finance sites, already serve as trusted data sources for non-blockchain uses. TC acts as a bridge between such servers and smart contract systems, using trusted hardware to authenticate and scrape data from HTTPS-enabled websites and to generate authenticated, timestamped datagrams for relying smart contracts. It also includes a range of advanced features, such as private datagrams, which decrypt and evaluate ciphertext requests within TC's hardware.
 	
 	We describe the TC architecture, its underlying trust model, and its applications, and report on an implementation that uses the newly released SGX software development kit and furnishes data for the smart-contract system Ethereum. We will soon be launching TC as an online public service.
 	
@@ -92,6 +112,7 @@ Smart contracts are programs that execute autonomously on blockchains. Many of t
 \input{background}
 \input{architecture}
 \input{implementation}
+\input{analysis}
 \input{applications}
 \input{advanced}
 \input{conclusion}

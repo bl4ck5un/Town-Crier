@@ -1,20 +1,22 @@
 #include "Enclave_u.h"
 
-typedef struct ms_ecall_connect_t {
-	int ms_retval;
-	char* ms_server;
-	char* ms_port;
-} ms_ecall_connect_t;
-
 typedef struct ms_ecall_self_test_t {
 	int ms_retval;
 } ms_ecall_self_test_t;
 
-typedef struct ms_ecall_client_t {
+typedef struct ms_test_yahoo_finance_t {
 	int ms_retval;
-	char* ms_server;
-	char* ms_port;
-} ms_ecall_client_t;
+} ms_test_yahoo_finance_t;
+
+typedef struct ms_test_ecdsa_t {
+	int ms_retval;
+} ms_test_ecdsa_t;
+
+typedef struct ms_ecall_create_report_t {
+	sgx_status_t ms_retval;
+	sgx_target_info_t* ms_quote_enc_info;
+	sgx_report_t* ms_report;
+} ms_ecall_create_report_t;
 
 typedef struct ms_ocall_mbedtls_net_connect_t {
 	int ms_retval;
@@ -166,33 +168,40 @@ static const struct {
 	}
 };
 
-sgx_status_t ecall_connect(sgx_enclave_id_t eid, int* retval, const char* server, const char* port)
+sgx_status_t ecall_self_test(sgx_enclave_id_t eid, int* retval)
 {
 	sgx_status_t status;
-	ms_ecall_connect_t ms;
-	ms.ms_server = (char*)server;
-	ms.ms_port = (char*)port;
+	ms_ecall_self_test_t ms;
 	status = sgx_ecall(eid, 0, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
 }
 
-sgx_status_t ecall_self_test(sgx_enclave_id_t eid, int* retval)
+sgx_status_t test_yahoo_finance(sgx_enclave_id_t eid, int* retval)
 {
 	sgx_status_t status;
-	ms_ecall_self_test_t ms;
+	ms_test_yahoo_finance_t ms;
 	status = sgx_ecall(eid, 1, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
 }
 
-sgx_status_t ecall_client(sgx_enclave_id_t eid, int* retval, const char* server, const char* port)
+sgx_status_t test_ecdsa(sgx_enclave_id_t eid, int* retval)
 {
 	sgx_status_t status;
-	ms_ecall_client_t ms;
-	ms.ms_server = (char*)server;
-	ms.ms_port = (char*)port;
+	ms_test_ecdsa_t ms;
 	status = sgx_ecall(eid, 2, &ocall_table_Enclave, &ms);
+	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
+	return status;
+}
+
+sgx_status_t ecall_create_report(sgx_enclave_id_t eid, sgx_status_t* retval, sgx_target_info_t* quote_enc_info, sgx_report_t* report)
+{
+	sgx_status_t status;
+	ms_ecall_create_report_t ms;
+	ms.ms_quote_enc_info = quote_enc_info;
+	ms.ms_report = report;
+	status = sgx_ecall(eid, 3, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
 }

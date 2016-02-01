@@ -8,11 +8,22 @@
 #include "sgx_urts.h"
 #include <Windows.h>
 
+#include "sgx_uae_service.h"
+
 #define ENCLAVE_FILE _T("Enclave.signed.dll")
 #define MAX_BUF_LEN 100
 
 void ocall_print_string(const char* str) {
     printf("%s", str);
+}
+
+void dump_hex(uint8_t* buf, int len, int newline) {
+    for (int i = 0; i < len; i++) {
+        printf("%x", buf[i]);
+    }
+    if (newline) {
+        printf("\n");
+    }
 }
 
 int main(int argc, char* argv[])
@@ -32,6 +43,18 @@ int main(int argc, char* argv[])
     else {
         printf("Enclaved created. eid=%d\n", eid);
     }
+
+    sgx_target_info_t target;
+    sgx_epid_group_id_t gid;
+    sgx_status_t st = sgx_init_quote (&target, &gid);
+    printf("sgx_init_quote returned %d\n", st);
+
+    printf("mr_enclave = ");
+    dump_hex(target.mr_enclave.m, 32, true);
+    printf("group id = ");
+    dump_hex(gid, 4, true);
+    
+
 
     create_session(eid);
 

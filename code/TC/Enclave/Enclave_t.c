@@ -26,21 +26,23 @@
 } while (0)
 
 
-typedef struct ms_ecall_connect_t {
-	int ms_retval;
-	char* ms_server;
-	char* ms_port;
-} ms_ecall_connect_t;
-
 typedef struct ms_ecall_self_test_t {
 	int ms_retval;
 } ms_ecall_self_test_t;
 
-typedef struct ms_ecall_client_t {
+typedef struct ms_test_yahoo_finance_t {
 	int ms_retval;
-	char* ms_server;
-	char* ms_port;
-} ms_ecall_client_t;
+} ms_test_yahoo_finance_t;
+
+typedef struct ms_test_ecdsa_t {
+	int ms_retval;
+} ms_test_ecdsa_t;
+
+typedef struct ms_ecall_create_report_t {
+	sgx_status_t ms_retval;
+	sgx_target_info_t* ms_quote_enc_info;
+	sgx_report_t* ms_report;
+} ms_ecall_create_report_t;
 
 typedef struct ms_ocall_mbedtls_net_connect_t {
 	int ms_retval;
@@ -109,49 +111,6 @@ typedef struct ms_ocall_print_string_t {
 #pragma warning(disable: 4200)
 #endif
 
-static sgx_status_t SGX_CDECL sgx_ecall_connect(void* pms)
-{
-	ms_ecall_connect_t* ms = SGX_CAST(ms_ecall_connect_t*, pms);
-	sgx_status_t status = SGX_SUCCESS;
-	char* _tmp_server = ms->ms_server;
-	size_t _len_server = _tmp_server ? strlen(_tmp_server) + 1 : 0;
-	char* _in_server = NULL;
-	char* _tmp_port = ms->ms_port;
-	size_t _len_port = _tmp_port ? strlen(_tmp_port) + 1 : 0;
-	char* _in_port = NULL;
-
-	CHECK_REF_POINTER(pms, sizeof(ms_ecall_connect_t));
-	CHECK_UNIQUE_POINTER(_tmp_server, _len_server);
-	CHECK_UNIQUE_POINTER(_tmp_port, _len_port);
-
-	if (_tmp_server != NULL) {
-		_in_server = (char*)malloc(_len_server);
-		if (_in_server == NULL) {
-			status = SGX_ERROR_OUT_OF_MEMORY;
-			goto err;
-		}
-
-		memcpy((void*)_in_server, _tmp_server, _len_server);
-		_in_server[_len_server - 1] = '\0';
-	}
-	if (_tmp_port != NULL) {
-		_in_port = (char*)malloc(_len_port);
-		if (_in_port == NULL) {
-			status = SGX_ERROR_OUT_OF_MEMORY;
-			goto err;
-		}
-
-		memcpy((void*)_in_port, _tmp_port, _len_port);
-		_in_port[_len_port - 1] = '\0';
-	}
-	ms->ms_retval = ecall_connect((const char*)_in_server, (const char*)_in_port);
-err:
-	if (_in_server) free((void*)_in_server);
-	if (_in_port) free((void*)_in_port);
-
-	return status;
-}
-
 static sgx_status_t SGX_CDECL sgx_ecall_self_test(void* pms)
 {
 	ms_ecall_self_test_t* ms = SGX_CAST(ms_ecall_self_test_t*, pms);
@@ -165,77 +124,104 @@ static sgx_status_t SGX_CDECL sgx_ecall_self_test(void* pms)
 	return status;
 }
 
-static sgx_status_t SGX_CDECL sgx_ecall_client(void* pms)
+static sgx_status_t SGX_CDECL sgx_test_yahoo_finance(void* pms)
 {
-	ms_ecall_client_t* ms = SGX_CAST(ms_ecall_client_t*, pms);
+	ms_test_yahoo_finance_t* ms = SGX_CAST(ms_test_yahoo_finance_t*, pms);
 	sgx_status_t status = SGX_SUCCESS;
-	char* _tmp_server = ms->ms_server;
-	size_t _len_server = _tmp_server ? strlen(_tmp_server) + 1 : 0;
-	char* _in_server = NULL;
-	char* _tmp_port = ms->ms_port;
-	size_t _len_port = _tmp_port ? strlen(_tmp_port) + 1 : 0;
-	char* _in_port = NULL;
 
-	CHECK_REF_POINTER(pms, sizeof(ms_ecall_client_t));
-	CHECK_UNIQUE_POINTER(_tmp_server, _len_server);
-	CHECK_UNIQUE_POINTER(_tmp_port, _len_port);
+	CHECK_REF_POINTER(pms, sizeof(ms_test_yahoo_finance_t));
 
-	if (_tmp_server != NULL) {
-		_in_server = (char*)malloc(_len_server);
-		if (_in_server == NULL) {
+	ms->ms_retval = test_yahoo_finance();
+
+
+	return status;
+}
+
+static sgx_status_t SGX_CDECL sgx_test_ecdsa(void* pms)
+{
+	ms_test_ecdsa_t* ms = SGX_CAST(ms_test_ecdsa_t*, pms);
+	sgx_status_t status = SGX_SUCCESS;
+
+	CHECK_REF_POINTER(pms, sizeof(ms_test_ecdsa_t));
+
+	ms->ms_retval = test_ecdsa();
+
+
+	return status;
+}
+
+static sgx_status_t SGX_CDECL sgx_ecall_create_report(void* pms)
+{
+	ms_ecall_create_report_t* ms = SGX_CAST(ms_ecall_create_report_t*, pms);
+	sgx_status_t status = SGX_SUCCESS;
+	sgx_target_info_t* _tmp_quote_enc_info = ms->ms_quote_enc_info;
+	size_t _len_quote_enc_info = sizeof(*_tmp_quote_enc_info);
+	sgx_target_info_t* _in_quote_enc_info = NULL;
+	sgx_report_t* _tmp_report = ms->ms_report;
+	size_t _len_report = sizeof(*_tmp_report);
+	sgx_report_t* _in_report = NULL;
+
+	CHECK_REF_POINTER(pms, sizeof(ms_ecall_create_report_t));
+	CHECK_UNIQUE_POINTER(_tmp_quote_enc_info, _len_quote_enc_info);
+	CHECK_UNIQUE_POINTER(_tmp_report, _len_report);
+
+	if (_tmp_quote_enc_info != NULL) {
+		_in_quote_enc_info = (sgx_target_info_t*)malloc(_len_quote_enc_info);
+		if (_in_quote_enc_info == NULL) {
 			status = SGX_ERROR_OUT_OF_MEMORY;
 			goto err;
 		}
 
-		memcpy((void*)_in_server, _tmp_server, _len_server);
-		_in_server[_len_server - 1] = '\0';
+		memcpy(_in_quote_enc_info, _tmp_quote_enc_info, _len_quote_enc_info);
 	}
-	if (_tmp_port != NULL) {
-		_in_port = (char*)malloc(_len_port);
-		if (_in_port == NULL) {
+	if (_tmp_report != NULL) {
+		if ((_in_report = (sgx_report_t*)malloc(_len_report)) == NULL) {
 			status = SGX_ERROR_OUT_OF_MEMORY;
 			goto err;
 		}
 
-		memcpy((void*)_in_port, _tmp_port, _len_port);
-		_in_port[_len_port - 1] = '\0';
+		memset((void*)_in_report, 0, _len_report);
 	}
-	ms->ms_retval = ecall_client((const char*)_in_server, (const char*)_in_port);
+	ms->ms_retval = ecall_create_report(_in_quote_enc_info, _in_report);
 err:
-	if (_in_server) free((void*)_in_server);
-	if (_in_port) free((void*)_in_port);
+	if (_in_quote_enc_info) free(_in_quote_enc_info);
+	if (_in_report) {
+		memcpy(_tmp_report, _in_report, _len_report);
+		free(_in_report);
+	}
 
 	return status;
 }
 
 SGX_EXTERNC const struct {
 	size_t nr_ecall;
-	struct {void* call_addr; uint8_t is_priv;} ecall_table[3];
+	struct {void* call_addr; uint8_t is_priv;} ecall_table[4];
 } g_ecall_table = {
-	3,
+	4,
 	{
-		{(void*)(uintptr_t)sgx_ecall_connect, 0},
 		{(void*)(uintptr_t)sgx_ecall_self_test, 0},
-		{(void*)(uintptr_t)sgx_ecall_client, 0},
+		{(void*)(uintptr_t)sgx_test_yahoo_finance, 0},
+		{(void*)(uintptr_t)sgx_test_ecdsa, 0},
+		{(void*)(uintptr_t)sgx_ecall_create_report, 0},
 	}
 };
 
 SGX_EXTERNC const struct {
 	size_t nr_ocall;
-	uint8_t entry_table[10][3];
+	uint8_t entry_table[10][4];
 } g_dyn_entry_table = {
 	10,
 	{
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
 	}
 };
 

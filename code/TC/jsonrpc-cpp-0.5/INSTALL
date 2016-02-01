@@ -1,0 +1,139 @@
+Installation
+============
+
+Requirements
+-------------
+
+- C++ compiler toolchain;
+- automake/autoconf or scons depending of the way to compile;
+- libjsoncpp if available on your system, JsonCpp source files 
+(http://jsoncpp.sourceforge.net/) otherwise;
+- libcurl if you want to build the HTTP client;
+
+For the moment only MinGW compiler is supported to build
+JsonRpc-Cpp on MS Windows. 
+Note for Windows 64-bit, in order to make 64-bit library, 
+you have to install MinGW-w64.
+ 
+Build JsonCpp
+--------------
+
+If the libjsoncpp is available on your system, skip this part.
+
+Get JsonCpp source code from SVN repository (there are no releases):
+
+$ svn co https://jsoncpp.svn.sourceforge.net/svnroot/jsoncpp/trunk jsoncpp 
+$ cd jsoncpp/
+
+Compilation,
+for Linux and MacOS X:
+$ scons platform=linux-gcc
+
+for Windows (MinGW):
+$ scons platform=mingw
+
+Installation,
+for Linux: 
+# cp libs/linux-gcc-*/libjson_linux-gcc*libmt.so /usr/local/lib/libjson.so
+# cp -r include/json /usr/local/include/json
+
+for MacOS X: 
+# cp libs/linux-gcc-*/libjson_linux-gcc*.dylib /usr/local/lib/libjson.dylib
+# cp -r include/json /usr/local/include/json
+
+for Windows with MinGW:
+# xcopy libs\mingw\libjson_mingw*.a C:\MinGW\lib\libjson.a
+# mkdir C:\MinGW\include\json
+# xcopy /S include\json C:\MinGW\include\json
+
+Build JsonRpc-Cpp
+------------------
+
+You can use the autotools or the scons way.
+
+1) Autotools
+
+$ ./autogen.sh
+$ ./configure
+$ make
+# make install
+
+To specify another prefix for installation, use ./configure --prefix=/path/to/directory before make.
+
+2) Scons
+To build the library: 
+$ scons build 
+
+To build all (library, examples, ...):
+$ scons all
+
+To clean up the project: 
+$ scons -c all
+
+To build documentation:
+$ scons doc
+
+To install:
+Run (with root or admin privileges): 
+# scons install
+
+Default will install include files in /usr/local/include/jsonrpc/ and 
+libjsonrpc.so file in /usr/local/lib/ on Unix-like and C:\MinGW\include and
+C:\MinGW\lib respectively for MS Windows.
+
+To choose another installation directory add "prefix" option: 
+$ scons install prefix='/path/to/installation/directory'
+
+Note: You have to double '\' character on MS Windows (i.e. C:\\MinGW\\).
+
+To uninstall, run (with root or admin privileges):
+# scons -c install 
+
+For custom uninstallation:
+$ scons -c install prefix='/path/to/installation/directory'
+
+Examples
+---------
+
+JsonRpc-Cpp provides simple JSON-RPC TCP and UDP servers as well as TCP and UDP clients.
+
+To build the examples:
+$ scons examples
+
+This will build tcp-server, udp-server, tcp-client and udp-client examples.
+Note that servers will be bind to localhost, port 8086 and clients will connect to the same address/port.
+
+The examples are built by default when compiling with autotools.
+
+To run the TCP JSON-RPC server:
+$ examples/tcp-server
+
+To run the TCP JSON-RPC client:
+$ examples/tcp-client
+
+You should see: 
+Query is: {"id":1,"jsonrpc":"2.0","method":"system.print"}
+
+Received: {"id":1,"jsonrpc":"2.0","result":"success"}
+
+
+To run the UDP JSON-RPC server:
+$ examples/udp-server
+
+To run the UDP JSON-RPC client:
+$ examples/udp-client
+
+You should see: 
+Query is: {"id":1,"jsonrpc":"2.0","method":"system.print"}
+
+Received: {"id":1,"jsonrpc":"2.0","result":"success"}
+
+Unit tests
+-----------
+
+CppUnit framework (http://cppunit.sourceforge.net/) is needed in order to use unit tests.
+
+To compile and run unit tests:
+$ scons test
+$ scons run-test
+
