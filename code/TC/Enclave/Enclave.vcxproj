@@ -157,7 +157,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level4</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)\TLSlib;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\stlport;$(SGXSDKInstallPath)include\epid;$(SolutionDir)\Enclave;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Enclave\EthBase;$(SolutionDir)\TLSlib;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\stlport;$(SGXSDKInstallPath)include\epid;$(SolutionDir)\Enclave;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
       <FunctionLevelLinking>
       </FunctionLevelLinking>
@@ -425,6 +425,7 @@
     <ClInclude Include="Enclave.h" />
     <ClInclude Include="Enclave_t.h" />
     <ClInclude Include="keccak.h" />
+    <ClInclude Include="RLP.cpp" />
     <ClInclude Include="RootCerts.h" />
     <ClInclude Include="Scraper_lib.h" />
   </ItemGroup>

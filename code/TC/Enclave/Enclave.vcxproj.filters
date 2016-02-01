@@ -83,5 +83,8 @@
     <ClInclude Include="keccak.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="RLP.cpp">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
