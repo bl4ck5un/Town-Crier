@@ -28,15 +28,18 @@ echo "tc = TownCrier.new({from: userAddr, data: contracts.TownCrier.code, gas: g
 
 echo "miner.start(1); admin.sleepBlocks(1); miner.stop();"
 
-echo "tc.RequestEv(function(e,r) { console.log('RequestEv: ' + JSON.stringify(r.args)) })"
+echo "tc.RequestLog(function(e,r) { console.log('RequestLog: ' + JSON.stringify(r.args)) })"
+echo "tc.RequestInfo(function(e,r) { console.log('RequestInfo: ' + JSON.stringify(r.args)) })"
 #echo 'tc.request.sendTransaction(0, "0x01", "0000", "test", {from: userAddr, value: Math.pow(10,17), gas: gasCnt})'
 
 echo "fi = FlightInsurance.new(tc.address, {from: userAddr, data: contracts.FlightInsurance.code, gas: gasCnt, value: Math.pow(10,22)}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})"
 
 echo "miner.start(1); admin.sleepBlocks(1); miner.stop();"
 
+echo "dataAry = Array(256); for (var i = 0; i < dataAry.length; i++) { dataAry[i] = 'a'; }; dataAry = dataAry.join('')"
+#echo "dataAry = 'a'"
 echo "fi.Insure(function(e,r) { if (!e) { console.log('Insure: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
-echo "fi.insure.sendTransaction(0, {from: userAddr, gas: gasCnt, value: 5 * Math.pow(10,18)})"
+echo "fi.insure.sendTransaction(dataAry, {from: userAddr, gas: gasCnt, value: 5 * Math.pow(10,18)})"
 
 echo "miner.start(1); admin.sleepBlocks(1); miner.stop();"
 
@@ -48,7 +51,7 @@ echo "tc.DeliverInfo(function(e,r) { console.log('DeliverInfo: ' + JSON.stringif
 echo "sgxBeforeCash1 = Number(debug.dumpBlock('latest').accounts['9d10ea5ad51e1af69cd8d4dcfa60f577818607b2'].balance.substring(0,12))"
 echo "sgxBeforeCash2 = Number(debug.dumpBlock('latest').accounts['9d10ea5ad51e1af69cd8d4dcfa60f577818607b2'].balance.substring(12))"
 
-echo "tc.deliver.sendTransaction(1, 0, 0, '0x00000000000000000000000000000000000000000000000000000000000000aa', {from: sgxAddr, gas: gasCnt})"
+echo "tc.deliver.sendTransaction(1, 0, dataAry, '0x00000000000000000000000000000000000000000000000000000000000000aa', {from: sgxAddr, gas: gasCnt})"
 
 echo "miner.start(1); admin.sleepBlocks(1); miner.stop();"
 
