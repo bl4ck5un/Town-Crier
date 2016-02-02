@@ -1,80 +1,62 @@
 
 
-\section{Basic Protocol}
+\section{\tc Protocol}
 
-\subsection{A Gas-Free Basic Protocol}
-For simplicity, we first describe a gas-free version of our basic protocol.
-This basic protocol improves the strawman solution 
-by resolving the aforementioned two issues.
+We now describe the operation of \tc at the protocol level. First, we give a brief protocol overview. Then we describe and provide some formalism for specifying the data flows in the system. Finally, in this section, we provide a component-level view of the protocol by specifying the functionalities embodied in the \tcontract, \medname, and \encname. We present these  as ideal functionalities, inspired by the universal-composability (UC) framework, in order to abstract away implementation details and as a springboard for formal proofs of security.
 
-\paragraph{Enclave-specific keys.}
-To avoid having to verify a group signature on the blockchain,  
-during enclave initialization, 
-we have each enclave generate its enclave-specific 
-key pair denoted $(\pksgx, \sksgx)$.
-The $\sksgx$ is retained within the enclave and used
-to sign the datagrams extracted from data sources during the request phase.
-Since Ethereum itself 
-already verifies signatures on messages sent from users (i.e.,
-users interact with the 
-Ethereum blockchain through an authenticated channel), 
-we devise a trick to {\it piggyback the signature 
-verification on top of Ethereum's already existing signature verfication mechanism}.
-This means that the SGX enclave must sign datagrams using the \elaine{fill in name}
-signature scheme that is compatible with Ethereum's signature verification.
-This way, we need not implement a separate signature verification
-in the user-defined $\tcont$ contract.
-This saves 
-not only software engineering effort, but more importantly, gas.
+\subsection{Datagram lifecycle}
 
-To make this idea fully work, in an offline phase, 
-a user must verify an SGX attestation vouching for its own enclave-specific 
-public key  $\pksgx$.
-This $\pksgx$ is hardcoded inside the blockchain contract $\tcont$. 
-The user is responsible for making sure that this hardcoded $\pksgx$ has an 
-appropriate SGX attestation before interacting with the $\tcont$ 
-blockchain contract.
+The lifecycle of a datagram may be briefly summarized in the following steps:
 
-\paragraph{Instantiating trusted absolute clock.}
-Since SGX's trusted clock provides only relative time with 
-respect to a reference point, 
-we will rely on 
-the following mechanism to realize a trusted {\it absolute} clock. 
-\begin{itemize}[leftmargin=5mm]
-\item
-{\bf Offline calibration.}
-In an offline phase, a user $U$ performs the following calibration protocol
-with the SGX enclave:
+\begin{itemize}
+\item {\bf Initiate request.} \reqcont sends a datagram request to \tcont on the blockchain.
 
-\elaine{this formal notation needs to be changed, it is not compatible
-with other formal notation.}
+\item {\bf Monitor and relay.} The \medname monitors \tcont and relays incoming datagram requests to the \encname.
 
-\begin{tabular}{rl}
-$\mathcal{U}$: & get absolute $T_0$ from a trusted source \\
-$\mathcal{U}$: & pick random ${\sf nonce}$\\
-$\mathcal{U} \rightarrow \fsgx$: & ${\sf nonce}$\\
-$\fsgx \rightarrow \mathcal{U}$: & (${\sf clock\_ref}$, $\Delta T_0$, ${\sf nonce}$)\\
-$\mathcal{U}$: & record ${\sf clock\_ref}$, $\Delta T_0$
-\end{tabular}
+\item {\bf Securely fetch feed.} Based on \dgform, the \encname contacts a data source via HTTPS and obtains the requested datagram. It forwards the datagram via the Relay to \tcont.
 
-\elaine{the above assumes that 
-an authenticated channel has been established.}
-
-\item
-{\bf Online trusted absolute clock.}
-Whenever $\fsgx$ gives the relative time $\Delta T$ with respect
-to ${\sf clock\_ref}$, the user 
-{\it i)} checks that ${\sf clock\_ref}$ agrees with the saved
-reference point, and 
-{\it ii)}
-computes $T_0 + \Delta T - \Delta T_0$
-as the absolute time.
+\item {\bf Return datagram.} \tcont checks the correctness of \dgform and returns the datagram to \reqcont.
 \end{itemize}
 
+We now make this data flow more precise. 
+
+\subsection{Data flows}
+
+We denote a datagram instance, namely the set of message values associated with a datagram request, by $\dgi$, where $i$ is a unique instance index. (We explain in Section~\ref{sec:implementation} how this index is computed.) 
+
+A datagram request by \reqcont takes the form of a message $\dgi.\dgreq$ to \tcont on the blockchain. This message $\dgi.\dgreq = (\dgi.\dgform, \dgi.\dgpay)$ includes both a specification $\dgi.\dgform$ of the requested datagram (e.g., a stock ticker and desired time) and a payment $\dgi.\dgpay$, which in Ethereum may include gas to cover the execution cost of the request as well as a service fee. \tcont receives a return message $\dgi.\dgret = (\dgi.\dgform, \dgi.\dgm)$ from the $\tc$ service where $\dgm$ contains the data (e.g., the desired stock ticker price). \tcont checks the consistency of $\dgi.\dgform$ on the incoming and outgoing messages, and if they match forwards $\dgi.\dgm$ to \reqcont. Where clear from context, we omit the prefix $\dgi$ from our notation.
+
+Figure~\ref{fig:dataflow} shows the data flows involved in processing a datagram request. For simplicity, the figure omits the \medname, which is only responsible for data passing.
+
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=\columnwidth]{figures/DataflowFig}
+\caption{{\bf Data flows in datagram processing.}}
+\label{fig:dataflow}
+\end{figure}
+
+
+Digital signatures are needed to authenticated messages, such as $\dgret$, entering the blockchain from an external source. We let $(\skTC, \pkTC)$ denote the private / public keypair associated with the \encname for such message authentication. For simplicity, we assume for the time that the \encname can send signed messages directly to \tcont. Later we explain how Ethereum requires a slightly different approach in which \tc sends messages via an Ethereum wallet.
+
+
+\subsection{SGX model} 
+
+Our protocols in \tc rely on the ability of the SGX attestation mechanism to bind an enclave process instance to a public / private key pair and for the process to high-accuracy timestamps, in absolute or wall-clock time. To simplify our presentation, we defer most details of our formal model of SGX capabilities and specification of protocols for attestation generation and use until later in the section. Instead, we first explain and present a simple abstraction of these capabilities suitable for our \tc protocol descriptions. 
+
+Let $\enclaveprog$ represent the code for \encname, which we presume is trusted by all system participants. To avoid having to verify an EPID group signature on the blockchain, we have clients obtain SGX attestations from the \medname and verify them off-chain. As noted above, it is possible to bind an enclave process instance running \enclaveprog to a key pair $(\pksgx, \sksgx)$ by including the public key pair in an attestation. We take this approach in \tc. Specifically, Since Ethereum itself 
+already verifies signatures on transactions from externally owned accounts (i.e., users interact with the  Ethereum blockchain through an authenticated channel), \tc uses a trick to {\it piggyback verification of enclave signatures on top of Ethereum's already existing transaction signature verification mechanism}. Very simply, the \encname associates \pksgx with an externally owned Ethereum account \tcadd. 
+This approach saves not only software engineering effort, but more importantly,  the gas that would be required for EPID signature verification.
+
+To make this idea work fully, the public key $\pksgx$ must be hardcoded into \tcont. A client creating or relying on a contract that uses \tcont is responsible for making sure that this hardcoded $\pksgx$ has an appropriate SGX attestation before interacting with the $\tcont$  blockchain contract.  Let {\sf Verify} denote a verification algorithm for EPID signatures. Figure~\ref{fig:att_check} gives the protocol for a client to check that \tcont is backed by a valid \encname instance. This protocol does not include a mechanism for \emph{revocation} of a compromised SGX instance, an issue we discuss later in the paper.
+
+We assume in our protocol specifications that all relying clients have verified an attestation for \encname and thus that \pksgx represents the public key of the associated instance.
+
+We model execution in SGX in terms of a functionality $\fsgx$ operating in a stateful manner on \enclaveprog. This functionality may be be invokes through transmission of one of two messages to \enclaveprog: ``initialize'', which creates the enclave with \enclaveprog as its initial state and triggers measurement quotes and ``resume'', which causes an interrupted execution of \enclaveprog to be reinstated. We let $\fsgx[\enclaveprog, \relay]$ denote invocation of $\fsgx$ on \enclaveprog by \relay. We let $\clock()$ denote measurement of the SGX clock from within the enclave; $\clock()$ returns the current wall-clock time (in a canonical format such as seconds and fraction sections since the Unix epoch January 1, 1970 00:00 UTC).\ari{What format do we actually use?}
 
 \paragraph{Formal protocol description.}
 
-\begin{figure}
+\begin{figure}[h!]
 \begin{boxedminipage}{\columnwidth}
 \begin{center}
 {\bf User: offline attestation of SGX enclave}
@@ -88,18 +70,23 @@ Assert \tcont is correct and parametrized w/ \pksgx\\
 {\it //~now okay to rely on \tcont}
 \end{tabular}
 \end{boxedminipage}
-\caption{A user checks the Town Crier blockchain contract \tcont, 
-and verifies an SGX attestation of the enclave's code and its public key $\pksgx$ before 
-entering a contract that calls \tcont.
-\elaine{here we use a simplified abstraction, but the actual implementation
-also involves verifying the revocation list.}
-%\elaine{there is a notational mismatch here. here we write RL explicitly, but
-%not in the Fsgx abstraction}
+\label{fig:att_check}
+\caption{A client checks an SGX attestation of the enclave's code and its public key $\pksgx$ and
+checks that $\pksgx$ is hardcoded into \tc blockchain contract \tcont before 
+making use of \tcont.
 } 
 \end{figure}
 
+Additionally, as noted above, trusted clock provides only relative time with  respect to a reference point, not absolute time. Thus, when initialized, the \encname is provided with the current wall-clock time by a trusted source, e.g., the \medname (under a trust-on-first-use model). The SGX attestation generated by the \encname includes the current wall-clock time, which clients may verify in real time. Thus, a client can determine the absolute clock time of \encname to within a high degree of accuracy, bounded by the round-trip time of its attestation request plus the attestation verification time--on the order of hundreds of milliseconds in a wide-area network~\cite{}.  
+\ari{Let's give the attestation API a function name.} We present a formal model and protocol specification in the paper appendix.
 
-\begin{figure}
+
+\subsection{A payment-free basic protocol}
+For simplicity, we first specify functionalities in a payment-free version of our basic protocol, i.e., one that does not include gas or fees--specifically the message component $\dgpay$. Later, in our implementation discussion, we explain how we handle these two forms of payment, and we prove payment-related properties in the paper appendix.
+
+\paragraph{The \tcontract}
+
+\begin{figure}[!htb]
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
   \hline
 
@@ -125,7 +112,9 @@ are not explicitly expressed in our notation).
 \label{tbl:tc-contract}
 \end{figure}
 
-\begin{figure}
+\paragraph{The \encname}
+
+\begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}
 \begin{center}
 {\bf Town Crier's enclave program}
@@ -156,8 +145,9 @@ SGX enclave's code.
 } 
 \end{figure}
 
+\paragraph{The \medname}
 
-\begin{figure}
+\begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}
 \begin{center}
 {\bf Town Crier's untrusted relay $\relay$}
@@ -185,152 +175,6 @@ we need multiple enclaves that instantiate different parsers for different sites
 In this case, the Town Crier relay also initialize all enclave instances
 and route the request to the correct enclave instance.}
 \end{figure}
-
-\begin{figure}
-\begin{boxedminipage}{\columnwidth}
-\begin{center}
-{\bf $\fsgx[\enclaveprog, \relay]$: abstraction for SGX}
-\end{center}
-\begin{tabular}{l}
-{\bf Hardcoded:} $\skM$ \\[5pt]
-
-{\bf Assume:} \\ 
-$\enclaveprog$ has entry points {\bf Initialize} and {\bf Resume}\\[5pt]
-
-{\bf Initialize:}\\
-On receive ``initialize'' from $\relay$: \\
-\quad Let ${\sf outp} := \enclaveprog.{\bf Initalize}()$  \\
-\quad $\sigatt := \sigsgx.{\sf Sign}(\skM, (\enclaveprog, {\sf outp}))$ \\[-1pt]
-\qquad \qquad {\it //~models group sig.}\\
-\quad Output  $({\sf outp}, \sigatt)$\\[5pt]
-
-On receive (``resume'', ${\sf params}$) from $\relay$: \\
-\quad Let ${\sf outp} := \enclaveprog.{\bf Resume}({\sf params})$  \\
-\quad Output ${\sf outp}$ 
-\end{tabular}
-\end{boxedminipage}
-\caption{Formal abstraction for SGX attested execution. 
-We adopt a similar modeling approach by Shi et al., where
-the SGX group signature is abstracted with a normal signature
-by a manufacturer key $\pkM$. 
-\elaine{cite our sok paper}
-The above functionality only models a subset of SGX features
-that is sufficient for our formalism.
-}
-\end{figure}
-
-
-\subsection{Formal Guarantees}
-
-\paragraph{Authenticity.}
-Roughly speaking, authenticity means that 
-an adversary cannot convince   
-the Town Crier blockchain contract 
-$\tcont$ to accept 
-a wrong data feed. 
-Here a wrong data feed means any content
-that differs from the expected content
-obtained by crawling the specified \weburl at 
-the specified time $T$.
-
-In formally defining 
-authenticity, 
-we assume that the user and the blockchain
-contract $\tcont$ behave honestly.
-Recall that the user must verify 
-upfront the attestation $\sigatt$ 
-that vouches 
-for the enclave's public key $\pksgx$.
-
-\begin{definition}[Authenticity]
-We say that the Town Crier protocol 
-satisifies {\it authenticity} of data feed,
-if for any polynomial-time adversary
-that can interact arbitrarily with $\fsgx$,
-it cannot 
-persuade an honest verifier to accept
-a tuple $(\pksgx, \sigatt, {\sf params}:=(\weburl, \pkurl, T), {\sf data}, \sigma)$
-%${\sf params} := (\weburl, \pkurl, T)$).
-where ${\sf data}$ is not 
-the contents of 
-\weburl with the public key $\pkurl$ at time $T$.
-More formally, 
-for any probablistic polynomial-time adversary $\algA$
-\[
-\begin{array}{l}
-\Pr\left[
-\begin{array}{l}
-(\pksgx, \sigatt, {\sf id}, {\sf params}, {\sf data}, \sigma) \leftarrow 
-\algA^{\fsgx}(1^\lambda) :\\
-\quad \left(\sigsgx.{\sf Verify}(\pkM, \sigatt, (\enclaveprog, \pksgx)) = 1\right) \wedge \\
-\quad \left(\Sigma.{\sf Verify}(\pksgx, {\sf id}, {\sf params}, {\sf data})  = 1\right) \wedge\\
-\quad {\sf data} \neq \enclaveprog({\sf params}) 
-\end{array}
-\right] \\[3pt] 
-\leq {\sf negl}(\lambda)
-\end{array}
-\]
-\label{defn:auth}
-\end{definition}
-
-
-\begin{theorem}[Authenticity]
-Assume that $\sigsgx$
-and $\Sigma$ are secure signature schemes (recall
-that we follow Shi et al. \elaine{cite} who show
-how to abstractly  
-model SGX's group signature as a regular signature
-scheme under a manufacturer public key $\pkM$),
-%and assume that the cryptographic protocol used to realize the secure channel
-%with $\pkurl$ is secure;
-then, the above 
-protocol achieves authenticity of data feed by Definition~\ref{defn:auth}.
-\end{theorem}
-\begin{proof} (sketch.)
-We show that if the 
-adversary $\algA$ succeeds in a forgery with non-negligible probability,
-we can construct an adversary $\algB$ that can either
-break $\sigsgx$ or $\Sigma$ with non-neligible probability.
-We consider two cases. 
-The reduction $\algB$ will flip a random coin to guess which
-case it is, and if the guess is wrong, simply abort.
-\begin{itemize}[leftmargin=5mm]
-\item
-Case 1: $\algA$ outputs a signature $\sigma$ that uses the same  
-$\pksgx$ as the SGX functionality $\fsgx$.
-In this case, $\algB$ will try to break $\Sigma$. 
-$\algB$ interacts with a signature challenger ${\sf Ch}$ who generates
-some $(\pk^*, \sk^*)$ pair, and gives to $\algB$ the public key
-$\pk^*$. $\algB$ simulates 
-$\fsgx$ by implicitly letting $\pksgx := \pk^*$.
-Whenever $\fsgx$ needs to sign a query, $\algB$ passes the signing query
-onto the signature challenger ${\sf Ch}$.
-
-Since ${\sf data} \neq \enclaveprog({\sf params})$,
-$\algB$ cannot have queried ${\sf Ch}$  
-on a tuple of the form $(\_, {\sf params}, {\sf data})$. 
-Therefore, $\algB$ simply outputs 
-what $\algA$ 
-outputs (suppressing unnecessary terms) as the signature forgery. 
-
-\item
-Case 2:
- $\algA$ outputs a signature $\sigma$ that uses a different 
-$\pksgx$ as the SGX functionality $\fsgx$.
-In this case, $\algB$ will seek to break $\sigsgx$.
-$\algB$ interacts with a signature challenger ${\sf Ch}$, who generates
-some $(\pk^*, \sk^*)$ pair, and gives to $\algB$ the public key
-$\pk^*$. $\algB$ simulates $\fsgx$ by implicitly setting
-$\pkM := \pk^*$.
-Whenever $\fsgx$ needs to make a signature
-with $\skM$, 
-$\algB$ simply passes the signature query onto ${\sf Ch}$.
-In this case, in order for $\algA$ to succeed,
-it must produce a valid signature $\sigatt$ 
-for a different public key $\pk'$.
-Therefore, $\algB$ simply outputs this as a signature forgery.
-\end{itemize}
-\end{proof}
 
 
 
