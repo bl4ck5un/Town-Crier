@@ -1,10 +1,12 @@
-\section{\tc Design}
+\section{\tc Architecture}
 
-In this section, we discuss the general design of \tc. First we present a strawman architecture that illustrates some of the technical challenges that arise in the design of \tc. We then present our \tc architecture, describing the front-end (blockchain) and back-end (off-chain) components, the data flows among them, and the security model underpinning our design.
+In this section, we discuss the general design of \tc. First we present a strawman system design that illustrates some of the technical challenges that arise in the design of \tc. We then present our \tc architecture, describing the front-end (blockchain) and back-end (off-chain) components, and give a high-level view of the security model underpinning our design.
 
-\subsection{Strawman architecture}
+\subsection{Strawman design}
 
-Here we sketch a simple (but, as we show, na\"{i}ve) strawman architecture that provides authenticated data feeds along with accompanying attestations. To harmonize with terminology introduced shortly in the paper, we refer to the untrusted component of a \tc host as the \medname and the code running in an SGX enclave as the \encname.
+Here we sketch a simple (but, as we show, na\"{i}ve) strawman design that provides authenticated data feeds along with accompanying attestations. 
+
+%To harmonize with terminology introduced shortly in the paper, we refer to the untrusted component of a \tc host as the \medname and the code running in an SGX enclave as the \encname.
 
 The strawman solution is as follows:
 
@@ -16,16 +18,14 @@ monitors the blockchain for
 datagram requests. A contract \reqcont 
 requests a datagram by including a distinguished message in its state (e.g., ``\tc service \#123 request:''), along with
 a specification \dgform of the requested datagram.
-Monitoring happens in the \medname, which controls the network stack. The
-\medname forwards ${\sf params}$ 
-to the \encname.
+Monitoring happens in the untrusted part of the \tc server, which controls the network stack. Any scraped specification \dgform is passed to a (trusted) enclave process.
 \item
 {\bf Securely fetch feed.}
-Based on the \dgform, the \encname contacts a data source, establishing an HTTPS channel to a suitable target web page $\weburl$ (which might, e.g., be specified in \dgform). 
-The \encname verifies that the validity of the certificate for the host serving \weburl.
+Based on the \dgform, the trusted enclave process contacts a data source, establishing an HTTPS channel to a suitable target web page $\weburl$ (which might, e.g., be specified in \dgform). 
+The process verifies that the validity of the certificate for the host serving \weburl.
 It then fetches page contents, parses them, and extracts a datagram \dgm as specified in \dgform.
 
-Finally, the \encname produces an attestation $\att$ on: its code in the enclave, $\dgform$, a timestamp $T$ on the fetched data, and $\dgm$. 
+Finally, the enclave process produces an attestation $\att$ on: its code in the enclave, $\dgform$, a timestamp $T$ on the fetched data, and $\dgm$. 
 It sends $\att$ to $\reqcont$.
 \item
 {\bf Verify}.
@@ -37,7 +37,7 @@ This strawman scheme has a few nice features: conceptual simplicity, no need to 
 \paragraph{Problems with the strawman scheme.}
 Our strawman scheme is unworkable for several reasons. First, verification of \att in the requesting contract \reqcont is not practical. Although SGX provides a 
 trusted clock, the clock does not provide absolute time, but only time relative to a host-specific reference point.
-Thus it is not clear in our strawman scheme how to produce a timestamp $T$ in absolute time. Futhermore, in Ethereum, opcodes for in-contract cryptographic operations are very limited and do not support the proprietary EPID group-signature scheme present in SGX attestations. While achievable in principle, as the Ethereum virtual machine is Turing-complete, verification of attestations would impose prohibitively expensive gas costs on \reqcont. 
+Thus it is not clear in our strawman scheme how to produce a timestamp $T$ in absolute time. Furthermore, in Ethereum, opcodes for in-contract cryptographic operations are very limited and do not support the proprietary EPID group-signature scheme present in SGX attestations. While achievable in principle, as the Ethereum virtual machine is Turing-complete, verification of attestations would impose prohibitively expensive gas costs on \reqcont. 
 
 To address these problems, our \tc architecture supports only off-chain verification of attestations.
 
@@ -73,43 +73,6 @@ The \encname ingests and fulfills datagram requests from the blockchain. To obta
 
 The \medname is an ordinary user-space application. It does not benefit from integrity protection by trusted hardware and thus, unlike the \encname, can be subverted by an adversarial OS on the \tc server, causing network delays or failures. As we explain in detail later in the paper, however, a key design aim of \tc is that \medname should be unable to cause incorrect datagrams to be produced or users to lose fees paid to \tc for datagrams (although they may lose gas used to fuel their requests). In general, the \medname~{\em can only mount denial-of-service attacks against \tc}. 
 
-\paragraph{End-to-end datagram processing.}
-
-The lifecycle of a datagram may be summarized in the following steps:
-
-\begin{itemize}
-\item {\bf Initiate request.} \reqcont sends a datagram request to \tcont on the blockchain.
-
-\item {\bf Monitor and relay.} The \medname monitors \tcont and relays incoming datagram requests to the \encname.
-
-\item {\bf Securely fetch feed.} Based on \dgform, the \encname contacts a data source via HTTPS and obtains the requested datagram. It forwards the datagram via the Relay to \tcont.
-
-\item {\bf Return datagram.} \tcont checks the correctness of \dgform and returns the datagram to \reqcont.
-\end{itemize}
-
-
-%In addition to servicing datagram requests, the \encname may be queried by a client to provide an off-chain, hardware-backed attestation $\att$ on the state of the \encname---both its executing code and its clock. It is to support this service that \medname includes a web server. We do not depict this service in Figure~\ref{fig:overview}, and defer its discussion to later in the paper.
-
-We now make this data flow more precise. 
-
-\subsection{Datagram processing: Data flow}
-
-We denote a datagram instance, namely the set of message values associated with a datagram request, by $\dgi$, where $i$ is a unique instance index. (We explain in Section~\ref{sec:implementation} how this index is computed.) 
-
-A datagram request by \reqcont takes the form of a message $\dgi.\dgreq$ to \tcont on the blockchain. This message $\dgi.\dgreq = (\dgi.\dgform, \dgi.\dgpay)$ includes both a specification $\dgi.\dgform$ of the requested datagram (e.g., a stock ticker and desired time) and a payment $\dgi.\dgpay$, which in Ethereum may include gas to cover the execution cost of the request as well as a service fee. \tcont receives a return message $\dgi.\dgret = (\dgi.\dgform, \dgi.\dgm)$ from the $\tc$ service where $\dgm$ contains the data (e.g., the desired stock ticker price). \tcont checks the consistency of $\dgi.\dgform$ on the incoming and outgoing messages, and if they match forwards $\dgi.\dgm$ to \reqcont. Where clear from context, we omit the prefix $\dgi$ from our notation.
-
-Figure~\ref{fig:dataflow} shows the data flows involved in processing a datagram request. For simplicity, the figure omits the \medname, which is only responsible for data passing.
-
-
-\begin{figure}[h!]
-\centering
-\includegraphics[width=\columnwidth]{figures/DataflowFig}
-\caption{{\bf Data flows in datagram processing.}}
-\label{fig:dataflow}
-\end{figure}
-
-
-Digital signatures are needed to authenticated messages, such as $\dgret$, entering the blockchain from an external source. We let $(\skTC, \pkTC)$ denote the private / public keypair associated with the \encname for such message authentication. For simplicity, we assume for the time that the \encname can send signed messages directly to \tcont. Later we explain how Ethereum requires a slightly different approach in which \tc sends messages via an Ethereum wallet.
 
 \subsection{Security model}
 
