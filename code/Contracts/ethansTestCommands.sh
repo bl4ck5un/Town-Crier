@@ -59,3 +59,9 @@ echo "sgxAfterCash1 = Number(debug.dumpBlock('latest').accounts['9d10ea5ad51e1af
 echo "sgxAfterCash2 = Number(debug.dumpBlock('latest').accounts['9d10ea5ad51e1af69cd8d4dcfa60f577818607b2'].balance.substring(12))"
 
 echo "console.log('sgx lost money? ' + (sgxAfterCash1 < sgxBeforeCash1 || (sgxAfterCash1 === sgxBeforeCash1 && sgxAfterCash2 < sgxBeforeCash2)))"
+
+echo "tc.Cancel(function(e,r) { if (!e) { console.log('Cancel: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
+echo "fi.FlightCancel(function(e,r) { if (!e) { console.log('FlightCancel: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
+echo "fi.cancel.sendTransaction(1, {from: userAddr, gas: gasCnt})"
+
+echo "miner.start(1); admin.sleepBlocks(1); miner.stop();"
