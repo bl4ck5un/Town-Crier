@@ -1,18 +1,16 @@
-#define _GNU_SOURCE
-#define __USE_XOPEN
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include "Scraper_lib.h"
+#include "time.c"
 
 int construct_query(int argc, char* argv[], char** buf) {
     int len;
-    char* flight = argv[2];
+    char* flight = argv[3];
     char query[1000];
-    if (argc != 6) {
-        printf("USAGE: %s [YYYMMDD] [flight number] [origin] [destination] [departure time]\n", argv[0]);
-        printf("\torigin/destination airport codes in ICAO, time in zulu\n");
+    if (argc != 4) {
+        printf("USAGE: %s [YYYMMDD] [departure time] [flight number]\n", argv[0]);
+        printf("\tflight number in ICAO, time in zulu\n");
         return -1;
     }
     
@@ -31,18 +29,18 @@ int construct_query(int argc, char* argv[], char** buf) {
 }
 
 int parse_response(char* resp, char** buf, int argc, char* argv[]) {
-    int i;
+    int i, t;
     char* temp = resp;
     char* end;
     char* sd;
 
     char* date = argv[1];
-    char* departure = argv[5];
+    char* departure = argv[2];
 
     char tempbuff[100];
     char tstamp[11];
-    struct tm t1;
-    time_t t;
+    /*struct tm t1;*/
+    /*time_t t;*/
     char scheduled[11];
     char actual[11];
     int len, tactual, tscheduled, hours, minutes, seconds, diff;
@@ -53,17 +51,22 @@ int parse_response(char* resp, char** buf, int argc, char* argv[]) {
     strcat(tempbuff, date);
     strcat(tempbuff, departure);
 
-    strptime(tempbuff, "%Y%m%d%H%M", &t1);
+    /*strptime(tempbuff, "%Y%m%d%H%M", &t1);
     t1.tm_sec = 0;
     t = mktime(&t1);
-    t = t - (60*60*5);
+    t = t - (60*60*5);*/
     /*printf("timestamp: %d\n", (int)t);*/
-    sprintf(tstamp, "%d", (int)t);
+
+    t = utime(date, departure);
+    sprintf(tstamp, "%d", t);
 
     strcpy(tempbuff, "filed_departuretime\":\0");
     strcat(tempbuff, tstamp);
+    len = strlen(resp);
     while(strncmp(temp, tempbuff, 31) != 0) {
         temp+=1;
+        if (temp == resp + len - 32)
+            return -1;
     }
     sd = temp;
 
@@ -84,6 +87,8 @@ int parse_response(char* resp, char** buf, int argc, char* argv[]) {
     actual[len] = 0;
     /*printf("%s\n", actual);*/
     tactual = atoi(actual);
+    if (tactual == 0)
+        return -1;
 
     temp = sd;
     for (i=0; i < 2; i++) {
@@ -141,9 +146,11 @@ int main(int argc, char* argv[]) {
     /*printf("%s\n", buf);*/
     /***** PARSE THE RESPONSE */
     ret = parse_response(buf, &output, argc, argv);
-
     /***** OUTPUT */
-    printf("%s\n", output);
+    if (ret < 0)
+        printf("no data/bad request\n");
+    else
+        printf("%s\n", output);
 
     return 0;
 }
