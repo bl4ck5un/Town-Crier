@@ -3,69 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <curl/curl.h>
 #include <time.h>
-
-struct str {
-    char *ptr;
-    size_t len;
-};
-
-
-int writefunc(char* ptr, size_t size, size_t nmemb, struct str* dest){
-    size_t new_len = dest->len + size*nmemb;
-    dest->ptr = (char*)realloc(dest->ptr, new_len+1);
-    if (dest->ptr == NULL) {
-        printf("realloc() failed\n");
-        return -1;
-    }
-    memcpy(dest->ptr+dest->len, ptr, size*nmemb);
-    dest->ptr[new_len] = '\0';
-    dest->len = new_len;
-    return size*nmemb;
-}
-
-
-void init_string(struct str *s) {
-    s->len = 0;
-    s->ptr = malloc(s->len+1);
-    if (s->ptr == NULL) {
-        printf("malloc() failed\n");
-    }
-    s->ptr[0] = '\0';
-}
-
-int get_page_on_ssl(const char* server_name, const char* url, char* buf, int len) {
-    struct str web_return;
-    /*struct curl_slist* chunk = NULL;*/
-    CURL* curl;
-    CURLcode res;
-    int copy_len;
-
-    init_string(&web_return);
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    curl = curl_easy_init();
-
-
-    curl_easy_setopt(curl,CURLOPT_URL, url);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, writefunc);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &web_return);
-    /*curl_easy_setopt(curl, CURLOPT_HTTPHEADER, chunk);*/
-
-    /*FILE* headerfile = fopen("hfile.txt", "wb");
-    curl_easy_setopt(curl, CURLOPT_HEADERDATA, headerfile);*/
-
-    res = curl_easy_perform(curl);
-    if (res != CURLE_OK) {
-        printf("curl error: %s\n", curl_easy_strerror(res));
-    }
-    curl_easy_cleanup(curl);
-    curl_global_cleanup();
-    
-    copy_len = (len<web_return.len) ? len : web_return.len;
-    memcpy(buf, web_return.ptr, copy_len);
-    return copy_len;
-}
+#include "Scraper_lib.h"
 
 int construct_query(int argc, char* argv[], char** buf) {
     int len;
@@ -89,32 +28,6 @@ int construct_query(int argc, char* argv[], char** buf) {
     memcpy(*buf, query, len);
     (*buf)[len] = 0;
     return len;
-}
-
-/*format: HH:MMxx (xx = AM/PM)*/
-int time_diff(char* t1, char* t2) {
-    int h1, h2, m1, m2;
-    char temp[10];
-    strcpy(temp, t1);
-    temp[2] = 0;
-    h1 = atoi(temp);
-    if (temp[5] == 'P')
-        h1 += 12;
-    temp[5] = 0;
-    m1 = atoi(temp+3);
-
-    strcpy(temp, t2);
-    temp[2] = 0;
-    h2 = atoi(temp);
-    if (temp[5] == 'P')
-        h2 += 12;
-    temp[5] = 0;
-    m2 = atoi(temp+3);
-
-    m1 = m1 - m2;
-    h1 = h1 - h2;
-    h1 = h1*60 + m1;
-    return h1;
 }
 
 int parse_response(char* resp, char** buf, int argc, char* argv[]) {
@@ -213,7 +126,7 @@ int parse_response(char* resp, char** buf, int argc, char* argv[]) {
 int main(int argc, char* argv[]) {
     /***** VARIABLE DECLARATIONS */
     int ret = 0;
-    char buf[40001];
+    char buf[16385];
     char* query = NULL;
     char* output = NULL;
 
@@ -224,8 +137,7 @@ int main(int argc, char* argv[]) {
     /*printf("%s\n", query);*/
 
     /***** EXECUTE THE QUERY */
-    ret = get_page_on_ssl("flightxml.flightaware.com", query, buf, 16384); 
-    buf[ret] = 0;
+    ret = get_page_on_ssl("flightxml.flightaware.com", query, (unsigned char*)buf, 16384); 
     /*printf("%s\n", buf);*/
     /***** PARSE THE RESPONSE */
     ret = parse_response(buf, &output, argc, argv);
