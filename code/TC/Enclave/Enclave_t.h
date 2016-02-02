@@ -20,6 +20,7 @@ extern "C" {
 int ecall_self_test();
 int test_yahoo_finance();
 int test_ecdsa();
+int test_RLP();
 sgx_status_t ecall_create_report(sgx_target_info_t* quote_enc_info, sgx_report_t* report);
 
 sgx_status_t SGX_CDECL ocall_mbedtls_net_connect(int* retval, mbedtls_net_context* ctx, const char* host, const char* port, int proto);

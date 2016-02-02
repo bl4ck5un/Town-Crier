@@ -38,6 +38,10 @@ typedef struct ms_test_ecdsa_t {
 	int ms_retval;
 } ms_test_ecdsa_t;
 
+typedef struct ms_test_RLP_t {
+	int ms_retval;
+} ms_test_RLP_t;
+
 typedef struct ms_ecall_create_report_t {
 	sgx_status_t ms_retval;
 	sgx_target_info_t* ms_quote_enc_info;
@@ -150,6 +154,19 @@ static sgx_status_t SGX_CDECL sgx_test_ecdsa(void* pms)
 	return status;
 }
 
+static sgx_status_t SGX_CDECL sgx_test_RLP(void* pms)
+{
+	ms_test_RLP_t* ms = SGX_CAST(ms_test_RLP_t*, pms);
+	sgx_status_t status = SGX_SUCCESS;
+
+	CHECK_REF_POINTER(pms, sizeof(ms_test_RLP_t));
+
+	ms->ms_retval = test_RLP();
+
+
+	return status;
+}
+
 static sgx_status_t SGX_CDECL sgx_ecall_create_report(void* pms)
 {
 	ms_ecall_create_report_t* ms = SGX_CAST(ms_ecall_create_report_t*, pms);
@@ -195,33 +212,34 @@ err:
 
 SGX_EXTERNC const struct {
 	size_t nr_ecall;
-	struct {void* call_addr; uint8_t is_priv;} ecall_table[4];
+	struct {void* call_addr; uint8_t is_priv;} ecall_table[5];
 } g_ecall_table = {
-	4,
+	5,
 	{
 		{(void*)(uintptr_t)sgx_ecall_self_test, 0},
 		{(void*)(uintptr_t)sgx_test_yahoo_finance, 0},
 		{(void*)(uintptr_t)sgx_test_ecdsa, 0},
+		{(void*)(uintptr_t)sgx_test_RLP, 0},
 		{(void*)(uintptr_t)sgx_ecall_create_report, 0},
 	}
 };
 
 SGX_EXTERNC const struct {
 	size_t nr_ocall;
-	uint8_t entry_table[10][4];
+	uint8_t entry_table[10][5];
 } g_dyn_entry_table = {
 	10,
 	{
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
+		{0, 0, 0, 0, 0, },
+		{0, 0, 0, 0, 0, },
+		{0, 0, 0, 0, 0, },
+		{0, 0, 0, 0, 0, },
+		{0, 0, 0, 0, 0, },
+		{0, 0, 0, 0, 0, },
+		{0, 0, 0, 0, 0, },
+		{0, 0, 0, 0, 0, },
+		{0, 0, 0, 0, 0, },
+		{0, 0, 0, 0, 0, },
 	}
 };
 

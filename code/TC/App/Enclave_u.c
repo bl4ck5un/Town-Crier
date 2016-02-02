@@ -12,6 +12,10 @@ typedef struct ms_test_ecdsa_t {
 	int ms_retval;
 } ms_test_ecdsa_t;
 
+typedef struct ms_test_RLP_t {
+	int ms_retval;
+} ms_test_RLP_t;
+
 typedef struct ms_ecall_create_report_t {
 	sgx_status_t ms_retval;
 	sgx_target_info_t* ms_quote_enc_info;
@@ -195,13 +199,22 @@ sgx_status_t test_ecdsa(sgx_enclave_id_t eid, int* retval)
 	return status;
 }
 
+sgx_status_t test_RLP(sgx_enclave_id_t eid, int* retval)
+{
+	sgx_status_t status;
+	ms_test_RLP_t ms;
+	status = sgx_ecall(eid, 3, &ocall_table_Enclave, &ms);
+	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
+	return status;
+}
+
 sgx_status_t ecall_create_report(sgx_enclave_id_t eid, sgx_status_t* retval, sgx_target_info_t* quote_enc_info, sgx_report_t* report)
 {
 	sgx_status_t status;
 	ms_ecall_create_report_t ms;
 	ms.ms_quote_enc_info = quote_enc_info;
 	ms.ms_report = report;
-	status = sgx_ecall(eid, 3, &ocall_table_Enclave, &ms);
+	status = sgx_ecall(eid, 4, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
 }

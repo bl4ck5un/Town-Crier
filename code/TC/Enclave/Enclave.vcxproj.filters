@@ -32,9 +32,6 @@
     <ClCompile Include="Scraper_lib.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Client.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Scraper.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -48,6 +45,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="keccak.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RLP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SSLClient.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -71,9 +74,6 @@
     <ClInclude Include="Enclave.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Client.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Scraper_lib.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -83,7 +83,7 @@
     <ClInclude Include="keccak.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="RLP.cpp">
+    <ClInclude Include="SSLClient.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

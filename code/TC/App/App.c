@@ -12,6 +12,7 @@ sgx_enclave_id_t global_eid = 0;
 //#define RPC_TEST
 #define ECDSA_TEST
 //#define SCRAPER_TEST
+//#define REMOTE_ATT_TEST
 
 int main()
 {
@@ -48,8 +49,12 @@ int main()
     }
 #endif
 
-    remote_att_init();
+#ifdef REMOTE_ATT_TEST
+    remote_att_init();  
+#endif // REMOTE_ATT_TEST
 
+
+    test_RLP(global_eid, &ret);
     printf("Info: SampleEnclave successfully returned.\n");
     printf("Enter a character before exit ...\n");
     getchar();

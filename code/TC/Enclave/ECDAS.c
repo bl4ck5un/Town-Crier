@@ -19,6 +19,7 @@
 #include "mbedtls/entropy.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/ecdsa.h"
+#include "mbedtls/bignum.h"
 
 #include <string.h>
 #endif
@@ -52,7 +53,7 @@ static int pubkey_to_address (unsigned char *pubkey, size_t pubkey_len, unsigned
         return -1;
     }
 
-    keccak(pubkey, pubkey_len, addr, 32);
+    ret = keccak(pubkey, pubkey_len, addr, 32);
     return 0;
 }
 
@@ -132,12 +133,14 @@ static void dump_group( const char* title, mbedtls_ecp_group* grp)
 #define dump_mpi (a, b)
 #endif
 
+#define FROM_PRIVATE_KEY "cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8"
 
 void keygen(mbedtls_ecdsa_context* ctx)
 {
+    int ret;
+#ifndef FROM_PRIVATE_KEY
     mbedtls_entropy_context entropy;
     mbedtls_ctr_drbg_context ctr_drbg;
-    int ret;
     const char *pers = "ecdsa";
 
 
@@ -161,14 +164,33 @@ void keygen(mbedtls_ecdsa_context* ctx)
         mbedtls_printf( "Error: mbedtls_ecdsa_genkey returned %d\n", ret );
         goto exit;
     }
-
+    mbedtls_printf("haha\n");
+#else
+    mbedtls_ecp_group_load( &ctx->grp, ECPARAMS);
+    ret = mbedtls_mpi_read_string(&ctx->d, 16, FROM_PRIVATE_KEY);
+    if (ret != 0) {
+        mbedtls_printf("Error: mbedtls_mpi_read_string returned %d\n", ret);
+        goto exit;
+    }
+    ret = mbedtls_ecp_mul( &ctx->grp, &ctx->Q, &ctx->d, &ctx->grp.G, NULL, NULL );
+    if (ret != 0) {
+        mbedtls_printf("Error: mbedtls_ecp_mul returned %d\n", ret);
+        goto exit;
+    }
+    dump_mpi("d: ", &ctx->d);
+#endif
     mbedtls_printf( "key size: %d bits\n", (int) ctx->grp.pbits );
     dump_pubkey( "Public key: ", ctx );
     dump_group("Group used is: \n", & ctx->grp);
 
 exit:
+#ifndef FROM_PRIVATE_KEY
     mbedtls_ctr_drbg_free( &ctr_drbg );
     mbedtls_entropy_free( &entropy );
+#else
+    return;
+#endif
+
 }
 
 
@@ -200,22 +222,7 @@ int test_ecdsa()
 
     mbedtls_sha256((unsigned char*) msg, strlen(msg), hash, 0);
 
-    mbedtls_entropy_init( &entropy );
-    if( ( ret = mbedtls_ctr_drbg_seed( &ctr_drbg, mbedtls_entropy_func, &entropy,
-                               (const unsigned char *) pers,
-                               strlen( pers ) ) ) != 0 )
-    {
-        mbedtls_printf( " failed\n  ! mbedtls_ctr_drbg_seed returned %d\n", ret );
-        goto exit;
-    }
-
-    if( ( ret = mbedtls_ecdsa_genkey( &ctx_sign, ECPARAMS,
-                              mbedtls_ctr_drbg_random, &ctr_drbg ) ) != 0 )
-    {
-        mbedtls_printf( " failed\n  ! mbedtls_ecdsa_genkey returned %d\n", ret );
-        goto exit;
-    }
-
+    keygen(&ctx_sign);
     dump_pubkey( "pk: ", &ctx_sign );
 
     // sign

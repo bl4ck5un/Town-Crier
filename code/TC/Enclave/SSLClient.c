@@ -19,7 +19,7 @@
  *  This file is part of mbed TLS (https://tls.mbed.org)
  */
 
-#include "Client.h"
+#include "SSLClient.h"
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"
@@ -66,9 +66,6 @@ int main( void )
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "Client.h"
-
 
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)

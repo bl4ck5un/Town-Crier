@@ -31,6 +31,7 @@ int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_print_string, (const char* str));
 sgx_status_t ecall_self_test(sgx_enclave_id_t eid, int* retval);
 sgx_status_t test_yahoo_finance(sgx_enclave_id_t eid, int* retval);
 sgx_status_t test_ecdsa(sgx_enclave_id_t eid, int* retval);
+sgx_status_t test_RLP(sgx_enclave_id_t eid, int* retval);
 sgx_status_t ecall_create_report(sgx_enclave_id_t eid, sgx_status_t* retval, sgx_target_info_t* quote_enc_info, sgx_report_t* report);
 
 #ifdef __cplusplus

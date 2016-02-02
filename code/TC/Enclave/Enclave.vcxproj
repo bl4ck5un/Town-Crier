@@ -410,7 +410,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\mbedtls-2.2.1\programs\test\mbedTLS_selftest.c" />
-    <ClCompile Include="Client.c" />
+    <ClCompile Include="SSLClient.c" />
     <ClCompile Include="ECDAS.c" />
     <ClCompile Include="keccak.c" />
     <ClCompile Include="RemoteAtt.c" />
@@ -418,14 +418,14 @@
     <ClCompile Include="RootCerts.c" />
     <ClCompile Include="Enclave_t.c" />
     <ClCompile Include="Scraper.c" />
+    <ClCompile Include="RLP.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Client.h" />
+    <ClInclude Include="SSLClient.h" />
     <ClInclude Include="ECDSA.h" />
     <ClInclude Include="Enclave.h" />
     <ClInclude Include="Enclave_t.h" />
     <ClInclude Include="keccak.h" />
-    <ClInclude Include="RLP.cpp" />
     <ClInclude Include="RootCerts.h" />
     <ClInclude Include="Scraper_lib.h" />
   </ItemGroup>
