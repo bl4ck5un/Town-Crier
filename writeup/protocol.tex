@@ -372,7 +372,8 @@ by the requester.
 %                 & \hspace*{1em} Return $\smaroon{\$fee}$ to $\pkU$ \\
                  & Else record $({\sf id}, {\sf callback}, {\sf params}, \smaroon{\$ F_{\text{deliver}}})$\\[-10pt]
     & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{request}}}}$ {gas consumed}}} }\\[-10pt]
-    & {\it {\color{gray} {//~all remaining {gas returned to $\pkU$}}} }\\
+    & {\it {\color{gray} {//~all remaining {gas returned to $\pkU$}}} }\\[-10pt]
+    & {\it {\color{gray} {//~$\smaroon{\$ F_{\text{request}}}$} held by contract}} \\
   {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data}, 
 $\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\pksgx$: \\
                  & Let $({\sf id}, {\sf callback}, {\sf params'}, \smaroon{\$ F'_{\text{deliver}}})$ be the most recently recorded tuple for ${\sf id}$\\
