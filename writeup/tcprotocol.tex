@@ -2,7 +2,7 @@
 
 \section{\tc Protocol}
 
-We now describe the operation of \tc at the protocol level. First, we give a brief protocol overview. Then we describe and provide some formalism for specifying the data flows in the system. Finally, in this section, we provide a component-level view of the protocol by specifying the functionalities embodied in the \tcontract, \medname, and \encname. We present these  as ideal functionalities, inspired by the universal-composability (UC) framework, in order to abstract away implementation details and as a springboard for formal proofs of security.
+We now describe the operation of \tc at the protocol level. First, we give a brief protocol overview. Then we describe and provide some formalism for specifying the data flows in the system. Finally, in this section, we provide a component-level view of the protocol by specifying the functionalities embodied in the \tcontract, \medname, and \encname. We present these  as ideal functionalities, inspired by the universal-composability (UC) framework, in order to abstract away implementation details and as a springboard for formal proofs of security. We omit details in this section on how payment is incorporated into \tc; this rather complicated aspect of the system design is deferred to Section~\ref{}.
 
 \subsection{Datagram lifecycle}
 
@@ -22,9 +22,9 @@ We now make this data flow more precise.
 
 \subsection{Data flows}
 
-We denote a datagram instance, namely the set of message values associated with a datagram request, by $\dgi$, where $i$ is a unique instance index. (We explain in Section~\ref{sec:implementation} how this index is computed.) 
+A datagram request by \reqcont takes the form of a message $m_1 = (\dgid, \dgcallback, \dgform)$ to \tcont on the blockchain. Here, $\dgid$ is a unique request identifier (which we explain later how to compute in practice); $\dgcallback$ specifies the entry point in \reqcont to which the datagram is to be returned. (In principle, $\dgcallback$ could specify an entry point in a different contract, but \tc does not yet adopt this generalization. $\dgform$ specifies the requested datagram, e.g., ${\sf params} := (\weburl, {\sf spec}, T)$, where $\weburl$ is the target data source and {\sf spec} specifies content of a the datagram to be retrieved (e.g., a stock ticker at a particular time), while $T$ specifies the delivery time for the datagram. 
 
-A datagram request by \reqcont takes the form of a message $\dgi.\dgreq$ to \tcont on the blockchain. This message $\dgi.\dgreq = (\dgi.\dgform, \dgi.\dgpay)$ includes both a specification $\dgi.\dgform$ of the requested datagram (e.g., a stock ticker and desired time) and a payment $\dgi.\dgpay$, which in Ethereum may include gas to cover the execution cost of the request as well as a service fee. \tcont receives a return message $\dgi.\dgret = (\dgi.\dgform, \dgi.\dgm)$ from the $\tc$ service where $\dgm$ contains the data (e.g., the desired stock ticker price). \tcont checks the consistency of $\dgi.\dgform$ on the incoming and outgoing messages, and if they match forwards $\dgi.\dgm$ to \reqcont. Where clear from context, we omit the prefix $\dgi$ from our notation.
+\tcont forwards $m_2 = (\dgid, \dgform)$ to the \encname. It receives in return a return message $m_3 = (\dgid, \dgform, \dgm)$ from the $\tc$ service, where $\dgm$ is the datagram, i.e., contains the data (e.g., the desired stock ticker price). \tcont checks the consistency of $\dgform$ on the incoming and outgoing messages, and if they match forwards $\dgm$ to the entry point \dgcallback in \reqcont in message $m_4$. 
 
 Figure~\ref{fig:dataflow} shows the data flows involved in processing a datagram request. For simplicity, the figure omits the \medname, which is only responsible for data passing.
 
@@ -42,6 +42,8 @@ Digital signatures are needed to authenticated messages, such as $\dgret$, enter
 
 \subsection{SGX model} 
 
+To specify \tc's protocols precisely, we need to provide some detail and notation around the use of SGX.
+
 Our protocols in \tc rely on the ability of the SGX attestation mechanism to bind an enclave process instance to a public / private key pair and for the process to high-accuracy timestamps, in absolute or wall-clock time. To simplify our presentation, we defer most details of our formal model of SGX capabilities and specification of protocols for attestation generation and use until later in the section. Instead, we first explain and present a simple abstraction of these capabilities suitable for our \tc protocol descriptions. 
 
 Let $\enclaveprog$ represent the code for \encname, which we presume is trusted by all system participants. To avoid having to verify an EPID group signature on the blockchain, we have clients obtain SGX attestations from the \medname and verify them off-chain. As noted above, it is possible to bind an enclave process instance running \enclaveprog to a key pair $(\pksgx, \sksgx)$ by including the public key pair in an attestation. We take this approach in \tc. Specifically, Since Ethereum itself 
@@ -52,11 +54,10 @@ To make this idea work fully, the public key $\pksgx$ must be hardcoded into \tc
 
 We assume in our protocol specifications that all relying clients have verified an attestation for \encname and thus that \pksgx represents the public key of the associated instance.
 
-We model execution in SGX in terms of a functionality $\fsgx$ operating in a stateful manner on \enclaveprog. This functionality may be be invokes through transmission of one of two messages to \enclaveprog: ``initialize'', which creates the enclave with \enclaveprog as its initial state and triggers measurement quotes and ``resume'', which causes an interrupted execution of \enclaveprog to be reinstated. We let $\fsgx[\enclaveprog, \relay]$ denote invocation of $\fsgx$ on \enclaveprog by \relay. We let $\clock()$ denote measurement of the SGX clock from within the enclave; $\clock()$ returns the current wall-clock time (in a canonical format such as seconds and fraction sections since the Unix epoch January 1, 1970 00:00 UTC).\ari{What format do we actually use?}
+\paragraph{Model.}
+We model execution in SGX in terms of a functionality $\fsgx$ operating in a stateful manner on \enclaveprog. This functionality may be be invokes through transmission of one of two messages to \enclaveprog: ``initialize'', which creates the enclave with \enclaveprog as its initial state and triggers measurement quotes and ``resume'', which initiates an execution of \enclaveprog on a fresh input. (We assume that \enclaveprog exits only when it completes processing of a given input.) We let $\fsgx[\enclaveprog, \relay]$ denote invocation of $\fsgx$ on \enclaveprog by \relay. We let $\clock()$ denote measurement of the SGX clock from within the enclave; $\clock()$ returns the current wall-clock time (in a canonical format such as seconds and fraction sections since the Unix epoch January 1, 1970 00:00 UTC).\ari{What format do we actually use?}
 
-\paragraph{Formal protocol description.}
-
-\begin{figure}[h!]
+\begin{figure}[htb!]
 \begin{boxedminipage}{\columnwidth}
 \begin{center}
 {\bf User: offline attestation of SGX enclave}
@@ -77,6 +78,7 @@ making use of \tcont.
 } 
 \end{figure}
 
+\paragraph{Notation.}
 Additionally, as noted above, trusted clock provides only relative time with  respect to a reference point, not absolute time. Thus, when initialized, the \encname is provided with the current wall-clock time by a trusted source, e.g., the \medname (under a trust-on-first-use model). The SGX attestation generated by the \encname includes the current wall-clock time, which clients may verify in real time. Thus, a client can determine the absolute clock time of \encname to within a high degree of accuracy, bounded by the round-trip time of its attestation request plus the attestation verification time--on the order of hundreds of milliseconds in a wide-area network~\cite{}.  
 \ari{Let's give the attestation API a function name.} We present a formal model and protocol specification in the paper appendix.
 
@@ -91,14 +93,14 @@ For simplicity, we first specify functionalities in a payment-free version of ou
   \hline
 
   \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont}} \\ [1ex]
-  {\bf Request:} & On recv $({\sf id}, {\sf callback}, {\sf params})$ from some user $\pkU$: \\
+  {\bf Request:} & On recv $(\dgid, \dgform, \dgcallback)$ from some contract $\reqcont$: \\
 %                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
 %                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
-                 & Record $({\sf id}, {\sf callback}, {\sf params})$ \\
-  {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data})$ from $\pksgx$: \\
-		 & Let $({\sf id}, {\sf callback}, {\sf params'})$ be the most recently recorded tuple for ${\sf id}$\\
-		 & Assert ${\sf params} = {\sf params}'$\\
-                 & Call ${\sf callback}({\sf data})$ \\
+                 & Record $(\dgid, \dgform, \dgcallback)$ \\
+  {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm)$ from $\pksgx$: \\
+		 & Let $(\dgid, \dgform, \dgcallback)$ be the most recently recorded tuple for ${\sf id}$\\
+		 & Assert $\dgform = \dgform'$\\
+                 & Call ${\dgcallback}({\dgm})$ \\
 %                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
 
   \hline
