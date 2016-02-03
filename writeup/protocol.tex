@@ -386,29 +386,6 @@ that $\pksgx$ will need to put in to call the {\bf Deliver} entry point.
 
 
 
-\begin{table}
-\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
-  \hline
-
-  \multicolumn{2}{|c|}{Town Crier Contract \tcont with Fees} \\ [1ex]
-  {\bf Request:} & Upon receiving $({\sf type}, {\sf callback}, \${\sf fee})$ from a user $\mathcal{P}$: \\
-                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
-                 & \hspace*{1em} Return $\${\sf fee}$ to $\mathcal{P}$ \\
-                 & Otherwise do nothing. \\
-  {\bf Deliver:} & Upon receiving $({\sf callback}, {\sf data}, \${\sf fee})$ from a user $\mathcal{P}$: \\
-                 & If $\mathcal{P} \neq \textrm{\sgxadd}$ \\
-                 & \hspace*{1em} Return with no effect. \\
-                 & Call ${\sf callback}({\sf data})$ providing $\${\sf fee} - F_{\rm min}$ ether as the maximum gas. \\
-                 & Send $\${\sf fee}$ ether to \sgxadd. \\
-
-  \hline
-\end{tabularx}
-\caption{Definition of the Town Crier contract \tcont.
-  Here the minimum fee, $F_{\rm min}$, is the amount of ether necessary to cover the gas costs of Deliver not including the execution of ${\sf callback}$
-  and the maximum fee, $F_{\rm max}$, is the maximum amount of ether Town Crier can send as gas to a single execution of Deliver.}
-\label{tbl:tc-contract}
-\end{table}
-
 
 
 \subsection{Support for Cancellation}
