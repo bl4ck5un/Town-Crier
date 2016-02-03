@@ -10,17 +10,24 @@ contract TownCrier {
 
     event RequestLog(uint gasLeft, int16 flag);
     event RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, uint reqLen, string requestData);
-    event DeliverLog(uint gasLeft, int16 flag);
-    event DeliverInfo(uint64 requestId, uint fee, uint gasPrice, uint callbackGas, uint gasLeft, bytes32 response, uint respUint);
+    event DeliverLog(uint gasLeft, int flag);
+    event DeliverInfo(uint64 requestId, uint fee, uint gasPrice, uint callbackGas, uint gasLeft, bytes32 response);
+//    event DeliverSig(uint8 v, bytes32 r, bytes32 s, address recoveredAddr);
     event Cancel(uint64 requestId, address canceller, address requester, int flag);
 
     address constant SGX_ADDRESS = 0x9d10ea5ad51e1af69cd8d4dcfa60f577818607b2;
-    uint constant MIN_FEE_BASE = 64000 * (5 * 10**10);
-    uint constant FEE_PER_BYTE = 650 * (5 * 10**10);
-    uint constant MAX_FEE = (3 * 10**6) * (5 * 10**10);
 
-    uint constant CANCELLED_FEE_VALUE = 1;
-    uint constant DELIVERED_FEE_VALUE = 0;
+    uint constant GAS_PRICE = 5 * 10**10;
+    uint constant MAX_FEE = (3 * 10**6) * GAS_PRICE;
+
+    uint constant MIN_FEE_BASE = 64000 * GAS_PRICE;
+    uint constant FEE_PER_BYTE = 650 * GAS_PRICE;
+
+    uint constant CANCELLATION_FEE_BASE = 23500 * GAS_PRICE;
+    uint constant CANCELLATION_FEE_PER_BYTE = 71 * GAS_PRICE;
+
+    uint constant CANCELLED_FEE_FLAG = 1;
+    uint constant DELIVERED_FEE_FLAG = 0;
 
     uint64 requestCnt = 0;
     Request[2**64] requests;
@@ -49,72 +56,71 @@ contract TownCrier {
         }
     }
 
+//    function deliver(uint64 requestId, uint8 requestType, bytes requestData, bytes32 respData, uint8 v, bytes32 r, bytes32 s) public {
     function deliver(uint64 requestId, uint8 requestType, bytes requestData, bytes32 respData) public {
-        bytes4 callbackFID = requests[requestId].callbackFID;
-        uint fee = requests[requestId].fee;
         bytes storedRequestData = requests[requestId].requestData;
-        if (msg.sender != SGX_ADDRESS) {
-            DeliverLog(msg.gas, -10);
-            return;
-        } else if (requests[requestId].requester == 0) {
-            DeliverLog(msg.gas, -11);
-            return;
-        } else if (requests[requestId].requestType != requestType) {
-            DeliverLog(msg.gas, -12);
-            return;
-        } else if (storedRequestData.length != requestData.length) {
-            DeliverLog(msg.gas, -13);
-            return;
-        } else if (fee == DELIVERED_FEE_VALUE) {
-            DeliverLog(msg.gas, -14);
-            return;
-        } else if (fee == CANCELLED_FEE_VALUE) {
+//        address signer = ecrecover(sha3(requestId, requestType, requestData, respData), v, r, s);
+//        DeliverSig(v, r, s, signer);
+//        if (signer != SGX_ADDRESS
+        if (msg.sender != SGX_ADDRESS
+                || requests[requestId].requester == 0
+                || requests[requestId].requestType != requestType
+                || storedRequestData.length != requestData.length
+                || requests[requestId].fee == DELIVERED_FEE_FLAG) {
             DeliverLog(msg.gas, -1);
-            SGX_ADDRESS.send(MIN_FEE_BASE);
-            requests[requestId].fee = DELIVERED_FEE_VALUE;
-            DeliverLog(msg.gas, -2);
+            return;
+        } else if (requests[requestId].fee == CANCELLED_FEE_FLAG) {
+            DeliverLog(msg.gas, 1);
+            uint cancellationFee = CANCELLATION_FEE_BASE + (requestData.length * CANCELLATION_FEE_PER_BYTE);
+            SGX_ADDRESS.send(cancellationFee);
+            requests[requestId].fee = DELIVERED_FEE_FLAG;
+            DeliverLog(msg.gas, int(cancellationFee));
             return;
         }
 
-        DeliverLog(msg.gas, 513);
+        DeliverLog(msg.gas, 4);
         for (uint16 i = 0; i < requestData.length; i++) {
             if (storedRequestData[i] != requestData[i]) {
                 DeliverLog(msg.gas, int16(i));
                 return;
             }
         }
-        DeliverLog(msg.gas, 1000);
+        DeliverLog(msg.gas, 8);
 
         uint minFee = MIN_FEE_BASE + (FEE_PER_BYTE * requestData.length);
         uint maxCallbackGas = msg.gas - (minFee / tx.gasprice);
-        DeliverInfo(requestId, fee, tx.gasprice, maxCallbackGas, msg.gas, respData, uint(respData));
+        DeliverInfo(requestId, requests[requestId].fee, tx.gasprice, maxCallbackGas, msg.gas, respData);
 
-        uint gasForCallback = (fee - minFee) / tx.gasprice;
+        uint gasForCallback = (requests[requestId].fee - minFee) / tx.gasprice;
         if (gasForCallback > maxCallbackGas)
             gasForCallback = maxCallbackGas;
-        DeliverInfo(requestId, fee, tx.gasprice, gasForCallback, msg.gas, bytes4(respData), uint(respData));
+        DeliverInfo(requestId, requests[requestId].fee, tx.gasprice, gasForCallback, msg.gas, respData);
         bool deliverSuccess = requests[requestId].callbackAddr.call.gas(gasForCallback)(requests[requestId].callbackFID, requestId, respData);
         if (deliverSuccess) {
-            DeliverLog(msg.gas, 3000);
+            DeliverLog(msg.gas, 16);
         } else {
-            DeliverLog(msg.gas, -3);
+            DeliverLog(msg.gas, -2);
         }
 
-        SGX_ADDRESS.send(fee);
-        requests[requestId].fee = DELIVERED_FEE_VALUE;
-        DeliverLog(msg.gas, 4000);
+        SGX_ADDRESS.send(requests[requestId].fee);
+        requests[requestId].fee = DELIVERED_FEE_FLAG;
+        DeliverLog(msg.gas, 32);
     }
 
     function cancel(uint64 requestId) public returns (bool) {
-        uint fee = requests[requestId].fee;
+        // Compute the gas reimbursement necessary if TownCrier attemts to respond to this request later.
+        uint cancellationFee = CANCELLATION_FEE_BASE + (requests[requestId].requestData.length * CANCELLATION_FEE_PER_BYTE);
         Cancel(requestId, msg.sender, requests[requestId].requester, int(fee));
-        if (requests[requestId].requester == msg.sender && fee >= MIN_FEE_BASE) {
-            msg.sender.send(fee - MIN_FEE_BASE);
-            requests[requestId].fee = CANCELLED_FEE_VALUE;
-            Cancel(requestId, msg.sender, requests[requestId].requester, int(CANCELLED_FEE_VALUE));
+
+        // If the request has was sent by this user and has money left on it, then cancel it.
+        uint fee = requests[requestId].fee;
+        if (requests[requestId].requester == msg.sender && fee > cancellationFee) {
+            msg.sender.send(fee - cancellationFee);
+            requests[requestId].fee = CANCELLED_FEE_FLAG;
+            Cancel(requestId, msg.sender, requests[requestId].requester, int(CANCELLED_FEE_FLAG));
             return true;
         } else {
-            Cancel(requestId, msg.sender, requests[requestId].requester, -int(CANCELLED_FEE_VALUE));
+            Cancel(requestId, msg.sender, requests[requestId].requester, -int(CANCELLED_FEE_FLAG));
             return false;
         }
     }
@@ -126,7 +132,7 @@ contract FlightInsurance {
     event PaymentInfo(address payee, uint payeeBalance, uint gasRemaining, uint64 requestId, uint delay, uint amount);
     event FlightCancel(address canceller, address requester, bool success);
 
-    uint constant TC_FEE = (65000 + (650 * 256) + 21000) * 5 * 10**10;
+    uint constant TC_FEE = (65000 + (650 * 1024) + 21000) * 5 * 10**10;
     uint constant FEE = 5 * 10**18;
     uint constant PAYOUT = 10**20;
     uint32 constant PAYOUT_DELAY = 30;
