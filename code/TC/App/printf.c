@@ -51,15 +51,48 @@ int c99_snprintf(char *outBuf, size_t size, const char *format, ...)
 }
 #endif // (_MSC_VER) && _MSC_VER < 1900
 
-void dump_buf( const char *title, unsigned char *buf, size_t len )
+void dump_buf(const char* title, void const * data, unsigned int len)
 {
-    size_t i;
+    unsigned int i;
+    unsigned int r,c;
+    
+    if (!data)
+	return;
 
-    printf( "%s", title );
-    for( i = 0; i < len; i++ )
-        printf("%c%c", "0123456789ABCDEF" [buf[i] / 16],
-                       "0123456789ABCDEF" [buf[i] % 16] );
-    printf( "\n" );
+    printf("%s\n", title);
+    
+    for (r=0,i=0; r<(len/16+(len%16!=0)); r++,i+=16)
+    {
+        printf("%#4X:   ",i); /* location of first byte in line */
+	
+        for (c=i; c<i+8; c++) /* left half of hex dump */
+	    if (c<len)
+        	printf("%02X ",((unsigned char const *)data)[c]);
+	    else
+		printf("   "); /* pad if short line */
+	
+	printf("  ");
+	
+	for (c=i+8; c<i+16; c++) /* right half of hex dump */
+	    if (c<len)
+		printf("%02X ",((unsigned char const *)data)[c]);
+	    else
+		printf("   "); /* pad if short line */
+	
+	printf("   ");
+	
+	for (c=i; c<i+16; c++) /* ASCII dump */
+	    if (c<len)
+		if (((unsigned char const *)data)[c]>=32 &&
+		    ((unsigned char const *)data)[c]<127)
+		    printf("%c",((char const *)data)[c]);
+		else
+		    printf("."); /* put this for non-printables */
+	    else
+		printf(" "); /* pad if short line */
+	
+	printf("\n");
+    }
 }
 
 #if defined(__cplusplus)
