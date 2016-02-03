@@ -336,6 +336,24 @@ Therefore, $\algB$ simply outputs this as a signature forgery.
 \section{Extensions}
 
 \subsection{Handling Transaction Fees}
+To mitigate potential Denial-of-Service (DoS) attacks, 
+Ethereum employs a fee mechanism, referred to as ``gas'', 
+where the submitter of a transaction (that invokes
+an entry point in the contract) pays a  
+transaction fee
+roughly proportional to the execution time of the 
+corresponding entry point.
+
+Our basic Town Crier implements a policy where the requester pays for all gas 
+needed and Town Crier in effect pays nothing.
+The concrete instantition  
+is described in Figure \elaine{refer}. 
+Since $\pksgx$ has to invoke the {\bf Deliver} entry point, it has
+to advance 
+a gas payment 
+$\sbrown{\Delta F_{\text{deliver}}}$.
+This amount will be entirely refunded through money deposited in the contract 
+by the requester.
 
 
 \begin{figure}
