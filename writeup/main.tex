@@ -7,7 +7,7 @@
 \usepackage{boxedminipage}
 \usepackage[override]{cmtt}
 \usepackage[utf8]{inputenc}
-\usepackage{color}
+\usepackage{color,xcolor}
 \usepackage{graphicx}
 \usepackage{xspace}
 \usepackage{amsmath,amstext,amssymb,amsfonts,latexsym}
@@ -45,6 +45,17 @@ Name Institution
 } % end author
 
 
+%**** COLORS *********
+\definecolor{maroon}{RGB}{178, 34, 34}
+%\definecolor{brown}{RGB}{139, 137, 137}
+\definecolor{gold}{rgb}{0.85, 0.65, 0.13}
+
+\newcommand{\smaroon}[1]{\ensuremath{\tt {\color{maroon} #1 \xspace}}}
+\newcommand{\sgold}[1]{\ensuremath{\tt {\color{gold} #1 \xspace}}}
+\newcommand{\sbrown}[1]{\ensuremath{\tt {\color{brown} #1 \xspace}}}
+
+\newcommand{\sgray}[1]{{\color{gray} #1}}
+
 %**** DEFINITIONS *********
 
 \newcommand {\tcs} {Town Crier\xspace}
@@ -53,7 +64,8 @@ Name Institution
 \newcommand {\encname} {{Engine}\xspace}
 \newcommand {\medname} {{Relay}\xspace}
 
-\newcommand {\reqcont} {\ensuremath{{\cal C}_R}\xspace}
+
+\newcommand {\reqcont} {\ensuremath{{\cal C}_U}\xspace}
 \newcommand {\tcont} {\ensuremath{{\cal C}_{TC}}\xspace}
 \newcommand {\tcadd} {${\cal P}_{TC}$\xspace}
 \newcommand {\sgxadd} {${\cal P}_{SGX}$\xspace}
@@ -61,12 +73,14 @@ Name Institution
 \newcommand {\skTC} {{{\sf sk}_{TC}}\xspace}
 
 \newcommand {\dgreq} {{\sf req}\xspace}
-\newcommand {\dgform} {{\sf spec}\xspace}
+\newcommand {\dgform} {{\sf params}\xspace}
 \newcommand {\dgpay} {{\sf \$fee}\xspace}
 \newcommand {\dg} {{\sf d}\xspace}
 \newcommand {\dgret} {{\sf ans}\xspace}
 \newcommand {\dgm} {{\sf data}\xspace}
 \newcommand {\dgi} {{\sf d_{\mbox{$i$}}}\xspace}
+\newcommand {\dgid} {{\sf id}\xspace}
+\newcommand {\dgcallback} {{\sf callback}\xspace}
 
 \newcommand {\att} {{\sf att}\xspace}
 
@@ -76,13 +90,14 @@ Name Institution
 \newcommand{\pkM}{\ensuremath{{\sf pk}_{\mathcal{M}}}}
 \newcommand{\skM}{\ensuremath{{\sf sk}_{\mathcal{M}}}}
 \newcommand{\pkU}{\ensuremath{{\sf pk}_{\mathcal{U}}}}
-\newcommand{\pksgx}{\ensuremath{{\sf pk}_{\textrm{sgx}}}}
-\newcommand{\sksgx}{\ensuremath{{\sf sk}_{\textrm{sgx}}}}
+\newcommand{\pksgx}{\ensuremath{{\sf pk}_{\textrm{sgx}}}\xspace}
+\newcommand{\sksgx}{\ensuremath{{\sf sk}_{\textrm{sgx}}}\xspace}
 \newcommand{\pkurl}{\ensuremath{{\sf pk}_{\textrm{url}}}\xspace}
 \newcommand{\rl}{\ensuremath{{\sf RL}}}
 \newcommand{\relay}{\ensuremath{\mathcal{R}}}
+\newcommand{\engine}{\ensuremath{\mathcal{E}}}
 %\newcommand{\digest}{\ensuremath{{\sf digest}}}
-\newcommand{\enclaveprog}{\ensuremath{{\sf prog}_{\textrm{encl}}}}
+\newcommand{\enclaveprog}{\ensuremath{{\sf prog}_{\textrm{encl}}}\xspace}
 \newcommand{\sigatt}{\ensuremath{{\sigma_{\textrm{att}}}}}
 \newcommand{\sigsgx}{\ensuremath{{\Sigma_{\textrm{sgx}}}}}
 \newcommand{\weburl}{\ensuremath{{{\sf url}}}\xspace}

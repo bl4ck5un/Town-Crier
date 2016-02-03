@@ -1,7 +1,8 @@
 \section{\tc Architecture}
 
-In this section, we discuss the general design of \tc. First we present a strawman system design that illustrates some of the technical challenges that arise in the design of \tc. We then present our \tc architecture, describing the front-end (blockchain) and back-end (off-chain) components, and give a high-level view of the security model underpinning our design.
+%In this section, we discuss the general design of \tc. First we present a strawman system design that illustrates some of the technical challenges that arise in the design of \tc. We then present our \tc architecture, describing the front-end (blockchain) and back-end (off-chain) components, and give a high-level view of the security model underpinning our design.
 
+\iffalse{
 \subsection{Strawman design}
 
 Here we sketch a simple (but, as we show, na\"{i}ve) strawman design that provides authenticated data feeds along with accompanying attestations. 
@@ -44,10 +45,9 @@ To address these problems, our \tc architecture supports only off-chain verifica
 Another problem with our strawman scheme is that it lacks an on-blockchain mechanism to enforce payment for datagrams. It is desirable for \tc to accept payments via a smart contract in order to permit payment in the system's cryptocurrency (e.g., Ether) and to ensure a {\em fair exchange} between payments and datagrams. Even a not-for-profit \tc service might accept small gas payments to cover the cost of datagram transmission. Without enforcement of fair exchange, relying contracts or the \tc service would risk being defrauded by the other party. \tc could attempt to deliver datagrams only to contracts whose code guarantees payment to \tc, but verifying this property even in templated code would be challenging, given the many complicated dependencies in a smart-contract system (e.g., a contract might attempt to make payment but lack gas or ether). 
 
 To address these problems, our \tc architecture uses a smart contract \tcont as a blockchain front end.
+\fi
 
-\subsection{The \tc architecture}
-
-The \tcs system includes three main components: The \tcontract (\tcont), the \encname, and the \medname. The \encname and \medname reside on the \tc server, while the \tcontract  resides on the blockchain. An architectural schematic showing the roles of these components is given in Figure~\ref{fig:overview}.
+The \tcs system includes three main components: The \tcontract (\tcont), the \encname (\engine), and the \medname (\relay). The \encname and \medname reside on the \tc server, while the \tcontract  resides on the blockchain. An architectural schematic showing the roles of these components is given in Figure~\ref{fig:overview}.
 
 \vspace{-2mm}
 \begin{figure}[h!]
@@ -60,10 +60,10 @@ The \tcs system includes three main components: The \tcontract (\tcont), the \en
 
 \paragraph{The \tcontract (\tcont).} The \tcontract (denoted by \tcont) is a smart contract that acts as the blockchain front end of the \tc service. It is designed to present a simple API to a relying contract \reqcont for its requests from \tc. Very simply, \tcont accepts datagram requests from a requester \reqcont and returns corresponding datagrams from \tc. Additionally, \tcont manages \tc monetary resources, which in Ethereum take the form of ether (money) and gas (``fuel'' for contracts).
 
-\paragraph{The \encname.}
-The \encname ingests and fulfills datagram requests from the blockchain. To obtain the data for inclusion in datagrams, it queries external data sources, specifically HTTPS-enabled internet services. It returns a datagram to a requesting contract \reqcont as a digitally signed blockchain message. The \encname runs in an SGX enclave, and is thus secured against an adversarial OS as well as other process on the host. 
+\paragraph{The \encname \engine.}
+The \encname  ingests and fulfills datagram requests from the blockchain. To obtain the data for inclusion in datagrams, it queries external data sources, specifically HTTPS-enabled internet services. It returns a datagram to a requesting contract \reqcont as a digitally signed blockchain message. The \encname runs in an SGX enclave, and is thus secured against an adversarial OS as well as other process on the host. 
 
-\paragraph{The \medname.} As an enclave process, the \encname lacks direct network access. Thus the \medname handles bidirectional network traffic on behalf of the \encname. Specifically, the \medname provides network connectivity from the \encname to three different types of entities: 
+\paragraph{The \medname \relay.} As an enclave process, the \encname lacks direct network access. Thus the \medname handles bidirectional network traffic on behalf of the \encname. Specifically, the \medname provides network connectivity from the \encname to three different types of entities: 
 
 \begin{enumerate}
 \item {\em The Blockchain (the Ethereum system):}  The \medname scrapes the blockchain in order to monitor the state of the \tcontract  \tcont. In this way, it performs implicit message passing from \tcont to the \encname, as neither component itself has network connectivity. Additionally, the \medname places messages emitted from the \encname (datagrams) on the blockchain.
@@ -88,7 +88,9 @@ These three properties are achieved under the security model presumed by SGX. Sp
 \item {\em Blockchain communication:} Message sources are authenticable, i.e., the originating blockchain address of a message can be correctly identified, and messages are integrity protected, but not confidential. This assumption includes messages sent from the \encname, whose public key $\pkTC$ is bound in \tc to a blockchain account. 
 \end{itemize}
 
+\subsection{Technical challenges}
 
+Several technical challenges arise: Checking EPID sigs, Relay corruption of messages, authenticating messages on blockchain when they come from an off-chain entity, etc.
 
 
 
