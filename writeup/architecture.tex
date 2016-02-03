@@ -1,4 +1,4 @@
-\section{\tc Architecture}
+ \section{\tc Architecture and Security Model}
 
 %In this section, we discuss the general design of \tc. First we present a strawman system design that illustrates some of the technical challenges that arise in the design of \tc. We then present our \tc architecture, describing the front-end (blockchain) and back-end (off-chain) components, and give a high-level view of the security model underpinning our design.
 
@@ -71,26 +71,23 @@ The \encname  ingests and fulfills datagram requests from the blockchain. To obt
 \item {\em Data sources:} The \medname relays traffic to and from data sources (HTTPS-enabled servers) queried by \encname. 
 \end{enumerate}
 
-The \medname is an ordinary user-space application. It does not benefit from integrity protection by trusted hardware and thus, unlike the \encname, can be subverted by an adversarial OS on the \tc server, causing network delays or failures. As we explain in detail later in the paper, however, a key design aim of \tc is that \medname should be unable to cause incorrect datagrams to be produced or users to lose fees paid to \tc for datagrams (although they may lose gas used to fuel their requests). In general, the \medname~{\em can only mount denial-of-service attacks against \tc}. 
+The \medname is an ordinary user-space application. It does not benefit from integrity protection by trusted hardware and thus, unlike the \encname, can be subverted by an adversarial OS on the \tc server, causing network delays or failures. A key design aim of \tc, however, is that \medname should be unable to cause incorrect datagrams to be produced or users to lose fees paid to \tc for datagrams (although they may lose gas used to fuel their requests). In general, the \medname~{\em can only mount denial-of-service attacks against \tc}. 
 
+\paragraph{Security model}
 
-\subsection{Security model}
-
-Here we give an overview of our security model for \tc, providing more details in our security analysis in section~\ref{}. We assume the following:
+Here we give a brief overview of our security model for \tc, providing more details in our security analysis in section~\ref{}. We assume the following:
 
 \begin{itemize}
-\item {\em \encname security:} We make three assumptions about \encname : (1) \encname behaves honestly, i.e., correctly executes the \tc protocol; (2) The private key $\skTC$ is known only the \encname; and (3) The \encname has an accurate (internal) real-time clock. (Specifically, the clock is accurate to within XXX, as we show experimentally.)
 
-These three properties are achieved under the security model presumed by SGX. Specifically, they are asserted by an SGX attestation $\att$ generated on an instance of the \encname. We make the additional simplifying assumption that an attestation remains valid throughout its lifetime of use. (Later in the paper, we discuss ways in which later incarnations of Ethereum may support fresher attestations and also issues such as SGX host revocation.)
+\item {\em Blockchain communication.} Transaction and message sources are authenticable, i.e., a transaction $m$ sent from an account ${\cal P}_{X}$ (or message $m$ from contract ${\cal C}_{X}$) is identified by the receiving account as originating from $X$. Transactions and messages are integrity protected (as they are digitally signed by the sender), but not confidential. 
 
-\item {\em Network communication:} The \medname (and other untrusted components of the \tc server) can tamper with or delay communications to and from the \encname, but cannot otherwise observe or alter the behavior of the \encname. This assumption is again consistent with the SGX security model. Thus the \medname is subsumed by an adversary that controls the network. 
+\item {\em \encname security:} We make three assumptions about \encname : (1) \encname behaves honestly, i.e., correctly executes the \tc protocol; (2) The private key $\skTC$ is known only the \encname; and (3) The \encname has an accurate (internal) real-time clock. (Specifically, the clock is accurate to within XXX, as we show experimentally.)  We explain in the next section how we achieve these properties through use of SGX and how the public key $\pkTC$ may be bound to an Ethereum account, given the \encname an authenticable blockchain presence. 
 
-\item {\em Blockchain communication:} Message sources are authenticable, i.e., the originating blockchain address of a message can be correctly identified, and messages are integrity protected, but not confidential. This assumption includes messages sent from the \encname, whose public key $\pkTC$ is bound in \tc to a blockchain account. 
+\item {\em Network communication.} The \medname (and other untrusted components of the \tc server) can tamper with or delay communications to and from the \encname. (As we explain in our SGX security model, the \medname cannot otherwise observe or alter the behavior of the \encname.) Thus the \medname is subsumed by an adversary that controls the network. 
+
 \end{itemize}
 
-\subsection{Technical challenges}
 
-Several technical challenges arise: Checking EPID sigs, Relay corruption of messages, authenticating messages on blockchain when they come from an off-chain entity, etc.
 
 
 

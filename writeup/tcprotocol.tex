@@ -40,11 +40,8 @@ Figure~\ref{fig:dataflow} shows the data flows involved in processing a datagram
 Digital signatures are needed to authenticated messages, such as $\dgret$, entering the blockchain from an external source. We let $(\skTC, \pkTC)$ denote the private / public keypair associated with the \encname for such message authentication. For simplicity, we assume for the time that the \encname can send signed messages directly to \tcont. Later we explain how Ethereum requires a slightly different approach in which \tc sends messages via an Ethereum wallet.
 
 
-\subsection{SGX model} 
-
-To specify \tc's protocols precisely, we need to provide some detail and notation around the use of SGX.
-
-Our protocols in \tc rely on the ability of the SGX attestation mechanism to bind an enclave process instance to a public / private key pair and for the process to high-accuracy timestamps, in absolute or wall-clock time. To simplify our presentation, we defer most details of our formal model of SGX capabilities and specification of protocols for attestation generation and use until later in the section. Instead, we first explain and present a simple abstraction of these capabilities suitable for our \tc protocol descriptions. 
+\subsection{Use of SGX.}
+Our protocols in \tc rely on the ability of the SGX attestation mechanism to bind an enclave process instance to a public / private key pair and for the process to high-accuracy timestamps, in absolute or wall-clock time. To simplify our presentation, we defer most details of our formal model of SGX capabilities and specification of protocols for attestation generation to the apper appendix. Instead, we first explain and present a simple abstraction of these capabilities suitable for our \tc protocol descriptions. 
 
 Let $\enclaveprog$ represent the code for \encname, which we presume is trusted by all system participants. To avoid having to verify an EPID group signature on the blockchain, we have clients obtain SGX attestations from the \medname and verify them off-chain. As noted above, it is possible to bind an enclave process instance running \enclaveprog to a key pair $(\pksgx, \sksgx)$ by including the public key pair in an attestation. We take this approach in \tc. Specifically, Since Ethereum itself 
 already verifies signatures on transactions from externally owned accounts (i.e., users interact with the  Ethereum blockchain through an authenticated channel), \tc uses a trick to {\it piggyback verification of enclave signatures on top of Ethereum's already existing transaction signature verification mechanism}. Very simply, the \encname associates \pksgx with an externally owned Ethereum account \tcadd. 
@@ -52,10 +49,15 @@ This approach saves not only software engineering effort, but more importantly, 
 
 To make this idea work fully, the public key $\pksgx$ must be hardcoded into \tcont. A client creating or relying on a contract that uses \tcont is responsible for making sure that this hardcoded $\pksgx$ has an appropriate SGX attestation before interacting with the $\tcont$  blockchain contract.  Let {\sf Verify} denote a verification algorithm for EPID signatures. Figure~\ref{fig:att_check} gives the protocol for a client to check that \tcont is backed by a valid \encname instance. This protocol does not include a mechanism for \emph{revocation} of a compromised SGX instance, an issue we discuss later in the paper.
 
-We assume in our protocol specifications that all relying clients have verified an attestation for \encname and thus that \pksgx represents the public key of the associated instance.
+In summary, then, we may assume in our protocol specifications that {\em all relying clients have verified an attestation for \encname and thus that \pksgx represents the public key of the associated instance.}
 
-\paragraph{Model.}
-We model execution in SGX in terms of a functionality $\fsgx$ operating in a stateful manner on \enclaveprog. This functionality may be be invokes through transmission of one of two messages to \enclaveprog: ``initialize'', which creates the enclave with \enclaveprog as its initial state and triggers measurement quotes and ``resume'', which initiates an execution of \enclaveprog on a fresh input. (We assume that \enclaveprog exits only when it completes processing of a given input.) We let $\fsgx[\enclaveprog, \relay]$ denote invocation of $\fsgx$ on \enclaveprog by \relay. We let $\clock()$ denote measurement of the SGX clock from within the enclave; $\clock()$ returns the current wall-clock time (in a canonical format such as seconds and fraction sections since the Unix epoch January 1, 1970 00:00 UTC).\ari{What format do we actually use?}
+
+\paragraph{\bf Clock.}
+Additionally, as noted above, trusted clock provides only relative time with  respect to a reference point, not absolute time. Thus, when initialized, the \encname is provided with the current wall-clock time by a trusted source, e.g., the \medname (under a trust-on-first-use model). The SGX attestation generated by the \encname includes the current wall-clock time, which clients may verify in real time. Thus, a client can determine the absolute clock time of \encname to within a high degree of accuracy, bounded by the round-trip time of its attestation request plus the attestation verification time--on the order of hundreds of milliseconds in a wide-area network~\cite{}.  
+\ari{Let's give the attestation API a function name.} We present a formal model and protocol specification in the paper appendix.
+
+
+\paragraph{\bf Notation.} We model execution in SGX in terms of a functionality $\fsgx$ operating in a stateful manner on \enclaveprog. This functionality may be be invokes through transmission of one of two messages to \enclaveprog: ``initialize'', which creates the enclave with \enclaveprog as its initial state and triggers measurement quotes and ``resume'', which initiates an execution of \enclaveprog on a fresh input. (We assume that \enclaveprog exits only when it completes processing of a given input.) We let $\fsgx[\enclaveprog, \relay]$ denote invocation of $\fsgx$ on \enclaveprog by \relay. We let $\clock()$ denote measurement of the SGX clock from within the enclave; $\clock()$ returns the current wall-clock time (in a canonical format such as seconds and fraction sections since the Unix epoch January 1, 1970 00:00 UTC).\ari{What format do we actually use?}
 
 \begin{figure}[htb!]
 \begin{boxedminipage}{\columnwidth}
@@ -78,9 +80,6 @@ making use of \tcont.
 } 
 \end{figure}
 
-\paragraph{Notation.}
-Additionally, as noted above, trusted clock provides only relative time with  respect to a reference point, not absolute time. Thus, when initialized, the \encname is provided with the current wall-clock time by a trusted source, e.g., the \medname (under a trust-on-first-use model). The SGX attestation generated by the \encname includes the current wall-clock time, which clients may verify in real time. Thus, a client can determine the absolute clock time of \encname to within a high degree of accuracy, bounded by the round-trip time of its attestation request plus the attestation verification time--on the order of hundreds of milliseconds in a wide-area network~\cite{}.  
-\ari{Let's give the attestation API a function name.} We present a formal model and protocol specification in the paper appendix.
 
 
 \subsection{A payment-free basic protocol}
