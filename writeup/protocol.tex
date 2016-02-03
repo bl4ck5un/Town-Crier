@@ -375,9 +375,9 @@ by the requester.
     & {\it {\color{gray} {//~all remaining {gas returned to $\pkU$}}} }\\
   {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data}, 
 $\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\pksgx$: \\
-                 & Let $({\sf id}, {\sf callback}, {\sf params'}, \_)$ be the most recently recorded tuple for ${\sf id}$\\
+                 & Let $({\sf id}, {\sf callback}, {\sf params'}, {\tt F'_{\text{deliver}}})$ be the most recently recorded tuple for ${\sf id}$\\
                  & Assert ${\sf params} = {\sf params}'$\\
-%                 & Assert ${\tt F'_{\text{deliver}}} = \sbrown{\Delta F_{\text{deliver}}}$\\
+                &   Assert ${\tt F'_{\text{deliver}}} = \sbrown{\Delta F_{\text{deliver}}}$\\
                  & Call ${\sf callback}({\sf data})$ \\
                  & Send $\smaroon{\$F_{\text{deliver}}}$ to $\pksgx$. \\[-10pt]
     & {\it {\color{gray} {//~at most ${{\$ F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
