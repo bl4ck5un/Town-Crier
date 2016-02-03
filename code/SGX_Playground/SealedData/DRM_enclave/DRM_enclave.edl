@@ -1,0 +1,18 @@
+enclave {
+	from "sgx_tae_service.edl" import *;
+    trusted {
+        /* define ECALLs here. */
+        public uint32_t create_sealed_policy([out, size=sealed_log_size]
+            uint8_t* sealed_log, uint32_t sealed_log_size );
+        public uint32_t perform_sealed_policy([in, size=sealed_log_size]
+            const uint8_t* sealed_log, uint32_t sealed_log_size);
+        public uint32_t update_sealed_policy([in,out, size=sealed_log_size]
+            uint8_t* sealed_log, uint32_t sealed_log_size);
+        public uint32_t delete_sealed_policy([in, size=sealed_log_size]
+            const uint8_t* sealed_log, uint32_t sealed_log_size);
+        public uint32_t create_time_based_policy([out, size=sealed_log_size]
+            uint8_t* sealed_log, uint32_t sealed_log_size );
+        public uint32_t perform_time_based_policy([in, size=sealed_log_size]
+            const uint8_t* sealed_log, uint32_t sealed_log_size );
+    };
+};
