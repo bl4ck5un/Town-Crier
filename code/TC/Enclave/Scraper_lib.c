@@ -1,4 +1,4 @@
-#include "Client.h"
+#include "SSLClient.h"
 #include "Scraper_lib.h"
 
 static void client_opt_init(client_opt_t* opt) {

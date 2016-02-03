@@ -35,62 +35,62 @@
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{5E2BE354-81F3-4F99-A28B-9E77F6492344}</ProjectGuid>
-    <RootNamespace>App</RootNamespace>
-    <VCTargetsPath Condition="'$(VCTargetsPath11)' != '' and '$(VSVersion)' == '' and $(VisualStudioVersion) == ''">$(VCTargetsPath11)</VCTargetsPath>
+    <ProjectGuid>{E17721F7-FEAB-4336-840B-1EED0D210E8C}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>DRM_app</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <CharacterSet>MultiByte</CharacterSet>
     <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -120,173 +120,210 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\win32-deps\include;$(SolutionDir)\jsonrpc-cpp-0.5\include;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)\include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
-      <TreatWarningAsError>false</TreatWarningAsError>
-      <DisableSpecificWarnings>4389;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;jsoncpp.lib;libcurl_imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\win32-deps\lib;$(SolutionDir)\Debug;$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
-      <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
+      <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">
     <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(SolutionDir)\Include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sgx_uae_service_sim.lib;sgx_urts_sim.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sgx_urts_sim.lib;sgx_uae_service_sim.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(SolutionDir)\Include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
-      <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">
     <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(SolutionDir)\Include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sgx_uae_service_sim.lib;sgx_urts_sim.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sgx_urts_sim.lib;sgx_uae_service_sim.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(SolutionDir)\Include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
-      <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(SolutionDir)\Include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EDEBUG;NDEBUG;_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>EDEBUG;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
-      <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(SolutionDir)\Include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NDEBUG;_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
-      <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(SolutionDir)\Include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>EDEBUG;NDEBUG;_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
+      <PreprocessorDefinitions>EDEBUG;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sgx_urts.lib;sgx_uae_service.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
-      <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\jsonrpc-cpp-0.5\examples\tcp-client.cpp" />
-    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_client.cpp" />
-    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_handler.cpp" />
-    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_httpclient.cpp" />
-    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_server.cpp" />
-    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_tcpclient.cpp" />
-    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_tcpserver.cpp" />
-    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_udpclient.cpp" />
-    <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_udpserver.cpp" />
-    <ClCompile Include="..\jsonrpc-cpp-0.5\src\netstring.cpp" />
-    <ClCompile Include="..\jsonrpc-cpp-0.5\src\networking.cpp" />
-    <ClCompile Include="..\jsonrpc-cpp-0.5\src\system.cpp" />
-    <ClCompile Include="Enclave_u.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="DRM_enclave_u.h" />
+    <ClInclude Include="ReplayProtectedDRM.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="TimeBasedDRM.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="DRM_app.cpp" />
+    <ClCompile Include="DRM_enclave_u.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">
       </PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-      </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">
       </PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
       </PrecompiledHeader>
@@ -297,69 +334,39 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="App.c" />
-    <ClCompile Include="printf.c" />
-    <ClCompile Include="RemoteAtt.c" />
-    <ClCompile Include="EthRPC.cpp" />
-    <ClCompile Include="testsuite.c" />
-    <ClCompile Include="net_u.c" />
-    <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="ReplayProtectedDRM.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="TimeBasedDRM.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc.h" />
-    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_client.h" />
-    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_common.h" />
-    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_handler.h" />
-    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_httpclient.h" />
-    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_server.h" />
-    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_tcpclient.h" />
-    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_tcpserver.h" />
-    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_udpclient.h" />
-    <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_udpserver.h" />
-    <ClInclude Include="..\jsonrpc-cpp-0.5\include\netstring.h" />
-    <ClInclude Include="..\jsonrpc-cpp-0.5\include\networking.h" />
-    <ClInclude Include="..\jsonrpc-cpp-0.5\include\system.h" />
-    <ClInclude Include="App.h" />
-    <ClInclude Include="Enclave_u.h" />
-    <ClInclude Include="printf.h" />
-    <ClInclude Include="RemoteAtt.h" />
-    <ClInclude Include="EthRPC.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <CustomBuild Include="..\Enclave\Enclave.edl">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\Enclave\Enclave.edl" --search-path "$(SGXSDKInstallPath)\include%3b.\..\Enclave"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">Creating untrusted proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\Enclave\Enclave.edl" --search-path "$(SGXSDKInstallPath)\include%3b.\..\Enclave"</Command>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">Creating untrusted proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\Enclave\Enclave.edl" --search-path "$(SGXSDKInstallPath)\include%3b.\..\Enclave"</Command>
+    <CustomBuild Include="..\DRM_enclave\DRM_enclave.edl">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\DRM_enclave\DRM_enclave.edl" --search-path ".\..\DRM_enclave%3b$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\DRM_enclave\DRM_enclave.edl" --search-path ".\..\DRM_enclave%3b$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\DRM_enclave\DRM_enclave.edl" --search-path ".\..\DRM_enclave%3b$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\DRM_enclave\DRM_enclave.edl" --search-path ".\..\DRM_enclave%3b$(SGXSDKInstallPath)\include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Creating untrusted proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\Enclave\Enclave.edl" --search-path "$(SGXSDKInstallPath)\include%3b.\..\Enclave"</Command>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">Creating untrusted proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\Enclave\Enclave.edl" --search-path "$(SGXSDKInstallPath)\include%3b.\..\Enclave"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\Enclave\Enclave.edl" --search-path "$(SGXSDKInstallPath)\include%3b.\..\Enclave"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\DRM_enclave\DRM_enclave.edl" --search-path ".\..\DRM_enclave%3b$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\DRM_enclave\DRM_enclave.edl" --search-path ".\..\DRM_enclave%3b$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\DRM_enclave\DRM_enclave.edl" --search-path ".\..\DRM_enclave%3b$(SGXSDKInstallPath)\include"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\DRM_enclave\DRM_enclave.edl" --search-path ".\..\DRM_enclave%3b$(SGXSDKInstallPath)\include"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Creating untrusted proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">Creating untrusted proxy/bridge routines</Message>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\Enclave\Enclave.edl" --search-path "$(SGXSDKInstallPath)\include%3b.\..\Enclave"</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">"$(SGXSDKInstallPath)\bin\win32\Release\sgx_edger8r.exe" --untrusted ".\..\Enclave\Enclave.edl" --search-path "$(SGXSDKInstallPath)\include%3b.\..\Enclave"</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Creating untrusted proxy/bridge routines</Message>
       <Message Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">Creating untrusted proxy/bridge routines</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">$(ProjectDir)%(Filename)_u.h;$(ProjectDir)%(Filename)_u.c;%(Outputs)</Outputs>
     </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
 </Project>

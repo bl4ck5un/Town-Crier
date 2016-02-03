@@ -19,8 +19,8 @@ extern "C" {
 
 int ecall_self_test();
 int test_yahoo_finance();
-int test_ecdsa();
 sgx_status_t ecall_create_report(sgx_target_info_t* quote_enc_info, sgx_report_t* report);
+int get_raw_signed_tx(uint8_t* sealed_nonce, int nonce_len, uint8_t tx[2048], int* len);
 
 sgx_status_t SGX_CDECL ocall_mbedtls_net_connect(int* retval, mbedtls_net_context* ctx, const char* host, const char* port, int proto);
 sgx_status_t SGX_CDECL ocall_mbedtls_net_bind(int* retval, mbedtls_net_context* ctx, const char* bind_ip, const char* port, int proto);
