@@ -371,7 +371,7 @@ by the requester.
 %and $\smaroon{\$ F_{\text{callback}}} > {\rm max})$ \\
 %                 & \hspace*{1em} Return $\smaroon{\$fee}$ to $\pkU$ \\
                  & Else record $({\sf id}, {\sf callback}, {\sf params}, {\tt F_{\text{deliver}}})$\\[-10pt]
-    & {\it {\color{gray} {//~at most ${{\$ F_{\textrm{request}}}}$ {gas consumed}}} }\\[-10pt]
+    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{request}}}}$ {gas consumed}}} }\\[-10pt]
     & {\it {\color{gray} {//~all remaining {gas returned to $\pkU$}}} }\\
   {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data}, 
 $\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\pksgx$: \\
@@ -380,7 +380,7 @@ $\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\pksgx$: \\
                 &   Assert ${\tt F'_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{deliver}}}$\\
                  & Send $\smaroon{\$F_{\text{deliver}}}$ to $\pksgx$ \\
                  & Call ${\sf callback}({\sf data})$ \\[-10pt]
-    & {\it {\color{gray} {//~at most ${{\$ F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
+    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
     & {\it {\color{gray} {//~all remaining {gas returned to $\pksgx$}}} }\\
 
   \hline
