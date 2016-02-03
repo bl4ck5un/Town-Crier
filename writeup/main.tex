@@ -7,7 +7,7 @@
 \usepackage{boxedminipage}
 \usepackage[override]{cmtt}
 \usepackage[utf8]{inputenc}
-\usepackage{color}
+\usepackage{color,xcolor}
 \usepackage{graphicx}
 \usepackage{xspace}
 \usepackage{amsmath,amstext,amssymb,amsfonts,latexsym}
@@ -44,6 +44,17 @@ Second Institution
 Name Institution
 } % end author
 
+
+%**** COLORS *********
+\definecolor{maroon}{RGB}{178, 34, 34}
+%\definecolor{brown}{RGB}{139, 137, 137}
+\definecolor{gold}{rgb}{0.85, 0.65, 0.13}
+
+\newcommand{\smaroon}[1]{\ensuremath{\tt {\color{maroon} #1 \xspace}}}
+\newcommand{\sgold}[1]{\ensuremath{\tt {\color{gold} #1 \xspace}}}
+\newcommand{\sbrown}[1]{\ensuremath{\tt {\color{brown} #1 \xspace}}}
+
+\newcommand{\sgray}[1]{{\color{gray} #1}}
 
 %**** DEFINITIONS *********
 
