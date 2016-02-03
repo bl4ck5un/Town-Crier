@@ -336,6 +336,7 @@ Therefore, $\algB$ simply outputs this as a signature forgery.
 \section{Extensions}
 
 \subsection{Handling Transaction Fees}
+
 To mitigate potential Denial-of-Service (DoS) attacks, 
 Ethereum employs a fee mechanism, referred to as ``gas'', 
 where the submitter of a transaction (that invokes
@@ -344,6 +345,47 @@ transaction fee
 roughly proportional to the execution time of the 
 corresponding entry point.
 
+\paragraph{Notations and assumed execution model.}
+In Figure \elaine{fill}, we
+use the notation $\sbrown{\Delta F}$
+to denote transaction fees (i.e., gas), 
+where $\Delta$ is a type annotation 
+and ${\tt F}$ denotes the numerical amount of the  
+gas. Other non-gas, normal currency units 
+are denoted as $\smaroon{\$ F}$ where $\$$ is a type annotation,
+and ${\tt F}$ denotes the amount of the currency. 
+For simplicity, our notational system assumes 
+that gas and normal currency adopt
+the same currency unit. 
+
+We assume that the blockchain contract adopts the following execution model
+for gas:
+\begin{itemize}[leftmargin=5mm]
+\item
+{\it Providing gas.} 
+When a transaction is submitted, it invokes an entry point in the contract.
+The transaction submitter provides a gas amount to activate the entry point. 
+\item
+{\it Extra gas.} 
+If extra gas remains at the end of the execution (after invoking an entry point),
+all extra gas is refunded to the transaction submitter at the end.
+\item
+{\it Gas exhaustion.} 
+Gas exhaustion is dealt with in the following manner.
+Consider each entry point of the contract as a function. 
+Functions can call other functions.
+Each function can specify a gas upper bound not to exceed
+the remaining gas of the parent function (and if left unspecified,
+the upper bound is implicitly set to all remaining gas of the parent function).
+If execution of the function exhausted the per-function gas 
+upper bound, the function execution is aborted and 
+state reverted to before the function is invoked.
+\end{itemize}
+
+
+
+
+\paragraph{Town Crier protocol with transaction fees.}
 Our basic Town Crier implements a policy where the requester pays for all gas 
 needed and Town Crier in effect pays nothing.
 The concrete instantition  
