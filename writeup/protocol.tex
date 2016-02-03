@@ -378,8 +378,8 @@ $\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\pksgx$: \\
                  & Let $({\sf id}, {\sf callback}, {\sf params'}, {\tt F'_{\text{deliver}}})$ be the most recently recorded tuple for ${\sf id}$\\
                  & Assert ${\sf params} = {\sf params}'$\\
                 &   Assert ${\tt F'_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{deliver}}}$\\
-                 & Call ${\sf callback}({\sf data})$ \\
-                 & Send $\smaroon{\$F_{\text{deliver}}}$ to $\pksgx$. \\[-10pt]
+                 & Send $\smaroon{\$F_{\text{deliver}}}$ to $\pksgx$ \\
+                 & Call ${\sf callback}({\sf data})$ \\[-10pt]
     & {\it {\color{gray} {//~at most ${{\$ F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
     & {\it {\color{gray} {//~all remaining {gas returned to $\pksgx$}}} }\\
 
