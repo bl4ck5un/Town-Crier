@@ -47,10 +47,16 @@
     <ClCompile Include="keccak.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RLP.cpp">
+    <ClCompile Include="SSLClient.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SSLClient.c">
+    <ClCompile Include="Transaction.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debug.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="seal.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -77,13 +83,22 @@
     <ClInclude Include="Scraper_lib.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="ECDSA.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="keccak.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="SSLClient.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ECDSA.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="seal.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Transaction.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

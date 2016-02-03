@@ -1,8 +1,18 @@
-#include "stdlib.h"
+﻿#include "stdlib.h"
 #include "stdint.h"
 #include "Enclave.h"
+#include "Enclave_t.h"
 #include "vector"
 #include "math.h"
+#include "stdio.h"
+#include "keccak.h"
+#include "sgx_tseal.h"
+#include "mbedtls/bignum.h"
+
+#include "seal.h"
+
+#include "Debug.h"
+#include "ECDSA.h"
 
 typedef struct _b32 {uint8_t b[32]; unsigned size;} bytes32;
 typedef struct _b20 {uint8_t b[20]; unsigned size;} bytes20;
@@ -11,7 +21,6 @@ typedef std::vector<uint8_t> bytes;
 
 extern "C" {
     int rlp_item(const uint8_t*, const int, bytes&);
-    int test_RLP();
 }
 
 inline static unsigned bytesRequired(int _i)
@@ -100,7 +109,32 @@ void fromHex(const char* src, bytes& out)
 void from32(const char* src, bytes32* d) { fromHex(src, d->b, &d->size); }
 void from20(const char* src, bytes20* d) { fromHex(src, d->b, &d->size); }
 
+int set_byte_length (bytes32* d)
+{
+    mbedtls_mpi tmp;
+    mbedtls_mpi_init(&tmp);
+    size_t len, i;
+    if (mbedtls_mpi_read_binary (&tmp, d->b, 32) != 0)
+    {
+        printf("Error reading mpi from binary!\n");
+        return -1;
+    }
+    len = mbedtls_mpi_bitlen(&tmp);
+    len = (len + 7) / 8;
 
+    // d uses len bytes at right
+    // need to move to the begining of the d->d
+    for (i = 0; i < len; i++)
+    {
+        d->b[i] = d->b[32 - len + i];
+    }
+    
+
+    d->size = len;
+
+    mbedtls_mpi_free(&tmp);
+    return 0;
+}
 
 class TX {
 public:
@@ -122,33 +156,34 @@ public:
 
     TX(Type p) {
         this->m_type = p;
+        memset(&this->m_nonce, 0, sizeof bytes32);
+        memset(&this->m_value, 0, sizeof bytes32);
+        memset(&this->m_receiveAddress, 0, sizeof bytes20);
+        memset(&this->m_gasPrice, 0, sizeof bytes32);
+        memset(&this->m_gas, 0, sizeof bytes32);
+        memset(&this->r, 0, sizeof bytes32);
+        memset(&this->s, 0, sizeof bytes32);
+        memset(&this->v, 0, sizeof bytes);
     }
-    void rlp_list(bytes& out) {
+    void rlp_list(bytes& out, bool withSig=true) {
         int i;
         uint8_t len_len, b;
 
-        //rlp_item((const uint8_t*)m_nonce.b, 32, out);
         rlp_item(&m_nonce, out);
-        //rlp_item((const uint8_t*)m_gasPrice.b, 32, out);
         rlp_item(&m_gasPrice, out);
-        //rlp_item((const uint8_t*)m_gas.b, 32, out);
         rlp_item(&m_gas, out);
         if (m_type == MessageCall) {
-            //rlp_item((const uint8_t*) m_receiveAddress.b, 20, out);
             rlp_item(&m_receiveAddress, out);
         }
-        //rlp_item((const uint8_t*)m_value.b, 32, out);
         rlp_item(&m_value, out);
-        // data is different
         rlp_item((const uint8_t*)&m_data[0], m_data.size(), out);
         // v is also different
-        rlp_item((const uint8_t*)&v, 1, out);
 
-        //rlp_item((const uint8_t*)r.b, 32, out);
-        rlp_item(&r, out);
-        //rlp_item((const uint8_t*)s.b, 32, out);
-        rlp_item(&s, out);
-
+        if (withSig) {
+            rlp_item((const uint8_t*)&v, 1, out);
+            rlp_item(&r, out);
+            rlp_item(&s, out);
+        }
         int len = out.size();
         // list header
         if (len < 56) {
@@ -171,39 +206,89 @@ public:
     }
 };
 
-#define NONCE       "0x00"
-#define GASPRICE    "0x09184e72a000"
-#define GASLIMIT    "0x2710"
-#define TO_ADDR     "0x0000000000000000000000000000000000000000"
+#define NONCE       "0x06"          
+#define GASPRICE    "0x0BA43B7400"  //50000000000
+#define GASLIMIT    "0x015F90"      // 90000
+#define TO_ADDR     "0x762f3a1b5502276bd14ecc1cab7e5e8b5cb27197"
 #define VALUE       "0x00"
-#define DATA        "0x7f7465737432000000000000000000000000000000000000000000000000000000600057"
-#define SIG_V       "0x1c"
-#define SIG_R       "0x5e1d3a76fbf824220eafc8c79ad578ad2b67d01b0c2425eb1f1347e8f50882ab"
-#define SIG_S       "0x5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13"
-#define REF_JS      "f889808609184e72a00082271094000000000000000000000000000000000000000080a47f74657374320000000000000000000000000000000000000000000000000000006000571ca05e1d3a76fbf824220eafc8c79ad578ad2b67d01b0c2425eb1f1347e8f50882aba05bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13"
+#define DATA        "0x60fe47b1000000000000000000000000000000000000000000000000000000000000001b"
+//#define SIG_V       "0x1c"
+//#define SIG_R       "0x5e1d3a76fbf824220eafc8c79ad578ad2b67d01b0c2425eb1f1347e8f50882ab"
+//#define SIG_S       "0x5bd428537f05f9830e93792f90ea6a3e2d1ee84952dd96edbae9f658f831ab13"
 
-int test_RLP() {
+static int inc_nonce_by_one(uint8_t* nonce)
+{
+    int ret;
+    mbedtls_mpi p;
+    mbedtls_mpi_init(&p);
+
+    if (nonce)
+    {
+        MBEDTLS_MPI_CHK (mbedtls_mpi_read_binary(&p, nonce, 32));
+        MBEDTLS_MPI_CHK (mbedtls_mpi_add_int(&p, &p, 1));
+        MBEDTLS_MPI_CHK (mbedtls_mpi_write_binary(&p, nonce, 32));
+    }
+    else
+    { printf("NULL input\n!"); return -1; }
+cleanup:
+    mbedtls_mpi_free(&p);
+    return ret;
+}
+
+
+int get_raw_signed_tx(uint8_t* nonce, int i_len, uint8_t* serialized_tx, int* o_len)
+{
+    if (serialized_tx == nullptr || o_len == nullptr) {printf("Error: get_raw_tx gets NULL input\n"); return -1;}
+    sgx_status_t st;
     bytes out;
-    unsigned i = 0;
+    int ret;
+    size_t nonce_len;
+    (i_len);
+
+
     TX tx(TX::MessageCall);
-    from32(NONCE, &tx.m_nonce);
+    uint8_t hash[32]; 
+
+    if (nonce)
+    {
+        memcpy(tx.m_nonce.b, nonce, 32);
+    }
+    else
+    {
+        memset(tx.m_nonce.b, 0x0, 32);
+    }
+
+    set_byte_length(& tx.m_nonce);
     from32(GASPRICE, &tx.m_gasPrice);
     from32(GASLIMIT, &tx.m_gas);
     from20(TO_ADDR, &tx.m_receiveAddress);
     from32(VALUE, &tx.m_value);
     fromHex(DATA, tx.m_data);
-    tx.v = 28;
-    from32(SIG_R, &tx.r);
-    from32(SIG_S, &tx.s);
 
+    tx.rlp_list(out, false);
 
-    tx.rlp_list(out);
-    printf("My:\n");
-    for (i = 0; i < out.size(); i++) {
-        printf("%02hhx", out[i]);
-    }
-    printf("\n");
+#ifdef TX_DEBUG
+    dump_buf("rlp w/o sig: ", &out[0], out.size());
+#endif
 
-    printf("Ref:\n%s\n", REF_JS);
-    return 0;
+    ret = keccak(&out[0], out.size(), hash, 32);
+    ret = sign(hash, 32, tx.r.b, tx.s.b, &tx.v);
+
+    if (ret != 0) {printf("Error: signing returned %d\n", ret); return ret;}
+    else {tx.r.size = 32; tx.s.size = 32;}
+
+    out.clear();
+
+    tx.rlp_list(out, true);
+
+    if (out.size() > 2048) {printf("Error buffer size (%d) is too small.\n", *o_len); return -1;}
+
+#ifdef TX_DEBUG
+    dump_buf("rlp w/ sig:\n", &out[0], out.size());
+    printf("ref:\n%s\n", "f88903850ba43b740083015f9094762f3a1b5502276bd14ecc1cab7e5e8b5cb2719780a460fe47b1000000000000000000000000000000000000000000000000000000000000001b1ba0ca83f314028eed155e31df4ad05041365cbd2e8ac0bc1c3090765736e01d2110a0442535abfc10b8f6c66363885a46c78c4a087bf601d1e4d638c9346a746254d7");
+#endif
+    memcpy(serialized_tx, &out[0], out.size());
+    *o_len = out.size();
+
+    return inc_nonce_by_one(nonce);
 }

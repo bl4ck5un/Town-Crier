@@ -87,6 +87,9 @@
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="EthRPC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Enclave_u.h">
@@ -139,6 +142,9 @@
     </ClInclude>
     <ClInclude Include="RemoteAtt.h">
       <Filter>RemoteAtt</Filter>
+    </ClInclude>
+    <ClInclude Include="EthRPC.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

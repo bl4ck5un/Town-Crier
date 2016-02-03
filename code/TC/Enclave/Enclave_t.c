@@ -34,19 +34,19 @@ typedef struct ms_test_yahoo_finance_t {
 	int ms_retval;
 } ms_test_yahoo_finance_t;
 
-typedef struct ms_test_ecdsa_t {
-	int ms_retval;
-} ms_test_ecdsa_t;
-
-typedef struct ms_test_RLP_t {
-	int ms_retval;
-} ms_test_RLP_t;
-
 typedef struct ms_ecall_create_report_t {
 	sgx_status_t ms_retval;
 	sgx_target_info_t* ms_quote_enc_info;
 	sgx_report_t* ms_report;
 } ms_ecall_create_report_t;
+
+typedef struct ms_get_raw_signed_tx_t {
+	int ms_retval;
+	uint8_t* ms_sealed_nonce;
+	int ms_nonce_len;
+	uint8_t* ms_tx;
+	int* ms_len;
+} ms_get_raw_signed_tx_t;
 
 typedef struct ms_ocall_mbedtls_net_connect_t {
 	int ms_retval;
@@ -141,32 +141,6 @@ static sgx_status_t SGX_CDECL sgx_test_yahoo_finance(void* pms)
 	return status;
 }
 
-static sgx_status_t SGX_CDECL sgx_test_ecdsa(void* pms)
-{
-	ms_test_ecdsa_t* ms = SGX_CAST(ms_test_ecdsa_t*, pms);
-	sgx_status_t status = SGX_SUCCESS;
-
-	CHECK_REF_POINTER(pms, sizeof(ms_test_ecdsa_t));
-
-	ms->ms_retval = test_ecdsa();
-
-
-	return status;
-}
-
-static sgx_status_t SGX_CDECL sgx_test_RLP(void* pms)
-{
-	ms_test_RLP_t* ms = SGX_CAST(ms_test_RLP_t*, pms);
-	sgx_status_t status = SGX_SUCCESS;
-
-	CHECK_REF_POINTER(pms, sizeof(ms_test_RLP_t));
-
-	ms->ms_retval = test_RLP();
-
-
-	return status;
-}
-
 static sgx_status_t SGX_CDECL sgx_ecall_create_report(void* pms)
 {
 	ms_ecall_create_report_t* ms = SGX_CAST(ms_ecall_create_report_t*, pms);
@@ -210,36 +184,98 @@ err:
 	return status;
 }
 
+static sgx_status_t SGX_CDECL sgx_get_raw_signed_tx(void* pms)
+{
+	ms_get_raw_signed_tx_t* ms = SGX_CAST(ms_get_raw_signed_tx_t*, pms);
+	sgx_status_t status = SGX_SUCCESS;
+	uint8_t* _tmp_sealed_nonce = ms->ms_sealed_nonce;
+	int _tmp_nonce_len = ms->ms_nonce_len;
+	size_t _len_sealed_nonce = _tmp_nonce_len;
+	uint8_t* _in_sealed_nonce = NULL;
+	uint8_t* _tmp_tx = ms->ms_tx;
+	size_t _len_tx = 2048 * sizeof(*_tmp_tx);
+	uint8_t* _in_tx = NULL;
+	int* _tmp_len = ms->ms_len;
+	size_t _len_len = sizeof(*_tmp_len);
+	int* _in_len = NULL;
+
+	CHECK_REF_POINTER(pms, sizeof(ms_get_raw_signed_tx_t));
+	CHECK_UNIQUE_POINTER(_tmp_sealed_nonce, _len_sealed_nonce);
+	CHECK_UNIQUE_POINTER(_tmp_tx, _len_tx);
+	CHECK_UNIQUE_POINTER(_tmp_len, _len_len);
+
+	if (_tmp_sealed_nonce != NULL) {
+		_in_sealed_nonce = (uint8_t*)malloc(_len_sealed_nonce);
+		if (_in_sealed_nonce == NULL) {
+			status = SGX_ERROR_OUT_OF_MEMORY;
+			goto err;
+		}
+
+		memcpy(_in_sealed_nonce, _tmp_sealed_nonce, _len_sealed_nonce);
+	}
+	if (_tmp_tx != NULL) {
+		if ((_in_tx = (uint8_t*)malloc(_len_tx)) == NULL) {
+			status = SGX_ERROR_OUT_OF_MEMORY;
+			goto err;
+		}
+
+		memset((void*)_in_tx, 0, _len_tx);
+	}
+	if (_tmp_len != NULL) {
+		if ((_in_len = (int*)malloc(_len_len)) == NULL) {
+			status = SGX_ERROR_OUT_OF_MEMORY;
+			goto err;
+		}
+
+		memset((void*)_in_len, 0, _len_len);
+	}
+	ms->ms_retval = get_raw_signed_tx(_in_sealed_nonce, _tmp_nonce_len, _in_tx, _in_len);
+err:
+	if (_in_sealed_nonce) {
+		memcpy(_tmp_sealed_nonce, _in_sealed_nonce, _len_sealed_nonce);
+		free(_in_sealed_nonce);
+	}
+	if (_in_tx) {
+		memcpy(_tmp_tx, _in_tx, _len_tx);
+		free(_in_tx);
+	}
+	if (_in_len) {
+		memcpy(_tmp_len, _in_len, _len_len);
+		free(_in_len);
+	}
+
+	return status;
+}
+
 SGX_EXTERNC const struct {
 	size_t nr_ecall;
-	struct {void* call_addr; uint8_t is_priv;} ecall_table[5];
+	struct {void* call_addr; uint8_t is_priv;} ecall_table[4];
 } g_ecall_table = {
-	5,
+	4,
 	{
 		{(void*)(uintptr_t)sgx_ecall_self_test, 0},
 		{(void*)(uintptr_t)sgx_test_yahoo_finance, 0},
-		{(void*)(uintptr_t)sgx_test_ecdsa, 0},
-		{(void*)(uintptr_t)sgx_test_RLP, 0},
 		{(void*)(uintptr_t)sgx_ecall_create_report, 0},
+		{(void*)(uintptr_t)sgx_get_raw_signed_tx, 0},
 	}
 };
 
 SGX_EXTERNC const struct {
 	size_t nr_ocall;
-	uint8_t entry_table[10][5];
+	uint8_t entry_table[10][4];
 } g_dyn_entry_table = {
 	10,
 	{
-		{0, 0, 0, 0, 0, },
-		{0, 0, 0, 0, 0, },
-		{0, 0, 0, 0, 0, },
-		{0, 0, 0, 0, 0, },
-		{0, 0, 0, 0, 0, },
-		{0, 0, 0, 0, 0, },
-		{0, 0, 0, 0, 0, },
-		{0, 0, 0, 0, 0, },
-		{0, 0, 0, 0, 0, },
-		{0, 0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
 	}
 };
 

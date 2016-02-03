@@ -300,6 +300,7 @@
     <ClCompile Include="App.c" />
     <ClCompile Include="printf.c" />
     <ClCompile Include="RemoteAtt.c" />
+    <ClCompile Include="EthRPC.cpp" />
     <ClCompile Include="testsuite.c" />
     <ClCompile Include="net_u.c" />
     <ClCompile Include="Utils.cpp" />
@@ -322,6 +323,7 @@
     <ClInclude Include="Enclave_u.h" />
     <ClInclude Include="printf.h" />
     <ClInclude Include="RemoteAtt.h" />
+    <ClInclude Include="EthRPC.h" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />
