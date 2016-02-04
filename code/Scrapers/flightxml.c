@@ -2,17 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Scraper_lib.h"
-#include "time.c"
+#include "utime.h"
 
-int construct_query(int argc, char* argv[], char** buf) {
+int construct_query(char* flight, char** buf) {
     int len;
-    char* flight = argv[3];
     char query[1000];
-    if (argc != 4) {
-        printf("USAGE: %s [YYYMMDD] [departure time] [flight number]\n", argv[0]);
-        printf("\tflight number in ICAO, time in zulu\n");
-        return -1;
-    }
     
     query[0] = 0;
 
@@ -28,14 +22,11 @@ int construct_query(int argc, char* argv[], char** buf) {
     return len;
 }
 
-int parse_response(char* resp, char** buf, int argc, char* argv[]) {
+int parse_response(char* resp, int* buf, char* date, char* departure) {
     int i, t;
     char* temp = resp;
     char* end;
     char* sd;
-
-    char* date = argv[1];
-    char* departure = argv[2];
 
     char tempbuff[100];
     char tstamp[11];
@@ -44,23 +35,12 @@ int parse_response(char* resp, char** buf, int argc, char* argv[]) {
     char scheduled[11];
     char actual[11];
     int len, tactual, tscheduled, hours, minutes, seconds, diff;
-    char d[9], ret[100];
 
-    tstamp[10] = 0;
-    tempbuff[0] = 0;
-    strcat(tempbuff, date);
-    strcat(tempbuff, departure);
-
-    /*strptime(tempbuff, "%Y%m%d%H%M", &t1);
-    t1.tm_sec = 0;
-    t = mktime(&t1);
-    t = t - (60*60*5);*/
-    /*printf("timestamp: %d\n", (int)t);*/
-
+    tstamp[11] = 0;
     t = utime(date, departure);
-    sprintf(tstamp, "%d", t);
+    snprintf(tstamp, 11, "%d", t);
 
-    strcpy(tempbuff, "filed_departuretime\":\0");
+    strncpy(tempbuff, "filed_departuretime\":\0", 22);
     strcat(tempbuff, tstamp);
     len = strlen(resp);
     while(strncmp(temp, tempbuff, 31) != 0) {
@@ -110,47 +90,68 @@ int parse_response(char* resp, char** buf, int argc, char* argv[]) {
     tscheduled = t + (hours*60*60) + (minutes*60) + seconds;
 
     diff = (tactual - tscheduled)/60;
-    sprintf(d, "%d", diff);
 
-    ret[0] = 0;
-    /*strcat(ret, "Scheduled: ");
-    //strcat(ret, scheduled);
-    //strcat(ret, " Actual: ");
-    //strcat(ret, actual);*/
-    strcat(ret, "Diff: ");
-    strcat(ret, d);
-
-
-    len = strlen(ret);
-    *buf = (char*)malloc(len+1);
-    memcpy(*buf, ret, len);
-    (*buf)[len] = 0;
+    *buf = diff;
     return len;
 }
 
-int main(int argc, char* argv[]) {
+/* 
+    date:   YYYYMMDD
+    time:   HHmm
+    flight: ICAO flight numbers
+    resp:   set to the number of minutes late/early
+
+    return: 0 if OK, -1 if no data found or flight still enroute
+
+    date and time in Zulu/UTC
+*/
+int get_flight_delay(char* date, char* time, char* flight, int* resp) {
     /***** VARIABLE DECLARATIONS */
-    int ret = 0;
+    int ret, delay;
     char buf[16385];
     char* query = NULL;
-    char* output = NULL;
 
     /***** CONSTRUCT THE QUERY */
-    ret = construct_query(argc, argv, &query);
+    ret = construct_query(flight, &query);
     if (ret < 0)
         return -1;
     /*printf("%s\n", query);*/
 
     /***** EXECUTE THE QUERY */
     ret = get_page_on_ssl("flightxml.flightaware.com", query, (unsigned char*)buf, 16384); 
+    free(query);
     /*printf("%s\n", buf);*/
     /***** PARSE THE RESPONSE */
-    ret = parse_response(buf, &output, argc, argv);
+    ret = parse_response(buf, &delay, date, time);
     /***** OUTPUT */
-    if (ret < 0)
+    if (ret < 0) {
         printf("no data/bad request\n");
+        return -1;
+    }
+    else {
+        /*printf("%d\n", delay);*/
+        *resp = delay;
+        return 0;
+    }
+}
+
+
+int main(int argc, char* argv[]) {
+    int rc, delay;
+    printf("USAGE: get_flight_delay(YYYYMMDD, HHmm, flight#, return_variable)\n");
+    printf("\tdate/time in Zulu/UTC, flight in ICAO\n");
+    rc = get_flight_delay("20160129", "1450", "DAL900", &delay);
+    if (rc < 0)
+        printf("Could not find flight info for DAL900 at specified departure time\n");
     else
-        printf("%s\n", output);
+        printf("Delta Airlines flight 900 is %d minutes late on 26 January 2016 (should be 2 minutes late)\n", delay);
+
+
+    rc = get_flight_delay("20160204", "0310", "SWA450", &delay);
+    printf("%d, %d (should be 11)\n", rc, delay);
+    rc = get_flight_delay("20160202", "0650", "UAL1183", &delay);
+    printf("%d, %d (should be -12)\n", rc, delay);
 
     return 0;
 }
+
