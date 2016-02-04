@@ -59,7 +59,7 @@ Additionally, as noted above, trusted clock provides only relative time with  re
 \ari{Let's give the attestation API a function name.} We present a formal model and protocol specification in the paper appendix.
 
 
-\paragraph{\bf Notation.} We model execution in SGX in terms of a functionality $\fsgx$ operating in a stateful manner on \enclaveprog. This functionality may be be invokes through transmission of one of three messages to \enclaveprog: ``initialize'', which creates the enclave with \enclaveprog as its initial state and triggers measurement quotes, ``attest'', which causes \engine to initiate an attestation with the public key and current time as supplementary data, and (``resume'', $X$) which initiates an execution of \enclaveprog on a fresh input $X$. (We assume that \enclaveprog exits only when it completes processing of a given input.) We let $\fsgx[\enclaveprog, \relay]$ denote invocation of $\fsgx$ on \enclaveprog by \relay. We let $\clock()$ denote measurement of the SGX clock from within the enclave; $\clock()$ returns the current wall-clock time (in a canonical format such as seconds since the Unix epoch January 1, 1970 00:00 UTC).\ari{What format do we actually use?}
+\paragraph{\bf Notation.} We model execution in SGX in terms of a functionality $\fsgx$ operating in a stateful manner on \enclaveprog. This functionality may be be invokes through transmission of one of three messages to \enclaveprog: \initcall, which creates the enclave with \enclaveprog as its initial state and triggers measurement quotes, \attcall, which causes \engine to initiate an attestation with the public key and current time as supplementary data, and (\resumecall, $X$) which initiates an execution of \enclaveprog on a fresh input $X$. (We assume that \enclaveprog exits only when it completes processing of a given input.) We let $\fsgx[\enclaveprog, \relay]$ denote invocation of $\fsgx$ on \enclaveprog by \relay. We let $\clock()$ denote measurement of the SGX clock from within the enclave; $\clock()$ returns the current wall-clock time (in a canonical format such as seconds since the Unix epoch January 1, 1970 00:00 UTC).\ari{What format do we actually use?}
 
 We abstract away the use of group signatures in EPID and simply denote the keypair associated with an SGX instance in \tc by $(\pkM, \skM)$. We let $\Sigma.{\sf Sign}({\sk}, X)$ denote a digital signature under private key $\sk$ of message $X$, and $\Sigma.{\sf Verify}({\sk}, \sigma, X)$ denote the corresponding verification operation.
 
@@ -89,19 +89,19 @@ making use of \tcont.
 \subsection{A payment-free basic protocol}
 For simplicity, we first specify functionalities in a payment-free version of our basic protocol, i.e., one that does not include gas or fees. Later, in our implementation discussion, we explain how we handle these two forms of payment, and we prove payment-related properties in the paper appendix.
 
-\paragraph{The \tcontract \tcont.} The \tcontract, as noted above, accepts a datagram request $(\dgid, \dgform, \dgcallback)$, forwards it to the \tc server, and sends the resulting datagram $\dgm$ to the entry point \dgcallback in the requesting contract \reqcont. As we explain in Section~\ref{sec:implementation}, the blockchain verifies that the response is correctly signed under $\engine$'s key $\pkTC$, so \tcont need not verify the signature explicitly. \tc does, however, have a subtle security requirement. Specifically,  for a given datagram request $\dgid$, \tcont verifies that $\dgform' = \dgform$, where $\dgform$ is the digitally signed message produced by \engine and $\dgform$ is the locally stored parameters. The check is necessary to prevent \relay from corrupting datagram requests passed by \tcont (which, as a public function, has no means of digitally signing requests). \tcont is specified in Figure~\ref{tbl:tc-contract}.
+\paragraph{The \tcontract \tcont.} The \tcontract, as noted above, accepts a datagram request $(\dgid, \dgform, \dgcallback)$, forwards it to the \tc server, and sends the resulting datagram $\dgm$ to the entry point \dgcallback in the requesting contract \reqcont. As we explain in Section~\ref{sec:implementation}, the blockchain verifies that the response is correctly signed under $\engine$'s key $\pkTC$, so \tcont need not verify the signature explicitly. \tc does, however, have a subtle security requirement. Specifically,  for a given datagram request $\dgid$, \tcont verifies that $\dgform' = \dgform$, where $\dgform$ is the digitally signed message produced by \engine and $\dgform$ is the locally stored parameters. The check is necessary to prevent \relay from corrupting datagram requests passed by \tcont (which, as a public function, has no means of digitally signing requests). \tcont is specified in Figure~\ref{tbl:tc-contract}. As a reminder, we assume (and enforce) the condition that $\dgid$ is unique to a given request.
 
 \begin{figure}[!htb]
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
   \hline
 
   \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont}} \\ [1ex]
-  {\bf Request:} & On recv $(\dgid, \dgform, \dgcallback)$ from some contract $\reqcont$: \\
+  {\bf Request:} & On recv $(\dgid, \dgform, \dgcallback)$ from $\reqcont$: \\
 %                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
 %                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
                  & Record $(\dgid, \dgform, \dgcallback)$ \\
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm)$ from $\pkTC$: \\
-		 & Let $(\dgid, \dgform, \dgcallback)$ be the most recently recorded tuple for ${\sf id}$\\
+		 & If $(\dgid, \dgform, \dgcallback)$ is a recorded tuple\\
 		 & Assert $\dgform = \dgform'$\\
                  & Call ${\dgcallback}({\dgm})$ \\
 %                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
@@ -114,7 +114,7 @@ The Town Crier contract \tcont.
 \label{tbl:tc-contract}
 \end{figure}
 
-\paragraph{The \encname \engine.} When initialized through an ``initialize'' call, \engine sets its absolute clock (by setting a reference point) and generates a keypair $(\pkTC,\skTC)$ to which it binds by placing $\pkTC$ in attestation requests. Given input ``resume'' $({\sf id}, {\sf params})$, \engine contacts the requested data source via HTTPS and checks that the corresponding certificate {\sf cert} is valid, i.e., not expired. We defer discussion of certificate revocation to Section~\ref{}. \engine then fetches the requested datagram and returns it to \relay along with the inputs, all digitally signed. 
+\paragraph{The \encname \engine.} When initialized through an \initcall call, \engine sets its absolute clock (by setting a reference point) and generates a keypair $(\pkTC,\skTC)$ to which it binds by placing $\pkTC$ in attestation requests. Given input \resumecall $({\sf id}, {\sf params})$, \engine contacts the requested data source via HTTPS and checks that the corresponding certificate {\sf cert} is valid, i.e., not expired. We defer discussion of certificate revocation to Section~\ref{}. \engine then fetches the requested datagram and returns it to \relay along with the inputs, all digitally signed. 
 
 \begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}
@@ -123,18 +123,19 @@ The Town Crier contract \tcont.
 \end{center}
 \begin{tabular}{l}
 %{\bf Inputs}:  ${\sf params}$, \\[5pt]
-{\bf Initialize}:  On receive ``initialize'', $T_0$: \\ %{\it //~called only once upfront}\\
-\quad Set clock reference point; record $T_0$
+{\bf Initialize}:  On recv (\initcall, $T_0)$: \\ %{\it //~called only once upfront}\\
+\quad Set clock reference point\\
+\quad Record $T_0$\\
 \quad $(\pkTC, \skTC) := \Sigma.{\sf KeyGen}(1^\lambda)$\\
 \quad Record $(\pkTC, \skTC)$\\
 \\[1pt]
 
-{\bf Attest}:  On receive ``attest'': \\ %{\it //~called only once upfront}\\
+{\bf Attest}:  On recv \attcall: \\ %{\it //~called only once upfront}\\
 \quad $T := \clock()$\\
 \quad Call quoting enclave with supp.~data $(\pkTC, T)$
 \\[5pt]
 
-{\bf Resume:} On receive ``resume'', $({\sf id}, {\sf params})$\\
+{\bf Resume:} On recv (\resumecall, $({\sf id}, {\sf params}))$\\
 \quad Parse ${\sf params} := (\weburl, \dgspec, T) $:\\
 %\quad Parse ${\sf params} := (\weburl, \pkurl, T)$ \\
 \quad Wait until $\clock() \geq T$\\
@@ -151,7 +152,7 @@ SGX enclave's code.
 } 
 \end{figure}
 
-\paragraph{The \medname \relay.} As noted in Section~\ref{sec:architecture}, \relay performs three types of data passing. To be a little more precise here, it scrapes the blockchain, monitoring \tcont for new datagram requests $({\sf id}, {\sf params})$. It boots the \engine with an ``initialize'' call and handles incoming requests by invoking \engine with ``attest'' or ``resume''  
+\paragraph{The \medname \relay.} As noted in Section~\ref{sec:architecture}, \relay performs distinct three forms of data passing. To be more precise, it scrapes the blockchain, monitoring \tcont for new datagram requests $({\sf id}, {\sf params})$. It boots the \engine with an \initcall call and handles incoming requests by invoking \engine with \attcall or \resumecall calls. Finally, it forwards datagram responses from \engine to the blockchain. We use {\sf AuthSend} to denote such transmission, as the signature $\sigma$ on such responses is verified by the blockchain itself.
 
 \begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}
@@ -160,15 +161,15 @@ SGX enclave's code.
 \end{center}
 \begin{tabular}{l}
 {\bf Initialize}:\\
-Send ``initialize'' to $\fsgx[\enclaveprog, \relay]$\\
-On receive $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
+Send \initcall to $\fsgx[\enclaveprog, \relay]$\\
+On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 \quad Publish $(\pkTC, \sigatt)$\\[5pt]
 
 {\bf  Loop forever}: \\
 When \tcont receives new request $({\sf id}, {\sf params})$:\\
 %\quad Parse ${\sf params} := (\weburl, \dgspec, T)$\\
 \quad Fork: \\
-\ \quad Send $(\text{``resume''}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
+\ \quad Send $(\text{\resumecall}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
 \ \quad On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
 \ \quad \quad  {\sf AuthSend} $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ to \tcont
 \end{tabular}
