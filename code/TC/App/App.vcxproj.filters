@@ -90,6 +90,9 @@
     <ClCompile Include="EthRPC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\Enclave\Log.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Enclave_u.h">
@@ -144,6 +147,9 @@
       <Filter>RemoteAtt</Filter>
     </ClInclude>
     <ClInclude Include="EthRPC.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Enclave\Log.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

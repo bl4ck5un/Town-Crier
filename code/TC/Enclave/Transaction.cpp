@@ -3,16 +3,15 @@
 #include "Enclave.h"
 #include "Enclave_t.h"
 #include "vector"
-#include "math.h"
-#include "stdio.h"
 #include "keccak.h"
-#include "sgx_tseal.h"
 #include "mbedtls/bignum.h"
 
-#include "seal.h"
-
-#include "Debug.h"
 #include "ECDSA.h"
+#include "Log.h"
+
+#ifdef VERBOSE
+#include "Debug.h"
+#endif
 
 // home-made Big-endian long int
 // NOTE: no leading zeros. Starts with useful bytes.
@@ -26,53 +25,50 @@ typedef uint8_t byte;
 typedef std::vector<uint8_t> bytes;
 
 extern "C" {
-    int rlp_item(const uint8_t*, const int, bytes&);
+    void rlp_item(const uint8_t*, const int, bytes&);
 }
 
-inline static unsigned bytesRequired(int _i)
+inline static uint8_t bytesRequired(int _i)
 {
-    unsigned i = 0;
+    uint8_t i = 0;
     for (; _i != 0; ++i, _i >>= 8) {}
     return i;
 }
 
-int rlp_item(const uint8_t* input, const int len, bytes& out){
-    int i, len_len;
+void rlp_item(const uint8_t* input, const int len, bytes& out){
+    int i;
+    size_t len_len;
     if (!input) {
-        printf("Error: input is NULL\n");
-        return -1;
+        throw std::invalid_argument("NULL input");
     }
     if (len == 1 && (*input) < 0x80 ) {
         out.push_back(*input);
-        return 1;
-    } else {
-        if (len < 56) {
-            out.push_back(0x80 + len);
-            for (i = 0; i < len; i++) out.push_back(input[i]);
-        }
-        else {
-            len_len = bytesRequired(len);
-            out.push_back(0xb7 + len_len);
-            if (len_len > 4) {
-                printf("Error: string too long\n");
-                return -1;
-            }
-            for (i=len_len-1; i >=0; i--) out.push_back( (uint8_t)(len >> (8*i)) & 0xFF);
-            for (i = 0; i < len; i++) out.push_back(input[i]);
-        }
-        return 0;
+        return;
+    }
+    // longer than 1
+    if (len < 56) {
+        out.push_back(0x80 + static_cast<uint8_t>(len));
+        for (i = 0; i < len; i++) out.push_back(input[i]);
+    }
+    else {
+        len_len = bytesRequired(len);
+        if (len_len > 8) {throw std::invalid_argument("Error: len_len > 8");}
+        out.push_back(0xb7 + static_cast<uint8_t>(len_len));
+
+        for (i=len_len-1; i >=0; i--) out.push_back( static_cast<uint8_t>((len >> (8*i)) & 0xFF));
+        for (i = 0; i < len; i++) out.push_back(input[i]);
     }
 }
 
-int rlp_item(const bytes32* b, bytes& out) {
-    return rlp_item((const uint8_t*)b->b, b->size, out);
+void rlp_item(const bytes32* b, bytes& out) {
+    rlp_item((const uint8_t*)b->b, b->size, out);
 }
 
-int rlp_item(const bytes20* b, bytes& out) {
-    return rlp_item((const uint8_t*)b->b, b->size, out);
+void rlp_item(const bytes20* b, bytes& out) {
+    rlp_item((const uint8_t*)b->b, b->size, out);
 }
 
-static int char2int(char input)
+static uint8_t char2int(char input)
 {
   if(input >= '0' && input <= '9')
     return input - '0';
@@ -85,16 +81,24 @@ static int char2int(char input)
 
 // This function assumes src to be a zero terminated sanitized string with
 // an even number of [0-9a-f] characters, and target to be sufficiently large
+/*
+    convert a hex string to a byte array
+    [in]  src 
+    [out] target 
+    [out] len: how many bytes get written to the target
+*/
 void fromHex(const char* src, uint8_t* target, unsigned* len)
 {
     *len = 0;
-    if (!strlen(src) % 2) 
-        { printf("Error: input is not of even len\n"); *len=-1;}
+    if ((strlen(src) % 2) != 0) 
+        { LL_CRITICAL("Error: input is not of even len\n"); *len=0;}
     if (strncmp(src, "0x", 2) == 0) src += 2;
     while(*src && src[1])
     {
-        *(target++) = char2int(*src)*16 + char2int(src[1]);
-        src += 2;
+        try { *(target++) = char2int(*src)*16 + char2int(src[1]); } 
+        catch (std::invalid_argument e)
+            { printf("Error: can't convert %s to bytes\n", src); }
+        src += 2; 
         *len = (*len)+1;
     }
     if (*len == 1 && *(target - *len) == 0) *len = 0;
@@ -102,7 +106,7 @@ void fromHex(const char* src, uint8_t* target, unsigned* len)
 
 void fromHex(const char* src, bytes& out)
 {
-    if (!strlen(src) % 2) 
+    if (strlen(src) % 2 != 0) 
         { printf("Error: input is not of even len\n");}
     if (strncmp(src, "0x", 2) == 0) src += 2;
     while(*src && src[1])
@@ -173,7 +177,6 @@ public:
     void rlp_list(bytes& out, bool withSig=true) {
         int i;
         uint8_t len_len, b;
-
         rlp_item(&m_nonce, out);
         rlp_item(&m_gasPrice, out);
         rlp_item(&m_gas, out);
@@ -188,11 +191,11 @@ public:
             rlp_item((const uint8_t*)&v, 1, out);
             rlp_item(&r, out);
             rlp_item(&s, out);
-        }
+        } 
         int len = out.size();
         // list header
         if (len < 56) {
-            out.insert(out.begin(), 0xc0 + len);
+            out.insert(out.begin(), 0xc0 + static_cast<uint8_t>(len));
         }
         else {
             len_len = bytesRequired(len);
@@ -227,9 +230,12 @@ static int inc_nonce_by_one(uint8_t* nonce)
 
     if (nonce)
     {
+#pragma warning (push)
+#pragma warning (disable: 4127)
         MBEDTLS_MPI_CHK (mbedtls_mpi_read_binary(&p, nonce, 32));
         MBEDTLS_MPI_CHK (mbedtls_mpi_add_int(&p, &p, 1));
         MBEDTLS_MPI_CHK (mbedtls_mpi_write_binary(&p, nonce, 32));
+#pragma warning (pop)
     }
     else
     { printf("NULL input\n!"); return -1; }
@@ -288,9 +294,8 @@ public:
 
     int encode_head (bytes& out) const
     {
-        uint64_t tmp = 0;
-        uint8_t* tmp_p8 = NULL;
-        uint64_t tmp_p64 = NULL;
+        uint64_t tmp;
+        uint8_t* tmp_p8;
         switch (this->type)
         {
         case ABI_BYTES:
@@ -300,7 +305,6 @@ public:
             tmp_p8 = (uint8_t*) this->static_p;
             for (int i = 0; i < 32; i++) {out.push_back(tmp_p8[i]);}
             return 0;
-            break;
         case ABI_UINT64:
             tmp = *((uint64_t*) this->static_p);
             return enc_int(out, tmp, this->p_size);
@@ -315,7 +319,6 @@ public:
 
     int encode_tail (bytes& out) const
     {
-        int j = 0;
         if (!this->get_is_dynamic()) { return 0; }
         if (this->type != ABI_BYTES)
         {
@@ -384,10 +387,8 @@ int abi_encode(std::vector<ABI_item>& args, bytes& output)
 int get_raw_signed_tx(uint8_t* nonce, int i_len, uint8_t* serialized_tx, int* o_len)
 {
     if (serialized_tx == nullptr || o_len == nullptr) {printf("Error: get_raw_tx gets NULL input\n"); return -1;}
-    sgx_status_t st;
     bytes out;
     int ret;
-    size_t nonce_len;
     
     assert(i_len == 32);
 
@@ -430,7 +431,8 @@ int get_raw_signed_tx(uint8_t* nonce, int i_len, uint8_t* serialized_tx, int* o_
 
 
     uint8_t func_selector[32];
-    keccak((unsigned const char*) ABI_STR, strlen(ABI_STR), func_selector, 32);
+    ret = keccak((unsigned const char*) ABI_STR, strlen(ABI_STR), func_selector, 32);
+    if (ret) {LL_CRITICAL("SHA3 returned %d\n", ret); return -1;}
 
     for (int i = 0; i < 4; i++) {abi_str[i] = func_selector[i];}
     
@@ -438,13 +440,9 @@ int get_raw_signed_tx(uint8_t* nonce, int i_len, uint8_t* serialized_tx, int* o_
     uint8_t hash[32]; 
 
     if (nonce)
-    {
         memcpy(tx.m_nonce.b, nonce, 32);
-    }
     else
-    {
         memset(tx.m_nonce.b, 0x0, 32);
-    }
 
     set_byte_length(& tx.m_nonce);
     from32(GASPRICE, &tx.m_gasPrice);
@@ -464,20 +462,29 @@ int get_raw_signed_tx(uint8_t* nonce, int i_len, uint8_t* serialized_tx, int* o_
     hexdump("value: ", tx.m_value.b, 32);
     hexdump("data: ", &tx.m_data[0], tx.m_data.size());
 #endif
+    try {
+        tx.rlp_list(out, false);
+    }
+    catch (std::invalid_argument& ex) {
+        LL_CRITICAL("%s\n", ex.what()); return -1;
+    }
 
-    tx.rlp_list(out, false);
 
     ret = keccak(&out[0], out.size(), hash, 32);
+    if (ret != 0)
+    {
+        LL_CRITICAL("keccak returned %d", ret); return -1;
+    }
     ret = sign(hash, 32, tx.r.b, tx.s.b, &tx.v);
 
-    if (ret != 0) {printf("Error: signing returned %d\n", ret); return ret;}
+    if (ret != 0) { LL_CRITICAL("Error: signing returned %d\n", ret); return ret;}
     else {tx.r.size = 32; tx.s.size = 32;}
 
     out.clear();
 
     tx.rlp_list(out, true);
 
-    if (out.size() > 2048) {printf("Error buffer size (%d) is too small.\n", *o_len); return -1;}
+    if (out.size() > 2048) { LL_CRITICAL("Error buffer size (%d) is too small.\n", *o_len); return -1;}
 
 #ifdef VERBOSE
     hexdump("RLP:", &out[0], out.size());

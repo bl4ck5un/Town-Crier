@@ -4,9 +4,9 @@ typedef struct ms_ecall_self_test_t {
 	int ms_retval;
 } ms_ecall_self_test_t;
 
-typedef struct ms_test_yahoo_finance_t {
+typedef struct ms_scraper_dispatch_t {
 	int ms_retval;
-} ms_test_yahoo_finance_t;
+} ms_scraper_dispatch_t;
 
 typedef struct ms_ecall_create_report_t {
 	sgx_status_t ms_retval;
@@ -181,10 +181,10 @@ sgx_status_t ecall_self_test(sgx_enclave_id_t eid, int* retval)
 	return status;
 }
 
-sgx_status_t test_yahoo_finance(sgx_enclave_id_t eid, int* retval)
+sgx_status_t scraper_dispatch(sgx_enclave_id_t eid, int* retval)
 {
 	sgx_status_t status;
-	ms_test_yahoo_finance_t ms;
+	ms_scraper_dispatch_t ms;
 	status = sgx_ecall(eid, 1, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;

@@ -8,14 +8,15 @@
 #include "EthRPC.h"
 
 #include "WinBase.h"
+#include "Log.h"
 
 
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
 
-#define RPC_TEST
+//#define RPC_TEST
 //#define ECDSA_TEST
-//#define SCRAPER_TEST
+#define SCRAPER_TEST
 //#define REMOTE_ATT_TEST
 
 
@@ -54,7 +55,6 @@ int main()
     uint8_t nonce[32];
 
     memset(nonce, 0, 32);
-    nonce[31] = 6;
 
 #if defined(_MSC_VER)
     if (query_sgx_status() < 0) {
@@ -104,16 +104,18 @@ int main()
 #endif
  
 #if defined(SCRAPER_TEST)
-    test_yahoo_finance(global_eid, &ret);
+    scraper_dispatch(global_eid, &ret);
     if (ret != 0) {
-        printf("test_yahoo_finance returned %d\n", ret);
+        LL_CRITICAL("test_yahoo_finance returned %d", ret);
+        goto exit;
     }
+    LL_NOTICE("test\n");
 #endif
 
 #if defined(ECDSA_TEST)
     test_ecdsa(global_eid, &ret);
     if (ret != 0) {
-        printf("test_yahoo_finance returned %d\n", ret);
+        printf("test_ecdsa returned %d", ret);
     }
 #endif
 

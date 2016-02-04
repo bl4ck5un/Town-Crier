@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "Scraper_lib.h"
+#include "dispatcher.h"
 
 struct str {
     char *ptr;
@@ -118,41 +119,32 @@ int parse_response(unsigned char* resp, char** buf) {
 }
 
 int yahoo_finance(int argc, char* argv[]) {
-    /***** VARIABLE DECLARATIONS */
-    int ret = 0;
+    int ret;
     unsigned char buf[SSL_MAX_CONTENT_LEN]={0};
     char* query = NULL;
     char* output = NULL;
 
-    /***** CONSTRUCT THE QUERY */
     ret = construct_query(argc, argv, &query);
     if (ret < 0) {
         return -1;
     }
-    //printf("%s\n", query);
 
-    /***** EXECUTE THE QUERY */
     ret = get_page_on_ssl("ichart.yahoo.com", query, buf, SSL_MAX_CONTENT_LEN); 
     if (ret != 0){
         printf("get_page_on_ssl returned %d\n", ret);
         return ret;
     }
 
-    //buf[ret] = 0;
-    //printf("%s\n", buf);
-    
-    /***** PARSE THE RESPONSE */
     ret = parse_response(buf, &output);
     if (ret < 0)
         return -1;
 
-    /***** OUTPUT */
     printf("closing: %s\n", output);
 
     return 0;
 }
 
-int test_yahoo_finance ()
+int yahoo_finance_scraper ()
 {
     char* params[] = {
         "placeholder, delete me later",

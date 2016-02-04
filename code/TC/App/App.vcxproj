@@ -125,7 +125,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\win32-deps\include;$(SolutionDir)\jsonrpc-cpp-0.5\include;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)\include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Enclave;$(SolutionDir)\win32-deps\include;$(SolutionDir)\jsonrpc-cpp-0.5\include;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)\include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <TreatWarningAsError>false</TreatWarningAsError>
@@ -267,6 +267,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\Enclave\Log.c" />
     <ClCompile Include="..\jsonrpc-cpp-0.5\examples\tcp-client.cpp" />
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_client.cpp" />
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_handler.cpp" />
@@ -306,6 +307,7 @@
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Enclave\Log.h" />
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc.h" />
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_client.h" />
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_common.h" />

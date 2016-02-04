@@ -63,7 +63,7 @@ void dump_buf(const char* title, void const * data, unsigned int len)
     
     for (r=0,i=0; r<(len/16+(len%16!=0)); r++,i+=16)
     {
-        printf("%#4X:   ",i); /* location of first byte in line */
+        printf("0x%04X:   ",i); /* location of first byte in line */
 	
         for (c=i; c<i+8; c++) /* left half of hex dump */
 	    if (c<len)

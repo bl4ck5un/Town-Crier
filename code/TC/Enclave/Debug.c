@@ -2,13 +2,7 @@
 
 void dump_buf( const char *title, unsigned char *buf, size_t len )
 {
-    size_t i;
-
-    mbedtls_printf( "%s", title );
-    for( i = 0; i < len; i++ )
-        mbedtls_printf("%c%c", "0123456789ABCDEF" [buf[i] / 16],
-                       "0123456789ABCDEF" [buf[i] % 16] );
-    mbedtls_printf( "\n" );
+    hexdump(title, buf, len);
 }
 
 void dump_pubkey( const char *title, mbedtls_ecdsa_context *key )
@@ -16,7 +10,6 @@ void dump_pubkey( const char *title, mbedtls_ecdsa_context *key )
     // each point on our curve is 256 bit (32 Bytes)
     // two points plus the leading 0x04 byte
     unsigned char buf[2*32 + 1];
-    unsigned char addr[32];
     size_t len;
 
     if( mbedtls_ecp_point_write_binary( &key->grp, &key->Q,
@@ -78,7 +71,7 @@ void hexdump(const char* title, void const * data, unsigned int len)
     
     for (r=0,i=0; r<(len/16+(len%16!=0)); r++,i+=16)
     {
-        printf("%#4X:   ",i); /* location of first byte in line */
+        printf("0x%04X:   ",i); /* location of first byte in line */
 	
         for (c=i; c<i+8; c++) /* left half of hex dump */
 	    if (c<len)

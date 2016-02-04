@@ -30,9 +30,9 @@ typedef struct ms_ecall_self_test_t {
 	int ms_retval;
 } ms_ecall_self_test_t;
 
-typedef struct ms_test_yahoo_finance_t {
+typedef struct ms_scraper_dispatch_t {
 	int ms_retval;
-} ms_test_yahoo_finance_t;
+} ms_scraper_dispatch_t;
 
 typedef struct ms_ecall_create_report_t {
 	sgx_status_t ms_retval;
@@ -128,14 +128,14 @@ static sgx_status_t SGX_CDECL sgx_ecall_self_test(void* pms)
 	return status;
 }
 
-static sgx_status_t SGX_CDECL sgx_test_yahoo_finance(void* pms)
+static sgx_status_t SGX_CDECL sgx_scraper_dispatch(void* pms)
 {
-	ms_test_yahoo_finance_t* ms = SGX_CAST(ms_test_yahoo_finance_t*, pms);
+	ms_scraper_dispatch_t* ms = SGX_CAST(ms_scraper_dispatch_t*, pms);
 	sgx_status_t status = SGX_SUCCESS;
 
-	CHECK_REF_POINTER(pms, sizeof(ms_test_yahoo_finance_t));
+	CHECK_REF_POINTER(pms, sizeof(ms_scraper_dispatch_t));
 
-	ms->ms_retval = test_yahoo_finance();
+	ms->ms_retval = scraper_dispatch();
 
 
 	return status;
@@ -254,7 +254,7 @@ SGX_EXTERNC const struct {
 	4,
 	{
 		{(void*)(uintptr_t)sgx_ecall_self_test, 0},
-		{(void*)(uintptr_t)sgx_test_yahoo_finance, 0},
+		{(void*)(uintptr_t)sgx_scraper_dispatch, 0},
 		{(void*)(uintptr_t)sgx_ecall_create_report, 0},
 		{(void*)(uintptr_t)sgx_get_raw_signed_tx, 0},
 	}

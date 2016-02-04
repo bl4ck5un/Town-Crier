@@ -16,6 +16,12 @@
     <Filter Include="Generated Files">
       <UniqueIdentifier>{416edd81-83d3-442a-ae6f-e2f869c1d9f0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\helper">
+      <UniqueIdentifier>{97a0dbb1-8d64-4cb5-946d-aed8308cdf5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\scrapers">
+      <UniqueIdentifier>{48358b76-98fb-4bf6-8bc9-f69ad12a14d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Enclave.edl">
@@ -27,12 +33,6 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="RootCerts.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Scraper_lib.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Scraper.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\mbedtls-2.2.1\programs\test\mbedTLS_selftest.c">
@@ -53,11 +53,23 @@
     <ClCompile Include="Transaction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Debug.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Log.c">
+      <Filter>Source Files\helper</Filter>
     </ClCompile>
-    <ClCompile Include="seal.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="Debug.c">
+      <Filter>Source Files\helper</Filter>
+    </ClCompile>
+    <ClCompile Include="Scraper_lib.c">
+      <Filter>Source Files\scrapers</Filter>
+    </ClCompile>
+    <ClCompile Include="YahooF.c">
+      <Filter>Source Files\scrapers</Filter>
+    </ClCompile>
+    <ClCompile Include="Flight.cpp">
+      <Filter>Source Files\scrapers</Filter>
+    </ClCompile>
+    <ClCompile Include="dispatcher.cpp">
+      <Filter>Source Files\scrapers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -80,9 +92,6 @@
     <ClInclude Include="Enclave.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Scraper_lib.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="keccak.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -92,14 +101,20 @@
     <ClInclude Include="ECDSA.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Debug.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="seal.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Transaction.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>Source Files\helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Debug.h">
+      <Filter>Source Files\helper</Filter>
+    </ClInclude>
+    <ClInclude Include="Scraper_lib.h">
+      <Filter>Source Files\scrapers</Filter>
+    </ClInclude>
+    <ClInclude Include="dispatcher.h">
+      <Filter>Source Files\scrapers</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

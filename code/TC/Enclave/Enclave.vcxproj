@@ -411,7 +411,9 @@
   <ItemGroup>
     <ClCompile Include="..\mbedtls-2.2.1\programs\test\mbedTLS_selftest.c" />
     <ClCompile Include="Debug.c" />
-    <ClCompile Include="seal.c" />
+    <ClCompile Include="dispatcher.cpp" />
+    <ClCompile Include="Flight.cpp" />
+    <ClCompile Include="Log.c" />
     <ClCompile Include="SSLClient.c" />
     <ClCompile Include="ECDAS.c" />
     <ClCompile Include="keccak.c" />
@@ -419,12 +421,13 @@
     <ClCompile Include="Scraper_lib.c" />
     <ClCompile Include="RootCerts.c" />
     <ClCompile Include="Enclave_t.c" />
-    <ClCompile Include="Scraper.c" />
+    <ClCompile Include="YahooF.c" />
     <ClCompile Include="Transaction.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Debug.h" />
-    <ClInclude Include="seal.h" />
+    <ClInclude Include="dispatcher.h" />
+    <ClInclude Include="Log.h" />
     <ClInclude Include="SSLClient.h" />
     <ClInclude Include="ECDSA.h" />
     <ClInclude Include="Enclave.h" />

@@ -20,6 +20,8 @@
  */
 
 #include "SSLClient.h"
+#include "Log.h"
+#include "Debug.h"
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"
@@ -491,24 +493,22 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
     /*
      * 0. Initialize the RNG and the session data
      */
-    mbedtls_printf( "\n  . Seeding the random number generator..." );
+    LL_NOTICE("Seeding the random number generator..." );
 
     mbedtls_entropy_init( &entropy );
     if( ( ret = mbedtls_ctr_drbg_seed( &ctr_drbg, mbedtls_entropy_func, &entropy,
                                (const unsigned char *) pers,
                                strlen( pers ) ) ) != 0 )
     {
-        mbedtls_printf( " failed\n  ! mbedtls_ctr_drbg_seed returned -0x%x\n", -ret );
+        LL_CRITICAL(" mbedtls_ctr_drbg_seed returned -%#x", -ret);
         goto exit;
     }
-
-    mbedtls_printf( " ok\n" );
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
     /*
      * 1.1. Load the trusted CA
      */
-    mbedtls_printf( "  . Loading the CA root certificate ..." );
+    LL_NOTICE( "Loading the CA root certificate");
 
 #if defined(MBEDTLS_FS_IO)
     if( strlen( opt.ca_path ) )
@@ -542,18 +542,17 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
 #endif
     if( ret < 0 )
     {
-        mbedtls_printf( " failed\n  !  mbedtls_x509_crt_parse returned -0x%x\n\n", -ret );
+        LL_CRITICAL("  mbedtls_x509_crt_parse returned -%#x", -ret);
         goto exit;
     }
 
-    mbedtls_printf( " ok (%d skipped)\n", ret );
+    LL_NOTICE("ok (%d skipped)", ret);
 
     if( ret != 0 )
     {
-        mbedtls_printf( " failed\n  !  mbedtls_pk_parse_key returned -0x%x\n\n", -ret );
+        LL_CRITICAL("  mbedtls_pk_parse_key returned -%#x", -ret );
         goto exit;
     }
-
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
     /*
@@ -562,7 +561,7 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
     if( opt.server_addr == NULL)
         opt.server_addr = opt.server_name;
 
-    mbedtls_printf( "  . Connecting to %s/%s/%s...",
+    LL_NOTICE("Connecting to %s/%s/%s...",
             opt.transport == MBEDTLS_SSL_TRANSPORT_STREAM ? "tcp" : "udp",
             opt.server_addr, opt.server_port );
 
@@ -570,7 +569,7 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
                              opt.transport == MBEDTLS_SSL_TRANSPORT_STREAM ?
                              MBEDTLS_NET_PROTO_TCP : MBEDTLS_NET_PROTO_UDP ) ) != 0 )
     {
-        mbedtls_printf( " failed\n  ! mbedtls_net_connect returned -0x%x\n\n", -ret );
+        LL_CRITICAL( " mbedtls_net_connect returned -%#x", -ret );
         goto exit;
     }
 
@@ -580,23 +579,21 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
         ret = mbedtls_net_set_block( &server_fd );
     if( ret != 0 )
     {
-        mbedtls_printf( " failed\n  ! net_set_(non)block() returned -0x%x\n\n", -ret );
+        LL_CRITICAL( " net_set_(non)block() returned -%#x", -ret );
         goto exit;
     }
-
-    mbedtls_printf( " ok\n" );
 
     /*
      * 3. Setup stuff
      */
-    mbedtls_printf( "  . Setting up the SSL/TLS structure..." );
+    LL_NOTICE( "Setting up the SSL/TLS structure..." );
 
     if( ( ret = mbedtls_ssl_config_defaults( &conf,
                     MBEDTLS_SSL_IS_CLIENT,
                     opt.transport,
                     MBEDTLS_SSL_PRESET_DEFAULT ) ) != 0 )
     {
-        mbedtls_printf( " failed\n  ! mbedtls_ssl_config_defaults returned -0x%x\n\n", -ret );
+        LL_CRITICAL( "mbedtls_ssl_config_defaults returned -%#x", -ret );
         goto exit;
     }
 
@@ -616,7 +613,7 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
 #if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
     if( ( ret = mbedtls_ssl_conf_max_frag_len( &conf, opt.mfl_code ) ) != 0 )
     {
-        mbedtls_printf( " failed\n  ! mbedtls_ssl_conf_max_frag_len returned %d\n\n", ret );
+        mbedtls_printf( "  mbedtls_ssl_conf_max_frag_len returned %d\n\n", ret );
         goto exit;
     }
 #endif
@@ -652,7 +649,7 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
     if( opt.alpn_string != NULL )
         if( ( ret = mbedtls_ssl_conf_alpn_protocols( &conf, alpn_list ) ) != 0 )
         {
-            mbedtls_printf( " failed\n  ! mbedtls_ssl_conf_alpn_protocols returned %d\n\n", ret );
+            mbedtls_printf( "  mbedtls_ssl_conf_alpn_protocols returned %d\n\n", ret );
             goto exit;
         }
 #endif
@@ -691,7 +688,7 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
     {
         if( ( ret = mbedtls_ssl_conf_own_cert( &conf, &clicert, &pkey ) ) != 0 )
         {
-            mbedtls_printf( " failed\n  ! mbedtls_ssl_conf_own_cert returned %d\n\n", ret );
+            mbedtls_printf( "  mbedtls_ssl_conf_own_cert returned %d\n\n", ret );
             goto exit;
         }
     }
@@ -702,7 +699,7 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
                              (const unsigned char *) opt.psk_identity,
                              strlen( opt.psk_identity ) ) ) != 0 )
     {
-        mbedtls_printf( " failed\n  ! mbedtls_ssl_conf_psk returned %d\n\n", ret );
+        mbedtls_printf( "  mbedtls_ssl_conf_psk returned %d\n\n", ret );
         goto exit;
     }
 #endif
@@ -720,14 +717,14 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
 
     if( ( ret = mbedtls_ssl_setup( &ssl, &conf ) ) != 0 )
     {
-        mbedtls_printf( " failed\n  ! mbedtls_ssl_setup returned -0x%x\n\n", -ret );
+        LL_CRITICAL("mbedtls_ssl_setup returned -%#x", -ret );
         goto exit;
     }
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
     if( ( ret = mbedtls_ssl_set_hostname( &ssl, opt.server_name ) ) != 0 )
     {
-        mbedtls_printf( " failed\n  ! mbedtls_ssl_set_hostname returned %d\n\n", ret );
+        LL_CRITICAL("mbedtls_ssl_set_hostname returned %d\n\n", ret );
         goto exit;
     }
 #endif
@@ -739,7 +736,7 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
                         (const unsigned char *) opt.ecjpake_pw,
                                         strlen( opt.ecjpake_pw ) ) ) != 0 )
         {
-            mbedtls_printf( " failed\n  ! mbedtls_ssl_set_hs_ecjpake_password returned %d\n\n", ret );
+            mbedtls_printf( "  mbedtls_ssl_set_hs_ecjpake_password returned %d\n\n", ret );
             goto exit;
         }
     }
@@ -756,41 +753,38 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
                                             mbedtls_timing_get_delay );
 #endif
 
-    mbedtls_printf( " ok\n" );
-
     /*
      * 4. Handshake
      */
-    mbedtls_printf( "  . Performing the SSL/TLS handshake..." );
+    LL_NOTICE( "Performing the SSL/TLS handshake" );
 
     while( ( ret = mbedtls_ssl_handshake( &ssl ) ) != 0 )
     {
         if( ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE )
         {
-            mbedtls_printf( " failed\n  ! mbedtls_ssl_handshake returned -0x%x\n", -ret );
+            LL_CRITICAL( "mbedtls_ssl_handshake returned -%#x", -ret );
             if( ret == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED )
-                mbedtls_printf(
+                LL_CRITICAL(
                     "    Unable to verify the server's certificate. "
-                        "Either it is invalid,\n"
+                        "Either it is invalid,"
                     "    or you didn't set ca_file or ca_path "
-                        "to an appropriate value.\n"
+                        "to an appropriate value."
                     "    Alternatively, you may want to use "
-                        "auth_mode=optional for testing purposes.\n" );
-            mbedtls_printf( "\n" );
+                        "auth_mode=optional for testing purposes." );
             goto exit;
         }
     }
 
-    mbedtls_printf( " ok\n    [ Protocol is %s ]\n    [ Ciphersuite is %s ]\n",
+    LL_NOTICE( "ok! [ Protocol is %s ]  [ Ciphersuite is %s ]",
             mbedtls_ssl_get_version( &ssl ), mbedtls_ssl_get_ciphersuite( &ssl ) );
 
     if( ( ret = mbedtls_ssl_get_record_expansion( &ssl ) ) >= 0 )
-        mbedtls_printf( "    [ Record expansion is %d ]\n", ret );
+        LL_NOTICE( "[ Record expansion is %d ]", ret );
     else
-        mbedtls_printf( "    [ Record expansion is unknown (compression) ]\n" );
+        LL_NOTICE( "[ Record expansion is unknown (compression) ]" );
 
 #if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
-    mbedtls_printf( "    [ Maximum fragment length is %u ]\n",
+    LL_NOTICE( "[ Maximum fragment length is %u ]",
                     (unsigned int) mbedtls_ssl_get_max_frag_len( &ssl ) );
 #endif
 
@@ -805,22 +799,22 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
 
     if( opt.reconnect != 0 )
     {
-        mbedtls_printf("  . Saving session for reuse..." );
+        LL_NOTICE("  . Saving session for reuse..." );
 
         if( ( ret = mbedtls_ssl_get_session( &ssl, &saved_session ) ) != 0 )
         {
-            mbedtls_printf( " failed\n  ! mbedtls_ssl_get_session returned -0x%x\n\n", -ret );
+            LL_NOTICE("mbedtls_ssl_get_session returned -%#x", -ret );
             goto exit;
         }
 
-        mbedtls_printf( " ok\n" );
+        LL_NOTICE("ok");
     }
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
     /*
      * 5. Verify the server certificate
      */
-    mbedtls_printf( "  . Verifying peer X.509 certificate..." );
+    LL_NOTICE( "Verifying peer X.509 certificate..." );
 
     if( ( flags = mbedtls_ssl_get_verify_result( &ssl ) ) != 0 )
     {
@@ -833,14 +827,14 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
         mbedtls_printf( "%s\n", vrfy_buf );
     }
     else
-        mbedtls_printf( " ok\n" );
+        LL_NOTICE("ok");
 
     if( mbedtls_ssl_get_peer_cert( &ssl ) != NULL )
     {
-        mbedtls_printf( "  . Peer certificate information    ...\n" );
-        mbedtls_x509_crt_info( (char *) buf, sizeof( buf ) - 1, "      ",
+        LL_NOTICE( "Peer certificate information");
+        mbedtls_x509_crt_info( (char *) buf, sizeof( buf ) - 1, " - ",
                        mbedtls_ssl_get_peer_cert( &ssl ) );
-        mbedtls_printf( "%s\n", buf );
+        mbedtls_printf("%s\n", buf);
     }
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
@@ -857,7 +851,7 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
             if( ret != MBEDTLS_ERR_SSL_WANT_READ &&
                 ret != MBEDTLS_ERR_SSL_WANT_WRITE )
             {
-                mbedtls_printf( " failed\n  ! mbedtls_ssl_renegotiate returned %d\n\n", ret );
+                mbedtls_printf( "  mbedtls_ssl_renegotiate returned %d\n\n", ret );
                 goto exit;
             }
         }
@@ -869,8 +863,10 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
      * 6. Write the GET request
      */
     retry_left = opt.max_resend;
+
+
 send_request:
-    mbedtls_printf( "  > Write to server:" );
+    LL_NOTICE( ">>>>>>>>>>>>>>>>" );
 
     len = mbedtls_snprintf( (char *) buf, sizeof(buf) - 1, GET_REQUEST,
                     opt.request_page );
@@ -908,7 +904,7 @@ send_request:
                 if( ret != MBEDTLS_ERR_SSL_WANT_READ &&
                     ret != MBEDTLS_ERR_SSL_WANT_WRITE )
                 {
-                    mbedtls_printf( " failed\n  ! mbedtls_ssl_write returned -0x%x\n\n", -ret );
+                    mbedtls_printf( "  mbedtls_ssl_write returned -%#x", -ret );
                     goto exit;
                 }
             }
@@ -922,7 +918,7 @@ send_request:
 
         if( ret < 0 )
         {
-            mbedtls_printf( " failed\n  ! mbedtls_ssl_write returned %d\n\n", ret );
+            mbedtls_printf( "  mbedtls_ssl_write returned %d\n\n", ret );
             goto exit;
         }
 
@@ -931,12 +927,13 @@ send_request:
     }
 
     buf[written] = '\0';
-    mbedtls_printf( " %d bytes written in %d fragments\n\n%s\n", written, frags, (char *) buf );
+    LL_NOTICE("%d bytes written in %d fragments", written, frags);
+    hexdump("Bytes written:", buf, written);
 
     /*
      * 7. Read the HTTP response
      */
-    mbedtls_printf( "  < Read from server:" );
+    LL_NOTICE("<<<<<<<<<<<<<<<<");
 
     /*
      * TLS and DTLS need different reading styles (stream vs datagram)
@@ -976,7 +973,8 @@ send_request:
 
             len = ret;
             output[len] = '\0';
-            mbedtls_printf( " %d bytes read\n\n%s", len, (char *) output );
+            LL_NOTICE( "%d bytes read", len, (char *) output );
+            hexdump("REPONSE:", output, len);
 
             /* End of message should be detected according to the syntax of the
              * application protocol (eg HTTP), just use a dummy test here. */
@@ -986,7 +984,9 @@ send_request:
                 break;
             }
         }
+#pragma warning (disable: 4127)
         while( 1 );
+#pragma warning (default: 4127)
     }
     else /* Not stream, so datagram */
     {
@@ -1035,7 +1035,7 @@ send_request:
 
         if( ( ret = mbedtls_ssl_session_reset( &ssl ) ) != 0 )
         {
-            mbedtls_printf( " failed\n  ! mbedtls_ssl_session_reset returned -0x%x\n\n", -ret );
+            mbedtls_printf( "  mbedtls_ssl_session_reset returned -%#x", -ret );
             goto exit;
         }
 
@@ -1044,7 +1044,7 @@ send_request:
             if( ret != MBEDTLS_ERR_SSL_WANT_READ &&
                 ret != MBEDTLS_ERR_SSL_WANT_WRITE )
             {
-                mbedtls_printf( " failed\n  ! mbedtls_ssl_handshake returned -0x%x\n\n", -ret );
+                mbedtls_printf( "  mbedtls_ssl_handshake returned -%#x", -ret );
                 goto exit;
             }
         }
@@ -1092,13 +1092,13 @@ reconnect:
 
         if( ( ret = mbedtls_ssl_session_reset( &ssl ) ) != 0 )
         {
-            mbedtls_printf( " failed\n  ! mbedtls_ssl_session_reset returned -0x%x\n\n", -ret );
+            mbedtls_printf( "  mbedtls_ssl_session_reset returned -%#x", -ret );
             goto exit;
         }
 
         if( ( ret = mbedtls_ssl_set_session( &ssl, &saved_session ) ) != 0 )
         {
-            mbedtls_printf( " failed\n  ! mbedtls_ssl_conf_session returned %d\n\n", ret );
+            mbedtls_printf( "  mbedtls_ssl_conf_session returned %d\n\n", ret );
             goto exit;
         }
 
@@ -1106,7 +1106,7 @@ reconnect:
                                  opt.transport == MBEDTLS_SSL_TRANSPORT_STREAM ?
                                  MBEDTLS_NET_PROTO_TCP : MBEDTLS_NET_PROTO_UDP ) ) != 0 )
         {
-            mbedtls_printf( " failed\n  ! mbedtls_net_connect returned -0x%x\n\n", -ret );
+            mbedtls_printf( "  mbedtls_net_connect returned -%#x", -ret );
             goto exit;
         }
 
@@ -1116,7 +1116,7 @@ reconnect:
             ret = mbedtls_net_set_block( &server_fd );
         if( ret != 0 )
         {
-            mbedtls_printf( " failed\n  ! net_set_(non)block() returned -0x%x\n\n",
+            mbedtls_printf( "  net_set_(non)block() returned -%#x",
                     -ret );
             goto exit;
         }
@@ -1126,7 +1126,7 @@ reconnect:
             if( ret != MBEDTLS_ERR_SSL_WANT_READ &&
                 ret != MBEDTLS_ERR_SSL_WANT_WRITE )
             {
-                mbedtls_printf( " failed\n  ! mbedtls_ssl_handshake returned -0x%x\n\n", -ret );
+                mbedtls_printf( "  mbedtls_ssl_handshake returned -%#x", -ret );
                 goto exit;
             }
         }
