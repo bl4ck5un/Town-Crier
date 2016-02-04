@@ -47,8 +47,8 @@
 #define DFL_EXTENDED_MS         -1
 #define DFL_ETM                 -1
 
-#define GET_REQUEST "GET %s"
-#define GET_REQUEST_END "\r\n\r\n"
+#define GET_REQUEST "GET %s\r\n"
+#define GET_REQUEST_END "\r\n"
 
 typedef struct options
 {
@@ -96,6 +96,6 @@ typedef struct options
 } client_opt_t;
 
 
-int ssl_client(client_opt_t opt, unsigned char* buf, int len);
+int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* buf, int len);
 
 #endif

@@ -2,19 +2,30 @@
 #include "Log.h"
 #include "tstdio.h"
 
+#define FLIGHT
+
 int scraper_dispatch()
 {
     int ret;
-
-    ret = flight_scraper();
+    int test;
+#ifdef FLIGHT
+    ret = get_flight_delay("20160129", "1450", "DAL900", &test);
     if (ret != 0)
     {
         LL_CRITICAL("yahoo_finance returned non-zero");
     }
+    else
+    {
+        LL_NOTICE("Delay is %d", test);
+    }
+#endif
+
+#ifdef YAHOO
     ret = yahoo_finance_scraper();
     if (ret != 0)
     {
         LL_CRITICAL("yahoo_finance returned non-zero");
     }
+#endif
     return ret;
 }

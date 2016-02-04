@@ -129,7 +129,7 @@ int yahoo_finance(int argc, char* argv[]) {
         return -1;
     }
 
-    ret = get_page_on_ssl("ichart.yahoo.com", query, buf, SSL_MAX_CONTENT_LEN); 
+    ret = get_page_on_ssl("ichart.yahoo.com", query, NULL, 0, buf, SSL_MAX_CONTENT_LEN); 
     if (ret != 0){
         printf("get_page_on_ssl returned %d\n", ret);
         return ret;
