@@ -7,7 +7,7 @@
 
 #include "dispatcher.h"
 
-int utime(const char* ds, const char* ts) {
+static int utime(const char* ds, const char* ts) {
     char year[5], month[3], day[3], hour[3], minute[3];
     int y, mo, d, h, mi, temp;
     int mdays[12] = {31,28,31,30,31,30,31,31,30,31,30,31};
@@ -47,65 +47,44 @@ int utime(const char* ds, const char* ts) {
     return temp;
 }
 
-/*int main(int argc, char* argv[]) {
-    const char* ds = "20160122";
-    const char* ts = "1045";
-    int rc;
-    rc = utime(ds, ts);
-    printf("Utime: %d\n", rc);
-
-    return 0;
-}*/
-
-int construct_query(char* flight, char* query) {
+int construct_query(char* flight, char** buf) {
     int len;
+    char query[1000];
+    
     query[0] = 0;
-    strcat(query, "https://cromak4:2c3b86b8c77eea0c24ff088a2f56da2b98d40547@");
-    strcat(query, "flightxml.flightaware.com/json/FlightXML2/FlightInfoEx?ident=");
+    // a full test URL
+    // http://cromak4:2c3b86b8c77eea0c24ff088a2f56da2b98d40547@flightxml.flightaware.com/json/FlightXML2/FlightInfoEx?ident=DAL900&howMany=30&offset=0
+//    strcat(query, "https://cromak4:2c3b86b8c77eea0c24ff088a2f56da2b98d40547@");
+    strcat(query, "/json/FlightXML2/FlightInfoEx?ident=");
     strcat(query, flight);
-    strcat(query, "&howMany=30&offset=0");
+    strcat(query, "&howMany=30&offset=0 HTTP/1.1");
 
     len = strlen(query);
+    *buf = (char*)malloc(len+1);
+    memcpy(*buf, query, len);
+    (*buf)[len] = 0;
     return len;
 }
 
-int parse_response(char* resp, char** buf, char* argv[]) {
-    if (!argv)
-    {
-        return -1;
-    }
+int parse_response(char* resp, int* buf, char* date, char* departure) {
     int i, t;
     char* temp = resp;
     char* end;
     char* sd;
 
-    char* date = argv[1];
-    char* departure = argv[2];
-
     char tempbuff[100];
-    char tstamp[11];
+    char tstamp[11] = {0};
     /*struct tm t1;*/
     /*time_t t;*/
     char scheduled[11];
     char actual[11];
     int len, tactual, tscheduled, hours, minutes, seconds, diff;
-    char d[9], ret[100];
 
-    tstamp[10] = 0;
-    tempbuff[0] = 0;
-    strcat(tempbuff, date);
-    strcat(tempbuff, departure);
-
-    /*strptime(tempbuff, "%Y%m%d%H%M", &t1);
-    t1.tm_sec = 0;
-    t = mktime(&t1);
-    t = t - (60*60*5);*/
-    /*printf("timestamp: %d\n", (int)t);*/
-
+//    tstamp[11] = 0;
     t = utime(date, departure);
-    snprintf(tstamp, 2, "%d", t);
+    snprintf(tstamp, 11, "%d", t);
 
-    strncpy(tempbuff, "filed_departuretime\":\0", 100);
+    strncpy(tempbuff, "filed_departuretime\":\0", 22);
     strcat(tempbuff, tstamp);
     len = strlen(resp);
     while(strncmp(temp, tempbuff, 31) != 0) {
@@ -155,56 +134,78 @@ int parse_response(char* resp, char** buf, char* argv[]) {
     tscheduled = t + (hours*60*60) + (minutes*60) + seconds;
 
     diff = (tactual - tscheduled)/60;
-    snprintf(d, 2, "%d", diff);
 
-    ret[0] = 0;
-    /*strcat(ret, "Scheduled: ");
-    //strcat(ret, scheduled);
-    //strcat(ret, " Actual: ");
-    //strcat(ret, actual);*/
-    strcat(ret, "Diff: ");
-    strcat(ret, d);
-
-
-    len = strlen(ret);
-    *buf = static_cast<char*>(malloc(len+1));
-    memcpy(*buf, ret, len);
-    (*buf)[len] = 0;
+    *buf = diff;
     return len;
 }
 
-int flight_scraper() {
+/* 
+    date:   YYYYMMDD
+    time:   HHmm
+    flight: ICAO flight numbers
+    resp:   set to the number of minutes late/early
+
+    return: 0 if OK, -1 if no data found or flight still enroute
+
+    date and time in Zulu/UTC
+*/
+#define AUTH_CODE "Authorization: Basic Y3JvbWFrNDoyYzNiODZiOGM3N2VlYTBjMjRmZjA4OGEyZjU2ZGEyYjk4ZDQwNTQ3"
+#define HOST "Host: flightxml.flightaware.com"
+/*
+    A few notes on integration
+    - username & password should be passed as an Authorization header field, with Base64(user:password) 
+      as its content. 
+    - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
+*/
+int get_flight_delay(char* date, char* time, char* flight, int* resp) {
     /***** VARIABLE DECLARATIONS */
-    int ret;
+    int ret, delay;
     char buf[16385];
-    char* output = NULL;
-    char query[1024];
+    char* query = NULL;
+    char* headers[] = {AUTH_CODE, HOST};
 
     /***** CONSTRUCT THE QUERY */
-    ret = construct_query("123", query);
+    ret = construct_query(flight, &query);
+    LL_DEBUG("query is %s", query);
     if (ret < 0)
-    {
-        LL_CRITICAL("construct_query returned %d", ret);
         return -1;
-    }
+    /*printf("%s\n", query);*/
 
     /***** EXECUTE THE QUERY */
-    ret = get_page_on_ssl("flightxml.flightaware.com", query, (unsigned char*)buf, 16384);
-    if (ret < 0)
-    {
-        LL_CRITICAL("get_page_on_ssl returned %d", ret);
-        return -1;
-    }
-
+    ret = get_page_on_ssl("flightxml.flightaware.com", query, headers, 2, (unsigned char*)buf, 16384); 
+    free(query);
+    /*printf("%s\n", buf);*/
     /***** PARSE THE RESPONSE */
-    ret = parse_response(buf, &output, NULL);
+    ret = parse_response(buf, &delay, date, time);
     /***** OUTPUT */
-    if (ret < 0)
-    {
-        LL_CRITICAL("no data/bad request");
+    if (ret < 0) {
+        LL_CRITICAL("no data/bad request\n");
         return -1;
     }
-    
-    LL_DEBUG("%s\n", output);
+    else {
+        /*printf("%d\n", delay);*/
+        *resp = delay;
+        return 0;
+    }
+}
+
+#ifdef MAIN
+int main(int argc, char* argv[]) {
+    int rc, delay;
+    printf("USAGE: get_flight_delay(YYYYMMDD, HHmm, flight#, return_variable)\n");
+    printf("\tdate/time in Zulu/UTC, flight in ICAO\n");
+    rc = get_flight_delay("20160129", "1450", "DAL900", &delay);
+    if (rc < 0)
+        printf("Could not find flight info for DAL900 at specified departure time\n");
+    else
+        printf("Delta Airlines flight 900 is %d minutes late on 26 January 2016 (should be 2 minutes late)\n", delay);
+
+
+    rc = get_flight_delay("20160204", "0310", "SWA450", &delay);
+    printf("%d, %d (should be 11)\n", rc, delay);
+    rc = get_flight_delay("20160202", "0650", "UAL1183", &delay);
+    printf("%d, %d (should be -12)\n", rc, delay);
+
     return 0;
 }
+#endif

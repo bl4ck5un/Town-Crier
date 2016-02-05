@@ -21,6 +21,7 @@
 
 #include "SSLClient.h"
 #include "Log.h"
+
 #include "Debug.h"
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -41,13 +42,6 @@
 #if !defined(MBEDTLS_ENTROPY_C) || \
     !defined(MBEDTLS_SSL_TLS_C) || !defined(MBEDTLS_SSL_CLI_C) || \
     !defined(MBEDTLS_NET_C) || !defined(MBEDTLS_CTR_DRBG_C)
-int main( void )
-{
-    mbedtls_printf("MBEDTLS_ENTROPY_C and/or "
-           "MBEDTLS_SSL_TLS_C and/or MBEDTLS_SSL_CLI_C and/or "
-           "MBEDTLS_NET_C and/or MBEDTLS_CTR_DRBG_C and/or not defined.\n");
-    return( 0 );
-}
 #else
 
 #include "Enclave.h"
@@ -239,6 +233,8 @@ int main( void )
  */
 
 
+
+
 static void my_debug( void *ctx, int level,
                       const char *file, int line,
                       const char *str )
@@ -317,7 +313,7 @@ static int my_verify( void *data, mbedtls_x509_crt *crt, int depth, uint32_t *fl
 }
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
-int ssl_client(client_opt_t opt, unsigned char* output, int length)
+int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* output, int length)
 {
     int ret = 0, len, tail_len, i, written, frags, retry_left;
     mbedtls_net_context server_fd;
@@ -490,10 +486,11 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
     }
 #endif /* MBEDTLS_SSL_ALPN */
 
+    // XXX starting here!
     /*
      * 0. Initialize the RNG and the session data
      */
-    LL_NOTICE("Seeding the random number generator..." );
+    LL_LOG("Seeding the random number generator..." );
 
     mbedtls_entropy_init( &entropy );
     if( ( ret = mbedtls_ctr_drbg_seed( &ctr_drbg, mbedtls_entropy_func, &entropy,
@@ -508,7 +505,7 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
     /*
      * 1.1. Load the trusted CA
      */
-    LL_NOTICE( "Loading the CA root certificate");
+    LL_LOG( "Loading the CA root certificate");
 
 #if defined(MBEDTLS_FS_IO)
     if( strlen( opt.ca_path ) )
@@ -545,8 +542,6 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
         LL_CRITICAL("  mbedtls_x509_crt_parse returned -%#x", -ret);
         goto exit;
     }
-
-    LL_NOTICE("ok (%d skipped)", ret);
 
     if( ret != 0 )
     {
@@ -586,7 +581,7 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
     /*
      * 3. Setup stuff
      */
-    LL_NOTICE( "Setting up the SSL/TLS structure..." );
+    LL_LOG( "Setting up the SSL/TLS structure..." );
 
     if( ( ret = mbedtls_ssl_config_defaults( &conf,
                     MBEDTLS_SSL_IS_CLIENT,
@@ -756,7 +751,7 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
     /*
      * 4. Handshake
      */
-    LL_NOTICE( "Performing the SSL/TLS handshake" );
+    LL_LOG( "Performing the SSL/TLS handshake" );
 
     while( ( ret = mbedtls_ssl_handshake( &ssl ) ) != 0 )
     {
@@ -775,16 +770,16 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
         }
     }
 
-    LL_NOTICE( "ok! [ Protocol is %s ]  [ Ciphersuite is %s ]",
+    LL_NOTICE( "Hand shake succeeds: [%s, %s]",
             mbedtls_ssl_get_version( &ssl ), mbedtls_ssl_get_ciphersuite( &ssl ) );
 
     if( ( ret = mbedtls_ssl_get_record_expansion( &ssl ) ) >= 0 )
-        LL_NOTICE( "[ Record expansion is %d ]", ret );
+        LL_DEBUG( "Record expansion is [%d]", ret );
     else
-        LL_NOTICE( "[ Record expansion is unknown (compression) ]" );
+        LL_DEBUG( "Record expansion is [unknown (compression)]" );
 
 #if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
-    LL_NOTICE( "[ Maximum fragment length is %u ]",
+    LL_NOTICE( "Maximum fragment length is [%u]",
                     (unsigned int) mbedtls_ssl_get_max_frag_len( &ssl ) );
 #endif
 
@@ -799,7 +794,7 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
 
     if( opt.reconnect != 0 )
     {
-        LL_NOTICE("  . Saving session for reuse..." );
+        LL_LOG("  . Saving session for reuse..." );
 
         if( ( ret = mbedtls_ssl_get_session( &ssl, &saved_session ) ) != 0 )
         {
@@ -807,14 +802,14 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
             goto exit;
         }
 
-        LL_NOTICE("ok");
+        LL_LOG("ok");
     }
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
     /*
      * 5. Verify the server certificate
      */
-    LL_NOTICE( "Verifying peer X.509 certificate..." );
+    LL_LOG( "Verifying peer X.509 certificate..." );
 
     if( ( flags = mbedtls_ssl_get_verify_result( &ssl ) ) != 0 )
     {
@@ -827,14 +822,17 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
         mbedtls_printf( "%s\n", vrfy_buf );
     }
     else
-        LL_NOTICE("ok");
+        LL_NOTICE("X.509 Verifies");
 
     if( mbedtls_ssl_get_peer_cert( &ssl ) != NULL )
     {
-        LL_NOTICE( "Peer certificate information");
-        mbedtls_x509_crt_info( (char *) buf, sizeof( buf ) - 1, " - ",
-                       mbedtls_ssl_get_peer_cert( &ssl ) );
-        mbedtls_printf("%s\n", buf);
+        if (opt.debug_level > 0)
+        {
+            LL_DEBUG( "Peer certificate information");
+            mbedtls_x509_crt_info( (char *) buf, sizeof( buf ) - 1, "|-", mbedtls_ssl_get_peer_cert( &ssl ) );
+            mbedtls_printf("%s\n", buf);   
+        }
+
     }
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
@@ -864,12 +862,17 @@ int ssl_client(client_opt_t opt, unsigned char* output, int length)
      */
     retry_left = opt.max_resend;
 
-
 send_request:
-    LL_NOTICE( ">>>>>>>>>>>>>>>>" );
-
     len = mbedtls_snprintf( (char *) buf, sizeof(buf) - 1, GET_REQUEST,
                     opt.request_page );
+
+    if (headers && n_header > 0)
+    {
+        for (i = 0; i < n_header; i++)
+        {
+            len += mbedtls_snprintf( (char*)buf + len, sizeof(buf) -1 - len, "%s\r\n", headers[i]);
+        }
+    }
     tail_len = (int) strlen( GET_REQUEST_END );
 
     /* Add padding to GET request to reach opt.request_size in length */
@@ -928,12 +931,12 @@ send_request:
 
     buf[written] = '\0';
     LL_NOTICE("%d bytes written in %d fragments", written, frags);
-    hexdump("Bytes written:", buf, written);
+
+    if (opt.debug_level > 0) hexdump("Bytes written:", buf, written);
 
     /*
      * 7. Read the HTTP response
      */
-    LL_NOTICE("<<<<<<<<<<<<<<<<");
 
     /*
      * TLS and DTLS need different reading styles (stream vs datagram)
@@ -974,7 +977,7 @@ send_request:
             len = ret;
             output[len] = '\0';
             LL_NOTICE( "%d bytes read", len, (char *) output );
-            hexdump("REPONSE:", output, len);
+            if (opt.debug_level> 0) hexdump("REPONSE:", output, len);
 
             /* End of message should be detected according to the syntax of the
              * application protocol (eg HTTP), just use a dummy test here. */
@@ -1064,14 +1067,13 @@ send_request:
      * 8. Done, cleanly close the connection
      */
 close_notify:
-    mbedtls_printf( "  . Closing the connection..." );
 
     /* No error checking, the connection might be closed already */
     do ret = mbedtls_ssl_close_notify( &ssl );
     while( ret == MBEDTLS_ERR_SSL_WANT_WRITE );
     ret = 0;
 
-    mbedtls_printf( " done\n" );
+    LL_NOTICE( "Closed to %s:%s", opt.server_addr, opt.server_port );
 
     /*
      * 9. Reconnect?
@@ -1145,7 +1147,7 @@ exit:
     {
         char error_buf[100];
         mbedtls_strerror( ret, error_buf, 100 );
-        mbedtls_printf("Last error was: -0x%X - %s\n\n", -ret, error_buf );
+        LL_CRITICAL("Last error was: -0x%X - %s\n\n", -ret, error_buf );
     }
 #endif
 

@@ -44,7 +44,7 @@ static void client_opt_init(client_opt_t* opt) {
     opt->etm                 = DFL_ETM;
 }
 
-int get_page_on_ssl(const char* server_name, const char* url, unsigned char* buf, int len)
+int get_page_on_ssl(const char* server_name, const char* url, char* headers[], int n_header, unsigned char* buf, int len)
 {
 
     client_opt_t opt;
@@ -55,5 +55,5 @@ int get_page_on_ssl(const char* server_name, const char* url, unsigned char* buf
     opt.server_port     = "443";
     opt.debug_level     = 0;
 
-    return ssl_client(opt, buf, len);
+    return ssl_client(opt, headers, n_header, buf, len);
 }
