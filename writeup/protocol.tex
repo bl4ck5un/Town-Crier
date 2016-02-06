@@ -224,7 +224,9 @@ that is sufficient for our formalism.
 
 \paragraph{Authenticity.}
 Roughly speaking, authenticity means that 
-an adversary cannot convince   
+an adversary (including a corrupt
+user, a corrupt relay, or the collusion thereof)
+cannot convince   
 the Town Crier blockchain contract 
 $\tcont$ to accept 
 a wrong data feed. 
@@ -241,6 +243,8 @@ Recall that the user must verify
 upfront the attestation $\sigatt$ 
 that vouches 
 for the enclave's public key $\pksgx$.
+
+\elaine{the proof may need to be fixed since the protocol was modified.}
 
 \begin{definition}[Authenticity]
 We say that the Town Crier protocol 
@@ -388,15 +392,60 @@ state reverted to before the function is invoked.
 \paragraph{Town Crier protocol with transaction fees.}
 Our basic Town Crier implements a policy where the requester pays for all gas 
 needed and Town Crier in effect pays nothing.
-The concrete instantition  
-is described in Figure \elaine{refer}. 
-Since $\pksgx$ has to invoke the {\bf Deliver} entry point, it has
+We now describe how this can be realized by modifying
+the fee-free protocol described in Section \elaine{refer}. 
+
+\begin{itemize}[leftmargin=5mm]
+\item
+{\it Initialization.}
+To initialize the system, we assume that Town Crier 
+deposits a fixed amount $\sbrown{\Delta F_{\text{max}}}$ 
+into the wallet account $\pksgx$.
+\item
+{\it Town Crier blockchain contract.}
+Figure \elaine{refer} describes the  
+Town Crier blockchain contract reflecting fees.
+Since Town Crier's account 
+$\pksgx$ has to invoke the {\bf Deliver} entry point, it has
 to advance 
 a gas payment 
 $\sbrown{\Delta F_{\text{deliver}}}$.
 This amount will be entirely refunded through money deposited in the contract 
 by the requester.
+\item
+{\it Town Crier Relay.}
+The Town Crier relay monitors
+the blockchain, and whenever
+the blockchain contract \tcont
+receives a new request $({\sf id}, {\sf params}, {\sf callback}, 
+\sbrown{\Delta F_{\text{request}}}+\smaroon{\$ F_{\text{deliver}}})$,
+it asserts that 
+$\smaroon{\$ F_{\text{deliver}}} > \sbrown{\Delta F_{\text{max}}}$.
+Then, the Town Crier relay passes
+the tuple $({\tt resume}, 
+({\sf id}, {\sf params}, \sbrown{\Delta F_{\text{deliver}}}))$
+as input to the enclave.
 
+The check 
+$\smaroon{\$ F_{\text{deliver}}} > \sbrown{\Delta F_{\text{max}}}$
+ensures that Town Crier's enclave  
+has sufficient funds to advance
+for the {\bf Deliver} phase.
+
+
+\item
+{\it Town Crier enclave.}
+We make the following small modification to the fee-free protocol
+described in Figure \elaine{refer}.
+Instead of signing the tuple $({\sf id}, {\sf params}, {\sf data})$
+at the end of the enclave's execution, the enclave now signs 
+the tuple $({\sf id}, {\sf params}, {\sf data}, 
+\sbrown{\Delta F_{\text{deliver}}})$
+instead, where signing 
+$\sbrown{\Delta F_{\text{deliver}}}$ authorizes a
+gas amount of $\sbrown{\Delta F_{\text{deliver}}}$ to be advanced
+to the contract (which will be refunded later).
+\end{itemize}
 
 \begin{figure}
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
