@@ -420,17 +420,34 @@ the blockchain contract \tcont
 receives a new request $({\sf id}, {\sf params}, {\sf callback}, 
 \sbrown{\Delta F_{\text{request}}}+\smaroon{\$ F_{\text{deliver}}})$,
 it asserts that 
-$\smaroon{\$ F_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{max}}}$.
-Then, the Town Crier relay passes
-the tuple $({\tt resume}, 
-({\sf id}, {\sf params}, \sbrown{\Delta F_{\text{deliver}}}))$
-as input to the enclave.
-
+\[
+\sbrown{\Delta F_{\text{min}}}
+\leq \smaroon{\$ F_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{max}}}
+\]
+where $\sbrown{\Delta F_{\text{max}}}$ is the total amount of money
+in Town Crier's account $\pksgx$, 
+and $\sbrown{\Delta F_{\text{min}}}$
+is the cost of executing the {\bf Deliver} entry point 
+when the user-defined callback is empty.
 The check 
 $\smaroon{\$ F_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{max}}}$
 ensures that Town Crier's enclave  
 has sufficient funds to advance
 for the {\bf Deliver} phase.
+The check 
+$\sbrown{\Delta F_{\text{min}}}
+\leq \smaroon{\$ F_{\text{deliver}}}$
+ensures that 
+the {\bf Deliver} entry point should 
+have sufficient gas to execute everything excluding the user-defined
+callback -- this guarantees that the statement
+where Town Crier gets refunded for the gas is always reached.
+
+
+Finally, the Town Crier relay passes
+the tuple $({\tt resume}, 
+({\sf id}, {\sf params}, \sbrown{\Delta F_{\text{deliver}}}))$
+as input to the enclave.
 
 
 \item
@@ -464,7 +481,7 @@ to the contract (which will be refunded later).
                  & Record $({\sf id}, {\sf callback}, {\sf params}, \smaroon{\$ F_{\text{deliver}}})$\\[-10pt]
     & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{request}}}}$ {gas consumed}}} }\\[-10pt]
     & {\it {\color{gray} {//~all remaining {gas returned to $\pkU$}}} }\\[-10pt]
-    & {\it {\color{gray} {//~$\smaroon{\$ F_{\text{request}}}$} held by contract}} \\
+    & {\it {\color{gray} {//~$\smaroon{\$ F_{\text{deliver}}}$} held by contract}} \\
   {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data}, 
 $\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\pksgx$: \\
                  & Let $({\sf id}, {\sf callback}, {\sf params'}, \smaroon{\$ F'_{\text{deliver}}})$ be the most recently recorded tuple for ${\sf id}$\\
