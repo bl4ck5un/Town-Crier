@@ -219,6 +219,59 @@ that is sufficient for our formalism.
 }
 \end{figure}
 
+\begin{figure}
+\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
+  \hline
+
+  \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont with fees}} \\ [1ex]
+  {\bf Request:} & On recv $({\sf id}, {\sf callback}, {\sf params}, 
+\sbrown{\Delta F_{\text{request}}} + 
+\smaroon{\$F_{\text{deliver}}}  )$ from some user $\pkU$: \\
+%                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
+%                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
+		 %& If $(\smaroon{\$ F_{\text{callback}}} < {\rm min}$ or $\smaroon{\$ F_{\text{callback}}} > {\rm max})$ \\
+%		 & Assert $\smaroon{\$ F_{\text{deliver}}} \in [{\rm min}, {\rm max}]$ \\
+%and $\smaroon{\$ F_{\text{callback}}} > {\rm max})$ \\
+%                 & \hspace*{1em} Return $\smaroon{\$fee}$ to $\pkU$ \\
+                 & Record $({\sf id}, {\sf callback}, {\sf params}, \smaroon{\$ F_{\text{deliver}}})$\\[-10pt]
+    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{request}}}}$ {gas consumed}}} }\\[-10pt]
+    & {\it {\color{gray} {//~all remaining {gas returned to $\pkU$}}} }\\[-10pt]
+    & {\it {\color{gray} {//~$\smaroon{\$ F_{\text{deliver}}}$} held by contract}} \\
+  {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data}, 
+$\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\pksgx$: \\
+                 & Let $({\sf id}, {\sf callback}, {\sf params'}, \smaroon{\$ F'_{\text{deliver}}})$ be the most recently recorded tuple for ${\sf id}$\\
+                 & Assert ${\sf params} = {\sf params}'$\\
+                &   Assert $\smaroon{\$ F'_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{deliver}}}$\\
+                 & Send $\smaroon{\$F'_{\text{deliver}}}$ to $\pksgx$ \\
+                 & Call ${\sf callback}({\sf data})$ \\[-10pt]
+    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
+    & {\it {\color{gray} {//~all remaining {gas returned to $\pksgx$}}} }\\
+
+{\bf Cancel:} & On $T$  \\
+
+  \hline
+\end{tabularx}
+\caption{
+Town Crier contract \tcont reflecting fees.
+$\sbrown{\Delta F_{\text{request}}}$ denotes the gas for executing the {\bf Request} 
+entry point. 
+$\sbrown{\Delta F_{\text{deliver}}}$ denotes the gas for executing the {\bf Deliver} entry point
+that includes the user-defined ${\sf callback}$.
+\smaroon{\$F_{\text{deliver}}} denotes 
+${\tt F_{\text{deliver}}}$ amount of 
+explicit, non-gas currency units.
+Essentially, the requester first pays 
+$\smaroon{\$ F_{\text{deliver}}}$ currency units which will be used to refund
+the $\sbrown{\Delta F_{\text{deliver}}}$ amount of gas
+that $\pksgx$ will need to put in to call the {\bf Deliver} entry point.
+}
+\label{tbl:tc-contract}
+\end{figure}
+
+
+
+
+
 
 \subsection{Formal Guarantees}
 
@@ -446,7 +499,10 @@ where Town Crier gets refunded for the gas is always reached.
 
 Finally, the Town Crier relay passes
 the tuple $({\tt resume}, 
-({\sf id}, {\sf params}, \sbrown{\Delta F_{\text{deliver}}}))$
+({\sf id}, {\sf params}, 
+\sbrown{\Delta F_{\text{deliver}}}
+= \smaroon{\$ F_{\text{deliver}}}
+))$
 as input to the enclave.
 
 
@@ -462,61 +518,62 @@ instead, where signing
 $\sbrown{\Delta F_{\text{deliver}}}$ authorizes a
 gas amount of $\sbrown{\Delta F_{\text{deliver}}}$ to be advanced
 to the contract (which will be refunded later).
+\item
+{\it Requester.}
+The honest requester would behave the same way as in Figure \elaine{refer},
+except for additionally putting 
+in $\sbrown{\Delta F_{\text{request}}} + \smaroon{\$ F_{\text{deliver}}}$ 
+amount with each request, 
+where the honest 
+requester would set  
+$\sbrown{\Delta F_{\text{request}}}$
+to the gas cost of executing the  
+{\bf Request} entry point,
+and set $\smaroon{\$ F_{\text{deliver}}}$ to be the cost 
+of executing the {\bf Deliver} entry point (including
+the cost of executing the user-defined ${\sf callback}$ function).
 \end{itemize}
 
-\begin{figure}
-\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
-  \hline
-
-  \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont with fees}} \\ [1ex]
-  {\bf Request:} & On recv $({\sf id}, {\sf callback}, {\sf params}, 
-\sbrown{\Delta F_{\text{request}}} + 
-\smaroon{\$F_{\text{deliver}}}  )$ from some user $\pkU$: \\
-%                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
-%                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
-		 %& If $(\smaroon{\$ F_{\text{callback}}} < {\rm min}$ or $\smaroon{\$ F_{\text{callback}}} > {\rm max})$ \\
-		 & Assert $\smaroon{\$ F_{\text{deliver}}} \in [{\rm min}, {\rm max}]$ \\
-%and $\smaroon{\$ F_{\text{callback}}} > {\rm max})$ \\
-%                 & \hspace*{1em} Return $\smaroon{\$fee}$ to $\pkU$ \\
-                 & Record $({\sf id}, {\sf callback}, {\sf params}, \smaroon{\$ F_{\text{deliver}}})$\\[-10pt]
-    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{request}}}}$ {gas consumed}}} }\\[-10pt]
-    & {\it {\color{gray} {//~all remaining {gas returned to $\pkU$}}} }\\[-10pt]
-    & {\it {\color{gray} {//~$\smaroon{\$ F_{\text{deliver}}}$} held by contract}} \\
-  {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data}, 
-$\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\pksgx$: \\
-                 & Let $({\sf id}, {\sf callback}, {\sf params'}, \smaroon{\$ F'_{\text{deliver}}})$ be the most recently recorded tuple for ${\sf id}$\\
-                 & Assert ${\sf params} = {\sf params}'$\\
-                &   Assert $\smaroon{\$ F'_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{deliver}}}$\\
-                 & Send $\smaroon{\$F'_{\text{deliver}}}$ to $\pksgx$ \\
-                 & Call ${\sf callback}({\sf data})$ \\[-10pt]
-    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
-    & {\it {\color{gray} {//~all remaining {gas returned to $\pksgx$}}} }\\
-
-  \hline
-\end{tabularx}
-\caption{
-Town Crier contract \tcont reflecting fees.
-$\sbrown{\Delta F_{\text{request}}}$ denotes the gas for executing the {\bf Request} 
-entry point. 
-$\sbrown{\Delta F_{\text{deliver}}}$ denotes the gas for executing the {\bf Deliver} entry point
-that includes the user-defined ${\sf callback}$.
-\smaroon{\$F_{\text{deliver}}} denotes 
-${\tt F_{\text{deliver}}}$ amount of 
-explicit, non-gas currency units.
-Essentially, the requester first pays 
-$\smaroon{\$ F_{\text{deliver}}}$ currency units which will be used to refund
-the $\sbrown{\Delta F_{\text{deliver}}}$ amount of gas
-that $\pksgx$ will need to put in to call the {\bf Deliver} entry point.
-}
-\label{tbl:tc-contract}
-\end{figure}
+\begin{theorem}[Gas neutrality for Town Crier]
+Assuming that the Town Crier relay is honest, 
+then Town Crier's wallet account $\pksgx$ 
+will have at least $\sbrown{\Delta F_{\text{max}}}$
+amount remaining after each {\bf Deliver}  
+call finishes execution.
+\end{theorem}
+\begin{proof}[(sketch).]
+Since the relay is honest, every time 
+$\pksgx$ invokes the {\bf Deliver}
+entry point, the following holds:
+1) 
+$\smaroon{\$ F_{\text{deliver}}}
+= \sbrown{\Delta F_{\text{deliver}}}$;
+i.e., the gas $\pksgx$ advances is equal
+to the fees the 
+requester deposited with the \tcont contract;
+and 2)
+the amount gas sent 
+$
+\sbrown{\Delta F_{\text{deliver}}} = 
+\smaroon{\$ F_{\text{deliver}}}
+\geq \sbrown{\Delta F_{\text{min}}}$;
+in other words, the statement that refunds
+$\pksgx$ 
+$\smaroon{\$ F_{\text{deliver}}}$
+amount will definitely be invoked. This 
+ensures that the full gas amount 
+$\sbrown{\Delta F_{\text{deliver}}}$
+that $\pksgx$ advanced will be refunded (and anything more left
+at the end of the execution will also be refunded).
+\end{proof}
 
 
 
 
 
-\subsection{Support for Cancellation}
-
+\begin{theorem}[Bounded loss for honest user]
+\elaine{fill in}
+\end{theorem}
 
 
 
