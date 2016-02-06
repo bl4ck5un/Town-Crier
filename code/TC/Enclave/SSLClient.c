@@ -21,7 +21,9 @@
 
 #include "SSLClient.h"
 #include "Log.h"
-
+#include "Enclave.h"
+#include "Enclave_t.h"
+#include "RootCerts.h"
 #include "Debug.h"
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -44,10 +46,7 @@
     !defined(MBEDTLS_NET_C) || !defined(MBEDTLS_CTR_DRBG_C)
 #else
 
-#include "Enclave.h"
-#include "Enclave_t.h"
 
-#include "RootCerts.h"
 
 #include "mbedtls/net_v.h"
 #include "mbedtls/net_f.h"
@@ -975,17 +974,19 @@ send_request:
             }
 
             len = ret;
-            output[len] = '\0';
+
             LL_NOTICE( "%d bytes read", len, (char *) output );
             if (opt.debug_level> 0) hexdump("REPONSE:", output, len);
-
-            /* End of message should be detected according to the syntax of the
-             * application protocol (eg HTTP), just use a dummy test here. */
             if( ret > 0 && output[len-1] == '\n' )
             {
                 ret = 0;
+                output[len] = 0;
                 break;
             }
+            
+
+            output += len;
+            length -= len;
         }
 #pragma warning (disable: 4127)
         while( 1 );

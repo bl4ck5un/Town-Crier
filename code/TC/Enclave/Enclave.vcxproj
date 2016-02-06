@@ -157,7 +157,7 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level4</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Enclave\EthBase;$(SolutionDir)\TLSlib;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\stlport;$(SGXSDKInstallPath)include\epid;$(SolutionDir)\Enclave;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Common;$(SolutionDir)\TLSlib;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\stlport;$(SGXSDKInstallPath)include\epid;$(SolutionDir)\Enclave;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
       <FunctionLevelLinking>
       </FunctionLevelLinking>
@@ -409,11 +409,11 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\Common\Debug.c" />
+    <ClCompile Include="..\Common\Log.c" />
     <ClCompile Include="..\mbedtls-2.2.1\programs\test\mbedTLS_selftest.c" />
-    <ClCompile Include="Debug.c" />
     <ClCompile Include="dispatcher.cpp" />
     <ClCompile Include="Flight.cpp" />
-    <ClCompile Include="Log.c" />
     <ClCompile Include="SSLClient.c" />
     <ClCompile Include="ECDAS.c" />
     <ClCompile Include="keccak.c" />
@@ -425,9 +425,9 @@
     <ClCompile Include="Transaction.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Debug.h" />
+    <ClInclude Include="..\Common\Debug.h" />
+    <ClInclude Include="..\Common\Log.h" />
     <ClInclude Include="dispatcher.h" />
-    <ClInclude Include="Log.h" />
     <ClInclude Include="SSLClient.h" />
     <ClInclude Include="ECDSA.h" />
     <ClInclude Include="Enclave.h" />

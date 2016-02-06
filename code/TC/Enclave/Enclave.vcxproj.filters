@@ -53,12 +53,6 @@
     <ClCompile Include="Transaction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Log.c">
-      <Filter>Source Files\helper</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug.c">
-      <Filter>Source Files\helper</Filter>
-    </ClCompile>
     <ClCompile Include="Scraper_lib.c">
       <Filter>Source Files\scrapers</Filter>
     </ClCompile>
@@ -70,6 +64,12 @@
     </ClCompile>
     <ClCompile Include="dispatcher.cpp">
       <Filter>Source Files\scrapers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Debug.c">
+      <Filter>Source Files\helper</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Log.c">
+      <Filter>Source Files\helper</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -104,17 +104,17 @@
     <ClInclude Include="Transaction.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Log.h">
-      <Filter>Source Files\helper</Filter>
-    </ClInclude>
-    <ClInclude Include="Debug.h">
-      <Filter>Source Files\helper</Filter>
-    </ClInclude>
     <ClInclude Include="Scraper_lib.h">
       <Filter>Source Files\scrapers</Filter>
     </ClInclude>
     <ClInclude Include="dispatcher.h">
       <Filter>Source Files\scrapers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Debug.h">
+      <Filter>Source Files\helper</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Log.h">
+      <Filter>Source Files\helper</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

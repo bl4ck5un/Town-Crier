@@ -5,8 +5,67 @@
 #include "App.h"
 #include "Enclave_u.h"
 #include "jsonrpc_httpclient.h"
+#include "Log.h"
 
 #include "EthRPC.h"
+
+#include <iomanip>
+#include <sstream>
+
+
+static int rpc_base(std::string hostname, unsigned port, Json::Value& query, Json::Value& response)
+{
+    Json::Rpc::HttpClient HttpClient(hostname, port);
+    Json::FastWriter writer;
+    std::string queryStr;
+    std::string responseStr;
+    Json::Value res;
+    Json::Reader resReader;
+    std::stringstream str;
+
+    if(!networking::init())
+    {
+        throw std::exception("Networking initialization failed");
+    }
+
+    queryStr = writer.write(query);
+    LL_LOG("query: %s", queryStr.c_str());
+
+    if(HttpClient.Send(queryStr) != 0)
+    {
+        throw std::exception("Error while sending data!");
+    }
+
+    if(HttpClient.Recv(responseStr) == -1)
+    {
+        throw std::exception("Error while receiving data!");
+    }
+
+    if (!resReader.parse(responseStr, res))
+    {
+        throw std::exception("Parse Error");
+    }
+
+    if (!res["error"].isNull())
+    {
+        throw std::invalid_argument(res["error"]["message"].asString());
+    }
+
+    Json::Value result_details = res["result"];
+
+    if (res["result"].isNull())
+    {
+        throw std::out_of_range("NULL result returned");
+    }
+
+    response = res["result"];
+
+    HttpClient.Close();
+    networking::cleanup();
+
+    return EXIT_SUCCESS;
+}
+
 
 /**
  * \brief Entry point of the program.
@@ -91,3 +150,29 @@ int send_transaction(char* raw)
   return EXIT_SUCCESS;
 }
 
+
+int fetch_request(std::string hostname, unsigned port, long blk_i, long tx_i, Json::Value& result)
+{
+    Json::Value query;
+    Json::FastWriter writer;
+    // int to hex string
+
+    std::stringstream blk_i_str, tx_i_str;
+    blk_i_str << "0x" << std::hex << blk_i;
+    tx_i_str << "0x" << std:: hex << tx_i;
+
+    query["jsonrpc"] = "2.0";
+    query["id"] = 1;
+    query["method"] = "eth_getTransactionByBlockNumberAndIndex";
+    query["params"][0] = "latest";
+    query["params"][0] = blk_i_str.str();
+    query["params"][1] = tx_i_str.str();
+
+    LL_NOTICE("method: %s", query["method"].asString().c_str());
+    LL_NOTICE("block_id: %s", query["params"][0].asCString());
+    LL_NOTICE("trans_id: %s", query["params"][1].asCString());
+
+    rpc_base(hostname, port, query, result);
+
+    return EXIT_SUCCESS;
+}

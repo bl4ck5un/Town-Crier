@@ -25,6 +25,8 @@
 #ifndef _ENCLAVE_H_
 #define _ENCLAVE_H_
 
+#define IN_ENCLAVE_XXX
+
 #include <stdlib.h>
 #include <assert.h>
 

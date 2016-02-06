@@ -160,33 +160,44 @@ int parse_response(char* resp, int* buf, char* date, char* departure) {
 int get_flight_delay(char* date, char* time, char* flight, int* resp) {
     /***** VARIABLE DECLARATIONS */
     int ret, delay;
-    char buf[16385];
+    char buf[20480] = {0};
+    char* tmp = NULL;
     char* query = NULL;
     char* headers[] = {AUTH_CODE, HOST};
 
-    /***** CONSTRUCT THE QUERY */
     ret = construct_query(flight, &query);
     LL_DEBUG("query is %s", query);
     if (ret < 0)
         return -1;
-    /*printf("%s\n", query);*/
 
-    /***** EXECUTE THE QUERY */
-    ret = get_page_on_ssl("flightxml.flightaware.com", query, headers, 2, (unsigned char*)buf, 16384); 
+    ret = get_page_on_ssl("flightxml.flightaware.com", query, headers, 2, (unsigned char*)buf, sizeof buf);
+
+    LL_NOTICE("%d bytes returned", strlen(buf));
+    tmp  = strchr(buf, '{');
+
+    if (!tmp )
+    {
+        LL_CRITICAL("Error: buf2 is NULL");
+        ret = -1; goto cleanup;
+    }
+
+#ifdef VERBOSE
+    string_dump("HTTP RESPONSE:", tmp , strlen(tmp ));
+#endif 
+
     free(query);
-    /*printf("%s\n", buf);*/
-    /***** PARSE THE RESPONSE */
     ret = parse_response(buf, &delay, date, time);
-    /***** OUTPUT */
+
     if (ret < 0) {
         LL_CRITICAL("no data/bad request\n");
-        return -1;
+        ret = -1; goto cleanup;
     }
     else {
-        /*printf("%d\n", delay);*/
         *resp = delay;
-        return 0;
+        ret = 0;
     }
+cleanup:
+    return ret;
 }
 
 #ifdef MAIN

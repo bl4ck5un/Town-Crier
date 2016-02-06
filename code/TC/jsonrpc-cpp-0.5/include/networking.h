@@ -27,12 +27,7 @@
 
 #ifdef _WIN32
 
-#ifndef _MSC_VER
 #include <stdint.h>
-#endif
-
-#include "App.h"
-
 #include <winsock2.h>
 #include <windows.h>
 

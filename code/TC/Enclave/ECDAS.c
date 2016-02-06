@@ -36,6 +36,8 @@
 #define VERBOSE
 #undef  VERBOSE
 
+#include "Debug.h"
+
 /*
  * Uncomment to force use of a specific curve
  */
@@ -50,6 +52,10 @@ SEC: cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8
 PUB: bb48ae3726c5737344a54b3463fec499cb108a7d11ba137ba3c7d043bd6d7e14994f60462a3f91550749bb2ae5411f22b7f9bee79956a463c308ad508f3557df
 ADR: 89b44e4d3c81ede05d0f5de8d1a68f754d73d997
 */
+
+
+
+
 static int pubkey_to_address (unsigned char *pubkey, size_t pubkey_len, unsigned char* addr)
 {
     int ret;
@@ -64,9 +70,60 @@ static int pubkey_to_address (unsigned char *pubkey, size_t pubkey_len, unsigned
 
 
 #if defined(VERBOSE)
-#include "Debug.h"
+void dump_pubkey( const char *title, mbedtls_ecdsa_context *key )
+{
+    // each point on our curve is 256 bit (32 Bytes)
+    // two points plus the leading 0x04 byte
+    unsigned char buf[2*32 + 1];
+    size_t len;
+
+    if( mbedtls_ecp_point_write_binary( &key->grp, &key->Q,
+                MBEDTLS_ECP_PF_UNCOMPRESSED, &len, buf, sizeof buf ) != 0 )
+    {
+        mbedtls_printf("internal error\n");
+        return;
+    }
+
+    // buf + 1 to skip the first 0x04 byte
+    dump_buf( title, buf + 1, len -1);
+}
+
+void dump_mpi (const char* title, mbedtls_mpi* X)
+{
+    size_t len = mbedtls_mpi_bitlen(X);
+    unsigned char* buf;
+
+    if (len == 0)
+    {
+        printf("%s%d\n", title, 0);
+        return;
+    }
+    
+    len = ((len + 7) & ~0x07) / 8;
+    buf = (unsigned char*) malloc(len);
+    mbedtls_mpi_write_binary (X, buf, len);
+    dump_buf (title, buf, len);
+    free(buf);
+}
+
+void dump_group( const char* title, mbedtls_ecp_group* grp)
+{
+    unsigned char buf[128];
+    size_t len;
+
+    mbedtls_printf("%s", title);
+
+    dump_mpi("A=", &grp->A);
+    dump_mpi("B=", &grp->B);
+
+    mbedtls_ecp_point_write_binary( grp, &grp->G,
+                MBEDTLS_ECP_PF_UNCOMPRESSED, &len, buf, sizeof buf );
+    dump_buf("G=", buf, len);
+
+    dump_mpi("N=", &grp->N);
+    printf("h=%d\n", grp->h);
+}
 #else
-#define dump_buf( a, b, c )
 #define dump_pubkey( a, b )
 #define dump_group(a, b)
 #define dump_mpi(a, b)

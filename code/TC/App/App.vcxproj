@@ -125,7 +125,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Enclave;$(SolutionDir)\win32-deps\include;$(SolutionDir)\jsonrpc-cpp-0.5\include;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)\include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Common;$(SolutionDir)\win32-deps\include;$(SolutionDir)\jsonrpc-cpp-0.5\include;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)\include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <TreatWarningAsError>false</TreatWarningAsError>
@@ -133,7 +133,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;jsoncpp.lib;libcurl_imp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;jsoncpp.lib;libcurl_imp.lib;sqlite3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\win32-deps\lib;$(SolutionDir)\Debug;$(SGXSDKInstallPath)\bin\$(Platform)\Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
       <IgnoreSpecificDefaultLibraries>libcmtd.lib</IgnoreSpecificDefaultLibraries>
@@ -267,7 +267,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\Enclave\Log.c" />
+    <ClCompile Include="..\Common\Debug.c" />
+    <ClCompile Include="..\Common\Log.c" />
     <ClCompile Include="..\jsonrpc-cpp-0.5\examples\tcp-client.cpp" />
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_client.cpp" />
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_handler.cpp" />
@@ -298,7 +299,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Prerelease|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="App.c" />
+    <ClCompile Include="App.cpp" />
+    <ClCompile Include="Monitor.cpp" />
     <ClCompile Include="printf.c" />
     <ClCompile Include="RemoteAtt.c" />
     <ClCompile Include="EthRPC.cpp" />
@@ -307,7 +309,8 @@
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Enclave\Log.h" />
+    <ClInclude Include="..\Common\Debug.h" />
+    <ClInclude Include="..\Common\Log.h" />
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc.h" />
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_client.h" />
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc_common.h" />
@@ -323,6 +326,7 @@
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\system.h" />
     <ClInclude Include="App.h" />
     <ClInclude Include="Enclave_u.h" />
+    <ClInclude Include="Monitor.h" />
     <ClInclude Include="printf.h" />
     <ClInclude Include="RemoteAtt.h" />
     <ClInclude Include="EthRPC.h" />

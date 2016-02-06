@@ -22,11 +22,11 @@
     <Filter Include="jsonrpc-cpp">
       <UniqueIdentifier>{8fcbbe58-e0c5-4edf-a9eb-d083253303e5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Misc">
-      <UniqueIdentifier>{621c17ad-8cfc-4802-a1fe-dfc87d791ee5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="RemoteAtt">
       <UniqueIdentifier>{909ff6bf-71e5-4cc4-9b56-a8f2371c2ed3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\helpers">
+      <UniqueIdentifier>{eb989e53-a91f-468b-bb7f-f5455427d330}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -72,14 +72,8 @@
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\system.cpp">
       <Filter>jsonrpc-cpp</Filter>
     </ClCompile>
-    <ClCompile Include="printf.c">
-      <Filter>Misc</Filter>
-    </ClCompile>
     <ClCompile Include="RemoteAtt.c">
       <Filter>RemoteAtt</Filter>
-    </ClCompile>
-    <ClCompile Include="App.c">
-      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="testsuite.c">
       <Filter>Source Files</Filter>
@@ -90,8 +84,20 @@
     <ClCompile Include="EthRPC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\Enclave\Log.c">
+    <ClCompile Include="App.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Monitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Debug.c">
+      <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Log.c">
+      <Filter>Source Files\helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="printf.c">
+      <Filter>Source Files\helpers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -140,17 +146,23 @@
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\system.h">
       <Filter>jsonrpc-cpp</Filter>
     </ClInclude>
-    <ClInclude Include="printf.h">
-      <Filter>Misc</Filter>
-    </ClInclude>
     <ClInclude Include="RemoteAtt.h">
       <Filter>RemoteAtt</Filter>
     </ClInclude>
     <ClInclude Include="EthRPC.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\Enclave\Log.h">
+    <ClInclude Include="Monitor.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Debug.h">
+      <Filter>Source Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Log.h">
+      <Filter>Source Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="printf.h">
+      <Filter>Source Files\helpers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

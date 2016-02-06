@@ -206,9 +206,7 @@ namespace system_util
   bool Mutex::Lock()
   {
     if(!m_mutex)
-    {
-      return false;
-    }
+    { return false; }
 
     return (WaitForSingleObject(m_mutex, INFINITE) == WAIT_OBJECT_0);
   }

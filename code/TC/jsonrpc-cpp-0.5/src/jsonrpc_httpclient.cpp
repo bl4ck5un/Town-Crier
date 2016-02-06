@@ -84,7 +84,7 @@ namespace Json
       }
 
       // test if mutex is valid
-      if(m_mutex.Lock())
+      if(!m_mutex.Lock())
       {
         std::cerr << "Can't create mutex for receive list.\n";
         // TODO maybe throw exception here
