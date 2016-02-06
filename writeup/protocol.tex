@@ -420,14 +420,14 @@ the blockchain contract \tcont
 receives a new request $({\sf id}, {\sf params}, {\sf callback}, 
 \sbrown{\Delta F_{\text{request}}}+\smaroon{\$ F_{\text{deliver}}})$,
 it asserts that 
-$\smaroon{\$ F_{\text{deliver}}} > \sbrown{\Delta F_{\text{max}}}$.
+$\smaroon{\$ F_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{max}}}$.
 Then, the Town Crier relay passes
 the tuple $({\tt resume}, 
 ({\sf id}, {\sf params}, \sbrown{\Delta F_{\text{deliver}}}))$
 as input to the enclave.
 
 The check 
-$\smaroon{\$ F_{\text{deliver}}} > \sbrown{\Delta F_{\text{max}}}$
+$\smaroon{\$ F_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{max}}}$
 ensures that Town Crier's enclave  
 has sufficient funds to advance
 for the {\bf Deliver} phase.
