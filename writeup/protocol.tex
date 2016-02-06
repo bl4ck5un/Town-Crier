@@ -225,21 +225,24 @@ that is sufficient for our formalism.
 
   \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont with fees}} \\ [1ex]
   {\bf Request:} & On recv $({\sf id}, {\sf callback}, {\sf params}, 
-\sbrown{\Delta F_{\text{request}}} + 
-\smaroon{\$F_{\text{deliver}}}  )$ from some user $\pkU$: \\
+{\color{blue} T_{\text{timeout}}},
+\sbrown{\Delta F_{\text{request}}}$ $+$ 
+$\smaroon{\$F_{\text{deliver}}}  )$ from some user $\pkU$: \\
 %                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
 %                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
 		 %& If $(\smaroon{\$ F_{\text{callback}}} < {\rm min}$ or $\smaroon{\$ F_{\text{callback}}} > {\rm max})$ \\
 %		 & Assert $\smaroon{\$ F_{\text{deliver}}} \in [{\rm min}, {\rm max}]$ \\
 %and $\smaroon{\$ F_{\text{callback}}} > {\rm max})$ \\
 %                 & \hspace*{1em} Return $\smaroon{\$fee}$ to $\pkU$ \\
-                 & Record $({\sf id}, {\sf callback}, {\sf params}, \smaroon{\$ F_{\text{deliver}}})$\\[-10pt]
+		& Assert ${\color{blue} T_{\text{timeout}}} > {\sf cur\_time}$\\
+                 & Record $({\sf id}, {\sf callback}, {\sf params}, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} T_{\text{timeout}}}, \pkU)$\\[-10pt]
     & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{request}}}}$ {gas consumed}}} }\\[-10pt]
     & {\it {\color{gray} {//~all remaining {gas returned to $\pkU$}}} }\\[-10pt]
     & {\it {\color{gray} {//~$\smaroon{\$ F_{\text{deliver}}}$} held by contract}} \\
   {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data}, 
 $\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\pksgx$: \\
-                 & Let $({\sf id}, {\sf callback}, {\sf params'}, \smaroon{\$ F'_{\text{deliver}}})$ be the most recently recorded tuple for ${\sf id}$\\
+                 & Let $({\sf id}, {\sf callback}, {\sf params'}, \smaroon{\$ F'_{\text{deliver}}}, {\color{blue} T_{\text{timeout}}}, \_)$ be the most recently recorded tuple for ${\sf id}$\\
+ & Assert ${\color{blue} T_{\text{timeout}}} > {\sf cur\_time}$ \\
                  & Assert ${\sf params} = {\sf params}'$\\
                 &   Assert $\smaroon{\$ F'_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{deliver}}}$\\
                  & Send $\smaroon{\$F'_{\text{deliver}}}$ to $\pksgx$ \\
@@ -247,8 +250,12 @@ $\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\pksgx$: \\
     & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
     & {\it {\color{gray} {//~all remaining {gas returned to $\pksgx$}}} }\\
 
-{\bf Cancel:} & On $T$  \\
-
+{\bf Cancel:} & On recv $({\sf id}, \sbrown{\Delta F_{\text{cancel}}})$ 
+from some user $\pkU$\\
+  & Let $({\sf id}, \_, \_, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} T_{\text{timeout}}}, \pkU')$ be the most recently recorded tuple for ${\sf id}$ \\
+   & Assert $\pkU = \pkU'$\\
+   & Assert ${\sf cur\_time} \geq {\color{blue} T_{\text{timeout}}}$\\
+  & Send $\smaroon{\$ F_{\text{deliver}}}$ to \pkU\\
   \hline
 \end{tabularx}
 \caption{
