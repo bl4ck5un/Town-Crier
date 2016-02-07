@@ -235,7 +235,10 @@ $\smaroon{\$F_{\text{deliver}}}  )$ from some user $\pkU$: \\
 %and $\smaroon{\$ F_{\text{callback}}} > {\rm max})$ \\
 %                 & \hspace*{1em} Return $\smaroon{\$fee}$ to $\pkU$ \\
 		& Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$\\
-                 & Record $({\sf id}, {\sf callback}, {\sf params}, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \pkU)$\\[-10pt]
+                 & Record $({\sf id}, {\sf callback}, {\sf params}, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \pkU)$
+%   & Send $(\dgid, \dgform, \smaroon{\$ F_{\text{deliver}}})$ to \relay 
+%\elaine{this makes it look like it's sending money}
+\\[-10pt]
     & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{request}}}}$ {gas consumed}}} }\\[-10pt]
     & {\it {\color{gray} {//~all remaining {gas returned to $\pkU$}}} }\\[-10pt]
     & {\it {\color{gray} {//~$\smaroon{\$ F_{\text{deliver}}}$} held by contract}} \\

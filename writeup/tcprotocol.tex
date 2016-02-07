@@ -105,9 +105,9 @@ For simplicity, we first specify functionalities in a payment-free version of ou
 & \qquad \qquad \qquad \qquad \qquad \qquad {\sgray{\it //~{\bf msg.}~$m_1$}} \\
 %                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
 %                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
-                 & Record $(\dgid, \dgform, \dgcallback)$ \\ 
-		 & Send $(\dgid, \dgform)$ to \relay \\
-\multicolumn{2}{|c|}{\sgray {\it // above implemented by \relay monitoring the blockchain}}\\[5pt]
+                 & Record $(\dgid, \dgform, \dgcallback)$ \\[5pt] 
+%		 & Send $(\dgid, \dgform)$ to \relay \\
+%\multicolumn{2}{|c|}{\sgray {\it // above implemented by \relay monitoring the blockchain}}\\[5pt]
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm)$ from $\pkTC$: \\
 		 & If $(\dgid, \dgform, \dgcallback)$ is a recorded tuple\\
 		 & Assert $\dgform = \dgform'$\\
@@ -179,12 +179,12 @@ Send \initcall to $\fsgx[\enclaveprog, \relay]$\\
 On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 \quad Publish $(\pkTC, \sigatt)$\\[5pt]
 
-%{\bf  Loop forever}: \\
-{\bf Request}:
-%When \tcont receives new 
+{\bf  Loop forever}: \\
+%{\bf Request}:
+Whenever \tcont receives 
 %\elaine{TODO: add gas stuff below}
-On recv 
-$({\sf id}, {\sf params})$ from \tcont:  \sgray{{\it //~{\bf msg.}~$m_2$}}\\
+%On recv 
+$({\sf id}, {\sf params}, \_)$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
 %\quad Parse ${\sf params} := (\weburl, \dgspec, T)$\\
 %\quad Fork: \\
 \ \quad Send $(\text{\resumecall}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
