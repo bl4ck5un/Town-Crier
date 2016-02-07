@@ -104,12 +104,12 @@ also involves verifying the revocation list.}
   \hline
 
   \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont}} \\ [1ex]
-  {\bf Request:} & On recv $({\sf id}, {\sf callback}, {\sf params})$ from some user $\pkU$: \\
+  {\bf Request:} & On recv $({\sf id}, {\sf params}, {\sf callback})$ from some user $\pkU$: \\
 %                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
 %                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
-                 & Record $({\sf id}, {\sf callback}, {\sf params})$ \\
+                 & Record $({\sf id}, {\sf params}, {\sf callback})$ \\
   {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data})$ from $\pksgx$: \\
-		 & Let $({\sf id}, {\sf callback}, {\sf params'})$ be the most recently recorded tuple for ${\sf id}$\\
+		 & Let $({\sf id}, {\sf params'}, {\sf callback} )$ be the most recently recorded tuple for ${\sf id}$\\
 		 & Assert ${\sf params} = {\sf params}'$\\
                  & Call ${\sf callback}({\sf data})$ \\
 %                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
@@ -289,11 +289,9 @@ that $\pksgx$ will need to put in to call the {\bf Deliver} entry point.
 %On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 %\quad Publish $(\pkTC, \sigatt)$\\[5pt]
 
-%{\bf  Loop forever}: \\
-{\bf Request}:
-%When \tcont receives new 
-On recv 
-$({\sf id}, {\sf params})$ from \tcont:  \sgray{{\it //~{\bf msg.}~$m_2$}}\\
+{\bf  Loop forever}: \\
+Whenever \tcont receives 
+$({\sf id}, {\sf params}, \_, \_, \sbrown{\Delta F_{\text{request}}} + \smaroon{\$ F_{\text{deliver}}})$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
 %\quad Parse ${\sf params} := (\weburl, \dgspec, T)$\\
 %\quad Fork: \\
 \ \quad Send $(\text{\resumecall}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
