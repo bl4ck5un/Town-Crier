@@ -48,13 +48,20 @@ echo "tc.RequestInfo(function(e,r) { if (!e) { console.log('RequestInfo: ' + JSO
 #echo 'tc.request.sendTransaction(0, "0x01", "0000", "test", {from: userAddr, value: Math.pow(10,17), gas: gasCnt})'
 
 #echo "fi = FlightInsurance.new(tc.address, {from: userAddr, data: contracts.FlightInsurance.code, gas: gasCnt, value: Math.pow(10,22)}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})"
-echo "po = PutOption.new(tc.address, 'GOOGL', (50e+19)/2, 50, (700e+19)/2, (new Date(2016,2,1)).getTime(), {from: userAddr, data: contracts.PutOption.code, gas: gasCnt, value: (700e+19 - 50e+19)*50/2 + 5e+16}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})"
+
+#echo "esprDate = (new Date(2016,2,1))"
+echo "exprDate = new Date((new Date()).getTime() + 5000)"
+echo "po = PutOption.new(tc.address, 'GOOGL', (50e+19)/2, 50, (700e+19)/2, exprDate.getTime()/1000, {from: userAddr, data: contracts.PutOption.code, gas: gasCnt, value: new BigNumber((700e+19 - 50e+19)*50/2).add(5e+16)}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})"
 
 echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
 
 echo "po.buy.sendTransaction(20, {from: minerAddr, gas: gasCnt, value: (50e+19)/2 * 20})"
-
 echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
+
+#echo "while (new Date().getTime() < exprDate.getTime() + 1000);"
+#
+#echo "po.recover.sendTransaction({from: userAddr, gas: gasCnt})"
+#echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
 
 #echo "dataAry = Array(1); for (var i = 0; i < dataAry.length; i++) { dataAry[i] = Array(33).join('a'); };"
 ##echo "dataAry = 'a'"

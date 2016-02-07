@@ -21,6 +21,7 @@ contract PutOption {
     uint units;
 
     bool optionPut;
+    bool cancelled;
 
     function PutOption(TownCrier tcContract, bytes32 ticker, uint unitPrice, uint maxUnits, uint strikePrice, uint exprDate) public {
         if (msg.value < (strikePrice - unitPrice) * maxUnits + TC_FEE) throw;
@@ -33,10 +34,11 @@ contract PutOption {
         STRIKE_PRICE = strikePrice;
         EXPR_DATE = exprDate;
         optionPut = false;
+        cancelled = false;
     }
 
     function buy(uint unitsToBuy) public {
-        if (this.balance == 0
+        if (cancelled
                 || block.timestamp >= EXPR_DATE
                 || buyer != 0
                 || unitsToBuy > MAX_UNITS
@@ -82,8 +84,12 @@ contract PutOption {
     }
 
     function recover() public {
-        if (msg.sender != ISSUER || (buyer != 0 && block.timestamp < EXPR_DATE) || optionPut) throw;
+        if (msg.sender != ISSUER
+                || (buyer != 0 && block.timestamp < EXPR_DATE)
+                || optionPut
+                || cancelled) throw;
 
+        cancelled = true;
         ISSUER.send(this.balance);
     }
 }
