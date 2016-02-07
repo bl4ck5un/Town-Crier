@@ -109,9 +109,9 @@ For simplicity, we first specify functionalities in a payment-free version of ou
 %		 & Send $(\dgid, \dgform)$ to \relay \\
 %\multicolumn{2}{|c|}{\sgray {\it // above implemented by \relay monitoring the blockchain}}\\[5pt]
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm)$ from $\pkTC$: \\
-		 & If $(\dgid, \dgform', \dgcallback)$ is a recorded tuple:\\
-		 & \quad Assert $\dgform = \dgform'$\\
-                 & \quad Call ${\dgcallback}({\dgm})$ \quad \sgray{\it //~{\bf msg.}~$m_4$}\\
+		 & Let $(\dgid, \dgform', \dgcallback)$ be a most recently recorded tuple corresponding to $\dgid$ :\\
+		 & Assert $\dgform = \dgform'$\\
+                 & Call ${\dgcallback}({\dgm})$ \quad \sgray{\it //~{\bf msg.}~$m_4$}\\
 %                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
 
   \hline
