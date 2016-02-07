@@ -129,14 +129,15 @@ The Town Crier \tcontract \tcont.
 \end{center}
 \begin{tabular}{l}
 %{\bf Inputs}:  ${\sf params}$, \\[5pt]
-{\bf Initialize}:  On recv (\initcall, $T_0)$: \\ %{\it //~called only once upfront}\\
+%{\bf Initialize}:  On recv (\initcall, $T_0)$: \\ %{\it //~called only once upfront}\\
+{\bf Initialize}:  On recv (\initcall): \\ %{\it //~called only once upfront}\\
 %\quad Set clock reference point\\
 %\quad Record $T_0$ \elaine{this is never used} \\ 
-\elaine{i deleted the clock implementation, we can separate abstraction from implementation.}\\
+%\elaine{i deleted the clock implementation, we can separate abstraction from implementation.}\\
 \quad $(\pkTC, \skTC) := \Sigma.{\sf KeyGen}(1^\lambda)$\\
 %\quad Record $(\pkTC, \skTC)$\\
 \quad Output $\pkTC$   \quad \sgray{\it//~code, output attested to by $\fsgx$}
-\\[2pt]
+\\[3pt]
 
 %{\bf Attest}:  On recv \attcall: \\ %{\it //~called only once upfront}\\
 %\quad $T := \clock()$\\
