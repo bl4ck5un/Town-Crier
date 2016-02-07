@@ -136,7 +136,9 @@ The Town Crier \tcontract \tcont.
 %\elaine{i deleted the clock implementation, we can separate abstraction from implementation.}\\
 \quad $(\pkTC, \skTC) := \Sigma.{\sf KeyGen}(1^\lambda)$\\
 %\quad Record $(\pkTC, \skTC)$\\
-\quad Output $\pkTC$   \quad \sgray{\it//~code, output attested to by $\fsgx$}
+\quad Output $\pkTC$   \\
+\sgray{\it/*$\fsgx$ attests to the code and the output $\pkTC$,} \\
+\quad \sgray{see Figure \elaine{refer}*/}
 \\[3pt]
 
 %{\bf Attest}:  On recv \attcall: \\ %{\it //~called only once upfront}\\
