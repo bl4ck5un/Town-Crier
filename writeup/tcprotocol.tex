@@ -107,6 +107,7 @@ For simplicity, we first specify functionalities in a payment-free version of ou
 %                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
                  & Record $(\dgid, \dgform, \dgcallback)$ \\ 
 		 & Send $(\dgid, \dgform)$ to \relay \\
+\multicolumn{2}{|c|}{\sgray {\it // above implemented by \relay monitoring the blockchain}}\\[5pt]
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm)$ from $\pkTC$: \\
 		 & If $(\dgid, \dgform, \dgcallback)$ is a recorded tuple\\
 		 & Assert $\dgform = \dgform'$\\
