@@ -103,7 +103,7 @@ For simplicity, we first specify functionalities in a payment-free version of ou
   {\bf Request:} & On recv $(\dgid, \dgform, \dgcallback)$ ({\bf msg.}~$m_1$) from $\reqcont$: \\
 %                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
 %                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
-                 & Record $(\dgid, \dgform, \dgcallback)$ \\
+                 & Record $(\dgid, \dgform, \dgcallback)$ \\ 
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm)$ from $\pkTC$: \\
 		 & If $(\dgid, \dgform, \dgcallback)$ is a recorded tuple\\
 		 & Assert $\dgform = \dgform'$\\
@@ -129,15 +129,16 @@ The Town Crier \tcontract \tcont.
 %{\bf Inputs}:  ${\sf params}$, \\[5pt]
 {\bf Initialize}:  On recv (\initcall, $T_0)$: \\ %{\it //~called only once upfront}\\
 \quad Set clock reference point\\
-\quad Record $T_0$\\
+\quad Record $T_0$ \elaine{this is never used} \\ 
 \quad $(\pkTC, \skTC) := \Sigma.{\sf KeyGen}(1^\lambda)$\\
-\quad Record $(\pkTC, \skTC)$\\
-\\[1pt]
+%\quad Record $(\pkTC, \skTC)$\\
+\quad Output $\pkTC$   \quad {\it//~code, output attested to by $\fsgx$}
+\\[2pt]
 
-{\bf Attest}:  On recv \attcall: \\ %{\it //~called only once upfront}\\
-\quad $T := \clock()$\\
-\quad Call quoting enclave with supp.~data $(\pkTC, T)$
-\\[5pt]
+%{\bf Attest}:  On recv \attcall: \\ %{\it //~called only once upfront}\\
+%\quad $T := \clock()$\\
+%\quad Call quoting enclave with supp.~data $(\pkTC, T)$
+%\\[5pt]
 
 {\bf Resume:} On recv (\resumecall, $({\sf id}, {\sf params}))$\\
 \quad Parse ${\sf params} := (\weburl, \dgspec, T) $:\\
