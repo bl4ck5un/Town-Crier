@@ -180,7 +180,8 @@ When \tcont receives new $({\sf id}, {\sf params})$ :  \sgray{{\it //~({\bf msg.
 \quad Fork: \\
 \ \quad Send $(\text{\resumecall}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
 \ \quad On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
-\ \quad \quad  {\sf Send} $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ ({\bf msg.}~$m_3$) to \tcont from \tcadd 
+\ \quad \quad  {\sf Send} $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ to \tcont  %from \tcadd \\
+\ \  \sgray{\it //~({\bf msg.}~$m_3$)}
 \end{tabular}
 \end{boxedminipage}
 \caption{The Town Crier \medname \relay.}
