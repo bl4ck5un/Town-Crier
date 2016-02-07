@@ -177,14 +177,17 @@ Send \initcall to $\fsgx[\enclaveprog, \relay]$\\
 On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 \quad Publish $(\pkTC, \sigatt)$\\[5pt]
 
-{\bf  Loop forever}: \\
-When \tcont receives new $({\sf id}, {\sf params})$ :  \sgray{{\it //~({\bf msg.}~$m_2$)}}\\
+%{\bf  Loop forever}: \\
+{\bf Request}:
+%When \tcont receives new 
+On recv 
+$({\sf id}, {\sf params})$ from \tcont:  \sgray{{\it //~{\bf msg.}~$m_2$}}\\
 %\quad Parse ${\sf params} := (\weburl, \dgspec, T)$\\
-\quad Fork: \\
+%\quad Fork: \\
 \ \quad Send $(\text{\resumecall}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
 \ \quad On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
 \ \quad \quad  {\sf Send} $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ to \tcont  %from \tcadd \\
-\ \  \sgray{\it //~({\bf msg.}~$m_3$)}
+\ \  \sgray{\it //~{\bf msg.}~$m_3$}
 \end{tabular}
 \end{boxedminipage}
 \caption{The Town Crier \medname \relay.}
