@@ -106,6 +106,7 @@ For simplicity, we first specify functionalities in a payment-free version of ou
 %                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
 %                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
                  & Record $(\dgid, \dgform, \dgcallback)$ \\ 
+		 & Send $(\dgid, \dgform)$ to \relay \\
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm)$ from $\pkTC$: \\
 		 & If $(\dgid, \dgform, \dgcallback)$ is a recorded tuple\\
 		 & Assert $\dgform = \dgform'$\\
@@ -180,6 +181,7 @@ On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 %{\bf  Loop forever}: \\
 {\bf Request}:
 %When \tcont receives new 
+%\elaine{TODO: add gas stuff below}
 On recv 
 $({\sf id}, {\sf params})$ from \tcont:  \sgray{{\it //~{\bf msg.}~$m_2$}}\\
 %\quad Parse ${\sf params} := (\weburl, \dgspec, T)$\\

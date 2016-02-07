@@ -275,24 +275,24 @@ that $\pksgx$ will need to put in to call the {\bf Deliver} entry point.
 \label{tbl:tc-contract}
 \end{figure}
 
-
-
 \begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}
 \begin{center}
-{\bf Town Crier \medname $\relay$, with fees}
+{\bf Program for Town Crier \medname $\relay$}
 \end{center}
 \begin{tabular}{l}
-{\bf Initialize}: Same as Figure \elaine{refer}\\[5pt]
+{\bf Initialize}: Same as Figure~\ref{fig:relayprot}\\
 %Send \initcall to $\fsgx[\enclaveprog, \relay]$\\
 %On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 %\quad Publish $(\pkTC, \sigatt)$\\[5pt]
 
 %{\bf  Loop forever}: \\
 {\bf Request}:
-On recv $({\sf id}, \_, {\sf params}, \_, \elaine{fill in })$ :  \sgray{{\it //~{\bf msg.}~$m_2$}}\\
+%When \tcont receives new 
+On recv 
+$({\sf id}, {\sf params})$ from \tcont:  \sgray{{\it //~{\bf msg.}~$m_2$}}\\
 %\quad Parse ${\sf params} := (\weburl, \dgspec, T)$\\
-\quad Fork: \\
+%\quad Fork: \\
 \ \quad Send $(\text{\resumecall}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
 \ \quad On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
 \ \quad \quad  {\sf Send} $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ to \tcont  %from \tcadd \\
@@ -302,6 +302,10 @@ On recv $({\sf id}, \_, {\sf params}, \_, \elaine{fill in })$ :  \sgray{{\it //~
 \caption{The Town Crier \medname \relay.}
 \label{fig:relayprot}
 \end{figure}
+
+
+
+
 
 
 
