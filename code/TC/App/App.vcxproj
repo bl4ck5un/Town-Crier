@@ -281,6 +281,7 @@
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\netstring.cpp" />
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\networking.cpp" />
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\system.cpp" />
+    <ClCompile Include="Bookkeeping.cpp" />
     <ClCompile Include="Enclave_u.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Simulation|x64'">
       </PrecompiledHeader>
@@ -304,6 +305,7 @@
     <ClCompile Include="printf.c" />
     <ClCompile Include="RemoteAtt.c" />
     <ClCompile Include="EthRPC.cpp" />
+    <ClCompile Include="sys_helper.cpp" />
     <ClCompile Include="testsuite.c" />
     <ClCompile Include="net_u.c" />
     <ClCompile Include="Utils.cpp" />
@@ -325,11 +327,13 @@
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\networking.h" />
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\system.h" />
     <ClInclude Include="App.h" />
+    <ClInclude Include="Bookkeeping.h" />
     <ClInclude Include="Enclave_u.h" />
     <ClInclude Include="Monitor.h" />
     <ClInclude Include="printf.h" />
     <ClInclude Include="RemoteAtt.h" />
     <ClInclude Include="EthRPC.h" />
+    <ClInclude Include="sys_helper.h" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

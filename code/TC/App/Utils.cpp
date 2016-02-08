@@ -7,6 +7,9 @@
 #include <string.h>
 #include <assert.h>
 
+#include <string>
+#include <ctime>
+
 #ifdef _MSC_VER
 # include <Shlobj.h>
 #else

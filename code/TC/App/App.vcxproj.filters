@@ -99,6 +99,12 @@
     <ClCompile Include="printf.c">
       <Filter>Source Files\helpers</Filter>
     </ClCompile>
+    <ClCompile Include="Bookkeeping.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sys_helper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Enclave_u.h">
@@ -163,6 +169,12 @@
     </ClInclude>
     <ClInclude Include="printf.h">
       <Filter>Source Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Bookkeeping.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sys_helper.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

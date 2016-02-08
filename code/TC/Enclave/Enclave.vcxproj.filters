@@ -71,6 +71,9 @@
     <ClCompile Include="..\Common\Log.c">
       <Filter>Source Files\helper</Filter>
     </ClCompile>
+    <ClCompile Include="ABI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Enclave_private.pem">
@@ -115,6 +118,12 @@
     </ClInclude>
     <ClInclude Include="..\Common\Log.h">
       <Filter>Source Files\helper</Filter>
+    </ClInclude>
+    <ClInclude Include="ABI.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Commons.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

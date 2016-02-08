@@ -7,6 +7,7 @@
 #include "stdint.h"
 #include "EthRPC.h"
 #include "sqlite3.h"
+#include "Bookkeeping.h"
 
 #include "WinBase.h"
 #include "Log.h"
@@ -19,169 +20,14 @@
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
 
-//#define RPC_TEST
+#define RPC_TEST
 //#define ECDSA_TEST
-#define SCRAPER_TEST
+//#define SCRAPER_TEST
 //#define REMOTE_ATT_TEST
 
 #define TEST
-#undef TEST
+//#undef TEST
 
-#define CREATE_TABLE \
-    "CREATE TABLE IF NOT EXISTS Nonces ( \
-            nonce INT UNIQUE ON CONFLICT REPLACE, \
-            time DATETIME);"\
-    "CREATE TABLE IF NOT EXISTS Transactions ( \
-            id primary key, \
-            request_id INT UNIQUE ON CONFLICT REPLACE, \
-            discover_time DATETIME, \
-            complete_time DATETIME);" \
-    "CREATE TABLE IF NOT EXISTS Scans (\
-            block_id INT,\
-            trans_id INT,\
-            time     DATETIME );" \
-
-
-static std::string current_datetime()
-{
-    time_t now = time(0);
-    char buf[sizeof "2011-10-08T07:07:09Z"];
-    strftime(buf, sizeof buf, "%Y-%m-%dT%H:%M:%SZ", gmtime(&now));
-    return buf;
-}
-
-static int sqlite3_init(sqlite3** db)
-{
-    int ret;
-    char* error;
-    ret = sqlite3_open("TC.db", db);
-    if (ret)
-    {
-        LL_CRITICAL("Error openning SQLITE3 database: %s", sqlite3_errmsg(*db));
-        sqlite3_close(*db);
-        return -1;
-    }
-    ret = sqlite3_exec(*db, CREATE_TABLE, NULL, NULL, &error);
-    if (ret)
-    {
-        LL_CRITICAL("Error executing SQLite3 statement: %s", error);
-        sqlite3_free(error);
-        return -1;
-    }
-
-    return 0;
-}
-
-static int record_scan(sqlite3* db, int blk, int tx)
-{
-    int ret;
-    char* error;
-    if (!db)
-    {
-        return -1;
-    }
-    std::stringstream ss;
-    ss << "INSERT INTO Scans (block_id, trans_id, time) VALUES (" << blk <<"," << tx << ", \"" << current_datetime() << "\");";
-    std::cout << ss.str() <<std::endl;
-
-    ret = sqlite3_exec(db, ss.str().c_str(), NULL, NULL, &error);
-    if (ret)
-    {
-        LL_CRITICAL("Error executing SQLite3 statement: %s", error);
-        sqlite3_free(error);
-        return -1;
-    }
-
-    return 0;
-}
-
-
-static int record_nonce(sqlite3* db, int nonce)
-{
-    int ret;
-    char* error;
-    if (!db)
-    {
-        return -1;
-    }
-    std::stringstream ss;
-    ss << "INSERT INTO Nonces (nonce, time) VALUES (" << nonce << ", \"" << current_datetime() << "\");";
-    std::cout << ss.str() <<std::endl;
-
-    ret = sqlite3_exec(db, ss.str().c_str(), NULL, NULL, &error);
-    if (ret)
-    {
-        LL_CRITICAL("Error executing SQLite3 statement: %s", error);
-        sqlite3_free(error);
-        return -1;
-    }
-
-    return 0;
-}
-
-static int get_last_nonce(sqlite3* db, int *nonce)
-{
-    int ret;
-    char* error;
-    int n_row, n_col;
-    char** result;
-    if (!db)
-    {
-        return -1;
-    }
-    std::string sql = "SELECT MAX(nonce) FROM Nonces;";
-
-    ret = sqlite3_get_table(db, sql.c_str(), &result, &n_row, &n_col, &error);
-    if (ret)
-    {
-        LL_CRITICAL("Error executing SQLite3 statement: %s", error);
-        sqlite3_free(error);
-        return -1;
-    }
-
-    if (n_row != 1 || n_col != 1)
-    {
-        LL_CRITICAL("Error, please check SQL statement %s", sql.c_str());
-        sqlite3_free_table(result);
-        return -1;
-    }
-
-    *nonce = atoi(result[1]);
-    return 0;  
-}
-
-int get_last_scan (sqlite3* db, int* blk, int* tx)
-{
-    int ret;
-    char* error;
-    int n_row, n_col;
-    char** result;
-    if (!db)
-    {
-        return -1;
-    }
-    std::string sql = "SELECT block_id, trans_id FROM Scans ORDER BY block_id DESC, trans_id DESC LIMIT 1;";
-
-    ret = sqlite3_get_table(db, sql.c_str(), &result, &n_row, &n_col, &error);
-    if (ret)
-    {
-        LL_CRITICAL("Error executing SQLite3 statement: %s", error);
-        sqlite3_free(error);
-        return -1;
-    }
-
-    if (n_row != 1 || n_col != 2)
-    {
-        LL_CRITICAL("Error, please check SQL statement %s", sql.c_str());
-        sqlite3_free_table(result);
-        return -1;
-    }
-
-    *blk = atoi(result[2]);
-    *tx = atoi(result[3]);
-    
-    return 0;   
-}
 
 #define SEALED_NONCE_SIZE 0x250
 #define NONCE_FILE_NAME "nonce.bin"
@@ -325,17 +171,17 @@ int main()
 
     std::cout << "nonce: " << nonces << std::endl;
 
-    ret = record_scan(db, 1, 0);
-    ret = record_scan(db, 2, 0);
-    ret = record_scan(db, 3, 1);
-    ret = record_scan(db, 4, 0);
+    ret = record_scan(db, 1);
+    ret = record_scan(db, 2);
+    ret = record_scan(db, 3);
+    ret = record_scan(db, 4);
     if (ret) goto exit;
 
-    int blkid, txid;
-    ret = get_last_scan(db, &blkid, &txid);
+    int blkid;
+    ret = get_last_scan(db, &blkid);
     if (ret) goto exit;
 
-    std::cout << "blk:" << blkid << ", tx: " << txid << std::endl;
+    std::cout << "blk:" << blkid << std::endl;
 
 
 #if defined(_MSC_VER)

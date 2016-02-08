@@ -157,13 +157,13 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <Optimization>Disabled</Optimization>
       <WarningLevel>Level4</WarningLevel>
-      <AdditionalIncludeDirectories>$(SolutionDir)\Common;$(SolutionDir)\TLSlib;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\stlport;$(SGXSDKInstallPath)include\epid;$(SolutionDir)\Enclave;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Commons;$(SolutionDir)\Common;$(SolutionDir)\TLSlib;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)include;$(SGXSDKInstallPath)include\tlibc;$(SGXSDKInstallPath)include\stlport;$(SGXSDKInstallPath)include\epid;$(SolutionDir)\Enclave;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>false</TreatWarningAsError>
       <FunctionLevelLinking>
       </FunctionLevelLinking>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tstdcxx.lib;sgx_tcrypto_opt.lib;TLSlib.lib</AdditionalDependencies>
+      <AdditionalDependencies>sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tstdcxx.lib;sgx_tcrypto_opt.lib;TLSlib.lib;Commons.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\$(Configuration);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol />
@@ -412,6 +412,7 @@
     <ClCompile Include="..\Common\Debug.c" />
     <ClCompile Include="..\Common\Log.c" />
     <ClCompile Include="..\mbedtls-2.2.1\programs\test\mbedTLS_selftest.c" />
+    <ClCompile Include="ABI.cpp" />
     <ClCompile Include="dispatcher.cpp" />
     <ClCompile Include="Flight.cpp" />
     <ClCompile Include="SSLClient.c" />
@@ -427,6 +428,8 @@
   <ItemGroup>
     <ClInclude Include="..\Common\Debug.h" />
     <ClInclude Include="..\Common\Log.h" />
+    <ClInclude Include="ABI.h" />
+    <ClInclude Include="Commons.h" />
     <ClInclude Include="dispatcher.h" />
     <ClInclude Include="SSLClient.h" />
     <ClInclude Include="ECDSA.h" />

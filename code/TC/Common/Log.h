@@ -4,6 +4,7 @@
 extern "C" {
 #endif
  
+extern int printf(const char *fmt, ...);
  
 enum {
 	LOG_LVL_NONE, // 0
