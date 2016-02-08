@@ -123,9 +123,9 @@ Name Institution
 % \thispagestyle{empty}
 
 \subsection*{Abstract}
-Smart contracts are programs that execute autonomously on blockchains. Many of their envisioned uses require them to consume data from outside the blockchain. (e.g., financial instruments rely on equity prices.) Trustworthy data feeds that can interface with smart contracts will thus be critical to any smart-contract system. 
+Smart contracts are programs that execute autonomously on blockchains. Many of their envisioned uses require them to consume data from outside the blockchain. (For example, a financial instrument might rely on stock prices.) Trustworthy data feeds that can interface with smart contracts will thus be critical to any smart contract system. 
 
-	We present an authenticated data feed system called Town Crier (TC). TC builds on the observation that many web sites, such as major news and finance sites, already serve as trusted data sources for non-blockchain uses. TC acts as a bridge between such servers and smart contract systems, using trusted hardware to authenticate and scrape data from HTTPS-enabled websites and to generate authenticated, timestamped datagrams for relying smart contracts. It also includes a range of advanced features, such as private datagrams, which decrypt and evaluate ciphertext requests within TC's hardware.
+	We present an authenticated data feed system called Town Crier (TC). TC builds on the observation that many web sites, such as major news and finance sites, already serve as trusted data sources for non-blockchain uses. TC acts as a bridge between such servers and smart contract systems, using trusted hardware to authenticate and scrape data from HTTPS-enabled websites and to generate trustworthy datagrams for relying smart contracts. It also includes a range of advanced features, such as private datagrams, which decrypt and evaluate ciphertext requests within TC's hardware.
 	
 	We describe the TC architecture, its underlying trust model, and its applications, and report on an implementation that uses the newly released SGX software development kit and furnishes data for the smart-contract system Ethereum. We will soon be launching TC as an online public service.
 	
