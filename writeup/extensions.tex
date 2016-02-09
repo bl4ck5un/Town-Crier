@@ -302,7 +302,7 @@ at the end of the execution will also be refunded);
 
 
 
-\begin{theorem}[Bounded loss for honest user]
+\begin{theorem}[Bounded loss for honest requester]
 \elaine{fill in}
 \end{theorem}
 
@@ -318,5 +318,9 @@ and $\smaroon{\$ F_{\text{deliver}}}$ is the gas cost
 of executing the {\bf Deliver} entry point (including
 the cost of executing the user-defined ${\sf callback}$ function).
 
+Regardless of what the adversary does,  
+if the line ``Set ${\sf bDelivered[{\sf id}]}$''
+is reached for some ${\sf id}$,
+\elaine{there is the issue of DoS attack from another user.}
 \end{proof}
 
