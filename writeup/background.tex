@@ -8,7 +8,10 @@ Another feature of SGX is its support for \emph{attestation}, which allows a rem
 
 SGX additionally provides a trusted time source via the function \texttt{sgx\_get\_trusted\_time}.~On invoking this function, an enclave obtains a measure of time relative to a reference point labeled with a nonce. We refer to this as the \emph{clock reference point}. It remains stable for a given nonce, but SGX does not provide a source of absolute or wall-clock time, a limitation that we must work around in \tc.
 
-\subsection{HTTPS}
+\subsection{HTTPS / TLS}
+
+We assume basic familiarity by readers with TLS and HTTPS (HTTP over TLS). An important feature of HTTPS that we employ in \tc is its amenability to partitioning into two distinct layers: (1) A TCP layer and (2) HTTP with a full TLS Record and Handshake layer. \tc places Layer (2) (with a stripped-down version of HTTPS) is placed in an enclave, enabling code in the enclave to establish a secure channel with a remote server. Layer (1) is supported by the operating system, as an enclave does not have direct access to host network functionality. This arrangement allows an enclave process to communicate securely without its own complete network stack.
+
 \subsection{Smart contracts}
 
 Smart contracts are the expression of contractual agreements, including financial instruments, as executable code. In the context of cryptocurrencies, the term refers specifically to autonomously executing scripts that reside on a blockchain and can manipulate control currency. Bitcoin has a scripting language that can serve to implement a limited form of smart contract, but it is not Turing-complete and lacks support for loops. 
@@ -25,8 +28,7 @@ Along with the \texttt{STARTGAS} parameter, a \texttt{GASPRICE} parameter is inc
 
 The management of gas, as we show in our design of \tcs can be delicate. Without careful construction, for example, the smart contracts representing \tc's interface on the Ethereum blockchain can be caused by an attacker to exhaust the ether used to power the delivery of datagrams. 
 
-\subsection{Applications of ADFs for smart contracts}
 \subsection{Basic terminology}
-We refer to a {\em smart contract} making use of the \tcs service as a \emph{relying contract}. In contexts where a relying contract has issued to \tc a service request for a datagram, we call it a \emph{requester}. We denote a requester by \reqcont. A party (or would-be party) to a relying contract, a person, organization, or server, is a \emph{client}. Relying contracts---and requesters, by extension---are blockchain entities, while a client is an off-chain entity. A \emph{data source}, or \emph{source} for short, is an online server (running HTTPS) that provides data which \tc uses to compose datagrams.
+We denote smart contract making use of the \tcs service as a requesting or relying contract, and denote it by $\reqcont$. \reqcont sends datagram requests to the \tc service, represented on the blockchain by a contract \tcont. A party (or would-be party) to a relying contract $\reqcont$, a person, organization, or server, is a \emph{client}. Relying contracts are blockchain entities, while a client is an off-chain entity. A \emph{data source}, or \emph{source} for short, is an online server (running HTTPS) that provides data which \tc uses to compose datagrams.
 
 
