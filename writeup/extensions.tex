@@ -66,7 +66,7 @@ $\smaroon{\$F_{\text{deliver}}})$ from some $\reqcont$: \\
     & {\it {\color{gray} {//~$\smaroon{\$ F_{\text{deliver}}}$} held by contract}} \\
   {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data}, 
 $\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\tcadd$: \\
-                 & Let $({\sf id}, {\sf params'}, {\sf callback}, \smaroon{\$ F'_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \_)$ be the most recently recorded tuple for ${\sf id}$\\
+                 & Let $({\sf id}, {\sf params'}, {\sf callback}, \smaroon{\$ F'_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \_)$ be the first recorded tuple for ${\sf id}$\\
  & Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$ \\
                  & Assert ${\sf params} = {\sf params}'$\\
                 &   Assert $\smaroon{\$ F'_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{deliver}}}$\\
@@ -78,7 +78,7 @@ $\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\tcadd$: \\
 
 {\bf Cancel:} & On recv $({\sf id}, \sbrown{\Delta F_{\text{cancel}}})$ 
 from some $\reqcont$\\
-  & Let $({\sf id}, \_, \_, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \reqcont')$ be the most recently recorded tuple for ${\sf id}$ \\
+  & Let $({\sf id}, \_, \_, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \reqcont')$ be the first recorded tuple for ${\sf id}$ \\
    & Assert $\reqcont = \reqcont'$\\
    & Assert ${\sf bDelivered}[{\sf id}]$ not set \\ 
    & Assert ${\sf cur\_time} \geq {\color{blue} \Time_{\text{timeout}}}$\\

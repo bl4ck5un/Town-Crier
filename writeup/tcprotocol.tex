@@ -131,6 +131,16 @@ that is sufficient for our formalism.
 \subsection{A payment-free basic protocol}
 For simplicity, we first specify functionalities in a payment-free version of our basic protocol, i.e., one that does not include gas or fees. Later, in our implementation discussion, we explain how we handle these two forms of payment, and we prove payment-related properties in the paper appendix. For simplicity, we assume a single instance of \engine and a since \tc server, although our architecture could scale up to multiple instances of either. To show messages corresponding to those in Fig.~\ref{fig:dataflow}, we use the label ({\bf msg.}~$m_i$)
 
+\paragraph{The requester contract $\reqcont$.}
+The requester contract $\reqcont$ picks a
+random ${\sf id}$ (sufficiently long to avoid
+collisions except with negligible probability),
+and sends to the \tcontract \tcont
+a request of the form $({\sf id}, {\sf params}, {\sf callback})$,
+where ${\sf callback}$ registers a callback function
+for the fetched authenticated datagram.  
+
+
 \paragraph{The \tcontract \tcont.} The \tcontract, as noted above, accepts a datagram request $(\dgid, \dgform, \dgcallback)$, forwards it to the \tc server, and sends the resulting datagram $\dgm$ to the entry point \dgcallback in the requesting contract \reqcont. As we explain in Section~\ref{sec:implementation}, the blockchain verifies that the response is correctly signed under $\engine$'s key $\pkTC$, so \tcont need not verify the signature explicitly. \tc does, however, have a subtle security requirement. Specifically,  for a given datagram request $\dgid$, \tcont verifies that $\dgform' = \dgform$, where $\dgform$ is the digitally signed message produced by \engine and $\dgform$ is the locally stored parameters. The check is necessary to prevent \relay from corrupting datagram requests passed by \tcont (which, as a public function, has no means of digitally signing requests). \tcont is specified in Fig.~\ref{tbl:tc-contract}. As a reminder, we assume (and enforce) the condition that $\dgid$ is unique to a given request.
 
 \begin{figure}[!htb]
@@ -146,7 +156,7 @@ For simplicity, we first specify functionalities in a payment-free version of ou
 %		 & Send $(\dgid, \dgform)$ to \relay \\
 %\multicolumn{2}{|c|}{\sgray {\it // above implemented by \relay monitoring the blockchain}}\\[5pt]
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm)$ from $\tcadd$: \\
-		 & Let $(\dgid, \dgform', \dgcallback)$ be a most recently recorded tuple corresponding to $\dgid$ :\\
+		 & Let $(\dgid, \dgform', \dgcallback)$ be the first recorded tuple corresponding to $\dgid$ :\\
 		 & Assert $\dgform = \dgform'$\\
                  & Call ${\dgcallback}({\dgm})$ \quad \sgray{\it //~{\bf msg.}~$m_4$}\\
 %                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
