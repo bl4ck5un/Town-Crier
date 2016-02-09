@@ -89,6 +89,44 @@ using \tcont.
 \end{figure}
 
 
+\begin{figure}
+\begin{boxedminipage}{\columnwidth}
+\begin{center}
+{\bf $\fsgx[\enclaveprog, \relay]$: abstraction for SGX}
+\end{center}
+\begin{tabular}{l}
+{\bf Hardcoded:} $\skM$ \\[5pt]
+
+{\bf Assume:} \\ 
+$\enclaveprog$ has entry points {\bf Initialize} and {\bf Resume}\\[5pt]
+
+{\bf Initialize:}\\
+On receive ``initialize'' from $\relay$: \\
+\quad Let ${\sf outp} := \enclaveprog.{\bf Initalize}()$  \\
+\quad $\sigatt := \sigsgx.{\sf Sign}(\skM, (\enclaveprog, {\sf outp}))$ \\[-1pt]
+\qquad \qquad {\it //~models group sig.}\\
+\quad Output  $({\sf outp}, \sigatt)$\\[5pt]
+
+On receive (``resume'', ${\sf params}$) from $\relay$: \\
+\quad Let ${\sf outp} := \enclaveprog.{\bf Resume}({\sf params})$  \\
+\quad Output ${\sf outp}$ 
+\end{tabular}
+\end{boxedminipage}
+\caption{Formal abstraction for SGX attested execution. 
+We adopt a similar modeling approach by Shi et al., where
+the SGX group signature is abstracted with a normal signature
+by a manufacturer key $\pkM$. 
+\elaine{cite our sok paper}
+The above functionality only models a subset of SGX features
+that is sufficient for our formalism.
+}
+\end{figure}
+
+
+\paragraph{Formally abstracting SGX.}
+\elaine{refer to figure and explain}
+
+
 
 \subsection{A payment-free basic protocol}
 For simplicity, we first specify functionalities in a payment-free version of our basic protocol, i.e., one that does not include gas or fees. Later, in our implementation discussion, we explain how we handle these two forms of payment, and we prove payment-related properties in the paper appendix. For simplicity, we assume a single instance of \engine and a since \tc server, although our architecture could scale up to multiple instances of either. To show messages corresponding to those in Fig.~\ref{fig:dataflow}, we use the label ({\bf msg.}~$m_i$)
@@ -196,7 +234,6 @@ $({\sf id}, {\sf params}, \_)$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
 \caption{The Town Crier \medname \relay.}
 \label{fig:relayprot}
 \end{figure}
-
 
 
 

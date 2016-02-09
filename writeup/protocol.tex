@@ -186,38 +186,6 @@ In this case, the Town Crier relay also initialize all enclave instances
 and route the request to the correct enclave instance.}
 \end{figure}
 
-\begin{figure}
-\begin{boxedminipage}{\columnwidth}
-\begin{center}
-{\bf $\fsgx[\enclaveprog, \relay]$: abstraction for SGX}
-\end{center}
-\begin{tabular}{l}
-{\bf Hardcoded:} $\skM$ \\[5pt]
-
-{\bf Assume:} \\ 
-$\enclaveprog$ has entry points {\bf Initialize} and {\bf Resume}\\[5pt]
-
-{\bf Initialize:}\\
-On receive ``initialize'' from $\relay$: \\
-\quad Let ${\sf outp} := \enclaveprog.{\bf Initalize}()$  \\
-\quad $\sigatt := \sigsgx.{\sf Sign}(\skM, (\enclaveprog, {\sf outp}))$ \\[-1pt]
-\qquad \qquad {\it //~models group sig.}\\
-\quad Output  $({\sf outp}, \sigatt)$\\[5pt]
-
-On receive (``resume'', ${\sf params}$) from $\relay$: \\
-\quad Let ${\sf outp} := \enclaveprog.{\bf Resume}({\sf params})$  \\
-\quad Output ${\sf outp}$ 
-\end{tabular}
-\end{boxedminipage}
-\caption{Formal abstraction for SGX attested execution. 
-We adopt a similar modeling approach by Shi et al., where
-the SGX group signature is abstracted with a normal signature
-by a manufacturer key $\pkM$. 
-\elaine{cite our sok paper}
-The above functionality only models a subset of SGX features
-that is sufficient for our formalism.
-}
-\end{figure}
 
 \begin{figure}
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
