@@ -73,14 +73,14 @@ $\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\tcadd$: \\
                  & Send $\smaroon{\$F'_{\text{deliver}}}$ to $\tcadd$ \\
                  & Call ${\sf callback}({\sf data})$ \\[-10pt]
     & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
-    & {\it {\color{gray} {//~all remaining {gas returned to $\pksgx$}}} }\\
+    & {\it {\color{gray} {//~all remaining {gas returned to $\tcadd$}}} }\\
 
 {\bf Cancel:} & On recv $({\sf id}, \sbrown{\Delta F_{\text{cancel}}})$ 
-from some user $\pkU$\\
-  & Let $({\sf id}, \_, \_, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \pkU')$ be the most recently recorded tuple for ${\sf id}$ \\
-   & Assert $\pkU = \pkU'$\\
+from some $\reqcont$\\
+  & Let $({\sf id}, \_, \_, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \reqcont')$ be the most recently recorded tuple for ${\sf id}$ \\
+   & Assert $\reqcont = \reqcont'$\\
    & Assert ${\sf cur\_time} \geq {\color{blue} \Time_{\text{timeout}}}$\\
-  & Send $\smaroon{\$ F_{\text{deliver}}}$ to \pkU\\
+  & Send $\smaroon{\$ F_{\text{deliver}}}$ to \reqcont\\
   \hline
 \end{tabularx}
 \caption{
