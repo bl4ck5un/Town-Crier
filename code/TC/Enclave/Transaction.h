@@ -1,8 +1,11 @@
 #include <sgx_tseal.h>
 #include "stdint.h"
+#include "Commons.h"
 
 #ifndef TX_H
 #define TX_H
+
+void rlp_item(const uint8_t*, const int, bytes&);
 
 #if defined(__cplusplus)
 extern "C" {

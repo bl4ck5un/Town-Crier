@@ -4,8 +4,9 @@ enclave {
     include "sgx_report.h"
 
     trusted {
-        public int ecall_self_test();
-        public int scraper_dispatch();
+        public int handle_request(uint64_t request_id, uint8_t request_type, 
+                   [in, size=req_len] char* req, int req_len, [out, size=resp_len] char* resp, int resp_len);
+        public int Test_main();
 
         public sgx_status_t ecall_create_report ([in]sgx_target_info_t* quote_enc_info, [out]sgx_report_t* report);
 

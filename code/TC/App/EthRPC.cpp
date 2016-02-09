@@ -33,17 +33,17 @@ static int rpc_base(std::string hostname, unsigned port, Json::Value& query, Jso
 
     if(HttpClient.Send(queryStr) != 0)
     {
-        throw std::exception("Error while sending data!");
+        throw std::runtime_error("Error while sending data!");
     }
 
     if(HttpClient.Recv(responseStr) == -1)
     {
-        throw std::exception("Error while receiving data!");
+        throw std::runtime_error("Error while receiving data!");
     }
 
     if (!resReader.parse(responseStr, res))
     {
-        throw std::exception("Parse Error");
+        throw std::runtime_error("Parse Error");
     }
 
     if (!res["error"].isNull())
@@ -51,14 +51,9 @@ static int rpc_base(std::string hostname, unsigned port, Json::Value& query, Jso
         throw std::invalid_argument(res["error"]["message"].asString());
     }
 
-    Json::Value result_details = res["result"];
-
-    if (res["result"].isNull())
-    {
-        throw std::out_of_range("NULL result returned");
-    }
-
     response = res["result"];
+    
+    LL_LOG("response: %s", writer.write(response).c_str());
 
     HttpClient.Close();
     networking::cleanup();
@@ -168,11 +163,34 @@ int fetch_request(std::string hostname, unsigned port, long blk_i, long tx_i, Js
     query["params"][0] = blk_i_str.str();
     query["params"][1] = tx_i_str.str();
 
-    LL_NOTICE("method: %s", query["method"].asString().c_str());
-    LL_NOTICE("block_id: %s", query["params"][0].asCString());
-    LL_NOTICE("trans_id: %s", query["params"][1].asCString());
+    LL_DEBUG("method: %s", query["method"].asString().c_str());
+    LL_DEBUG("block_id: %s", query["params"][0].asCString());
+    LL_DEBUG("trans_id: %s", query["params"][1].asCString());
 
     rpc_base(hostname, port, query, result);
 
     return EXIT_SUCCESS;
+}
+
+unsigned long eth_blockNumber(std::string hostname, unsigned port)
+{
+    Json::Value query;
+    Json::FastWriter writer;
+
+    query["jsonrpc"] = "2.0";
+    query["id"] = 1;
+    query["method"] = "eth_blockNumber";
+
+    LL_DEBUG("method: %s", query["method"].asString().c_str());
+
+    Json::Value resp;
+    rpc_base(hostname, port, query, resp);
+
+    if (resp.isString())
+    {
+        std::string blockNumber = resp.asString();
+        return std::strtoul(blockNumber.c_str(), NULL, 16);
+    }
+        
+    return -1;
 }

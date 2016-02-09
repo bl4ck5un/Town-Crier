@@ -28,8 +28,8 @@ int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_recv_timeout, (mbedtls_net_c
 void SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_free, (mbedtls_net_context* ctx));
 int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_print_string, (const char* str));
 
-sgx_status_t ecall_self_test(sgx_enclave_id_t eid, int* retval);
-sgx_status_t scraper_dispatch(sgx_enclave_id_t eid, int* retval);
+sgx_status_t handle_request(sgx_enclave_id_t eid, int* retval, uint64_t request_id, uint8_t request_type, char* req, int req_len, char* resp, int resp_len);
+sgx_status_t Test_main(sgx_enclave_id_t eid, int* retval);
 sgx_status_t ecall_create_report(sgx_enclave_id_t eid, sgx_status_t* retval, sgx_target_info_t* quote_enc_info, sgx_report_t* report);
 sgx_status_t get_raw_signed_tx(sgx_enclave_id_t eid, int* retval, uint8_t* sealed_nonce, int nonce_len, uint8_t tx[2048], int* len);
 

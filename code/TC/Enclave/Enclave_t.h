@@ -17,8 +17,8 @@ extern "C" {
 #endif
 
 
-int ecall_self_test();
-int scraper_dispatch();
+int handle_request(uint64_t request_id, uint8_t request_type, char* req, int req_len, char* resp, int resp_len);
+int Test_main();
 sgx_status_t ecall_create_report(sgx_target_info_t* quote_enc_info, sgx_report_t* report);
 int get_raw_signed_tx(uint8_t* sealed_nonce, int nonce_len, uint8_t tx[2048], int* len);
 

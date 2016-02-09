@@ -2,7 +2,7 @@
 extern "C" {
 #endif
 
-int yahoo_finance_scraper ();
+float get_closing_price (int month, int day, int year, char* code);
 
 int get_flight_delay(char* date, char* time, char* flight, int* resp);
 

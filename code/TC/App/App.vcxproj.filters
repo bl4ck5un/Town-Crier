@@ -75,9 +75,6 @@
     <ClCompile Include="RemoteAtt.c">
       <Filter>RemoteAtt</Filter>
     </ClCompile>
-    <ClCompile Include="testsuite.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -26,13 +26,19 @@
 } while (0)
 
 
-typedef struct ms_ecall_self_test_t {
+typedef struct ms_handle_request_t {
 	int ms_retval;
-} ms_ecall_self_test_t;
+	uint64_t ms_request_id;
+	uint8_t ms_request_type;
+	char* ms_req;
+	int ms_req_len;
+	char* ms_resp;
+	int ms_resp_len;
+} ms_handle_request_t;
 
-typedef struct ms_scraper_dispatch_t {
+typedef struct ms_Test_main_t {
 	int ms_retval;
-} ms_scraper_dispatch_t;
+} ms_Test_main_t;
 
 typedef struct ms_ecall_create_report_t {
 	sgx_status_t ms_retval;
@@ -115,27 +121,59 @@ typedef struct ms_ocall_print_string_t {
 #pragma warning(disable: 4200)
 #endif
 
-static sgx_status_t SGX_CDECL sgx_ecall_self_test(void* pms)
+static sgx_status_t SGX_CDECL sgx_handle_request(void* pms)
 {
-	ms_ecall_self_test_t* ms = SGX_CAST(ms_ecall_self_test_t*, pms);
+	ms_handle_request_t* ms = SGX_CAST(ms_handle_request_t*, pms);
 	sgx_status_t status = SGX_SUCCESS;
+	char* _tmp_req = ms->ms_req;
+	int _tmp_req_len = ms->ms_req_len;
+	size_t _len_req = _tmp_req_len;
+	char* _in_req = NULL;
+	char* _tmp_resp = ms->ms_resp;
+	int _tmp_resp_len = ms->ms_resp_len;
+	size_t _len_resp = _tmp_resp_len;
+	char* _in_resp = NULL;
 
-	CHECK_REF_POINTER(pms, sizeof(ms_ecall_self_test_t));
+	CHECK_REF_POINTER(pms, sizeof(ms_handle_request_t));
+	CHECK_UNIQUE_POINTER(_tmp_req, _len_req);
+	CHECK_UNIQUE_POINTER(_tmp_resp, _len_resp);
 
-	ms->ms_retval = ecall_self_test();
+	if (_tmp_req != NULL) {
+		_in_req = (char*)malloc(_len_req);
+		if (_in_req == NULL) {
+			status = SGX_ERROR_OUT_OF_MEMORY;
+			goto err;
+		}
 
+		memcpy(_in_req, _tmp_req, _len_req);
+	}
+	if (_tmp_resp != NULL) {
+		if ((_in_resp = (char*)malloc(_len_resp)) == NULL) {
+			status = SGX_ERROR_OUT_OF_MEMORY;
+			goto err;
+		}
+
+		memset((void*)_in_resp, 0, _len_resp);
+	}
+	ms->ms_retval = handle_request(ms->ms_request_id, ms->ms_request_type, _in_req, _tmp_req_len, _in_resp, _tmp_resp_len);
+err:
+	if (_in_req) free(_in_req);
+	if (_in_resp) {
+		memcpy(_tmp_resp, _in_resp, _len_resp);
+		free(_in_resp);
+	}
 
 	return status;
 }
 
-static sgx_status_t SGX_CDECL sgx_scraper_dispatch(void* pms)
+static sgx_status_t SGX_CDECL sgx_Test_main(void* pms)
 {
-	ms_scraper_dispatch_t* ms = SGX_CAST(ms_scraper_dispatch_t*, pms);
+	ms_Test_main_t* ms = SGX_CAST(ms_Test_main_t*, pms);
 	sgx_status_t status = SGX_SUCCESS;
 
-	CHECK_REF_POINTER(pms, sizeof(ms_scraper_dispatch_t));
+	CHECK_REF_POINTER(pms, sizeof(ms_Test_main_t));
 
-	ms->ms_retval = scraper_dispatch();
+	ms->ms_retval = Test_main();
 
 
 	return status;
@@ -253,8 +291,8 @@ SGX_EXTERNC const struct {
 } g_ecall_table = {
 	4,
 	{
-		{(void*)(uintptr_t)sgx_ecall_self_test, 0},
-		{(void*)(uintptr_t)sgx_scraper_dispatch, 0},
+		{(void*)(uintptr_t)sgx_handle_request, 0},
+		{(void*)(uintptr_t)sgx_Test_main, 0},
 		{(void*)(uintptr_t)sgx_ecall_create_report, 0},
 		{(void*)(uintptr_t)sgx_get_raw_signed_tx, 0},
 	}
