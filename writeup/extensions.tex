@@ -306,5 +306,17 @@ at the end of the execution will also be refunded);
 \elaine{fill in}
 \end{theorem}
 
+\begin{proof}[(sketch.)]
+An honest requester $\reqcont$  
+puts in 
+$\sbrown{\Delta F_{\text{request}}} + \smaroon{\$ F_{\text{deliver}}}$
+amount with each request to $\tcont$,
+where $\sbrown{\Delta F_{\text{request}}}$
+is equal to the gas cost of executing the
+{\bf Request} entry point,
+and $\smaroon{\$ F_{\text{deliver}}}$ is the gas cost
+of executing the {\bf Deliver} entry point (including
+the cost of executing the user-defined ${\sf callback}$ function).
 
+\end{proof}
 
