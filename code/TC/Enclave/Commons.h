@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <vector>
 #include "Log.h"
-
+#include "stdio.h"
 
 // home-made Big-endian long int
 // NOTE: no leading zeros. Starts with useful bytes.
@@ -65,4 +65,13 @@ inline void fromHex(const char* src, uint8_t* target, unsigned* len)
         *len = (*len)+1;
     }
     if (*len == 1 && *(target - *len) == 0) *len = 0;
+}
+
+inline void toHex(const uint8_t* bytes, int len, char* hex) {
+    int i;
+    for (i = 0; i < len; i++)
+    {
+        hex += snprintf(hex, 2, "%02X", bytes[i]);
+    }
+    *(hex + 1) = '\0';
 }

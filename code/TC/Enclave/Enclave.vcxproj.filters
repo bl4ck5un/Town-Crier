@@ -22,6 +22,9 @@
     <Filter Include="Source Files\scrapers">
       <UniqueIdentifier>{48358b76-98fb-4bf6-8bc9-f69ad12a14d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Test">
+      <UniqueIdentifier>{9655bf0b-2248-4675-b931-c29269a443f0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Enclave.edl">
@@ -33,9 +36,6 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="RootCerts.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mbedtls-2.2.1\programs\test\mbedTLS_selftest.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ECDAS.c">
@@ -56,9 +56,6 @@
     <ClCompile Include="Scraper_lib.c">
       <Filter>Source Files\scrapers</Filter>
     </ClCompile>
-    <ClCompile Include="YahooF.c">
-      <Filter>Source Files\scrapers</Filter>
-    </ClCompile>
     <ClCompile Include="Flight.cpp">
       <Filter>Source Files\scrapers</Filter>
     </ClCompile>
@@ -73,6 +70,15 @@
     </ClCompile>
     <ClCompile Include="ABI.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EventHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files\Test</Filter>
+    </ClCompile>
+    <ClCompile Include="StockTicker.cpp">
+      <Filter>Source Files\scrapers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -124,6 +130,12 @@
     </ClInclude>
     <ClInclude Include="Commons.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EventHandler.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Main.h">
+      <Filter>Source Files\Test</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -89,9 +89,57 @@ using \tcont.
 \end{figure}
 
 
+\begin{figure}
+\begin{boxedminipage}{\columnwidth}
+\begin{center}
+{\bf $\fsgx[\enclaveprog, \relay]$: abstraction for SGX}
+\end{center}
+\begin{tabular}{l}
+{\bf Hardcoded:} $\skM$ \\[5pt]
+
+{\bf Assume:} \\ 
+$\enclaveprog$ has entry points {\bf Initialize} and {\bf Resume}\\[5pt]
+
+{\bf Initialize:}\\
+On receive ``initialize'' from $\relay$: \\
+\quad Let ${\sf outp} := \enclaveprog.{\bf Initalize}()$  \\
+\quad $\sigatt := \sigsgx.{\sf Sign}(\skM, (\enclaveprog, {\sf outp}))$ \\[-1pt]
+\qquad \qquad {\it //~models group sig.}\\
+\quad Output  $({\sf outp}, \sigatt)$\\[5pt]
+
+On receive (``resume'', ${\sf params}$) from $\relay$: \\
+\quad Let ${\sf outp} := \enclaveprog.{\bf Resume}({\sf params})$  \\
+\quad Output ${\sf outp}$ 
+\end{tabular}
+\end{boxedminipage}
+\caption{Formal abstraction for SGX attested execution. 
+We adopt a similar modeling approach by Shi et al., where
+the SGX group signature is abstracted with a normal signature
+by a manufacturer key $\pkM$. 
+\elaine{cite our sok paper}
+The above functionality only models a subset of SGX features
+that is sufficient for our formalism.
+}
+\end{figure}
+
+
+\paragraph{Formally abstracting SGX.}
+\elaine{refer to figure and explain}
+
+
 
 \subsection{A payment-free basic protocol}
 For simplicity, we first specify functionalities in a payment-free version of our basic protocol, i.e., one that does not include gas or fees. Later, in our implementation discussion, we explain how we handle these two forms of payment, and we prove payment-related properties in the paper appendix. For simplicity, we assume a single instance of \engine and a since \tc server, although our architecture could scale up to multiple instances of either. To show messages corresponding to those in Fig.~\ref{fig:dataflow}, we use the label ({\bf msg.}~$m_i$)
+
+\paragraph{The requester contract $\reqcont$.}
+The requester contract $\reqcont$ picks a
+random ${\sf id}$ (sufficiently long to avoid
+collisions except with negligible probability),
+and sends to the \tcontract \tcont
+a request of the form $({\sf id}, {\sf params}, {\sf callback})$,
+where ${\sf callback}$ registers a callback function
+for the fetched authenticated datagram.  
+
 
 \paragraph{The \tcontract \tcont.} The \tcontract, as noted above, accepts a datagram request $(\dgid, \dgform, \dgcallback)$, forwards it to the \tc server, and sends the resulting datagram $\dgm$ to the entry point \dgcallback in the requesting contract \reqcont. As we explain in Section~\ref{sec:implementation}, the blockchain verifies that the response is correctly signed under $\engine$'s key $\pkTC$, so \tcont need not verify the signature explicitly. \tc does, however, have a subtle security requirement. Specifically,  for a given datagram request $\dgid$, \tcont verifies that $\dgform' = \dgform$, where $\dgform$ is the digitally signed message produced by \engine and $\dgform$ is the locally stored parameters. The check is necessary to prevent \relay from corrupting datagram requests passed by \tcont (which, as a public function, has no means of digitally signing requests). \tcont is specified in Fig.~\ref{tbl:tc-contract}. As a reminder, we assume (and enforce) the condition that $\dgid$ is unique to a given request.
 
@@ -100,16 +148,15 @@ For simplicity, we first specify functionalities in a payment-free version of ou
   \hline
 
   \multicolumn{2}{|c|}{{\bf Program for Town Crier blockchain contract \tcont}} \\ [1ex]
-  {\bf Request:} & On recv $(\dgid, \dgform, \dgcallback)$ from $\reqcont$:   
-\\
-& \qquad \qquad \qquad \qquad \qquad \qquad {\sgray{\it //~{\bf msg.}~$m_1$}} \\
+  {\bf Request:} & On recv $(\dgid, \dgform, \dgcallback)$ from some $\reqcont$:   
+{\sgray{\it //~{\bf msg.}~$m_1$}} \\
 %                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
 %                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
                  & Record $(\dgid, \dgform, \dgcallback)$ \\[5pt] 
 %		 & Send $(\dgid, \dgform)$ to \relay \\
 %\multicolumn{2}{|c|}{\sgray {\it // above implemented by \relay monitoring the blockchain}}\\[5pt]
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm)$ from $\tcadd$: \\
-		 & Let $(\dgid, \dgform', \dgcallback)$ be a most recently recorded tuple corresponding to $\dgid$ :\\
+		 & Let $(\dgid, \dgform', \dgcallback)$ be the first recorded tuple corresponding to $\dgid$ :\\
 		 & Assert $\dgform = \dgform'$\\
                  & Call ${\dgcallback}({\dgm})$ \quad \sgray{\it //~{\bf msg.}~$m_4$}\\
 %                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
@@ -127,11 +174,10 @@ The Town Crier \tcontract \tcont.
 \begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}
 \begin{center}
-{\bf Program for \tcs~\encname \engine (enclave)}
+{\bf Program for \tcs~\encname ($\enclaveprog$)}
 \end{center}
 \begin{tabular}{l}
-%{\bf Inputs}:  ${\sf params}$, \\[5pt]
-%{\bf Initialize}:  On recv (\initcall, $T_0)$: \\ %{\it //~called only once upfront}\\
+{\bf Initialize}:  
 {\bf Initialize}:  On recv (\initcall): \\ %{\it //~called only once upfront}\\
 %\quad Set clock reference point\\
 %\quad Record $T_0$ \elaine{this is never used} \\ 
@@ -182,20 +228,133 @@ On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 {\bf  Loop forever}: \\
 %{\bf Request}:
 Whenever \tcont receives 
-%\elaine{TODO: add gas stuff below}
-%On recv 
+a request
 $({\sf id}, {\sf params}, \_)$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
 %\quad Parse ${\sf params} := (\weburl, \dgspec, T)$\\
 %\quad Fork: \\
 \ \quad Send $(\text{\resumecall}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
 \ \quad On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
-\ \quad \quad  {\sf Send} $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ to \tcont  %from \tcadd \\
-\ \  \sgray{\it //~{\bf msg.}~$m_3$}
+\ \quad \quad  {\sf AuthSend} $({\sf id}, {\sf params}, {\sf data})$ to \tcont as \tcadd \\
+\hspace{50mm}\sgray{\it //~{\bf msg.}~$m_3$}\\
 \end{tabular}
 \end{boxedminipage}
 \caption{The Town Crier \medname \relay.}
 \label{fig:relayprot}
 \end{figure}
+
+\subsection{Formal Guarantees: Authenticity of Data Feed}
+Roughly speaking, authenticity means that 
+an adversary (including a corrupt
+user, a corrupt relay, or the collusion thereof)
+cannot convince   
+the Town Crier blockchain contract 
+$\tcont$ to accept 
+a wrong data feed. 
+Here a wrong data feed means any content
+that differs from the expected content
+obtained by crawling the specified \weburl at 
+the specified time $T$.
+
+In formally defining 
+authenticity, 
+we assume that the user and the blockchain
+contract $\tcont$ behave honestly.
+Recall that the user must verify 
+upfront the attestation $\sigatt$ 
+that vouches 
+for the enclave's public key $\pksgx$.
+
+\elaine{the proof may need to be fixed since the protocol was modified.}
+
+\begin{definition}[Authenticity]
+We say that the Town Crier protocol 
+satisifies {\it authenticity} of data feed,
+if for any polynomial-time adversary
+that can interact arbitrarily with $\fsgx$,
+it cannot 
+persuade an honest verifier to accept
+a tuple $(\pksgx, \sigatt, {\sf params}:=(\weburl, \pkurl, T), {\sf data}, \sigma)$
+%${\sf params} := (\weburl, \pkurl, T)$).
+where ${\sf data}$ is not 
+the contents of 
+\weburl with the public key $\pkurl$ at time $T$.
+More formally, 
+for any probablistic polynomial-time adversary $\algA$
+\[
+\begin{array}{l}
+\Pr\left[
+\begin{array}{l}
+(\pksgx, \sigatt, {\sf id}, {\sf params}, {\sf data}, \sigma) \leftarrow 
+\algA^{\fsgx}(1^\lambda) :\\
+\quad \left(\sigsgx.{\sf Verify}(\pkM, \sigatt, (\enclaveprog, \pksgx)) = 1\right) \wedge \\
+\quad \left(\Sigma.{\sf Verify}(\pksgx, {\sf id}, {\sf params}, {\sf data})  = 1\right) \wedge\\
+\quad {\sf data} \neq \enclaveprog({\sf params}) 
+\end{array}
+\right] \\[3pt] 
+\leq {\sf negl}(\lambda)
+\end{array}
+\]
+\label{defn:auth}
+\end{definition}
+
+
+\begin{theorem}[Authenticity]
+Assume that $\sigsgx$
+and $\Sigma$ are secure signature schemes (recall
+that we follow Shi et al. \elaine{cite} who show
+how to abstractly  
+model SGX's group signature as a regular signature
+scheme under a manufacturer public key $\pkM$),
+%and assume that the cryptographic protocol used to realize the secure channel
+%with $\pkurl$ is secure;
+then, the above 
+protocol achieves authenticity of data feed by Definition~\ref{defn:auth}.
+\end{theorem}
+\begin{proof} (sketch.)
+We show that if the 
+adversary $\algA$ succeeds in a forgery with non-negligible probability,
+we can construct an adversary $\algB$ that can either
+break $\sigsgx$ or $\Sigma$ with non-neligible probability.
+We consider two cases. 
+The reduction $\algB$ will flip a random coin to guess which
+case it is, and if the guess is wrong, simply abort.
+\begin{itemize}[leftmargin=5mm]
+\item
+Case 1: $\algA$ outputs a signature $\sigma$ that uses the same  
+$\pksgx$ as the SGX functionality $\fsgx$.
+In this case, $\algB$ will try to break $\Sigma$. 
+$\algB$ interacts with a signature challenger ${\sf Ch}$ who generates
+some $(\pk^*, \sk^*)$ pair, and gives to $\algB$ the public key
+$\pk^*$. $\algB$ simulates 
+$\fsgx$ by implicitly letting $\pksgx := \pk^*$.
+Whenever $\fsgx$ needs to sign a query, $\algB$ passes the signing query
+onto the signature challenger ${\sf Ch}$.
+
+Since ${\sf data} \neq \enclaveprog({\sf params})$,
+$\algB$ cannot have queried ${\sf Ch}$  
+on a tuple of the form $(\_, {\sf params}, {\sf data})$. 
+Therefore, $\algB$ simply outputs 
+what $\algA$ 
+outputs (suppressing unnecessary terms) as the signature forgery. 
+
+\item
+Case 2:
+ $\algA$ outputs a signature $\sigma$ that uses a different 
+$\pksgx$ as the SGX functionality $\fsgx$.
+In this case, $\algB$ will seek to break $\sigsgx$.
+$\algB$ interacts with a signature challenger ${\sf Ch}$, who generates
+some $(\pk^*, \sk^*)$ pair, and gives to $\algB$ the public key
+$\pk^*$. $\algB$ simulates $\fsgx$ by implicitly setting
+$\pkM := \pk^*$.
+Whenever $\fsgx$ needs to make a signature
+with $\skM$, 
+$\algB$ simply passes the signature query onto ${\sf Ch}$.
+In this case, in order for $\algA$ to succeed,
+it must produce a valid signature $\sigatt$ 
+for a different public key $\pk'$.
+Therefore, $\algB$ simply outputs this as a signature forgery.
+\end{itemize}
+\end{proof}
 
 
 

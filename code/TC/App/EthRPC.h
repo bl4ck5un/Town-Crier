@@ -11,6 +11,7 @@ extern "C" {
 
 int send_transaction(char* tx);
 int fetch_request(std::string hostname, unsigned port, long block_num, long tx_i, Json::Value& tx);
+unsigned long eth_blockNumber(std::string hostname, unsigned port);
 
 #if defined(__cplusplus)
 }

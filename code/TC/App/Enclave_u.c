@@ -1,12 +1,18 @@
 #include "Enclave_u.h"
 
-typedef struct ms_ecall_self_test_t {
+typedef struct ms_handle_request_t {
 	int ms_retval;
-} ms_ecall_self_test_t;
+	uint64_t ms_request_id;
+	uint8_t ms_request_type;
+	char* ms_req;
+	int ms_req_len;
+	char* ms_resp;
+	int ms_resp_len;
+} ms_handle_request_t;
 
-typedef struct ms_scraper_dispatch_t {
+typedef struct ms_Test_main_t {
 	int ms_retval;
-} ms_scraper_dispatch_t;
+} ms_Test_main_t;
 
 typedef struct ms_ecall_create_report_t {
 	sgx_status_t ms_retval;
@@ -172,19 +178,25 @@ static const struct {
 	}
 };
 
-sgx_status_t ecall_self_test(sgx_enclave_id_t eid, int* retval)
+sgx_status_t handle_request(sgx_enclave_id_t eid, int* retval, uint64_t request_id, uint8_t request_type, char* req, int req_len, char* resp, int resp_len)
 {
 	sgx_status_t status;
-	ms_ecall_self_test_t ms;
+	ms_handle_request_t ms;
+	ms.ms_request_id = request_id;
+	ms.ms_request_type = request_type;
+	ms.ms_req = req;
+	ms.ms_req_len = req_len;
+	ms.ms_resp = resp;
+	ms.ms_resp_len = resp_len;
 	status = sgx_ecall(eid, 0, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
 }
 
-sgx_status_t scraper_dispatch(sgx_enclave_id_t eid, int* retval)
+sgx_status_t Test_main(sgx_enclave_id_t eid, int* retval)
 {
 	sgx_status_t status;
-	ms_scraper_dispatch_t ms;
+	ms_Test_main_t ms;
 	status = sgx_ecall(eid, 1, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;

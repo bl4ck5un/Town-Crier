@@ -97,7 +97,7 @@ static int run_test_snprintf( void )
             test_snprintf( 5, "123",         3 ) != 0 );
 }
 
-int ecall_self_test()
+int mbedtls_self_test()
 {
     int ret = 0, v;
 #if defined(MBEDTLS_MEMORY_BUFFER_ALLOC_C)
