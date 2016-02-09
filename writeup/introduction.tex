@@ -1,55 +1,23 @@
 \section{Introduction}
 
-Smart contracts are computer programs that autonomously facilitate or execute a contract. For decades, they have been envisioned as a means for extending the reach of existing contract law and rendering it more precise and efficiently executable through precise logical specification of legal agreements. Szabo, who coined the term ``smart contact'' in a seminal 1993 paper~\cite{}, gave as an example a smart contract that enforces car loan payments. If the owner of the car fails to make a timely payment, a smart contract could revoke physical access and return control of the ignition key to the bank. The contract could additionally be programmed to do so only at a time that is safe for the the owner, e.g., while the car is parked.
+Smart contracts are computer programs that autonomously facilitate or execute a contract. For decades, they have been envisioned as a means to extend the reach of existing contract law and render it more precise and efficiently executable through logical specification of legal agreements. Szabo, who coined the term ``smart contact'' in a seminal 1993 paper~\cite{}, gave as an example a smart contract that enforces car loan payments. If the owner of the car fails to make a timely payment, a smart contract could revoke physical access and return control of the ignition key to the bank. The contract could additionally be programmed to do so only at a time that is safe for the the owner, e.g., while the car is parked.
 
-Thanks to two properties, the emergence of decentralized cryptocurrencies such as Bitcoin has created new opportunities to realize smart contracts. First, cryptocurrencies equate control of their assets with knowledge of a private cryptographic key, in principle making control of money possible by an arbitrary computer program. Second, cryptocurrencies are built atop blockchains, whose state evolves through a consensus protocol in which transactions are processed as computations over a global data structure. As computations are performed in a decentralized manner, the system of blockchain computation may be treated in its ideal form as the equivalent of a trusted third party. This simulated trusted third party ensures fair, automated execution of computations on the blockchain and eliminates the need for trusted intermediaries. 
+Thanks to two properties, the emergence of decentralized cryptocurrencies such as Bitcoin has created new opportunities to realize smart contracts. First, cryptocurrencies equate control of their assets with knowledge of a private cryptographic key, in principle making control of money possible by an arbitrary computer program. Second, cryptocurrencies are built atop blockchains, whose state evolves through a consensus protocol in which transactions are processed as computations over a global data structure. As computations are decentralized, the system of blockchain computation as an idealized abstraction may be viewed as equivalent to a trusted third party. This simulated trusted third party ensures fair, automated execution of computations on the blockchain and eliminates the need for trusted intermediaries. 
 
 While the scripting language embodied in Bitcoin is intentionally limited (e.g., lacks support for loops), the recently launched Ethereum cryptocurrency permits the creation of fully decentralized blockchain code in a Turing-complete framework. Thus, in principle, Ethereum can realize fully expressive, self-enforcing, and self-executing smart contracts, going a long way toward realizing the vision of researchers and proponents.  
 
 The most compelling applications of smart contracts, however, as Szabo's example shows, cannot be realized in isolation on a blockchain, but require access to data about real-world phenomena. Financial contracts and derivatives, perhaps the most commonly cited applications of Ethereum~\cite{}, must be able to consume data about financial markets, including equity and commodity prices and exchange rates. Other applications of smart contracts, such as insurance policies, are only realizable with access to data about weather, flights, delivery of goods, and so forth. 
 
-To meet smart contracts' need for data, the architects of Ethereum have proposed the deployment of \emph{data feeds} (sometimes called ``oracles''), contracts on the blockchain that serve data requests by other contracts~\cite{whitepaper,yellowpaper}. A few such data feeds, such as PriceFeed and Oraclize.it, support Ethereum smart contracts today, but have a notable drawback: They provide no assurance of trustworthy data beyond the reputation of their operators (who are typically individuals or small entities).\footnote{Oraclize.it itself makes use of TLSnotary to notarize data, thereby distributing trust across two (small) operators.} To address this problem, systems such as SchellingCoin~\cite{} have been proposed that rely on prediction markets to decentralize trust; briefly, these systems provide financial mechanisms that incentivize community members to vote in favor of truthful value assignments to data (or to make predictions~\cite{Augur}). While decentralization of trust is attractive, and indeed underpins the trust model in Ethereum itself, prediction markets can support only a limited number of data feeds and have not yet seen widespread use in Ethereum. The lack of a substantive ecosystem of trustworthy data feeds in Ethereum remains a critical obstacle to its evolution. 
+To meet smart contracts' need for data, the architects of Ethereum have proposed the deployment of \emph{data feeds} (sometimes called ``oracles''), contracts on the blockchain that serve data requests by other contracts~\cite{whitepaper,yellowpaper}. A few such data feeds, such as PriceFeed and Oraclize.it, support Ethereum smart contracts today, but have a notable drawback: They provide no assurance of trustworthy data beyond the reputation of their operators (who are typically individuals or small entities), even for data ultimately obtained from trustworthy sources.\footnote{Oraclize.it itself makes use of TLSnotary to notarize data, thereby distributing trust across two (small) operators.\ari{I think TLSnotary just signs webpages. So it's not clear how the mapping from pages to data is authenticated.}} To address this problem, systems such as SchellingCoin~\cite{} have been proposed that rely on prediction markets to decentralize trust; briefly, these systems provide financial mechanisms that incentivize community members to vote in favor of truthful value assignments to data (or to make predictions~\cite{Augur}). While decentralization of trust is attractive, and indeed underpins the trust model in Ethereum itself, prediction markets can support only a limited number of data feeds and have not yet seen widespread use in Ethereum. The lack of a substantive ecosystem of trustworthy data feeds in Ethereum remains a critical obstacle to its evolution and presents a bootstrapping problem, as widely trusted entities may be reluctant to provide special-purpose data feeds to a fledgling system.
 
-At the same time, a wealth of data
+At the same time, however, existing e-commerce already relies on a wealth of broadly trusted data available from existing sources, namely websites operated by generally reputable organizations. The sources of such data, moreover, can be authenticated by a client if served over HTTPS. Smart contracts, however, cannot directly access internet data, as they do not have network access.
 
-We propose a system called \emph{Town Crier} that acts as a bridge between existing data sources and the Ethereum blockchain. 
+We present a system called \emph{Town Crier} (TC) that aims to fill this gap by serving as what we call an \emph{authenticated data feed} (ADF). TC functions as a bridge between existing HTTPS-enabled data sources and the Ethereum blockchain, retrieving data from these sources and serving it to relying contracts on the blockchain. TC avoids the problem of bootstrapping trust by executing its core functionality in an environment protected by \emph{trusted hardware}. Specifically, TC makes use of Intel's recently released Software Guard Instructions (SGX), which enables a server to: Run a piece of code $\prog$ in an isolated environment called an \emph{enclave} (protected against even a malicious OS) and attest (prove) to a remote party that a given output comes from a (published) instance of $\prog$. By operating through a smart-contract front end, TC can thus furnish a requested piece $X$ of data from a particular trusted source, e.g., \texttt{https://www.Y.com}, such that a relying contract $\cont$ can authenticate that $X$ came from $Y$ subject only to: (1) Trust that $\prog$ correctly retrieves and serves data and (2) The hardware on which TC runs has not been tampered with. (Of course, there is also a need to trust Intel, which serves as a root of trust for SGX-enabled hosts in general.)
 
+While conceptually simple, TC presents a number of technical challenges. First, there are implementation challenges in interfacing enclave code with the blockchain. Ethereum lacks native support for and therefore does not permit efficient on-chain verification of the proprietary digital signatures SGX uses to generate attestations on enclave code. Enclave code cannot directly scrape blockchain data and must instead rely on an untrusted process to retrieve correct blockchain data. (The latter problem cannot be addressed through the obvious mechanism of digitally signing blockchain data, as all data on the blockchain is publicly visible, and thus it cannot store private keys.) A second challenge is in the proofs of security for TC. These proofs require harmonized formalism for SGX and smart contracts that existing work does not yet provide. Moreover, Ethereum requires expenditure of a currency-derived resource known as \emph{gas} to power contracts; thus proving the availability of TC---a critical property for relying contracts---requires conventional analysis of data integrity coupled with a proof of sustainable gas expenditure. Finally, the use of TC raises several confidentiality challenges. Foremost among these is the fact that since blockchain data are visible globally, na\"{i}ve use of TC would expose potentially sensitive data requests, e.g., an flight-insurance policy would publicly reveal the flight information of policyholders, and would render TC vulnerable to traffic analysis on served data. Much of our contribution in the design of TC involves addressing these challenges. 
 
+Beyond merely serving publicly visible requests for generic data, TC supports private data requests in which the request is encrypted and custom data requests in which the requested data comes from an access-controlled system, such as an individual user's account. Thus TC can support a rich variety of smart contracts, as shown by our implementation of three example contracts: (1) A financial derivative (cash-settled put option) that requires stock ticker data; (2) A flight insurance contract that relies on private data requests about flight cancellations; and (3) A contract for exchanging currency in an online role playing game for ether, the Ethereum currency, using custom data requests.
 
+In summary, our contributions are as follows:
 
-\subsection{Need for data feeds}
-
-
-
-
-Town Crier
----------------
-
-Key observation: Data often already exists. Challenge is to relay it in a trustworthy manner.
-
-We propose TC. Basic ideas...
-
-Challenges: (1) No support for attestations on blockchain; (2) Proofs of security especially challenging due to need for gas neutrality; (3) 
-
-We demonstrate TC application to three different contract types
-
-TC can be built upon to achieve many different goals 
-
-
-
-
-Applications:
-\begin{itemize}
-\item micro-insurance:
-    \begin{itemize}
-    \item weather
-    \item item delivery
-    \item flight delay (note: something we could implement easily ourselves...)
-    \end{itemize}
-\item Ethereum and USD exchange
-\item stock price
-\item BTC exchange (with and without ADF)
-\item Simple derivatives
-\item sports betting
-\end{itemize}
 
