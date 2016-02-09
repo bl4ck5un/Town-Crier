@@ -8,27 +8,19 @@ While the scripting language embodied in Bitcoin is intentionally limited (e.g.,
 
 The most compelling applications of smart contracts, however, as Szabo's example shows, cannot be realized in isolation on a blockchain, but require access to data about real-world phenomena. Financial contracts and derivatives, perhaps the most commonly cited applications of Ethereum~\cite{}, must be able to consume data about financial markets, including equity and commodity prices and exchange rates. Other applications of smart contracts, such as insurance policies, are only realizable with access to data about weather, flights, delivery of goods, and so forth. 
 
-To meet smart contracts' need for data, the architects of Ethereum have proposed the deployment of \emph{data feeds} (sometimes called ``oracles''), contracts on the blockchain that serve data requests by other contracts~\cite{whitepaper,yellowpaper}. A few such data feeds, such as PriceFeed and Oraclize.it, exist in Ethereum today, but have a notable drawback: They provide no assurance of trustworthy data beyond the reputation of their operators (who are typically individuals or small entities). To address this problem, systems such as SchellingCoin~\cite{} have been proposed that rely on prediction markets to decentralize trust; briefly, these systems provide financial mechanisms that incentivize community members to vote in favor of truthful value assignments to data (or to make predictions~\cite{Augur}). While decentralization of trust is attractive, and indeed underpins the trust model in Ethereum itself, prediction markets can support only a limited number of data feeds and have not yet seen widespread use in Ethereum. The problem of creating an ecosystem of trustworthy data feeds in Ethereum thus remains a critical obstacle to its evolution. 
+To meet smart contracts' need for data, the architects of Ethereum have proposed the deployment of \emph{data feeds} (sometimes called ``oracles''), contracts on the blockchain that serve data requests by other contracts~\cite{whitepaper,yellowpaper}. A few such data feeds, such as PriceFeed and Oraclize.it, support Ethereum smart contracts today, but have a notable drawback: They provide no assurance of trustworthy data beyond the reputation of their operators (who are typically individuals or small entities).\footnote{Oraclize.it itself makes use of TLSnotary to notarize data, thereby distributing trust across two (small) operators.} To address this problem, systems such as SchellingCoin~\cite{} have been proposed that rely on prediction markets to decentralize trust; briefly, these systems provide financial mechanisms that incentivize community members to vote in favor of truthful value assignments to data (or to make predictions~\cite{Augur}). While decentralization of trust is attractive, and indeed underpins the trust model in Ethereum itself, prediction markets can support only a limited number of data feeds and have not yet seen widespread use in Ethereum. The lack of a substantive ecosystem of trustworthy data feeds in Ethereum remains a critical obstacle to its evolution. 
+
+At the same time, a wealth of data
+
+We propose a system called \emph{Town Crier} that acts as a bridge between existing data sources and the Ethereum blockchain. 
+
+
 
 
 \subsection{Need for data feeds}
 
 
 
-What smart contracts are.
-
-Applications. Financial contracts and derivatives.
-
-Example.
-
-First decentralized system is Ethereum.
-
-Challenge: Need data
-
-
-Current state of data feeds. Yellow paper proposes data feed contracts, but doesn't explain how they are to be trusted. SchellingCoin is a proposal for a data feed based on an idea due to Thomas Schelling that works like a prediction market: In a nutshell, participants vote on the value of a piece of data and are rewarded for agreeing with the consensus value (or, in the case of a numerical answer, choosing an answer between the 25\% and 75\% percentile)--the median answer is deemed correct. Requires voting and presumes honest majority. Augur takes this approach, but has not launched at the time of writing.
-
-There are feeds such as PriceFeed. Trust assumptions.
 
 Town Crier
 ---------------
