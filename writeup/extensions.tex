@@ -115,8 +115,9 @@ that $\pksgx$ will need to put in to call the {\bf Deliver} entry point.
 Whenever \tcont receives 
 a request
 $({\sf id}, {\sf params}, \_, \_,$ $\sbrown{\Delta F_{\text{request}}}$ $+ \smaroon{\$ F_{\text{deliver}}})$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
-%\quad Parse ${\sf params} := (\weburl, \dgspec, T)$\\
-%\quad Fork: \\
+\ \quad Assert $\sbrown{\Delta F_{\text{min}}} \leq  
+\smaroon{\$ F_{\text{deliver}}}
+\leq \sbrown{\Delta F_{\text{max}}} $ \\
 \ \quad Send $(\text{\resumecall}, ({\sf id}, {\sf params}, {\tt F_{\text{deliver}}} )$ to $\fsgx[\enclaveprog, \relay]$ \\
 \ \quad On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
 \ \quad \quad  
