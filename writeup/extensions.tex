@@ -128,6 +128,36 @@ $({\sf id}, {\sf params}, \_, \_,$ $\sbrown{\Delta F_{\text{request}}}$ $+ \smar
 \label{fig:relayprot}
 \end{figure}
 
+\begin{figure}[!h]
+\begin{boxedminipage}{\columnwidth}
+\begin{center}
+{\bf Program for \tcs~\encname \engine ($\enclaveprog$)}
+\end{center}
+\begin{tabular}{l}
+%{\bf Inputs}:  ${\sf params}$, \\[5pt]
+%{\bf Initialize}:  On recv (\initcall, $T_0)$: \\ %{\it //~called only once upfront}\\
+{\bf Initialize}:  
+Same as Figure \elaine{refer}
+\\[3pt]
+
+%{\bf Attest}:  On recv \attcall: \\ %{\it //~called only once upfront}\\
+%\quad $T := \clock()$\\
+%\quad Call quoting enclave with supp.~data $(\pkTC, T)$
+%\\[5pt]
+
+{\bf Resume:} On recv (\resumecall, $({\sf id}, {\sf params}, {\tt F_{\text{deliver}}}))$\\
+\quad Same as before except the last two statements:\\
+\quad $\sigma := \Sigma.{\sf Sign}({\skTC}, ({\sf id}, {\sf params}, {\sf data},
+\sbrown{\Delta F_{\text{deliver}}}))$\\
+\quad Output $(({\sf id}, {\sf params}, {\sf data}, \sbrown{\Delta F_{\text{deliver}}}), \sigma)$
+\end{tabular}
+\end{boxedminipage}
+\caption{
+The \tcs~\encname \engine.
+} 
+\label{fig:engineprot}
+\end{figure}
+
 
 
 \paragraph{Town Crier protocol with transaction fees.}
