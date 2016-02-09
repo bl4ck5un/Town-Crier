@@ -47,6 +47,86 @@ upper bound, the function execution is aborted and
 state reverted to before the function is invoked.
 \end{itemize}
 
+\begin{figure}
+\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
+  \hline
+
+  \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont with fees}} \\ [1ex]
+  {\bf Request:} & On recv $({\sf id}, {\sf params}, 
+{\sf callback},  
+{\color{blue} \Time_{\text{timeout}}},
+\sbrown{\Delta F_{\text{request}}}$ $+$ 
+$\smaroon{\$F_{\text{deliver}}})$ from some $\reqcont$: \\
+		& Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$\\
+                 & Record $({\sf id}, {\sf params}, {\sf callback}, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, {\reqcont})$
+%\elaine{this makes it look like it's sending money}
+\\[-10pt]
+    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{request}}}}$ {gas consumed}}} }\\[-10pt]
+    & {\it {\color{gray} {//~all remaining {gas returned to $\reqcont$}}} }\\[-10pt]
+    & {\it {\color{gray} {//~$\smaroon{\$ F_{\text{deliver}}}$} held by contract}} \\
+  {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data}, 
+$\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\tcadd$: \\
+                 & Let $({\sf id}, {\sf params'}, {\sf callback}, \smaroon{\$ F'_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \_)$ be the most recently recorded tuple for ${\sf id}$\\
+ & Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$ \\
+                 & Assert ${\sf params} = {\sf params}'$\\
+                &   Assert $\smaroon{\$ F'_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{deliver}}}$\\
+                 & Send $\smaroon{\$F'_{\text{deliver}}}$ to $\tcadd$ \\
+                 & Call ${\sf callback}({\sf data})$ \\[-10pt]
+    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
+    & {\it {\color{gray} {//~all remaining {gas returned to $\pksgx$}}} }\\
+
+{\bf Cancel:} & On recv $({\sf id}, \sbrown{\Delta F_{\text{cancel}}})$ 
+from some user $\pkU$\\
+  & Let $({\sf id}, \_, \_, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \pkU')$ be the most recently recorded tuple for ${\sf id}$ \\
+   & Assert $\pkU = \pkU'$\\
+   & Assert ${\sf cur\_time} \geq {\color{blue} \Time_{\text{timeout}}}$\\
+  & Send $\smaroon{\$ F_{\text{deliver}}}$ to \pkU\\
+  \hline
+\end{tabularx}
+\caption{
+Town Crier contract \tcont reflecting fees.
+$\sbrown{\Delta F_{\text{request}}}$ denotes the gas for executing the {\bf Request} 
+entry point. 
+$\sbrown{\Delta F_{\text{deliver}}}$ denotes the gas for executing the {\bf Deliver} entry point
+that includes the user-defined ${\sf callback}$.
+\smaroon{\$F_{\text{deliver}}} denotes 
+${\tt F_{\text{deliver}}}$ amount of 
+explicit, non-gas currency units.
+Essentially, the requester first pays 
+$\smaroon{\$ F_{\text{deliver}}}$ currency units which will be used to refund
+the $\sbrown{\Delta F_{\text{deliver}}}$ amount of gas
+that $\pksgx$ will need to put in to call the {\bf Deliver} entry point.
+}
+\label{tbl:tc-contract}
+\end{figure}
+
+\begin{figure}[!h]
+\begin{boxedminipage}{\columnwidth}
+\begin{center}
+{\bf Program for Town Crier \medname $\relay$}
+\end{center}
+\begin{tabular}{l}
+{\bf Initialize}: Same as Figure~\ref{fig:relayprot}\\
+%Send \initcall to $\fsgx[\enclaveprog, \relay]$\\
+%On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
+%\quad Publish $(\pkTC, \sigatt)$\\[5pt]
+
+{\bf  Loop forever}: \\
+Whenever \tcont receives 
+$({\sf id}, {\sf params}, \_, \_, \sbrown{\Delta F_{\text{request}}} + \smaroon{\$ F_{\text{deliver}}})$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
+%\quad Parse ${\sf params} := (\weburl, \dgspec, T)$\\
+%\quad Fork: \\
+\ \quad Send $(\text{\resumecall}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
+\ \quad On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
+\ \quad \quad  {\sf Send} $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ to \tcont  %from \tcadd \\
+\ \  \sgray{\it //~{\bf msg.}~$m_3$}
+\end{tabular}
+\end{boxedminipage}
+\caption{The Town Crier \medname \relay.}
+\label{fig:relayprot}
+\end{figure}
+
+
 
 
 
