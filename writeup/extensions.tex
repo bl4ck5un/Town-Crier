@@ -269,23 +269,33 @@ entry point, the following holds:
 1) 
 $\smaroon{\$ F_{\text{deliver}}}
 = \sbrown{\Delta F_{\text{deliver}}}$;
-i.e., the gas $\pksgx$ advances is equal
+i.e., the gas $\tcadd$ advances is equal
 to the fees the 
 requester deposited with the \tcont contract;
-and 2)
+2)
 the amount gas sent 
-$
+$\sbrown{\Delta F_{\text{deliver}}} = 
+\smaroon{\$ F_{\text{deliver}}}
+\leq 
+\sbrown{\Delta F_{\text{max}}} 
+$;
+in other words, 
+$\tcadd$ has sufficient funds  
+if it starts out with $\sbrown{\Delta F_{\text{max}}}$
+in its wallet;
+and
+3) 
+$\sbrown{\Delta F_{\text{min}}} \leq
 \sbrown{\Delta F_{\text{deliver}}} = 
 \smaroon{\$ F_{\text{deliver}}}
-\geq \sbrown{\Delta F_{\text{min}}}$;
-in other words, the statement that refunds
-$\pksgx$ 
+$; in other words, the statement that refunds
+$\tcadd$ 
 $\smaroon{\$ F_{\text{deliver}}}$
 amount will definitely be invoked. This 
 ensures that the full gas amount 
 $\sbrown{\Delta F_{\text{deliver}}}$
-that $\pksgx$ advanced will be refunded (and anything more left
-at the end of the execution will also be refunded).
+that $\tcadd$ advanced will be refunded (and anything more left
+at the end of the execution will also be refunded);
 \end{proof}
 
 
