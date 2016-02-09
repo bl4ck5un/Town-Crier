@@ -70,6 +70,7 @@ $\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\tcadd$: \\
  & Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$ \\
                  & Assert ${\sf params} = {\sf params}'$\\
                 &   Assert $\smaroon{\$ F'_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{deliver}}}$\\
+		& Set ${\sf bDelivered}[{\sf id}]$ \\
                  & Send $\smaroon{\$F'_{\text{deliver}}}$ to $\tcadd$ \\
                  & Call ${\sf callback}({\sf data})$ \\[-10pt]
     & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
@@ -79,6 +80,7 @@ $\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\tcadd$: \\
 from some $\reqcont$\\
   & Let $({\sf id}, \_, \_, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \reqcont')$ be the most recently recorded tuple for ${\sf id}$ \\
    & Assert $\reqcont = \reqcont'$\\
+   & Assert ${\sf bDelivered}[{\sf id}]$ not set \\ 
    & Assert ${\sf cur\_time} \geq {\color{blue} \Time_{\text{timeout}}}$\\
   & Send $\smaroon{\$ F_{\text{deliver}}}$ to \reqcont\\
   \hline
