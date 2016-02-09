@@ -113,13 +113,15 @@ that $\pksgx$ will need to put in to call the {\bf Deliver} entry point.
 
 {\bf  Loop forever}: \\
 Whenever \tcont receives 
-$({\sf id}, {\sf params}, \_, \_, \sbrown{\Delta F_{\text{request}}} + \smaroon{\$ F_{\text{deliver}}})$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
+a request
+$({\sf id}, {\sf params}, \_, \_,$ $\sbrown{\Delta F_{\text{request}}}$ $+ \smaroon{\$ F_{\text{deliver}}})$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
 %\quad Parse ${\sf params} := (\weburl, \dgspec, T)$\\
 %\quad Fork: \\
-\ \quad Send $(\text{\resumecall}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
+\ \quad Send $(\text{\resumecall}, ({\sf id}, {\sf params}, {\tt F_{\text{deliver}}} )$ to $\fsgx[\enclaveprog, \relay]$ \\
 \ \quad On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
-\ \quad \quad  {\sf Send} $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ to \tcont  %from \tcadd \\
-\ \  \sgray{\it //~{\bf msg.}~$m_3$}
+\ \quad \quad  
+{\sf AuthSend} $(({\sf id}, {\sf params}, {\sf data}, \sbrown{\Delta F_{\text{deliver}}}))$ to \tcont as \tcadd \\
+\hspace{50mm} \sgray{\it //~{\bf msg.}~$m_3$}
 \end{tabular}
 \end{boxedminipage}
 \caption{The Town Crier \medname \relay.}
@@ -189,8 +191,7 @@ where Town Crier gets refunded for the gas is always reached.
 Finally, the Town Crier relay passes
 the tuple $({\tt resume}, 
 ({\sf id}, {\sf params}, 
-\sbrown{\Delta F_{\text{deliver}}}
-= \smaroon{\$ F_{\text{deliver}}}
+{\tt F_{\text{deliver}}}
 ))$
 as input to the enclave.
 
