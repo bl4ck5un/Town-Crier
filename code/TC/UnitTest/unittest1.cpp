@@ -7,7 +7,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace UnitTest
 {		
-	TEST_CLASS(UnitTest1)
+	TEST_CLASS(BookKeeping)
 	{
 	public:
 		
@@ -37,11 +37,5 @@ namespace UnitTest
 
             sqlite3_close(db);
 		}
-
-        TEST_METHOD(TestABI)
-		{
-		    
-		}
-
 	};
 }

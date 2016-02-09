@@ -1,4 +1,5 @@
 #include "sqlite3.h"
+#include "stdio.h"
 #include "Log.h"
 #include <cstddef>
 #include <stdio.h>

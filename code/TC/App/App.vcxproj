@@ -306,7 +306,6 @@
     <ClCompile Include="RemoteAtt.c" />
     <ClCompile Include="EthRPC.cpp" />
     <ClCompile Include="sys_helper.cpp" />
-    <ClCompile Include="testsuite.c" />
     <ClCompile Include="net_u.c" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>

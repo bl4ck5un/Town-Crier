@@ -5,6 +5,8 @@
 
 using namespace std;
 
+#pragma warning (push)
+#pragma warning (disable: 4512)
 
 class ABI_serializable
 {
@@ -95,7 +97,7 @@ protected:
 public:
     ABI_T_Array(vector<ABI_serializable*>& items): items(items)
     {
-        for (int i = 0; i < items.size(); i++)
+        for (size_t i = 0; i < items.size(); i++)
         {
             if (items[i]->dynamic())
                 throw std::invalid_argument("item is dynamic");
@@ -121,8 +123,9 @@ public:
     ~ABI_Generic_Array() {};
 };
 
+#pragma warning(pop)
 
-//request(uint8, address, bytes4, bytes32[])
+//request(uint8 type, address cb, bytes4 cb_fid, bytes32[] req)
 class ABI_Reader_adhoc
 {
 protected:
@@ -141,3 +144,5 @@ public:
 };
 
 int get_demo_ABI();
+
+int ABI_self_test();

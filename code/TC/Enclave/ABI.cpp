@@ -63,7 +63,7 @@ int ABI_Bytes::encode(bytes& out)
 {
     if (enc_int(out, this->_data.size(), 4) != 0) {printf("Error! enc(out, int) return non-zero!\n"); return -1;}
     // padding left
-    for (int i = 0; i < ROUND_TO_32(this->_data.size()) - this->_data.size(); i++) 
+    for (size_t i = 0; i < ROUND_TO_32(this->_data.size()) - this->_data.size(); i++) 
         {out.push_back(0);}
     out.insert(out.end(), this->_data.begin(), this->_data.end());
     return 0;  
@@ -72,7 +72,7 @@ int ABI_Bytes::encode(bytes& out)
 int ABI_T_Array::encode(bytes& out)
 {
     if (enc_int(out, this->items.size(), 4) != 0) {printf("Error! enc(out, int) return non-zero!\n"); return -1;}
-    for (int i = 0; i < this->items.size(); i++)
+    for (size_t i = 0; i < this->items.size(); i++)
     {
         if (items[i]->encode(out)) return -1;
     }
@@ -82,7 +82,7 @@ int ABI_T_Array::encode(bytes& out)
 int ABI_T_Array::encode_len()
 {
     int len = 0;
-    for (int i = 0; i < items.size(); i++)
+    for (size_t i = 0; i < items.size(); i++)
     {
         len += this->items[i]->encode_len();
     }
@@ -92,7 +92,7 @@ int ABI_T_Array::encode_len()
 
 int ABI_Generic_Array::encode(bytes& out)
 {
-    int i, j;
+    size_t i, j;
     size_t head_len_sum = 0;
     size_t tail_len_sum = 0;
     for (i = 0; i < this->items.size(); i++) { head_len_sum += this->items[i]->head_len();}
@@ -132,7 +132,7 @@ int ABI_Generic_Array::encode(bytes& out)
 int ABI_Generic_Array::encode_len()
 {
     int len = 0;
-    for (int i = 0; i < items.size(); i++)
+    for (size_t i = 0; i < items.size(); i++)
     {
         len += this->items[i]->encode_len();
     }
@@ -197,5 +197,86 @@ int get_demo_ABI()
 #endif
 
 //    ABI_Reader_adhoc(abi_str);
+    return 0;
+}
+
+#include <cassert>
+
+int ABI_self_test()
+{
+    int ret;
+    bytes20 address;
+    memset(address.b, 0xBB, 20);
+
+    bytes32 request1;
+    bytes32 request2;
+    memset(request1.b, 0xAA, 32);
+    memset(request2.b, 0xBB, 32);
+
+    ABI_Bytes32 r1(&request1);
+    ABI_Bytes32 r2(&request2);
+
+    vector<ABI_serializable*> request_data;
+    request_data.push_back(&r1);
+    request_data.push_back(&r2);
+
+    ABI_UInt8 a(0xAA);
+    ABI_Address b(&address);
+    ABI_UInt32 c(0xCCCCCCCC);
+    ABI_T_Array d(request_data);
+
+    vector<ABI_serializable*> args;
+    args.push_back(&a);
+    args.push_back(&b);
+    args.push_back(&c);
+    args.push_back(&d);
+    
+    ABI_Generic_Array abi_items(args);
+    
+    bytes abi_str;
+    ret = abi_items.encode(abi_str);
+
+    if(ret) {
+        LL_CRITICAL("encode returned %d", ret);
+        return ret;
+    }
+
+    uint8_t func_selector[4] = {0xFF, 0xEE, 0xDD, 0xCC};
+
+    for (int i = 0; i < 4; i++) {abi_str.insert(abi_str.begin(), func_selector[3 - i]);}
+
+    unsigned char ref[] = {
+        0xFF, 0xEE, 0xDD, 0xCC,
+        // enc(0xAA)
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xAA,
+        // enc(BBx20)
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xBB, 0xBB, 0xBB, 0xBB,
+        0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB,
+        // enc(0xCCCCCCCC)
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xCC, 0xCC, 0xCC, 0xCC,
+        // head of bytes32[]. enc(0x80)
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 
+        // head of bytes32[]. enc(bytes32[2])
+        // length comes first. enc(2)
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 
+        // content[0] comes second. enc(0xAA * 32)
+        0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+        0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA,
+        // content[1] comes second. enc(0xBB * 32)
+        0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 
+        0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 0xBB, 
+    };
+
+    if(memcmp(ref, &abi_str[0], sizeof ref)) {
+        LL_CRITICAL("memcmp failed with %d", ret);
+        hexdump("Reference:", ref, sizeof ref);
+        hexdump("Ours: ", &abi_str[0], sizeof ref);
+        return -1;
+    }
+
     return 0;
 }

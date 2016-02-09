@@ -14,7 +14,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Enclave", "Enclave\Enclave.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TLSlib", "TLSlib\TLSlib.vcxproj", "{C54C6223-2F1A-4F5F-9317-AF80250AD17E}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UnitTest", "UnitTest\UnitTest.vcxproj", "{FFAE3944-3EF6-41FA-A983-FC058CD58DF8}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AppTest", "UnitTest\UnitTest.vcxproj", "{FFAE3944-3EF6-41FA-A983-FC058CD58DF8}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5E2BE354-81F3-4F99-A28B-9E77F6492344} = {5E2BE354-81F3-4F99-A28B-9E77F6492344}
 	EndProjectSection

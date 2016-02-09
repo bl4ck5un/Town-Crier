@@ -34,12 +34,18 @@ extern const char * log_level_strings [];
 #define LOG_SHOULD_I( level ) ( level <= LOG_BUILD_LEVEL && level <= log_run_level )
 
 
+
+
+
 #if (defined(WIN32) || defined(_WIN32))
 #define LOG(level, fmt, ...) do {	\
+    __pragma(warning (push)) \
+    __pragma(warning (disable: 4127)) \
 	if ( LOG_SHOULD_I(level) ) { \
-		printf("[%s] %s:%d: " fmt "\n", log_level_strings[level], __FUNCTION__,__LINE__, __VA_ARGS__); \
+		printf("[%s] %s:%d: " fmt "\n", log_level_strings[level], __FILE__,__LINE__, __VA_ARGS__); \
 	} \
-} while(0)
+} while(0) \
+    __pragma(warning (pop))
 #else
 #define LOG(level, fmt, arg...) do {	\
 	if ( LOG_SHOULD_I(level) ) { \
