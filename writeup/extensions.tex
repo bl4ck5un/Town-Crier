@@ -1,0 +1,188 @@
+\section{Extensions}
+
+\subsection{Handling Transaction Fees}
+
+To mitigate potential Denial-of-Service (DoS) attacks, 
+Ethereum employs a fee mechanism, referred to as ``gas'', 
+where the submitter of a transaction (that invokes
+an entry point in the contract) pays a  
+transaction fee
+roughly proportional to the execution time of the 
+corresponding entry point.
+
+\paragraph{Notations and assumed execution model.}
+In Figure \elaine{fill}, we
+use the notation $\sbrown{\Delta F}$
+to denote transaction fees (i.e., gas), 
+where $\Delta$ is a type annotation 
+and ${\tt F}$ denotes the numerical amount of the  
+gas. Other non-gas, normal currency units 
+are denoted as $\smaroon{\$ F}$ where $\$$ is a type annotation,
+and ${\tt F}$ denotes the amount of the currency. 
+For simplicity, our notational system assumes 
+that gas and normal currency adopt
+the same currency unit. 
+
+We assume that the blockchain contract adopts the following execution model
+for gas which closely resembles Ethereum's execution model:
+\begin{itemize}[leftmargin=5mm]
+\item
+{\it Providing gas.} 
+When a transaction is submitted, it invokes an entry point in the contract.
+The transaction submitter provides a gas amount to activate the entry point. 
+\item
+{\it Extra gas.} 
+If extra gas remains at the end of the execution (after invoking an entry point),
+all extra gas is refunded to the transaction submitter at the end.
+\item
+{\it Gas exhaustion.} 
+Gas exhaustion is dealt with in the following manner.
+Consider each entry point of the contract as a function. 
+Functions can call other functions.
+Each function can specify a gas upper bound not to exceed
+the remaining gas of the parent function (and if left unspecified,
+the upper bound is implicitly set to all remaining gas of the parent function).
+If execution of the function exhausted the per-function gas 
+upper bound, the function execution is aborted and 
+state reverted to before the function is invoked.
+\end{itemize}
+
+
+
+
+\paragraph{Town Crier protocol with transaction fees.}
+Our basic Town Crier implements a policy where the requester pays for all gas 
+needed and Town Crier in effect pays nothing.
+We now describe how this can be realized by modifying
+the fee-free protocol described in Section \elaine{refer}. 
+
+\elaine{need to add time to all the description below.}
+\begin{itemize}[leftmargin=5mm]
+\item
+{\it Initialization.}
+To initialize the system, we assume that Town Crier 
+deposits a fixed amount $\sbrown{\Delta F_{\text{max}}}$ 
+into the wallet account $\pksgx$.
+\item
+{\it Town Crier blockchain contract.}
+Figure \elaine{refer} describes the  
+Town Crier blockchain contract reflecting fees.
+Since Town Crier's account 
+$\pksgx$ has to invoke the {\bf Deliver} entry point, it has
+to advance 
+a gas payment 
+$\sbrown{\Delta F_{\text{deliver}}}$.
+This amount will be entirely refunded through money deposited in the contract 
+by the requester.
+\item
+{\it Town Crier Relay.}
+The Town Crier relay monitors
+the blockchain, and whenever
+the blockchain contract \tcont
+receives a new request $({\sf id}, {\sf params}, {\sf callback}, 
+\sbrown{\Delta F_{\text{request}}}+\smaroon{\$ F_{\text{deliver}}})$,
+it asserts that 
+\[
+\sbrown{\Delta F_{\text{min}}}
+\leq \smaroon{\$ F_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{max}}}
+\]
+where $\sbrown{\Delta F_{\text{max}}}$ is the total amount of money
+in Town Crier's account $\pksgx$, 
+and $\sbrown{\Delta F_{\text{min}}}$
+is the cost of executing the {\bf Deliver} entry point 
+when the user-defined callback is empty.
+The check 
+$\smaroon{\$ F_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{max}}}$
+ensures that Town Crier's enclave  
+has sufficient funds to advance
+for the {\bf Deliver} phase.
+The check 
+$\sbrown{\Delta F_{\text{min}}}
+\leq \smaroon{\$ F_{\text{deliver}}}$
+ensures that 
+the {\bf Deliver} entry point should 
+have sufficient gas to execute everything excluding the user-defined
+callback -- this guarantees that the statement
+where Town Crier gets refunded for the gas is always reached.
+
+
+Finally, the Town Crier relay passes
+the tuple $({\tt resume}, 
+({\sf id}, {\sf params}, 
+\sbrown{\Delta F_{\text{deliver}}}
+= \smaroon{\$ F_{\text{deliver}}}
+))$
+as input to the enclave.
+
+
+\item
+{\it Town Crier enclave.}
+We make the following small modification to the fee-free protocol
+described in Figure \elaine{refer}.
+Instead of signing the tuple $({\sf id}, {\sf params}, {\sf data})$
+at the end of the enclave's execution, the enclave now signs 
+the tuple $({\sf id}, {\sf params}, {\sf data}, 
+\sbrown{\Delta F_{\text{deliver}}})$
+instead, where signing 
+$\sbrown{\Delta F_{\text{deliver}}}$ authorizes a
+gas amount of $\sbrown{\Delta F_{\text{deliver}}}$ to be advanced
+to the contract (which will be refunded later).
+\item
+{\it Requester.}
+The honest requester would behave the same way as in Figure \elaine{refer},
+except for additionally putting 
+in $\sbrown{\Delta F_{\text{request}}} + \smaroon{\$ F_{\text{deliver}}}$ 
+amount with each request, 
+where the honest 
+requester would set  
+$\sbrown{\Delta F_{\text{request}}}$
+to the gas cost of executing the  
+{\bf Request} entry point,
+and set $\smaroon{\$ F_{\text{deliver}}}$ to be the cost 
+of executing the {\bf Deliver} entry point (including
+the cost of executing the user-defined ${\sf callback}$ function).
+\end{itemize}
+
+\begin{theorem}[Gas neutrality for Town Crier]
+Assuming that the Town Crier relay is honest, 
+then Town Crier's wallet account $\pksgx$ 
+will have at least $\sbrown{\Delta F_{\text{max}}}$
+amount remaining after each {\bf Deliver}  
+call finishes execution.
+\end{theorem}
+\begin{proof}[(sketch).]
+Since the relay is honest, every time 
+$\pksgx$ invokes the {\bf Deliver}
+entry point, the following holds:
+1) 
+$\smaroon{\$ F_{\text{deliver}}}
+= \sbrown{\Delta F_{\text{deliver}}}$;
+i.e., the gas $\pksgx$ advances is equal
+to the fees the 
+requester deposited with the \tcont contract;
+and 2)
+the amount gas sent 
+$
+\sbrown{\Delta F_{\text{deliver}}} = 
+\smaroon{\$ F_{\text{deliver}}}
+\geq \sbrown{\Delta F_{\text{min}}}$;
+in other words, the statement that refunds
+$\pksgx$ 
+$\smaroon{\$ F_{\text{deliver}}}$
+amount will definitely be invoked. This 
+ensures that the full gas amount 
+$\sbrown{\Delta F_{\text{deliver}}}$
+that $\pksgx$ advanced will be refunded (and anything more left
+at the end of the execution will also be refunded).
+\end{proof}
+
+
+
+
+
+\begin{theorem}[Bounded loss for honest user]
+\elaine{fill in}
+\end{theorem}
+
+
+
