@@ -48,10 +48,10 @@ Fig.~\ref{fig:dataflow} shows the data flows involved in processing a datagram r
   \node[entity,fill=white,below=5em of ctc] (cu) {User Contract\\$\reqcont$};
   \node[below=1em of enc,align=center] (data) {\small (obtains $\dgm$\\from data source)};
 
-  \path[-stealth,communication] (cu) edge [transform canvas={xshift=-1.6em}] node [text width=4.75em,align=center,blockchain-color] {\footnotesize $m_1 =$\\[-0.2em]$(\{\dgid\},\dgform,$\\[-0.2em]$\dgcallback)$} (ctc);
+  \path[-stealth,communication] (cu) edge [transform canvas={xshift=-1.6em}] node [text width=4.75em,align=center,blockchain-color] {\footnotesize $m_1 =$\\[-0.2em]$(\dgid,\dgform,$\\[-0.2em]$\dgcallback)$} (ctc);
   \path[-stealth,communication] (ctc) edge [above,transform canvas={yshift=0.6em}] node [text width=4em,align=center] {\footnotesize $m_2 =$\\[-0.4em]$(\dgid,\dgform)$} (enc);
   \path[-stealth,communication] (enc) edge [below,transform canvas={yshift=-0.6em}] node [text width=4em,align=center] {\footnotesize $m_3 =$\\[-0.2em]$(\dgid,\dgform,$\\[-0.3em]$\dgm)$} (ctc);
-  \path[-stealth,communication] (ctc) edge [transform canvas={xshift=2.25em}] node [text width=2.25em,align=center,blockchain-color] {\footnotesize $m_4 =$\\[-0.4em]$\dgm$} (cu);
+  \path[-stealth,communication] (ctc) edge [transform canvas={xshift=2.25em}] node [text width=3em,align=center,blockchain-color] {\footnotesize $m_4 =$\\[-0.4em]$(\dgid,\dgm)$} (cu);
 
   \begin{pgfonlayer}{background}
     \node[bg-box,
