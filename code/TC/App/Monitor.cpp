@@ -48,7 +48,7 @@ int monitor_loop(uint8_t* nonce)
     handle_request(global_eid, &ret, 1, 1, req, sizeof req, tx, sizeof tx);
     return ret;
 #else
-    unsigned next_wanted = 9;
+    unsigned next_wanted = 1;
 
     int ret = 0;
     Json::Value transaction;
@@ -151,6 +151,7 @@ int monitor_loop(uint8_t* nonce)
                         else
                         {
                             dump_buf("new nonce being dumped: ", nonce, 32);
+                            // add accounting info
                             dump_nonce(nonce);
                         }
                     }

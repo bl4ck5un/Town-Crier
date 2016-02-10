@@ -159,11 +159,7 @@ public:
     }
 };
 
-#define NONCE       "0x06"          
-#define GASPRICE    "0x0BA43B7400"  //50000000000
-#define GASLIMIT    "0x015F90"      // 90000
-#define TO_ADDR     "0x08be24cd8dcf73f8fa5db42b855b4370bd5c448b"
-#define VALUE       "0x00"
+#include "Constants.h"
 
 static int increase_nonce_by_one(uint8_t* nonce)
 {
@@ -209,8 +205,7 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
     for (int i = 0; i < req_len / 32; i++)
     {
         memcpy(r[i].b, req_data + i*32, 32);
-        ABI_Bytes32* rr = new ABI_Bytes32(&r[i]);
-        request_data.push_back(rr);
+        request_data.push_back(new ABI_Bytes32(&r[i]));
         // FIXME MEMORY LEAKAGE
     }
 
@@ -255,8 +250,8 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
     set_byte_length(& tx.m_nonce);
     from32(GASPRICE, &tx.m_gasPrice);
     from32(GASLIMIT, &tx.m_gas);
-    from20(TO_ADDR, &tx.m_receiveAddress);
-    from32(VALUE, &tx.m_value);
+    from20(TC_ADDRESS, &tx.m_receiveAddress);
+    from32("0x00", &tx.m_value);
     
     tx.m_data.clear();
     tx.m_data = abi_str;
@@ -301,6 +296,16 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
 
     memcpy(serialized_tx, &out[0], out.size());
     *o_len = out.size();
+
+#pragma warning (push)
+#pragma warning (disable: 4102)
+cleanup:
+#pragma warning (pop)
+//    for (size_t i = 0; i < request_data.size(); i++)
+//    {
+//        delete request_data[i];
+//    }
+//    free(r);
 
     return increase_nonce_by_one(nonce);
 }

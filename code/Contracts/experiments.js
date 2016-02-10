@@ -50,7 +50,7 @@ tc.RequestInfo(function(e,r) { if (!e) { console.log('RequestInfo: ' + JSON.stri
 
 // send raw test
 // get Error: PC 00000999: CALLDATACOPY GAS: 2976720 COST: 360287972773330944003 ERROR: Out of gas
-tc.request.sendTransaction(0, "0x01", "0000", ["data1", "data2"], {from: userAddr, value: Math.pow(10,10), gas: gasCnt})
+// tc.request.sendTransaction(0, "0x01", "0000", ["data1", "data2"], {from: userAddr, value: Math.pow(10,10), gas: gasCnt})
 
 // flight insurance
 fi = FlightInsurance.new(tc.address, {from: userAddr, data: contracts.FlightInsurance.code, gas: gasCnt, value: Math.pow(10,22)}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}});
@@ -82,10 +82,10 @@ miner.start(1); admin.sleepBlocks(1); miner.stop(1);
 
 #echo "fi.PaymentLog(function(e,r) { if (!e) { console.log('PaymentLog: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
 #echo "fi.PaymentInfo(function(e,r) { if (!e) { console.log('PaymentInfo: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
-echo "po.Pay(function(e,r) { if (!e) { console.log('Pay: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
 
-echo "tc.DeliverLog(function(e,r) { console.log('DeliverLog: ' + JSON.stringify(r.args)) })"
-echo "tc.DeliverInfo(function(e,r) { console.log('DeliverInfo: ' + JSON.stringify(r.args)) })"
+po.Pay(function(e,r) { if (!e) { console.log('Pay: ' + JSON.stringify(r.args)) } else { console.log(e) } })
+tc.DeliverLog(function(e,r) { console.log('DeliverLog: ' + JSON.stringify(r.args)) })
+tc.DeliverInfo(function(e,r) { console.log('DeliverInfo: ' + JSON.stringify(r.args)) })
 ##echo "tc.DeliverSig(function(e,r) { console.log('DeliverSig: ' + JSON.stringify(r.args)) })"
 
 echo "sgxBeforeCash1 = Number(debug.dumpBlock('latest').accounts['9d10ea5ad51e1af69cd8d4dcfa60f577818607b2'].balance.substring(0,12))"

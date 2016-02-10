@@ -427,6 +427,7 @@
     <ClCompile Include="Transaction.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\Constants.h" />
     <ClInclude Include="..\Common\Debug.h" />
     <ClInclude Include="..\Common\Log.h" />
     <ClInclude Include="ABI.h" />
