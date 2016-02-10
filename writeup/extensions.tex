@@ -287,8 +287,16 @@ $\pksgx$ has to invoke the {\bf Deliver} entry point, it has
 to advance 
 a gas payment 
 $\sbrown{\$ G_{\text{deliver}}}$.
-This amount will be entirely refunded through money deposited in the contract 
+If the deliver operation is successful, 
+this amount will be entirely refunded through money deposited in the contract 
 by the requester.
+Otherwise, should the deliver operation happen after the request has already
+been cancelled, 
+a small amount of gas is consumed from $\sbrown{\$ G_{\text{deliver}}}$
+which will be entirely refunded 
+to $\tcadd$ (denoted by $\smaroon{\overline{F}_{\text{deliver}}}$); and further 
+all gas remaining  
+from $\sbrown{\$ G_{\text{deliver}}}$ will also be refunded to $\tcadd$. 
 \item
 {\it Town Crier Relay.}
 The Town Crier relay monitors
