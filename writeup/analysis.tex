@@ -169,8 +169,9 @@ at the end of the execution will also be refunded);
 
 \begin{theorem}[Bounded loss for honest requester]
 Suppose request $({\sf params}, {\sf callback}, \_)$ was submitted
-by an honest requester $\reqcont$ and got assigned a unique identifier
-${\sf id}$ by $\tcont$;
+by an honest requester $\reqcont$;
+%and got assigned a unique identifier
+%${\sf id}$ by $\tcont$;
 then 
 either 
 \begin{itemize}
@@ -179,11 +180,12 @@ with a valid datagram matching requested parameters
 ${\sf params}$,
 and the requester consumes at most
 $\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{deliver}}} + 
-\sbrown{\$ \overline{G}_{\text{deliver}}}$;
+\sbrown{\$ {G}_{\text{cancel}}}
++ \sbrown{\$ \overline{G}_{\text{deliver}}}$;
 or 
 \item
 $\reqcont$ 
-loses at most 
+consumes at most 
 $\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{cancel}}} + 
 \sbrown{\$ \overline{G}_{\text{deliver}}}$ after calling {\bf Cancel}.
 %after ${\color{blue} \Time_{\text{timeout}}}$.
@@ -209,14 +211,14 @@ of executing the {\bf Deliver} entry point (including
 the cost of executing the user-defined ${\sf callback}$ function).
 
 Regardless of what the adversary does,  
-if the line ``Set ${\sf bDelivered[{\sf id}]}$''
+if the line marked (*) %``Set ${\sf bDelivered[{\sf id}]}$''
 in \tcont
 is reached for some ${\sf id}$ at any point,
 then it is guaranteed that the following assertions
 hold:
-${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$,
+%${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$,
 ${\sf params} = {\sf params}'$,
-and $\smaroon{\$ F'_{\text{deliver}}} \leq 
+and $\smaroon{\$ F_{\text{deliver}}} \leq 
 \sbrown{\$ G_{\text{deliver}}}$.
 In this case, \tcont will finish execution and the requester
 would have obtained the resulting 
