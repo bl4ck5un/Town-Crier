@@ -37,13 +37,7 @@ extern "C" {
 #endif
 
 extern sgx_enclave_id_t global_eid;    /* global enclave id */
-// Utils.cpp
-void print_error_message(sgx_status_t ret);
-int initialize_enclave(void);
 
-#if defined(_MSC_VER)
-int query_sgx_status();
-#endif
 
 /* test suite */
 int test_connect(void);

@@ -310,6 +310,7 @@
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\Constants.h" />
     <ClInclude Include="..\Common\Debug.h" />
     <ClInclude Include="..\Common\Log.h" />
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\jsonrpc.h" />
@@ -333,6 +334,7 @@
     <ClInclude Include="RemoteAtt.h" />
     <ClInclude Include="EthRPC.h" />
     <ClInclude Include="sys_helper.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

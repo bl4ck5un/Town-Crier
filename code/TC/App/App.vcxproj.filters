@@ -173,6 +173,12 @@
     <ClInclude Include="sys_helper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Utils.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Common\Constants.h">
+      <Filter>Source Files\helpers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\Enclave\Enclave.edl">

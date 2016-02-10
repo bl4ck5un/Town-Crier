@@ -137,5 +137,8 @@
     <ClInclude Include="Main.h">
       <Filter>Source Files\Test</Filter>
     </ClInclude>
+    <ClInclude Include="..\Common\Constants.h">
+      <Filter>Source Files\helper</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

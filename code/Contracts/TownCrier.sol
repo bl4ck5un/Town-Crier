@@ -15,7 +15,7 @@ contract TownCrier {
 //    event DeliverSig(uint8 v, bytes32 r, bytes32 s, address recoveredAddr);
     event Cancel(uint64 requestId, address canceller, address requester, int flag);
 
-    address constant SGX_ADDRESS = 0x9d10ea5ad51e1af69cd8d4dcfa60f577818607b2;
+    address constant SGX_ADDRESS = 0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997;
 
     uint constant GAS_PRICE = 5 * 10**10;
     uint constant MAX_FEE = (3 * 10**6) * GAS_PRICE;

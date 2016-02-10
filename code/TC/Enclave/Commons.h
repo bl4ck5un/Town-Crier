@@ -53,9 +53,7 @@ inline void fromHex(const char* src, bytes& out)
 inline void fromHex(const char* src, uint8_t* target, unsigned* len)
 {
     *len = 0;
-    if ((strlen(src) % 2) != 0) 
-        { LL_CRITICAL("Error: input is not of even len\n"); *len=0;}
-    if (strncmp(src, "0x", 2) == 0) src += 2;
+    if (strlen(src) > 2 && strncmp(src, "0x", 2) == 0) src += 2;
     while(*src && src[1])
     {
         try { *(target++) = char2int(*src)*16 + char2int(src[1]); } 

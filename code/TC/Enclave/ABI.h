@@ -144,5 +144,6 @@ public:
 };
 
 int get_demo_ABI();
-
+int enc_int(bytes& out, uint64_t in, int len);
 int ABI_self_test();
+

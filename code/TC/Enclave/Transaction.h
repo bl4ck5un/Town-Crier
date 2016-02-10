@@ -11,7 +11,11 @@ void rlp_item(const uint8_t*, const int, bytes&);
 extern "C" {
 #endif
 
-int get_raw_signed_tx(sgx_sealed_data_t* sealed_nonce, int i_len, uint8_t* serialized_tx, int* o_len);
+int get_raw_signed_tx(uint8_t* nonce, int nonce_len, 
+                      uint64_t request_id, uint8_t request_type,
+                      const uint8_t* req_data, int req_len,
+                      uint8_t* resp_data, int resp_len,
+                      uint8_t* serialized_tx, int* o_len);
 
 #if defined(__cplusplus)
 }

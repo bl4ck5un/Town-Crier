@@ -17,10 +17,9 @@ extern "C" {
 #endif
 
 
-int handle_request(uint64_t request_id, uint8_t request_type, char* req, int req_len, char* resp, int resp_len);
+int handle_request(uint8_t* nonce, uint64_t request_id, uint8_t request_type, uint8_t* req, int req_len, uint8_t tx[2048], int* len);
 int Test_main();
 sgx_status_t ecall_create_report(sgx_target_info_t* quote_enc_info, sgx_report_t* report);
-int get_raw_signed_tx(uint8_t* sealed_nonce, int nonce_len, uint8_t tx[2048], int* len);
 
 sgx_status_t SGX_CDECL ocall_mbedtls_net_connect(int* retval, mbedtls_net_context* ctx, const char* host, const char* port, int proto);
 sgx_status_t SGX_CDECL ocall_mbedtls_net_bind(int* retval, mbedtls_net_context* ctx, const char* bind_ip, const char* port, int proto);

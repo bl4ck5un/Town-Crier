@@ -2,12 +2,13 @@
 
 typedef struct ms_handle_request_t {
 	int ms_retval;
+	uint8_t* ms_nonce;
 	uint64_t ms_request_id;
 	uint8_t ms_request_type;
-	char* ms_req;
+	uint8_t* ms_req;
 	int ms_req_len;
-	char* ms_resp;
-	int ms_resp_len;
+	uint8_t* ms_tx;
+	int* ms_len;
 } ms_handle_request_t;
 
 typedef struct ms_Test_main_t {
@@ -19,14 +20,6 @@ typedef struct ms_ecall_create_report_t {
 	sgx_target_info_t* ms_quote_enc_info;
 	sgx_report_t* ms_report;
 } ms_ecall_create_report_t;
-
-typedef struct ms_get_raw_signed_tx_t {
-	int ms_retval;
-	uint8_t* ms_sealed_nonce;
-	int ms_nonce_len;
-	uint8_t* ms_tx;
-	int* ms_len;
-} ms_get_raw_signed_tx_t;
 
 typedef struct ms_ocall_mbedtls_net_connect_t {
 	int ms_retval;
@@ -178,16 +171,17 @@ static const struct {
 	}
 };
 
-sgx_status_t handle_request(sgx_enclave_id_t eid, int* retval, uint64_t request_id, uint8_t request_type, char* req, int req_len, char* resp, int resp_len)
+sgx_status_t handle_request(sgx_enclave_id_t eid, int* retval, uint8_t* nonce, uint64_t request_id, uint8_t request_type, uint8_t* req, int req_len, uint8_t tx[2048], int* len)
 {
 	sgx_status_t status;
 	ms_handle_request_t ms;
+	ms.ms_nonce = nonce;
 	ms.ms_request_id = request_id;
 	ms.ms_request_type = request_type;
 	ms.ms_req = req;
 	ms.ms_req_len = req_len;
-	ms.ms_resp = resp;
-	ms.ms_resp_len = resp_len;
+	ms.ms_tx = (uint8_t*)tx;
+	ms.ms_len = len;
 	status = sgx_ecall(eid, 0, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
@@ -209,19 +203,6 @@ sgx_status_t ecall_create_report(sgx_enclave_id_t eid, sgx_status_t* retval, sgx
 	ms.ms_quote_enc_info = quote_enc_info;
 	ms.ms_report = report;
 	status = sgx_ecall(eid, 2, &ocall_table_Enclave, &ms);
-	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
-	return status;
-}
-
-sgx_status_t get_raw_signed_tx(sgx_enclave_id_t eid, int* retval, uint8_t* sealed_nonce, int nonce_len, uint8_t tx[2048], int* len)
-{
-	sgx_status_t status;
-	ms_get_raw_signed_tx_t ms;
-	ms.ms_sealed_nonce = sealed_nonce;
-	ms.ms_nonce_len = nonce_len;
-	ms.ms_tx = (uint8_t*)tx;
-	ms.ms_len = len;
-	status = sgx_ecall(eid, 3, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
 }
