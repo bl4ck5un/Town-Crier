@@ -1,82 +1,86 @@
 \pagebreak
 \appendix 
 
+\elaine{I took care of cancellation in the gas-aware version.
+So I commented out the cancellation part from the appendix.
+The cancellation is necessary to prove the theorem you want to prove
+about bounded loss for honest user.}
 
-\section{Version 1}
-
-Here we define and discuss proposed extensions to the Town Crier protocol.
-
-\subsection{Request Cancellation}
-
-In order to provide recourse if the system is compromised and disabled or datagrams are delayed beyond a reasonable time,
-there can be a way to cancel requests for a refund.
-The refund must withhold a fixed fee of $F_{\rm min}$ in order to ensure that malicious aborts cannot bankrupt the ADF, but the rest of the fee can be refunded at any time.
-If the ADF attempts to deliver a datagram for a canceled request, it will simply receive the $F_{\rm min}$ needed to cover its gas costs for the attempted delivery and not deliver any data.
-
-In order to safely handle request cancellations, we now have to store verification data on the blockchain itself.
-This will be considerably more expensive, but the Ethereum protocol supports it cleanly.
-For notational simplicity, we use four blockchain storage functions.
-They functions create a map from integers to arbitrary data values in the domain $V$.
-\begin{itemize}
-  \item {${\sf store} : \mathbb{N} \times V \to \emptyset$.}
-    This stores a key with an associated value in the map and returns nothing.
-
-  \item {${\sf load} : \mathbb{N} \to V \cup \{\bot\}$.}
-    This returns the value associated with the given key or $\bot$ if the key is not in the map.
-
-  \item {${\sf storeContains} : \mathbb{N} \to \{0, 1\}$.}
-    This returns whether or not the key exists in the map.
-
-  \item {${\sf remove} : \mathbb{N} \to \emptyset$.}
-    This removes the key and its associated value if it is in the map and otherwise does nothing.
-\end{itemize}
-Table~\ref{tbl:Ctc-with-cancellation} describes the new \tcont blockchain.
-The rest of the protocol need to change (save for calls to Deliver requiring slightly different arguments).
-
-\begin{table}[htb]
-\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
-  \hline
-
-  \multicolumn{2}{|c|}{\tcont with Cancellation} \\ [1ex]
-  {\bf Init:} & Set ${\sf reqs} := \emptyset$ and ${\sf reqCnt := 0}$ \\
-  {\bf Request:} & Upon receiving $({\sf type}, {\sf callback}, \${\sf fee})$ from a user $\mathcal{P}$: \\
-                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
-                 & \hspace*{1em} Return with no effect. \\
-                 & Set ${\sf reqID} := {\sf reqCnt}$. \\
-                 & Set ${\sf reqCnt} := {\sf reqCnt} + 1$. \\
-                 & ${\sf store}({\sf reqID} \mapsto (\mathcal{P}, \${\sf fee}))$. \\
-                 & Return ${\sf reqID}$. \\
-  {\bf Deliver:} & Upon receiving $({\sf reqID}, {\sf data}, {\sf callback})$ from a user $\mathcal{P}$: \\
-                 & If $\mathcal{P} \neq \textrm{\sgxadd}$ \\
-                 & \hspace*{1em} Return with no effect. \\
-                 & If $!{\sf storeContains}({\sf reqID})$ \\
-                 & \hspace*{1em} Send $F_{\rm min}$ to \sgxadd. \\
-                 & \hspace*{1em} Return with no further effect. \\
-                 & $(*, \${\sf fee}) \leftarrow {\sf load}({\sf reqID})$. \\
-                 & Call ${\sf callback}({\sf data})$ providing $\${\sf fee} - F_{\rm min}$ ether as the maximum gas. \\
-                 & Send $\${\sf fee}$ ether to \sgxadd. \\
-                 & ${\sf remove}({\sf reqID})$. \\
-  {\bf Cancel:}  & Upon receiving $({\sf reqID})$ from a user $\mathcal{P}$: \\
-                 & If $!{\sf storeContains}({\sf reqID})$ \\
-                 & \hspace*{1em} Return with no effect. \\
-                 & $(\mathcal{R}, \${\sf fee}) \leftarrow {\sf load}({\sf reqID})$. \\
-                 & If $\mathcal{P} \neq \mathcal{R}$ \\
-                 & \hspace*{1em} Return with no effect. \\
-                 & Send $\${\sf fee} - F_{\rm min}$ to $\mathcal{P}$. \\
-                 & ${\sf remove}({\sf reqID})$. \\
-
-  \hline
-\end{tabularx}
-\caption{Definition of the \tcont contract with cancellation.}
-\label{tbl:Ctc-with-cancellation}
-\end{table}
-
-Using the same adversarial model, we can make the same guarantees of this new system as we did for the original Town Crier system.
-Even if a malicious user cancels their request just as Deliver is being called, the cancellation fee is enough to reimburse \sgxadd for any gas costs.
-
-If we expand the adversarial model to allow for arbitrary denial of service attacks against the Town Crier system (but not the blockchain),
-the new Cancel functionality allows affected users to recover most of their fee with no action from the Town Crier system.
-
+%\section{Version 1}
+%
+%Here we define and discuss proposed extensions to the Town Crier protocol.
+%
+%\subsection{Request Cancellation}
+%
+%In order to provide recourse if the system is compromised and disabled or datagrams are delayed beyond a reasonable time,
+%there can be a way to cancel requests for a refund.
+%The refund must withhold a fixed fee of $F_{\rm min}$ in order to ensure that malicious aborts cannot bankrupt the ADF, but the rest of the fee can be refunded at any time.
+%If the ADF attempts to deliver a datagram for a canceled request, it will simply receive the $F_{\rm min}$ needed to cover its gas costs for the attempted delivery and not deliver any data.
+%
+%In order to safely handle request cancellations, we now have to store verification data on the blockchain itself.
+%This will be considerably more expensive, but the Ethereum protocol supports it cleanly.
+%For notational simplicity, we use four blockchain storage functions.
+%They functions create a map from integers to arbitrary data values in the domain $V$.
+%\begin{itemize}
+%  \item {${\sf store} : \mathbb{N} \times V \to \emptyset$.}
+%    This stores a key with an associated value in the map and returns nothing.
+%
+%  \item {${\sf load} : \mathbb{N} \to V \cup \{\bot\}$.}
+%    This returns the value associated with the given key or $\bot$ if the key is not in the map.
+%
+%  \item {${\sf storeContains} : \mathbb{N} \to \{0, 1\}$.}
+%    This returns whether or not the key exists in the map.
+%
+%  \item {${\sf remove} : \mathbb{N} \to \emptyset$.}
+%    This removes the key and its associated value if it is in the map and otherwise does nothing.
+%\end{itemize}
+%Table~\ref{tbl:Ctc-with-cancellation} describes the new \tcont blockchain.
+%The rest of the protocol need to change (save for calls to Deliver requiring slightly different arguments).
+%
+%\begin{table}[htb]
+%\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
+%  \hline
+%
+%  \multicolumn{2}{|c|}{\tcont with Cancellation} \\ [1ex]
+%  {\bf Init:} & Set ${\sf reqs} := \emptyset$ and ${\sf reqCnt := 0}$ \\
+%  {\bf Request:} & Upon receiving $({\sf type}, {\sf callback}, \${\sf fee})$ from a user $\mathcal{P}$: \\
+%                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
+%                 & \hspace*{1em} Return with no effect. \\
+%                 & Set ${\sf reqID} := {\sf reqCnt}$. \\
+%                 & Set ${\sf reqCnt} := {\sf reqCnt} + 1$. \\
+%                 & ${\sf store}({\sf reqID} \mapsto (\mathcal{P}, \${\sf fee}))$. \\
+%                 & Return ${\sf reqID}$. \\
+%  {\bf Deliver:} & Upon receiving $({\sf reqID}, {\sf data}, {\sf callback})$ from a user $\mathcal{P}$: \\
+%                 & If $\mathcal{P} \neq \textrm{\sgxadd}$ \\
+%                 & \hspace*{1em} Return with no effect. \\
+%                 & If $!{\sf storeContains}({\sf reqID})$ \\
+%                 & \hspace*{1em} Send $F_{\rm min}$ to \sgxadd. \\
+%                 & \hspace*{1em} Return with no further effect. \\
+%                 & $(*, \${\sf fee}) \leftarrow {\sf load}({\sf reqID})$. \\
+%                 & Call ${\sf callback}({\sf data})$ providing $\${\sf fee} - F_{\rm min}$ ether as the maximum gas. \\
+%                 & Send $\${\sf fee}$ ether to \sgxadd. \\
+%                 & ${\sf remove}({\sf reqID})$. \\
+%  {\bf Cancel:}  & Upon receiving $({\sf reqID})$ from a user $\mathcal{P}$: \\
+%                 & If $!{\sf storeContains}({\sf reqID})$ \\
+%                 & \hspace*{1em} Return with no effect. \\
+%                 & $(\mathcal{R}, \${\sf fee}) \leftarrow {\sf load}({\sf reqID})$. \\
+%                 & If $\mathcal{P} \neq \mathcal{R}$ \\
+%                 & \hspace*{1em} Return with no effect. \\
+%                 & Send $\${\sf fee} - F_{\rm min}$ to $\mathcal{P}$. \\
+%                 & ${\sf remove}({\sf reqID})$. \\
+%
+%  \hline
+%\end{tabularx}
+%\caption{Definition of the \tcont contract with cancellation.}
+%\label{tbl:Ctc-with-cancellation}
+%\end{table}
+%
+%Using the same adversarial model, we can make the same guarantees of this new system as we did for the original Town Crier system.
+%Even if a malicious user cancels their request just as Deliver is being called, the cancellation fee is enough to reimburse \sgxadd for any gas costs.
+%
+%If we expand the adversarial model to allow for arbitrary denial of service attacks against the Town Crier system (but not the blockchain),
+%the new Cancel functionality allows affected users to recover most of their fee with no action from the Town Crier system.
+%
 
 \subsection{Service-level Agreements}
 

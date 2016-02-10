@@ -52,12 +52,13 @@ state reverted to before the function is invoked.
   \hline
 
   \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont with fees}} \\ [1ex]
-  {\bf Request:} & On recv $({\sf id}, {\sf params}, 
+  {\bf Request:} & On recv $({\sf params}, 
 {\sf callback},  
 {\color{blue} \Time_{\text{timeout}}},
 \sbrown{\Delta F_{\text{request}}}$ $+$ 
 $\smaroon{\$F_{\text{deliver}}})$ from some $\reqcont$: \\
 		& Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$\\
+		& ${\sf id}$ := Counter; Counter := Counter + 1\\
                  & Record $({\sf id}, {\sf params}, {\sf callback}, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, {\reqcont})$
 %\elaine{this makes it look like it's sending money}
 \\[-10pt]
