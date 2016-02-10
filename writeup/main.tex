@@ -11,6 +11,7 @@
 \usepackage{graphicx}
 \usepackage{xspace}
 \usepackage{amsmath,amstext,amssymb,amsfonts,latexsym}
+\usepackage{url,hyperref}
 
 \usepackage{tikz}
 \usetikzlibrary{arrows,calc,fit,positioning}
@@ -35,7 +36,7 @@
 \date{}
 
 %make title bold and 14 pt font (Latex default is non-bold, 16 pt)
-\title{Town Crier: \\ An Authenticated Data Feed for Smart Contracts}
+\title{\Large \bf Town Crier: \\ An Authenticated Data Feed for Smart Contracts}
 
 %for single author (just remove % characters)
 \author{
@@ -151,6 +152,12 @@ Name Institution
 \pagebreak
 \input{appendix}
 \input{clock}
+
+
+{\footnotesize
+  \bibliographystyle{acm}
+  \bibliography{ethereum}
+}
+
+%\theendnotes
 \end{document}
-
-
