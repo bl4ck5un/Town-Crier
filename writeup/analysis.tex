@@ -123,7 +123,7 @@ Therefore, $\algB$ simply outputs this as a signature forgery.
 \begin{theorem}[Gas neutrality for Town Crier]
 Assuming that the Town Crier relay is honest, 
 then Town Crier's wallet account $\pksgx$ 
-will have at least $\sbrown{\Delta F_{\text{max}}}$
+will have at least $\sbrown{\$ G_{\text{max}}}$
 amount remaining after each {\bf Deliver}  
 call finishes execution.
 \end{theorem}
@@ -133,32 +133,32 @@ $\pksgx$ invokes the {\bf Deliver}
 entry point, the following holds:
 1) 
 $\smaroon{\$ F_{\text{deliver}}}
-= \sbrown{\Delta F_{\text{deliver}}}$;
+= \sbrown{\$ G_{\text{deliver}}}$;
 i.e., the gas $\tcadd$ advances is equal
 to the fees the 
 requester deposited with the \tcont contract;
 2)
 the amount gas sent 
-$\sbrown{\Delta F_{\text{deliver}}} = 
+$\sbrown{\$ G_{\text{deliver}}} = 
 \smaroon{\$ F_{\text{deliver}}}
 \leq 
-\sbrown{\Delta F_{\text{max}}} 
+\sbrown{\$ G_{\text{max}}} 
 $;
 in other words, 
 $\tcadd$ has sufficient funds  
-if it starts out with $\sbrown{\Delta F_{\text{max}}}$
+if it starts out with $\sbrown{\$ G_{\text{max}}}$
 in its wallet;
 and
 3) 
-$\sbrown{\Delta F_{\text{min}}} \leq
-\sbrown{\Delta F_{\text{deliver}}} = 
+$\sbrown{\$ G_{\text{min}}} \leq
+\sbrown{\$ G_{\text{deliver}}} = 
 \smaroon{\$ F_{\text{deliver}}}
 $; in other words, the statement that refunds
 $\tcadd$ 
 $\smaroon{\$ F_{\text{deliver}}}$
 amount will definitely be invoked. This 
 ensures that the full gas amount 
-$\sbrown{\Delta F_{\text{deliver}}}$
+$\sbrown{\$ G_{\text{deliver}}}$
 that $\tcadd$ advanced will be refunded (and anything more left
 at the end of the execution will also be refunded);
 \end{proof}
@@ -179,7 +179,7 @@ before the specified deadline
 ${\color{blue} \Time_{\text{timeout}}}$;
 or 
 $\reqcont$ will have lost at most 
-$\sbrown{\Delta F_{\text{request}}} + \sbrown{\Delta F_{\text{cancel}}}$
+$\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{cancel}}}$
 after ${\color{blue} \Time_{\text{timeout}}}$.
 
 \end{theorem}
@@ -193,9 +193,9 @@ after ${\color{blue} \Time_{\text{timeout}}}$.
 %only the first occurrence of ${\sf id}$ is preserved. 
 An honest requester $\reqcont$  
 puts in 
-$\sbrown{\Delta F_{\text{request}}} + \smaroon{\$ F_{\text{deliver}}}$
+$\sbrown{\$ G_{\text{request}}} + \smaroon{\$ F_{\text{deliver}}}$
 amount with each request to $\tcont$,
-where $\sbrown{\Delta F_{\text{request}}}$
+where $\sbrown{\$ G_{\text{request}}}$
 is equal to the gas cost of executing the
 {\bf Request} entry point,
 and $\smaroon{\$ F_{\text{deliver}}}$ is the gas cost
@@ -211,7 +211,7 @@ hold:
 ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$,
 ${\sf params} = {\sf params}'$,
 and $\smaroon{\$ F'_{\text{deliver}}} \leq 
-\sbrown{\Delta F_{\text{deliver}}}$.
+\sbrown{\$ G_{\text{deliver}}}$.
 In this case, \tcont will finish execution and the requester
 would have obtained the resulting 
 datagram for the correct ${\sf params}$ specified in the request,
@@ -225,7 +225,7 @@ the honest requester $\reqcont$ can invoke the {\bf Cancel}
 entry point to obtain a refund 
 of $\smaroon{\$F_{\text{deliver}}}$ before ${\color{blue} \Time_{\text{timeout}}}$ ---
 in this case the honest requester would have lost
-no more than $\sbrown{\Delta F_{\text{request}}} + \sbrown{\Delta F_{\text{cancel}}}$.
+no more than $\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{cancel}}}$.
 \end{proof}
 
 
