@@ -10,7 +10,7 @@ SGX additionally provides a trusted time source via the function \texttt{sgx\_ge
 
 \subsection{HTTPS / TLS}
 
-We assume basic familiarity by readers with TLS and HTTPS (HTTP over TLS). An important feature of HTTPS that we employ in \tc is its amenability to partitioning into two distinct layers: (1) A TCP layer and (2) HTTP with a full TLS Record and Handshake layer. \tc places Layer (2) (with a stripped-down version of HTTPS) is placed in an enclave, enabling code in the enclave to establish a secure channel with a remote server. Layer (1) is supported by the operating system, as an enclave does not have direct access to host network functionality. This arrangement allows an enclave process to communicate securely without its own complete network stack.
+We assume basic familiarity by readers with TLS and HTTPS (HTTP over TLS). An important feature of HTTPS that we employ in \tc is its amenability to partitioning into interoperable layers: a HTTP layer interacting with web servers, a TLS layer consisting of the Record and Handshake layer and a TCP layer providing reliable transport service. \tc places the HTTP layer and TLS layer in an enclave, enabling code in the enclave to establish a secure channel with a remote server. TCP layer is supported by the operating system, as an enclave does not have direct access to host network functionality. This arrangement allows an enclave process to communicate with web servers securely without its own complete network stack. Note that the TCP being controlled by the operating system does not harm the security of HTTPS.
 
 \subsection{Smart contracts}
 
