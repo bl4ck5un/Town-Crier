@@ -95,8 +95,8 @@ The \tcs system includes three main components: The \tcontract (\tcont), the \en
 
 \paragraph{The \tcontract \tcont.} The \tcontract (denoted by \tcont) is a smart contract that acts as the blockchain front end of the \tc service. It is designed to present a simple API to a relying contract \reqcont for its requests from \tc. Very simply, \tcont accepts datagram requests from a requester \reqcont and returns corresponding datagrams from \tc. Additionally, \tcont manages \tc monetary resources, which in Ethereum take the form of ether (money) and gas (``fuel'' for contracts).
 
-\paragraph{The \encname \engine.}
-We refer to the TC code running in the SGX enclave simply as the \encname. In TC, the \encname ingests and fulfills datagram requests from the blockchain. To obtain the data for inclusion in datagrams, it queries external data sources, specifically HTTPS-enabled internet services. It returns a datagram to a requesting contract \reqcont as a digitally signed blockchain message. Under our assumed security model for SGX, apart from its network functions, the \encname runs in complete isolation from an adversarial OS as well as other process on the host. 
+\paragraph{The \encname.}
+We refer to an instance of the TC code running in an SGX enclave simply as the \encname and denote the code itself by  \engine. In TC, the \encname ingests and fulfills datagram requests from the blockchain. To obtain the data for inclusion in datagrams, it queries external data sources, specifically HTTPS-enabled internet services. It returns a datagram to a requesting contract \reqcont as a digitally signed blockchain message. Under our assumed security model for SGX, apart from its network functions, the \encname runs in complete isolation from an adversarial OS as well as other process on the host. 
 
 \paragraph{The \medname \relay.} As an SGX enclave process, the \encname lacks direct network access. Thus the \medname handles bidirectional network traffic on behalf of the \encname. Specifically, the \medname provides network connectivity from the \encname to three different types of entities: 
 
@@ -121,7 +121,7 @@ Here we give a brief overview of our security model for \tc, providing more deta
 
 \item {\em Data sources.} We assume that clients trust the data sources from which they obtain \tc datagrams.
 
-\item {\em \encname security.} We make three assumptions about \encname : (1) The \encname behaves honestly, i.e., \engine, whose source code is published for clients, correctly executes the \tc protocol; (2) The private key $\skTC$ is known only to the \encname; and (3) The \encname has an accurate (internal) real-time clock. (Specifically, the clock is accurate to within \ari{XXX}, as we show experimentally.)  We explain below how we achieve these properties through use of SGX and how the public key $\pkTC$ may be bound to an Ethereum account, giving the \encname an authenticable blockchain presence. 
+\item {\em \encname security.} We make three assumptions about the \encname : (1) The \encname behaves honestly, i.e., \engine, whose source code is published for clients, correctly executes the \tc protocol; (2) For an \encname-generated keypair $(\skTC, \pkTC)$, the private key $\skTC$ is known only to the \encname; and (3) The \encname has an accurate (internal) real-time clock. We explain below how we achieve these properties through use of SGX. 
 
 
 \item {\em Blockchain communication.} Transaction and message sources are authenticable, i.e., a transaction $m$ sent from an account ${\cal P}_{X}$ (or message $m$ from contract ${\cal C}_{X}$) is identified by the receiving account as originating from $X$. Transactions and messages are integrity protected (as they are digitally signed by the sender), but not confidential. 
