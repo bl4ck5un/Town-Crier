@@ -58,7 +58,7 @@ state reverted to before the function is invoked.
 \sbrown{\Delta F_{\text{request}}}$ $+$ 
 $\smaroon{\$F_{\text{deliver}}})$ from some $\reqcont$: \\
 		& Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$\\
-		& ${\sf id}$ := Counter; Counter := Counter + 1\\
+		& ${\sf id}$ := Counter; \ \  Counter := Counter + 1\\
                  & Record $({\sf id}, {\sf params}, {\sf callback}, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, {\reqcont})$
 %\elaine{this makes it look like it's sending money}
 \\[-10pt]
@@ -115,7 +115,7 @@ that $\pksgx$ will need to put in to call the {\bf Deliver} entry point.
 %\quad Publish $(\pkTC, \sigatt)$\\[5pt]
 
 {\bf  Loop forever}: \\
-Whenever \tcont receives 
+Whenever \tcont records 
 a request
 $({\sf id}, {\sf params}, \_, \_,$ $\sbrown{\Delta F_{\text{request}}}$ $+ \smaroon{\$ F_{\text{deliver}}})$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
 \ \quad Assert $\sbrown{\Delta F_{\text{min}}} \leq  
