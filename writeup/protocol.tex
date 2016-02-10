@@ -37,11 +37,46 @@ Fig.~\ref{fig:dataflow} shows the data flows involved in processing a datagram r
 
 \begin{figure}[h!]
 \centering
-\includegraphics[width=\columnwidth]{figures/DataflowFig}
+\begin{tikzpicture}
+  [entity/.style={rectangle,draw=black,minimum height=3em,text width=6em,align=center},
+   trusted/.style={fill=green!30},
+   communication/.style={blue,ultra thick,text=black},
+   bg-box/.style={rectangle,rounded corners,draw=black,dashed},
+   blockchain-color/.style={fill=yellow!20}]
+  \node[entity,trusted] (ctc) {TC Contract\\$\tcont$};
+  \node[entity,trusted,right=7em of ctc] (enc) {Enclave};
+  \node[entity,fill=white,below=5em of ctc] (cu) {User Contract\\$\reqcont$};
+  \node[below=1em of enc,align=center] (data) {\small (obtains $\dgm$\\from data source)};
+
+  \path[-stealth,communication] (cu) edge [transform canvas={xshift=-1.6em}] node [text width=4.75em,align=center,blockchain-color] {\footnotesize $m_1 =$\\[-0.2em]$(\{\dgid\},\dgform,$\\[-0.2em]$\dgcallback)$} (ctc);
+  \path[-stealth,communication] (ctc) edge [above,transform canvas={yshift=0.6em}] node [text width=4em,align=center] {\footnotesize $m_2 =$\\[-0.4em]$(\dgid,\dgform)$} (enc);
+  \path[-stealth,communication] (enc) edge [below,transform canvas={yshift=-0.6em}] node [text width=4em,align=center] {\footnotesize $m_3 =$\\[-0.2em]$(\dgid,\dgform,$\\[-0.3em]$\dgm)$} (ctc);
+  \path[-stealth,communication] (ctc) edge [transform canvas={xshift=2.25em}] node [text width=2.25em,align=center,blockchain-color] {\footnotesize $m_4 =$\\[-0.4em]$\dgm$} (cu);
+
+  \begin{pgfonlayer}{background}
+    \node[bg-box,
+          blockchain-color,
+          fit={($(ctc.north east)+(0.75em,0.3em)$)($(cu.south west)+(-0.75em,-0.3em)$)},
+          label=above:{\bf Blockchain}] () {};
+    \node[bg-box,
+          fill=black!20,
+          fit={($(enc.north east)+(0.5em,0.3em)$)($(enc.south west)+(-0.5em,-0.3em)$)},
+          label=above:{\bf TC Server}] () {};
+  \end{pgfonlayer}
+\end{tikzpicture}
 \caption{{\bf Data flows in datagram processing.} \elaine{the figure must be changed,
   m1 and m4 do not have id in the formal algorithm descriptions} }
 \label{fig:dataflow}
 \end{figure}
+
+
+%\begin{figure}[h!]
+%\centering
+%\includegraphics[width=\columnwidth]{figures/DataflowFig}
+%\caption{{\bf Data flows in datagram processing.} \elaine{the figure must be changed,
+%  m1 and m4 do not have id in the formal algorithm descriptions} }
+%\label{fig:dataflow}
+%\end{figure}
 
 
 Digital signatures are needed to authenticated messages, such as $\dgret$, entering the blockchain from an external source. We let $(\skTC, \pkTC)$ denote the private / public keypair associated with the \encname for such message authentication. For simplicity, Fig.~\ref{fig:dataflow} assumes that the Engine can send signed messages directly to \tcont. We explain shortly how Ethereum requires a slightly different approach in which \tc sends messages via an Ethereum wallet \tcadd.
