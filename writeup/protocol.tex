@@ -36,7 +36,8 @@ Fig.~\ref{fig:dataflow} shows the data flows involved in processing a datagram r
 \begin{figure}[h!]
 \centering
 \includegraphics[width=\columnwidth]{figures/DataflowFig}
-\caption{{\bf Data flows in datagram processing.}}
+\caption{{\bf Data flows in datagram processing.} \elaine{the figure must be changed
+m1 does not have id} }
 \label{fig:dataflow}
 \end{figure}
 
@@ -144,6 +145,7 @@ a request of the form $(\dgform, \dgcallback)$ which \tcont converts into a mess
   \hline
 
   \multicolumn{2}{|c|}{{\bf Program for Town Crier blockchain contract \tcont}} \\ [1ex]
+{\bf Initialize:} &  Counter := 0\\
   {\bf Request:} & On recv $(\dgform, \dgcallback)$ from some $\reqcont$:   
  \\
 %                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
