@@ -168,20 +168,24 @@ at the end of the execution will also be refunded);
 
 
 \begin{theorem}[Bounded loss for honest requester]
-Suppose request $({\sf id}, {\sf params}, {\sf callback}, 
-{\color{blue} \Time_{\text{timeout}}}, \_)$ was submitted
-by an honest requester $\reqcont$;
+Suppose request $({\sf params}, {\sf callback}, \_)$ was submitted
+by an honest requester $\reqcont$ and got assigned a unique identifier
+${\sf id}$ by $\tcont$;
 then 
-$\reqcont$ will  either obtain 
-a valid datagram matching requested parameters
-${\sf params}$
-before the specified deadline  
-${\color{blue} \Time_{\text{timeout}}}$;
+either 
+\begin{itemize}
+\item ${\sf callback}$ will be invoked  
+with a valid datagram matching requested parameters
+${\sf params}$,
+and the requester consumes at most
+$\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{deliver}}} + \sbrown{\$ \overline{G}_{deliver}} $
 or 
-$\reqcont$ will have lost at most 
-$\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{cancel}}}$
-after ${\color{blue} \Time_{\text{timeout}}}$.
-
+\item
+$\reqcont$ 
+loses at most 
+$\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{cancel}}} + \smaroon{\overline{F}_{\text{deliver}}}$ after calling {\bf Cancel}.
+%after ${\color{blue} \Time_{\text{timeout}}}$.
+\end{itemize}
 \end{theorem}
 
 \begin{proof}[(sketch.)]
