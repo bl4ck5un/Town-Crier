@@ -1,19 +1,14 @@
-\section{Advanced Features}
-\subsection{Custom and private datagrams}
-\subsection{Protection against traffic analysis}
-\subsection{Full-blockchain scraping}
-As a means of reducing communication costs...
-\subsection{Use of new opcodes}
-New opcodes would enable processing of fresh attestation
-\subsection{Protecting against freeloading}
-Augur:
-"parasite contracts" which steal the work done by contributors without compensating them properly.
-\subsection{Principled data extraction}
-Ultimately, we servers might themselves to act as ADFs. Possible migration path: (1) Town Crier; (2) XML labels on data; (3) Integration of Town Crier features into source directly
-\subsection{Off-chain communication}
-Mention use of Lamport signatures, etc.
-\subsection{Revocation}
-\subsection{Migration Path}
-Ultimately, we expect sources themselves to act as ADFs. The migration path is : (1) Town Crier; (2) XML labels on data; (3) Integration of Town Crier features into source directly
-\subsection{IoT support}
+\section{Future Work}
+
+We will continue to develop \tc after its initial deployment and expect it to evolve to incorporate a number of additional features, most importantly:
+
+\begin{itemize}
+\item{\em Revocation support.} Revocation of two forms can impact the \tc service. First, the certificates of data sources may be revoked. To address this issue, given its ability to establish external HTTPS connections, \tc can make use of Online Certificate Status Protocol (OCSP). Second, should an SGX host be known to have been compromised, Intel has indicated support for an online attestation verification service that will permit detection and blacklisting. Clients may use this service when checking the attestation $\sigatt$, so no modification to \tc is required to support the service.
+\item{\em New opcodes.} Ethereum's developers~\cite{Buterinpersonal} have indicated an intention to expand the range of supported cryptographic primitives in Ethereum and stated that they are amenable to the authors' suggestion of incorporating opcodes supporting Intel's EPID in particular, which would enable attestation verification within the blockchain. 
+\item{\em Freeloading protection.} Concern has arisen about ``parasite contracts'' that forward or resell datagrams---particularly those from fee-based data feeds. We plan to deploy a novel mechanism that leverages the homomorphic properties of ECDSA keypairs to address this concern. While generalizable, in a two-party setting, it works as follows. Two parties $A$ and $B$ to a contract $\reqcont$ furnish key pairs $(\sk_A, \pk_A)$ and $(\sk_B, \pk_B)$ and publish in $\reqcont$ ciphertexts under $\pkTC$ of $\sk_A$ and $\sk_B$. \tc sends a reply datagrams $\dgm$ through an account with keypair $(\sk_C, \pk_C)$, where $\sk_C = \sk_A + \sk_B$ is computed by \tc and $\pk_C = \pk_A \times \pk_B$ may be computed by \reqcont. With this setup, $\dgm$ can only be authenticated by either \tc or by $A$ and $B$ together. Thus $A$ and $B$ can be individually identify a datagram $\dgm$ that came from $\tc$, but in the view of any other party, $A$ and $B$ could have colluded to produce it! Such a \emph{deniable datagram} renders data from parasite contracts less trustworthy and thus less attractive. 
+\item{\em Traffic-analysis protection.} The \medname can observe the pattern of data sources accesses made by \tc. By correlating with activity in \tcont, an adversarial \medname can thus infer the data source targeted by private datagrams, as well as the timing---and potentially, based on traffic analysis, the actual request~\cite{XiaoFeng}. To address this issue, the \encname might incorporate the standard approach of making chaff or decoy data requests, i.e., false requests, to both the true data source and well as non-target data sources.
+\item{\em Migration to data-source feeds.} Ultimately, we envision that data sources may wish themselves to serve as authenticated data feeds. To do so, they could simply stand up \tc as a front end. As a first step along this path, however, an independent \tc service might provide support for XML-labelled data from data sources, enabling more accurate and direct scraping and intentional identification of what data should be served.  
+\item{\em Programmable scrapers and functions.} Relying contracts might provide their own scrapers, enabling new data sources, or their on code for private evaluation in \tc, emulating more sophisticated cryptographic tools for private contract construction such as Hawk~\cite{}. 
+\end{itemize}
+
 
