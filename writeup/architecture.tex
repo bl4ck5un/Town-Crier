@@ -75,11 +75,11 @@ The \tcs system includes three main components: The \tcontract (\tcont), the \en
   \end{pgfonlayer}
 
   \node[right=-0.15em of tc,color=red,transform canvas={yshift=2.5em}] (https) {\scriptsize \bf HTTPS};
-  \node[rectangle,draw=black,trusted,right=2.75em of tc,anchor=north,rotate=90,text width=9em,minimum height=5em,align=center,label=right:{\bf Data Source}] (data) {\tt lots-o-data.com};
+  \node[rectangle,draw=black,trusted,right=2.75em of tc,text width=4.5em,minimum height=9.75em,align=center,label=above:{\bf Data Source}] (data) {\tt lots-o-\\data.com};
 
   \draw[stealth-stealth,communication] ([xshift=-0.75em,yshift=-0.75em]ctc.east) -| ([xshift=-0.75em,yshift=-0.75em]enc.north);
   \draw[stealth-stealth,communication] ([yshift=0.75em]ctc.south) -- ([yshift=-0.75em]cu.north);
-  \draw[stealth-stealth,communication] ([xshift=0.75em,yshift=-0.75em]enc.north) |- ([xshift=0.75em,yshift=1.75em]data.north);
+  \draw[stealth-stealth,communication] ([xshift=0.75em,yshift=-0.75em]enc.north) |- ([xshift=0.75em,yshift=1.75em]data.west);
 \end{tikzpicture}
 \caption{{\bf Basic Town Crier architecture.}}
 \label{fig:overview}
