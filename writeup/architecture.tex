@@ -52,10 +52,45 @@ The \tcs system includes three main components: The \tcontract (\tcont), the \en
 \vspace{-2mm}
 \begin{figure}[h!]
 \centering
-\includegraphics[width=\columnwidth]{figures/OverviewFig}
+\begin{tikzpicture}
+  [entity/.style={rectangle,draw=black,minimum height=3.5em,text width=3.5em,align=center},
+   contract/.style={entity,text width=5.7em},
+   trusted/.style={fill=green!30},
+   communication/.style={blue,ultra thick,text=black},
+   bg-box/.style={rectangle,rounded corners,draw=black,dashed}]
+  \node[contract,trusted] (ctc) {TC Contract\\$\tcont$};
+  \node[contract,fill=white,below=1.5em of ctc] (cu) {User Contract\\$\reqcont$};
+  \node[entity,fill=none,right=2.5em of ctc] (relay) {Relay};
+  \node[entity,trusted,right=2.5em of cu] (enc) {Enclave};
+
+  \begin{pgfonlayer}{background}
+    \node[bg-box,
+          fill=yellow!20,
+          fit={($(ctc.north east)+(0.25em,0.25em)$)($(cu.south west)+(-0.25em,-0.25em)$)},
+          label=above:{\bf Blockchain}] (blockchain) {};
+    \node[bg-box,
+          fill=black!20,
+          fit={($(relay.north east)+(0.25em,0.25em)$)($(enc.south west)+(-0.25em,-0.25em)$)},
+          label=above:{\bf TC Server}] (tc) {};
+  \end{pgfonlayer}
+
+  \node[right=-0.15em of tc,color=red,transform canvas={yshift=2.5em}] (https) {\scriptsize \bf HTTPS};
+  \node[rectangle,draw=black,trusted,right=2.75em of tc,anchor=north,rotate=90,text width=9em,minimum height=5em,align=center,label=right:{\bf Data Source}] (data) {\tt lots-o-data.com};
+
+  \draw[stealth-stealth,communication] ([xshift=-0.75em,yshift=-0.75em]ctc.east) -| ([xshift=-0.75em,yshift=-0.75em]enc.north);
+  \draw[stealth-stealth,communication] ([yshift=0.75em]ctc.south) -- ([yshift=-0.75em]cu.north);
+  \draw[stealth-stealth,communication] ([xshift=0.75em,yshift=-0.75em]enc.north) |- ([xshift=0.75em,yshift=1.75em]data.north);
+\end{tikzpicture}
 \caption{{\bf Basic Town Crier architecture.}}
 \label{fig:overview}
 \end{figure}
+
+%\begin{figure}[h!]
+%\centering
+%\includegraphics[width=\columnwidth]{figures/OverviewFig}
+%\caption{{\bf Basic Town Crier architecture.}}
+%\label{fig:overview}
+%\end{figure}
 \vspace{-2mm}
 
 \paragraph{The \tcontract \tcont.} The \tcontract (denoted by \tcont) is a smart contract that acts as the blockchain front end of the \tc service. It is designed to present a simple API to a relying contract \reqcont for its requests from \tc. Very simply, \tcont accepts datagram requests from a requester \reqcont and returns corresponding datagrams from \tc. Additionally, \tcont manages \tc monetary resources, which in Ethereum take the form of ether (money) and gas (``fuel'' for contracts).
