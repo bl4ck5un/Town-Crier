@@ -357,11 +357,15 @@ of executing the {\bf Deliver} entry point (including
 the cost of executing the user-defined ${\sf callback}$ function).
 
 If the honest request $\reqcont$ did not receive
-a callback for some ${\sf id}$  
-before the specified deadline ${\color{blue} \Time_{\text{timeout}}}$,
-it will invoke  
-{\bf Cancel}
-with (${\sf id}$, $\sbrown{\$ G_{\text{cancel}}}$).
+a callback for some ${\sf id}$,  
+%before the specified deadline ${\color{blue} \Time_{\text{timeout}}}$,
+it can invoke {\bf Cancel}
+with (${\sf id}$, $\sbrown{\$ G_{\text{cancel}} + \smaroon{\$ \overline{F}_{\text{deliver}}}}$),
+where $\sbrown{\$ G_{\text{cancel}}}$ is the amount of gas needed 
+to execute the {\bf Cancel} entry point, and $\smaroon{\$ \overline{F}_{\text{deliver}}}$
+is a small amount of money paid to perform cancellation, 
+such that Town Crier will be refunded for the small amount of gas expended,
+should it deliver a datagram after a cancellation happened.
 \end{itemize}
 
 
