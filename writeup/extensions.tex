@@ -328,15 +328,13 @@ after ${\color{blue} \Time_{\text{timeout}}}$.
 \end{theorem}
 
 \begin{proof}[(sketch.)]
+%An honest requester $\reqcont$  
+%picks a random, sufficiently long ${\sf id}$ such
+%that the probability of collision with an existing ${\sf id}$ 
+%is negligible.
+%Recall that $\tcont$ ignores all future occurrences of ${\sf id}$, i.e.,
+%only the first occurrence of ${\sf id}$ is preserved. 
 An honest requester $\reqcont$  
-picks a random, sufficiently long ${\sf id}$ such
-that the probability of collision with an existing ${\sf id}$ 
-is negligible.
-Recall that $\tcont$ ignores all future occurrences of ${\sf id}$, i.e.,
-only the first occurrence of ${\sf id}$ is preserved. 
-Further,
-an honest requester $\reqcont$  
-also 
 puts in 
 $\sbrown{\Delta F_{\text{request}}} + \smaroon{\$ F_{\text{deliver}}}$
 amount with each request to $\tcont$,
