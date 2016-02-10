@@ -250,11 +250,17 @@ $\smaroon{{\$ \overline{F}}_{\text{deliver}}}$ & currency deposited upon cancell
 to refund the gas Town Crier  
 expends should a datagram be delivered after cancellation\\
 \hline
-$\sbrown{{\$ G}_{\text{deliver}}}$,
-$\sbrown{{\$ G}_{\text{request}}}$,
+$\sbrown{{\$ G}_{\text{deliver}}}$
+$\sbrown{{\$ G}_{\text{request}}}$
 $\sbrown{{\$ G}_{\text{cancel}}}$ & 
-Max gas needed to execute the {\bf Deliver}, {\bf Request}, {\bf Cancel} entries points
+max gas needed to execute the {\bf Deliver}, {\bf Request}, {\bf Cancel} entries points
 respectively \\
+\hline
+$\sbrown{{\$ G}_{\text{max}}}$
+& amount of gas in Town Crier's account $\tcadd$ \\
+\hline
+$\sbrown{{\$ G}_{\text{min}}}$
+& gas required for the {\bf Deliver} entry point when ${\sf callback}$ is empty \\
 \hline
 \end{tabular}
 \end{table}
