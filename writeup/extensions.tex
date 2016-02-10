@@ -17,8 +17,8 @@ corresponding entry point.
 In Figure \elaine{fill}, we
 use the notation $\sbrown{\$ G}$
 to denote transaction fees (i.e., gas), 
-where $\Delta$ is a type annotation 
-and ${\tt F}$ denotes the numerical amount of the  
+where $\$$ is a type annotation 
+and ${\tt G}$ denotes the numerical amount of the  
 gas. Other non-gas, normal currency units 
 are denoted as $\smaroon{\$ F}$ where $\$$ is a type annotation,
 and ${\tt F}$ denotes the amount of the currency. 
@@ -72,14 +72,14 @@ $\smaroon{\$F_{\text{deliver}}})$ from some $\reqcont$: \\
 $\sbrown{\$ {\tt G_{\text{deliver}}}}$ )$ from $\tcadd$: \\
 	& If ${\sf bCanceled}[{\sf id}]$ and not ${\sf bDelivered}[{\sf id}]$:\\
 		& \quad Send $\smaroon{\$F_{\text{cancel}}}$ to $\tcadd$  \\
-		& \quad Set ${\sf bCanceled}[{\sf id}]$ and return\\
+		& \quad Set ${\sf bDelivered}[{\sf id}]$ and return\\
 
-                 & Let $({\sf id}, {\sf params'}, {\sf callback}, \smaroon{\$ F'_{\text{deliver}}}, \_)$ be the first recorded tuple for ${\sf id}$ \sgray{\it //~abort if not found}\\
+                 & Let $({\sf id}, {\sf params'}, {\sf callback}, \smaroon{\$ F_{\text{deliver}}}, \_)$ be the first recorded tuple for ${\sf id}$ \sgray{\it //~abort if not found}\\
 % & Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$ \\
                  & Assert ${\sf params} = {\sf params}'$\\
-                &   Assert $\smaroon{\$ F'_{\text{deliver}}} \leq \sbrown{\$ G_{\text{deliver}}}$\\
+                &   Assert $\smaroon{\$ F_{\text{deliver}}} \leq \sbrown{\$ G_{\text{deliver}}}$\\
 		& Set ${\sf bDelivered}[{\sf id}]$ \\
-                 & Send $\smaroon{\$F'_{\text{deliver}}}$ to $\tcadd$ \\
+                 & Send $\smaroon{\$F_{\text{deliver}}}$ to $\tcadd$ \\
                  & Call ${\sf callback}({\sf data})$ \\[-10pt]
     & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
     & {\it {\color{gray} {//~all remaining {gas returned to $\tcadd$}}} }\\
@@ -93,7 +93,7 @@ from some $\reqcont$\\
    & Assert ${\sf bCanceled[{\sf id}]}$ not set \\ 
 %   & Assert ${\sf cur\_time} \geq {\color{blue} \Time_{\text{timeout}}}$\\
   & Set ${\sf bCanceled[{\sf id}]}$\\
-  & Send $\smaroon{\$ \overline{F}_{\text{deliver}}}$ to \reqcont\\
+  & Send $\smaroon{\$ {F}_{\text{deliver}}}$ to \reqcont\\
   \hline
 \end{tabularx}
 \caption{
