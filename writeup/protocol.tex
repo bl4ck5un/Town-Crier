@@ -56,7 +56,9 @@ Let $\enclaveprog$ represent the code for \encname, which we presume is trusted 
 \paragraph{\bf Formal model and notation.} 
 
 We abstract away details of the functioning of SGX in two ways.
-First, we abstract away the use of group signatures in EPID and simply denote the keypair associated with an SGX instance in \tc by $(\pkM, \skM)$. We let $\Sigma.{\sf Sign}({\sk}, X)$ denote a digital signature under private key $\sk$ of message $X$, and $\Sigma.{\sf Verify}({\sk}, \sigma, X)$ denote the corresponding verification operation. 
+First, we abstract away the use of group signatures in EPID and simply denote the keypair associated with an SGX instance in \tc by $(\pkM, \skM)$. 
+\elaine{this isn't right, i need to fix this.}
+We let $\Sigma.{\sf Sign}({\sk}, X)$ denote a digital signature under private key $\sk$ of message $X$, and $\Sigma.{\sf Verify}({\sk}, \sigma, X)$ denote the corresponding verification operation. 
 
 Second, we model execution in SGX in terms of a functionality $\fsgx$ operating in a stateful manner on \enclaveprog, and specified in Figure~\ref{fig:SGX_abstraction}. $\fsgx$ may be be invoked with one of two messages to \enclaveprog: \initcall, which creates the enclave with \enclaveprog as its initial state and triggers measurement quotes and (\resumecall, $X$) which initiates an execution of \enclaveprog on a fresh input $X$. (We assume that \enclaveprog exits only when it completes processing of a given input.) We let $\fsgx[\enclaveprog, \relay]$ denote invocation of $\fsgx$ on \enclaveprog by \relay. 
 
