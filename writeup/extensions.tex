@@ -239,7 +239,7 @@ The \tcs~\encname \engine.
 \label{fig:engineprot}
 \end{figure}
 
-More specifically, We will use the following notation to denote regular currency units and gas. 
+More specifically, We will use the following notations to denote regular currency units and gas. 
 
 \begin{table}[!h]
 \begin{tabular}{p{0.13\columnwidth}p{0.8\columnwidth}}
@@ -256,6 +256,9 @@ $\sbrown{{\$ G}_{\text{request}}}$
 $\sbrown{{\$ G}_{\text{cancel}}}$ & 
 max gas needed to execute the {\bf Deliver}, {\bf Request}, {\bf Cancel} entries points
 respectively \\
+\hline
+$\sbrown{{\$ \overline{G}}_{\text{deliver}}}$
+& gas needed to execute {\bf Deliver} should it happen after cancellation\\
 \hline
 $\sbrown{{\$ G}_{\text{max}}}$
 & amount of gas in Town Crier's account $\tcadd$ \\

@@ -178,12 +178,14 @@ either
 with a valid datagram matching requested parameters
 ${\sf params}$,
 and the requester consumes at most
-$\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{deliver}}} + \sbrown{\$ \overline{G}_{deliver}} $
+$\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{deliver}}} + 
+\sbrown{\$ \overline{G}_{\text{deliver}}}$;
 or 
 \item
 $\reqcont$ 
 loses at most 
-$\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{cancel}}} + \smaroon{\overline{F}_{\text{deliver}}}$ after calling {\bf Cancel}.
+$\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{cancel}}} + 
+\sbrown{\$ \overline{G}_{\text{deliver}}}$ after calling {\bf Cancel}.
 %after ${\color{blue} \Time_{\text{timeout}}}$.
 \end{itemize}
 \end{theorem}
