@@ -24,7 +24,9 @@ We now make this data flow more precise.
 
 \subsection{Data flows}
 
-A datagram request by \reqcont takes the form of a message $m_1 = (\dgid, \dgcallback, \dgform)$ to \tcont on the blockchain. Here, $\dgid$ denotes a unique request identifier assigned to $m_1$ by \tcont. For simplicity, we depict it as part of the communicated message, and give details on its assignment below.
+A datagram request by \reqcont takes the form of a message $m_1 = (\dgcallback, \dgform)$ to \tcont on the blockchain. 
+%Here, $\dgid$ denotes a unique request identifier assigned to $m_1$ by \tcont. 
+For simplicity, we depict it as part of the communicated message, and give details on its assignment below.
 
 The parameter $\dgcallback$ in $m_1$ specifies the entry point in \reqcont to which the datagram is to be returned. (In principle, $\dgcallback$ could specify an entry point in a different contract, but \tc does not yet adopt this generalization.) $\dgform$ specifies the requested datagram, e.g., ${\sf params} := (\weburl, {\sf spec}, T)$, where $\weburl$ is the target data source and {\sf spec} specifies content of a the datagram to be retrieved (e.g., a stock ticker at a particular time), while $T$ specifies the delivery time for the datagram. 
 
@@ -135,9 +137,24 @@ For simplicity, we first specify a payment-free version of our basic protocol, i
 
 \paragraph{The Requester Contract $\reqcont$.}
 The requester contract $\reqcont$ sends to the \tcontract \tcont
-a request of the form $(\dgform, \dgcallback)$ which \tcont converts into a message $m_1 = (\dgid, \dgform, \dgcallback)$ as specified below.
+a request of the form $(\dgform, \dgcallback)$.
+%which \tcont converts into a message $m_1 = (\dgform, \dgcallback)$ as specified below.
 
-\paragraph{The \tcontract \tcont.} The \tcontract, as noted above, accepts a datagram request from \reqcont, forwards it to the \tc server, and sends the resulting datagram $\dgm$ to the entry point \dgcallback in the requesting contract \reqcont. As explained above, because the response (msg. $m_2$) comes from $\tcadd$, the blockchain automatically verifies that the response is correctly signed under $\engine$'s key $\pkTC$, and \tcont need not verify the signature explicitly. \tc does, however, have a subtle security requirement. Specifically,  for a given datagram request $\dgid$, \tcont must verify that $\dgform' = \dgform$, where $\dgform$ is the digitally signed message produced by \engine and $\dgform$ is the locally stored parameters. The check is necessary to prevent \relay from corrupting datagram requests passed by \tcont (which, as a public function, has no means of digitally signing requests). 
+\paragraph{The \tcontract \tcont.} 
+The \tcontract, as noted above, accepts a datagram request from \reqcont, 
+assigns a unique ${\sf id}$ to each request, and
+records the request.
+%\tcont
+%now
+%forwards the request to the \tc server, and 
+Our Town Crier Relay $\relay$ will monitor
+requests received by \tcont, and 
+forwards the requests to an SGX enclave.
+When $\tcont$ obtains a valid response
+from $\tcadd$,   
+it 
+sends the resulting datagram $\dgm$ to the entry point \dgcallback 
+specified by the requesting contract \reqcont. As explained above, because the response (msg. $m_2$) comes from $\tcadd$, the blockchain automatically verifies that the response is correctly signed under $\engine$'s key $\pkTC$, and \tcont need not verify the signature explicitly. \tc does, however, have a subtle security requirement. Specifically,  for a given datagram request $\dgid$, \tcont must verify that $\dgform' = \dgform$, where $\dgform$ is the digitally signed message produced by \engine and $\dgform$ is the locally stored parameters. The check is necessary to prevent \relay from corrupting datagram requests passed by \tcont (which, as a public function, has no means of digitally signing requests). 
 
 \tcont is specified in Fig.~\ref{fig:tc-contract}. Here, Call denotes a call to a contact entry point, while Return denotes a message returned by the blockchain in response to a function call. Counter is a variable such that Counter = 0 upon creation of \tcont.
 \begin{figure}[!htb]
@@ -157,7 +174,7 @@ a request of the form $(\dgform, \dgcallback)$ which \tcont converts into a mess
 %		 & Send $(\dgid, \dgform)$ to \relay \\
 %\multicolumn{2}{|c|}{\sgray {\it // above implemented by \relay monitoring the blockchain}}\\[5pt]
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm)$ from $\tcadd$: \\
-		 & Retrieve $(\dgid, \dgform', \dgcallback)$\\
+		 & Retrieve recorded $(\dgid, \dgform', \dgcallback)$\\
 		 & Assert $\dgform = \dgform'$\\
                  & Call ${\dgcallback}({\dgm})$ \quad \sgray{\it //~{\bf msg.}~$m_4$}\\
 %                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
