@@ -28,12 +28,13 @@
 
 typedef struct ms_handle_request_t {
 	int ms_retval;
+	uint8_t* ms_nonce;
 	uint64_t ms_request_id;
 	uint8_t ms_request_type;
-	char* ms_req;
+	uint8_t* ms_req;
 	int ms_req_len;
-	char* ms_resp;
-	int ms_resp_len;
+	uint8_t* ms_tx;
+	int* ms_len;
 } ms_handle_request_t;
 
 typedef struct ms_Test_main_t {
@@ -45,14 +46,6 @@ typedef struct ms_ecall_create_report_t {
 	sgx_target_info_t* ms_quote_enc_info;
 	sgx_report_t* ms_report;
 } ms_ecall_create_report_t;
-
-typedef struct ms_get_raw_signed_tx_t {
-	int ms_retval;
-	uint8_t* ms_sealed_nonce;
-	int ms_nonce_len;
-	uint8_t* ms_tx;
-	int* ms_len;
-} ms_get_raw_signed_tx_t;
 
 typedef struct ms_ocall_mbedtls_net_connect_t {
 	int ms_retval;
@@ -125,21 +118,37 @@ static sgx_status_t SGX_CDECL sgx_handle_request(void* pms)
 {
 	ms_handle_request_t* ms = SGX_CAST(ms_handle_request_t*, pms);
 	sgx_status_t status = SGX_SUCCESS;
-	char* _tmp_req = ms->ms_req;
+	uint8_t* _tmp_nonce = ms->ms_nonce;
+	size_t _len_nonce = 32;
+	uint8_t* _in_nonce = NULL;
+	uint8_t* _tmp_req = ms->ms_req;
 	int _tmp_req_len = ms->ms_req_len;
 	size_t _len_req = _tmp_req_len;
-	char* _in_req = NULL;
-	char* _tmp_resp = ms->ms_resp;
-	int _tmp_resp_len = ms->ms_resp_len;
-	size_t _len_resp = _tmp_resp_len;
-	char* _in_resp = NULL;
+	uint8_t* _in_req = NULL;
+	uint8_t* _tmp_tx = ms->ms_tx;
+	size_t _len_tx = 2048 * sizeof(*_tmp_tx);
+	uint8_t* _in_tx = NULL;
+	int* _tmp_len = ms->ms_len;
+	size_t _len_len = sizeof(*_tmp_len);
+	int* _in_len = NULL;
 
 	CHECK_REF_POINTER(pms, sizeof(ms_handle_request_t));
+	CHECK_UNIQUE_POINTER(_tmp_nonce, _len_nonce);
 	CHECK_UNIQUE_POINTER(_tmp_req, _len_req);
-	CHECK_UNIQUE_POINTER(_tmp_resp, _len_resp);
+	CHECK_UNIQUE_POINTER(_tmp_tx, _len_tx);
+	CHECK_UNIQUE_POINTER(_tmp_len, _len_len);
 
+	if (_tmp_nonce != NULL) {
+		_in_nonce = (uint8_t*)malloc(_len_nonce);
+		if (_in_nonce == NULL) {
+			status = SGX_ERROR_OUT_OF_MEMORY;
+			goto err;
+		}
+
+		memcpy(_in_nonce, _tmp_nonce, _len_nonce);
+	}
 	if (_tmp_req != NULL) {
-		_in_req = (char*)malloc(_len_req);
+		_in_req = (uint8_t*)malloc(_len_req);
 		if (_in_req == NULL) {
 			status = SGX_ERROR_OUT_OF_MEMORY;
 			goto err;
@@ -147,20 +156,36 @@ static sgx_status_t SGX_CDECL sgx_handle_request(void* pms)
 
 		memcpy(_in_req, _tmp_req, _len_req);
 	}
-	if (_tmp_resp != NULL) {
-		if ((_in_resp = (char*)malloc(_len_resp)) == NULL) {
+	if (_tmp_tx != NULL) {
+		if ((_in_tx = (uint8_t*)malloc(_len_tx)) == NULL) {
 			status = SGX_ERROR_OUT_OF_MEMORY;
 			goto err;
 		}
 
-		memset((void*)_in_resp, 0, _len_resp);
+		memset((void*)_in_tx, 0, _len_tx);
 	}
-	ms->ms_retval = handle_request(ms->ms_request_id, ms->ms_request_type, _in_req, _tmp_req_len, _in_resp, _tmp_resp_len);
+	if (_tmp_len != NULL) {
+		if ((_in_len = (int*)malloc(_len_len)) == NULL) {
+			status = SGX_ERROR_OUT_OF_MEMORY;
+			goto err;
+		}
+
+		memset((void*)_in_len, 0, _len_len);
+	}
+	ms->ms_retval = handle_request(_in_nonce, ms->ms_request_id, ms->ms_request_type, _in_req, _tmp_req_len, _in_tx, _in_len);
 err:
+	if (_in_nonce) {
+		memcpy(_tmp_nonce, _in_nonce, _len_nonce);
+		free(_in_nonce);
+	}
 	if (_in_req) free(_in_req);
-	if (_in_resp) {
-		memcpy(_tmp_resp, _in_resp, _len_resp);
-		free(_in_resp);
+	if (_in_tx) {
+		memcpy(_tmp_tx, _in_tx, _len_tx);
+		free(_in_tx);
+	}
+	if (_in_len) {
+		memcpy(_tmp_len, _in_len, _len_len);
+		free(_in_len);
 	}
 
 	return status;
@@ -222,98 +247,34 @@ err:
 	return status;
 }
 
-static sgx_status_t SGX_CDECL sgx_get_raw_signed_tx(void* pms)
-{
-	ms_get_raw_signed_tx_t* ms = SGX_CAST(ms_get_raw_signed_tx_t*, pms);
-	sgx_status_t status = SGX_SUCCESS;
-	uint8_t* _tmp_sealed_nonce = ms->ms_sealed_nonce;
-	int _tmp_nonce_len = ms->ms_nonce_len;
-	size_t _len_sealed_nonce = _tmp_nonce_len;
-	uint8_t* _in_sealed_nonce = NULL;
-	uint8_t* _tmp_tx = ms->ms_tx;
-	size_t _len_tx = 2048 * sizeof(*_tmp_tx);
-	uint8_t* _in_tx = NULL;
-	int* _tmp_len = ms->ms_len;
-	size_t _len_len = sizeof(*_tmp_len);
-	int* _in_len = NULL;
-
-	CHECK_REF_POINTER(pms, sizeof(ms_get_raw_signed_tx_t));
-	CHECK_UNIQUE_POINTER(_tmp_sealed_nonce, _len_sealed_nonce);
-	CHECK_UNIQUE_POINTER(_tmp_tx, _len_tx);
-	CHECK_UNIQUE_POINTER(_tmp_len, _len_len);
-
-	if (_tmp_sealed_nonce != NULL) {
-		_in_sealed_nonce = (uint8_t*)malloc(_len_sealed_nonce);
-		if (_in_sealed_nonce == NULL) {
-			status = SGX_ERROR_OUT_OF_MEMORY;
-			goto err;
-		}
-
-		memcpy(_in_sealed_nonce, _tmp_sealed_nonce, _len_sealed_nonce);
-	}
-	if (_tmp_tx != NULL) {
-		if ((_in_tx = (uint8_t*)malloc(_len_tx)) == NULL) {
-			status = SGX_ERROR_OUT_OF_MEMORY;
-			goto err;
-		}
-
-		memset((void*)_in_tx, 0, _len_tx);
-	}
-	if (_tmp_len != NULL) {
-		if ((_in_len = (int*)malloc(_len_len)) == NULL) {
-			status = SGX_ERROR_OUT_OF_MEMORY;
-			goto err;
-		}
-
-		memset((void*)_in_len, 0, _len_len);
-	}
-	ms->ms_retval = get_raw_signed_tx(_in_sealed_nonce, _tmp_nonce_len, _in_tx, _in_len);
-err:
-	if (_in_sealed_nonce) {
-		memcpy(_tmp_sealed_nonce, _in_sealed_nonce, _len_sealed_nonce);
-		free(_in_sealed_nonce);
-	}
-	if (_in_tx) {
-		memcpy(_tmp_tx, _in_tx, _len_tx);
-		free(_in_tx);
-	}
-	if (_in_len) {
-		memcpy(_tmp_len, _in_len, _len_len);
-		free(_in_len);
-	}
-
-	return status;
-}
-
 SGX_EXTERNC const struct {
 	size_t nr_ecall;
-	struct {void* call_addr; uint8_t is_priv;} ecall_table[4];
+	struct {void* call_addr; uint8_t is_priv;} ecall_table[3];
 } g_ecall_table = {
-	4,
+	3,
 	{
 		{(void*)(uintptr_t)sgx_handle_request, 0},
 		{(void*)(uintptr_t)sgx_Test_main, 0},
 		{(void*)(uintptr_t)sgx_ecall_create_report, 0},
-		{(void*)(uintptr_t)sgx_get_raw_signed_tx, 0},
 	}
 };
 
 SGX_EXTERNC const struct {
 	size_t nr_ocall;
-	uint8_t entry_table[10][4];
+	uint8_t entry_table[10][3];
 } g_dyn_entry_table = {
 	10,
 	{
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
 	}
 };
 

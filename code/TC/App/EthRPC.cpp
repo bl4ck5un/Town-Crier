@@ -25,7 +25,7 @@ static int rpc_base(std::string hostname, unsigned port, Json::Value& query, Jso
 
     if(!networking::init())
     {
-        throw std::exception("Networking initialization failed");
+        throw std::runtime_error("Networking initialization failed");
     }
 
     queryStr = writer.write(query);
@@ -43,6 +43,7 @@ static int rpc_base(std::string hostname, unsigned port, Json::Value& query, Jso
 
     if (!resReader.parse(responseStr, res))
     {
+        std::cout << "Can't parse" << responseStr << std::endl;
         throw std::runtime_error("Parse Error");
     }
 
@@ -145,27 +146,56 @@ int send_transaction(char* raw)
   return EXIT_SUCCESS;
 }
 
+int eth_new_filter(std::string hostname, unsigned port, int* id, int from, int to)
+{
+    /*
+    > filter_opt
+{
+  address: "0x08be24cd8dcf73f8fa5db42b855b4370bd5c448b",
+  fromBlock: 1,
+  toBlock: "latest",
+  topics: []
+}
+    */
+    Json::Value query;
+    Json::Value filter_opt;
+    Json::Value result;
 
-int fetch_request(std::string hostname, unsigned port, long blk_i, long tx_i, Json::Value& result)
+    std::stringstream from_s, to_s;
+    from_s << "0x" << std::hex << from;
+    to_s << "0x" << std::hex << to;
+
+    filter_opt["address"] = "0x08be24cd8dcf73f8fa5db42b855b4370bd5c448b";
+//    filter_opt["topics"] = Json::arrayValue;
+    filter_opt["topics"][0] = "0x28dc24a2a8e41b6447d3e50c69bdf1155bbdc688627f7b29ac10ed2877b4cd33";
+    filter_opt["fromBlock"] = from_s.str();
+    filter_opt["toBlock"] = to_s.str();
+
+    query["jsonrpc"] = "2.0";
+    query["id"] = 1;
+    query["method"] = "eth_newFilter";
+    query["params"][0] = filter_opt;
+
+    rpc_base(hostname, port, query, result);
+
+    std::cout << result << std::endl;
+    *id = std::strtol(result.asCString(), NULL, 16);
+    return EXIT_SUCCESS;
+}
+
+int eth_getfilterlogs(std::string hostname, unsigned port, long filter_id, Json::Value& result)
 {
     Json::Value query;
     Json::FastWriter writer;
     // int to hex string
 
-    std::stringstream blk_i_str, tx_i_str;
-    blk_i_str << "0x" << std::hex << blk_i;
-    tx_i_str << "0x" << std:: hex << tx_i;
+    std::stringstream filter_id_s;
+    filter_id_s << "0x" << std::hex << filter_id;
 
     query["jsonrpc"] = "2.0";
     query["id"] = 1;
-    query["method"] = "eth_getTransactionByBlockNumberAndIndex";
-    query["params"][0] = "latest";
-    query["params"][0] = blk_i_str.str();
-    query["params"][1] = tx_i_str.str();
-
-    LL_DEBUG("method: %s", query["method"].asString().c_str());
-    LL_DEBUG("block_id: %s", query["params"][0].asCString());
-    LL_DEBUG("trans_id: %s", query["params"][1].asCString());
+    query["method"] = "eth_getFilterLogs";
+    query["params"][0] = filter_id_s.str();
 
     rpc_base(hostname, port, query, result);
 

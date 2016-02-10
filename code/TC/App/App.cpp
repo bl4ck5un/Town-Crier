@@ -12,6 +12,7 @@
 #include "WinBase.h"
 #include "Log.h"
 #include "Monitor.h"
+#include "Utils.h"
 
 #include <sstream>
 #include <string>
@@ -29,30 +30,6 @@ sgx_enclave_id_t global_eid = 0;
 
 
 #define SEALED_NONCE_SIZE 0x250
-#define NONCE_FILE_NAME "nonce.bin"
-
-void char2hex(const uint8_t* bytes, int len, char* hex) {
-    int i;
-    for (i = 0; i < len; i++)
-    {
-        hex += sprintf(hex, "%02X", bytes[i]);
-    }
-    *(hex + 1) = '\0';
-}
-
-static void load_nonce(uint8_t* nonce)
-{
-    FILE* nonce_file = fopen(NONCE_FILE_NAME, "rb");
-    fread(nonce, 32, 1, nonce_file);
-    fclose(nonce_file);
-}
-
-static void dump_nonce(uint8_t* nonce)
-{
-    FILE* nonce_file = fopen(NONCE_FILE_NAME, "wb");
-    fwrite(nonce, 32, 1, nonce_file);
-    fclose(nonce_file);
-}
 
 #ifdef ENCLAVE_TEST
 int main()
@@ -167,41 +144,35 @@ int main()
     uint8_t tx[2048];
     char* tx_str;
 
-    uint8_t nonce[32];
-    memset(nonce, 0, 32);
+    uint8_t nonce[32] = {0};
 
-    sqlite3* db;
-    ret = sqlite3_init(&db);
-    if (ret)
-    {
-        LL_CRITICAL("Error opening SQLite3 database: %s", sqlite3_errmsg(db));
-        sqlite3_close(db);
-    }
+    if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(NONCE_FILE_NAME) &&
+        GetLastError() == ERROR_FILE_NOT_FOUND)
+        { dump_nonce(nonce); }
+    else
+        { load_nonce(nonce); }
 
-    ret = record_nonce(db, 0x15);
-    if (ret)
-    {
-        goto exit;
-    }
+//    sqlite3* db;
+//    ret = sqlite3_init(&db);
+//    if (ret)
+//    {
+//        LL_CRITICAL("Error opening SQLite3 database: %s", sqlite3_errmsg(db));
+//        sqlite3_close(db);
+//    }
+//
+//    ret = record_nonce(db, 15);
+//    if (ret)
+//    {
+//        goto exit;
+//    }
 
-    int nonces;
-    ret = get_last_nonce(db, &nonces);
-    if (ret) goto exit;
+//    int nonces;
+//    ret = get_last_nonce(db, &nonces);
+//    if (ret) goto exit;
+//    std::cout << "nonce: " << nonces << std::endl;
 
-    std::cout << "nonce: " << nonces << std::endl;
 
-    ret = record_scan(db, 1);
-    ret = record_scan(db, 2);
-    ret = record_scan(db, 1);
-    ret = record_scan(db, 4);
-    if (ret) goto exit;
-
-    int blkid;
-    ret = get_last_scan(db, &blkid);
-    if (ret) goto exit;
-
-    std::cout << "blk:" << blkid << std::endl;
-
+    dump_buf("nonce to be used: ", nonce, 32);
 
 #if defined(_MSC_VER)
     if (query_sgx_status() < 0) {
@@ -215,11 +186,11 @@ int main()
     }
 
     // main loop
-    monitor_loop();
+    monitor_loop(nonce);
 
 exit:
     // test_RLP(global_eid, &ret);
-    sqlite3_close(db);
+//    sqlite3_close(db);
     LL_NOTICE("Info: SampleEnclave successfully returned.\n");
     LL_NOTICE("Enter a character before exit ...\n");
     getchar();

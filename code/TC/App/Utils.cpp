@@ -9,6 +9,8 @@
 
 #include <string>
 #include <ctime>
+#include <vector>
+#include <Log.h>
 
 #ifdef _MSC_VER
 # include <Shlobj.h>
@@ -185,3 +187,51 @@ int query_sgx_status()
     }
 }
 #endif
+
+static uint8_t char2int(char input)
+{
+  if(input >= '0' && input <= '9')
+    return input - '0';
+  if(input >= 'A' && input <= 'F')
+    return input - 'A' + 10;
+  if(input >= 'a' && input <= 'f')
+    return input - 'a' + 10;
+  throw std::invalid_argument("Invalid input string");
+}
+
+void fromHex(const char* src, std::vector<uint8_t> & out)
+{
+    if (strlen(src) % 2 != 0) 
+        { LL_CRITICAL("Error: input is not of even len\n");}
+    if (strncmp(src, "0x", 2) == 0) src += 2;
+    while(*src && src[1])
+    {
+        out.push_back(char2int(*src)*16 + char2int(src[1]));
+        src += 2;
+    }
+}
+
+// This function assumes src to be a zero terminated sanitized string with
+// an even number of [0-9a-f] characters, and target to be sufficiently large
+/*
+    convert a hex string to a byte array
+    [in]  src 
+    [out] target 
+    [out] len: how many bytes get written to the target
+*/
+void fromHex(const char* src, uint8_t* target, unsigned* len)
+{
+    *len = 0;
+    if ((strlen(src) % 2) != 0) 
+        { LL_CRITICAL("Error: input is not of even len\n"); *len=0;}
+    if (strncmp(src, "0x", 2) == 0) src += 2;
+    while(*src && src[1])
+    {
+        try { *(target++) = char2int(*src)*16 + char2int(src[1]); } 
+        catch (std::invalid_argument e)
+            { printf("Error: can't convert %s to bytes\n", src); }
+        src += 2; 
+        *len = (*len)+1;
+    }
+    if (*len == 1 && *(target - *len) == 0) *len = 0;
+}

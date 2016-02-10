@@ -333,6 +333,7 @@
     <ClInclude Include="RemoteAtt.h" />
     <ClInclude Include="EthRPC.h" />
     <ClInclude Include="sys_helper.h" />
+    <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System" />

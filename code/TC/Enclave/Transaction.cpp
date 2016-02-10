@@ -13,6 +13,8 @@
 #include "Commons.h"
 #include <Debug.h>
 
+#include "Transaction.h"
+
 #ifdef VERBOSE
 #include "Debug.h"
 #endif
@@ -160,11 +162,8 @@ public:
 #define NONCE       "0x06"          
 #define GASPRICE    "0x0BA43B7400"  //50000000000
 #define GASLIMIT    "0x015F90"      // 90000
-//#define TO_ADDR     "0x762f3a1b5502276bd14ecc1cab7e5e8b5cb27197"
-#define TO_ADDR     "0xc0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0"
+#define TO_ADDR     "0x08be24cd8dcf73f8fa5db42b855b4370bd5c448b"
 #define VALUE       "0x00"
-#define DATA        "0x60fe47b1000000000000000000000000000000000000000000000000000000000000001b"
-#define REF_RLP     "f88903850ba43b740083015f9094762f3a1b5502276bd14ecc1cab7e5e8b5cb2719780a460fe47b1000000000000000000000000000000000000000000000000000000000000001b1ba0ca83f314028eed155e31df4ad05041365cbd2e8ac0bc1c3090765736e01d2110a0442535abfc10b8f6c66363885a46c78c4a087bf601d1e4d638c9346a746254d7"
 
 static int increase_nonce_by_one(uint8_t* nonce)
 {
@@ -188,45 +187,40 @@ cleanup:
     return ret;
 }
 
-#define ABI_STR "deliver(uint64,uint8,bytes,bytes32)"
+#define ABI_STR "deliver(uint64,uint8,bytes32[],bytes32)"
 
-
-
-/*
-    The only function we need to call is the following:
-    function deliver(uint64 requestId, uint8 requestType, bytes requestData, bytes32 respData);    
-*/
-
-int get_request_TX_demo(uint8_t* nonce, int i_len, uint8_t* serialized_tx, int* o_len)
+int get_raw_signed_tx(uint8_t* nonce, int nonce_len, 
+                      uint64_t request_id, uint8_t request_type,
+                      const uint8_t* req_data, int req_len,
+                      uint8_t* resp_data, int resp_len,
+                      uint8_t* serialized_tx, int* o_len)
 {
     if (serialized_tx == nullptr || o_len == nullptr) {printf("Error: get_raw_tx gets NULL input\n"); return -1;}
     bytes out;
     int ret;
 
-    assert(i_len == 32);
-
-    uint64_t request_id = 0xFFFFFFFF;
-    uint8_t request_type = 0xFF;
-    bytes32 request1;
-    bytes32 request2;
-    bytes32 resp_data;
-
-    memset(request1.b, 0xAA, 32);
-    memset(request2.b, 0xBB, 32);
-    memset(resp_data.b, 0xEE, 32);
+    assert(nonce_len == 32);
 
     ABI_UInt64 a(request_id);
     ABI_UInt8 b(request_type);
 
-    ABI_Bytes32 r1(&request1);
-    ABI_Bytes32 r2(&request2);
-
     vector<ABI_serializable*> request_data;
-    request_data.push_back(&r1);
-    request_data.push_back(&r2);
+    bytes32* r = (bytes32*)malloc(req_len/32 * sizeof bytes32);
+    for (int i = 0; i < req_len / 32; i++)
+    {
+        memcpy(r[i].b, req_data + i*32, 32);
+        ABI_Bytes32* rr = new ABI_Bytes32(&r[i]);
+        request_data.push_back(rr);
+        // FIXME MEMORY LEAKAGE
+    }
+
     ABI_T_Array c(request_data);
 
-    ABI_Bytes32 d(&resp_data);
+    bytes32 resp_b32;
+    assert (resp_len == 32);
+    memcpy(resp_b32.b, resp_data, resp_len);
+
+    ABI_Bytes32 d(&resp_b32);
 
     vector<ABI_serializable*> args;
     args.push_back(&a);
@@ -303,122 +297,6 @@ int get_request_TX_demo(uint8_t* nonce, int i_len, uint8_t* serialized_tx, int* 
 
 #ifdef VERBOSE
     hexdump("RLP:", &out[0], out.size());
-    hexdump("RFL:", REF_RLP, strlen(REF_RLP));
-#endif
-
-    memcpy(serialized_tx, &out[0], out.size());
-    *o_len = out.size();
-
-    return increase_nonce_by_one(nonce);
-}
-
-int get_raw_signed_tx(uint8_t* nonce, int i_len, uint8_t* serialized_tx, int* o_len)
-{
-    if (serialized_tx == nullptr || o_len == nullptr) {printf("Error: get_raw_tx gets NULL input\n"); return -1;}
-    bytes out;
-    int ret;
-
-    assert(i_len == 32);
-
-    uint64_t request_id = 0xFFFFFFFF;
-    uint8_t request_type = 0xFF;
-    bytes32 request1;
-    bytes32 request2;
-    bytes32 resp_data;
-
-    memset(request1.b, 0xAA, 32);
-    memset(request2.b, 0xBB, 32);
-    memset(resp_data.b, 0xEE, 32);
-
-    ABI_UInt64 a(request_id);
-    ABI_UInt8 b(request_type);
-
-    ABI_Bytes32 r1(&request1);
-    ABI_Bytes32 r2(&request2);
-
-    vector<ABI_serializable*> request_data;
-    request_data.push_back(&r1);
-    request_data.push_back(&r2);
-    ABI_T_Array c(request_data);
-
-    ABI_Bytes32 d(&resp_data);
-
-    vector<ABI_serializable*> args;
-    args.push_back(&a);
-    args.push_back(&b);
-    args.push_back(&c);
-    args.push_back(&d);
-    
-    ABI_Generic_Array abi_items(args);
-    
-    bytes abi_str;
-
-    if (abi_items.encode(abi_str) != 0) {
-        printf("abi_encoded returned non-zero\n");
-        return -1;
-    }
-
-    uint8_t func_selector[32];
-    ret = keccak((unsigned const char*) ABI_STR, strlen(ABI_STR), func_selector, 32);
-    if (ret) {LL_CRITICAL("SHA3 returned %d\n", ret); return -1;}
-
-    // insert function selector
-    for (int i = 0; i < 4; i++) {abi_str.insert(abi_str.begin(), func_selector[3 - i]);}
-    
-    TX tx(TX::MessageCall);
-    uint8_t hash[32]; 
-
-    if (nonce)
-        memcpy(tx.m_nonce.b, nonce, 32);
-    else
-        memset(tx.m_nonce.b, 0x0, 32);
-
-    set_byte_length(& tx.m_nonce);
-    from32(GASPRICE, &tx.m_gasPrice);
-    from32(GASLIMIT, &tx.m_gas);
-    from20(TO_ADDR, &tx.m_receiveAddress);
-    from32(VALUE, &tx.m_value);
-    
-    tx.m_data.clear();
-    tx.m_data = abi_str;
-
-#define VERBOSE
-#ifdef VERBOSE
-    hexdump("ABI:", &abi_str[0], abi_str.size());
-    hexdump("NONCE:", tx.m_nonce.b, 32);
-    hexdump("gasPrice:", tx.m_gasPrice.b, 32);
-    hexdump("gas: ", tx.m_gas.b, 32);
-    hexdump("to_addr: ", tx.m_receiveAddress.b, 20);
-    hexdump("value: ", tx.m_value.b, 32);
-    hexdump("data: ", &tx.m_data[0], tx.m_data.size());
-#endif
-    try {
-        tx.rlp_list(out, false);
-    }
-    catch (std::invalid_argument& ex) {
-        LL_CRITICAL("%s\n", ex.what()); return -1;
-    }
-
-
-    ret = keccak(&out[0], out.size(), hash, 32);
-    if (ret != 0)
-    {
-        LL_CRITICAL("keccak returned %d", ret); return -1;
-    }
-    ret = sign(hash, 32, tx.r.b, tx.s.b, &tx.v);
-
-    if (ret != 0) { LL_CRITICAL("Error: signing returned %d\n", ret); return ret;}
-    else {tx.r.size = 32; tx.s.size = 32;}
-
-    out.clear();
-
-    tx.rlp_list(out, true);
-
-    if (out.size() > 2048) { LL_CRITICAL("Error buffer size (%d) is too small.\n", *o_len); return -1;}
-
-#ifdef VERBOSE
-    hexdump("RLP:", &out[0], out.size());
-    hexdump("RFL:", REF_RLP, strlen(REF_RLP));
 #endif
 
     memcpy(serialized_tx, &out[0], out.size());
