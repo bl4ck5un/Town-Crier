@@ -120,55 +120,165 @@ Therefore, $\algB$ simply outputs this as a signature forgery.
 
 \subsection{Gas neutrality}
 
-Here we assume an adversary which is active on the blockchain, the network, and within the untrusted executable running on the Town Crier server.
-However, we assume that the adversary will not execute an arbitrary denial of service attack, but will rather delay messages indefinitely and deliver bogus data whenever such data will be accepted as valid.
-Because operations on the blockchain are verifiable and the SGX enclave can attest to what it is running, we assume those are honest.
-
-In this model we show that, for every request which provides a sufficient fee,
-a valid authenticated datagram will be delivered to the requested callback location in finite time.
-If the request includes an insufficient fee (but is otherwise valid),
-the datagram will not be delivered, but the (too-small) fee will still be collected.
-
-\begin{lemma} \label{lem:non-bankrupt-p_sgx}
-If seeded with at least $F_{\rm max}$ ether, the \sgxadd wallet will have
-at least as much money after each transaction as it had before that transaction.
-\end{lemma}
-
-\begin{proof}
-\ethan{This is actually a proof sketch, I just put it in a proof tag.}
-
-Because all blockchain transactions from \sgxadd must be initiated by the SGX enclave and the SGX only calls \tcont.Deliver,
-we need only reason about what happens inside that function.
-Because transactions including \tcont are transmitted securely into the SGX enclave, it will only see valid requests (ones for which $F_{\rm min} \leq \${\sf fee} \leq F_{\rm max}$) and the arguments it sees for those requests will be correct.
-Moreover, it saves the transaction ID of each request it fulfills and never fulfills a request with the same transaction ID twice.
-This means that whenever deliver is called, it will be called in connection with a valid request that has not already been delivered.
-Thus it suffices to show that:
-\begin{enumerate}
-  \item The first time a valid request is delivered, \tcont will contain at least $\${\sf fee}$ ether.
-  \item $\${\sf fee}$ is never lower than the amount \sgxadd must spend in gas.
-  \item The execution of Deliver will never run out of gas (and thus always succeed).
-\end{enumerate}
-
-To prove claim 1 we first note that ether can only be removed from \tcont as part of a call to Deliver from \sgxadd.
-Because \sgxadd is honest, it will only make this call in connection with a valid request, and the specified value of $\${\sf fee}$ will always be the fee submitted with that request.
-Because \tcont pays out the specified $\${\sf fee}$ on the call to Deliver, the ether is always exactly the ether stored from a previous, valid, undelivered request, and thus will always be present in \tcont.
-
-To prove claim 2 first note that a request is only considered valid if $\${\sf fee} \geq F_{\rm min}$.
-$F_{\rm min}$ is defined so that it is high enough to cover gas costs for all of Deliver except the execution of the provided ${\sf callback}$.
-However, ${\sf callback}$ is only given $\${\sf fee} - F_{\rm min}$ ether worth of gas to execute.
-Therefore it is impossible for the entire call of Deliver to spend more than $F_{\rm min} + (\${\sf fee} - F_{\rm min}) = \${\sf fee}$ ether on gas.
-
-To prove claim 3 we note that $\${\sf fee} \leq F_{\rm max}$ and, by construction, \sgxadd will always provide at least $F_{\rm max}$ in gas for the execution of Deliver.
-Therefore we have that \sgxadd will always provide at least $\${\sf fee}$ in gas to execute Deliver.
-By the argument above, Deliver can never use more than $\${\sf fee}$ in gas, so therefore an SGX-initialized call to Deliver will never run out of gas.
+\begin{theorem}[Gas neutrality for Town Crier]
+Assuming that the Town Crier relay is honest, 
+then Town Crier's wallet account $\pksgx$ 
+will have at least $\sbrown{\Delta F_{\text{max}}}$
+amount remaining after each {\bf Deliver}  
+call finishes execution.
+\end{theorem}
+\begin{proof}[(sketch).]
+Since the relay is honest, every time 
+$\pksgx$ invokes the {\bf Deliver}
+entry point, the following holds:
+1) 
+$\smaroon{\$ F_{\text{deliver}}}
+= \sbrown{\Delta F_{\text{deliver}}}$;
+i.e., the gas $\tcadd$ advances is equal
+to the fees the 
+requester deposited with the \tcont contract;
+2)
+the amount gas sent 
+$\sbrown{\Delta F_{\text{deliver}}} = 
+\smaroon{\$ F_{\text{deliver}}}
+\leq 
+\sbrown{\Delta F_{\text{max}}} 
+$;
+in other words, 
+$\tcadd$ has sufficient funds  
+if it starts out with $\sbrown{\Delta F_{\text{max}}}$
+in its wallet;
+and
+3) 
+$\sbrown{\Delta F_{\text{min}}} \leq
+\sbrown{\Delta F_{\text{deliver}}} = 
+\smaroon{\$ F_{\text{deliver}}}
+$; in other words, the statement that refunds
+$\tcadd$ 
+$\smaroon{\$ F_{\text{deliver}}}$
+amount will definitely be invoked. This 
+ensures that the full gas amount 
+$\sbrown{\Delta F_{\text{deliver}}}$
+that $\tcadd$ advanced will be refunded (and anything more left
+at the end of the execution will also be refunded);
 \end{proof}
 
 
 
-\begin{lemma} \label{lem:authentic-delivery}
-Any data given as an argument to ${\sf callback}$ in \tcont's Deliver method is verifiably authentic.
-\end{lemma}
 
+
+\begin{theorem}[Bounded loss for honest requester]
+Suppose request $({\sf id}, {\sf params}, {\sf callback}, 
+{\color{blue} \Time_{\text{timeout}}}, \_)$ was submitted
+by an honest requester $\reqcont$;
+then 
+$\reqcont$ will  either obtain 
+a valid datagram matching requested parameters
+${\sf params}$
+before the specified deadline  
+${\color{blue} \Time_{\text{timeout}}}$;
+or 
+$\reqcont$ will have lost at most 
+$\sbrown{\Delta F_{\text{request}}} + \sbrown{\Delta F_{\text{cancel}}}$
+after ${\color{blue} \Time_{\text{timeout}}}$.
+
+\end{theorem}
+
+\begin{proof}[(sketch.)]
+%An honest requester $\reqcont$  
+%picks a random, sufficiently long ${\sf id}$ such
+%that the probability of collision with an existing ${\sf id}$ 
+%is negligible.
+%Recall that $\tcont$ ignores all future occurrences of ${\sf id}$, i.e.,
+%only the first occurrence of ${\sf id}$ is preserved. 
+An honest requester $\reqcont$  
+puts in 
+$\sbrown{\Delta F_{\text{request}}} + \smaroon{\$ F_{\text{deliver}}}$
+amount with each request to $\tcont$,
+where $\sbrown{\Delta F_{\text{request}}}$
+is equal to the gas cost of executing the
+{\bf Request} entry point,
+and $\smaroon{\$ F_{\text{deliver}}}$ is the gas cost
+of executing the {\bf Deliver} entry point (including
+the cost of executing the user-defined ${\sf callback}$ function).
+
+Regardless of what the adversary does,  
+if the line ``Set ${\sf bDelivered[{\sf id}]}$''
+in \tcont
+is reached for some ${\sf id}$ at any point,
+then it is guaranteed that the following assertions
+hold:
+${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$,
+${\sf params} = {\sf params}'$,
+and $\smaroon{\$ F'_{\text{deliver}}} \leq 
+\sbrown{\Delta F_{\text{deliver}}}$.
+In this case, \tcont will finish execution and the requester
+would have obtained the resulting 
+datagram for the correct ${\sf params}$ specified in the request,
+and before the requested deadline ${\color{blue} \Time_{\text{timeout}}}$.
+Else, if this line 
+the line ``Set ${\sf bDelivered[{\sf id}]}$''
+in \tcont
+is never reached for some ${\sf id}$ before the requested deadline 
+${\color{blue} \Time_{\text{timeout}}}$, then 
+the honest requester $\reqcont$ can invoke the {\bf Cancel}
+entry point to obtain a refund 
+of $\smaroon{\$F_{\text{deliver}}}$ before ${\color{blue} \Time_{\text{timeout}}}$ ---
+in this case the honest requester would have lost
+no more than $\sbrown{\Delta F_{\text{request}}} + \sbrown{\Delta F_{\text{cancel}}}$.
+\end{proof}
+
+
+
+%Here we assume an adversary which is active on the blockchain, the network, and within the untrusted executable running on the Town Crier server.
+%However, we assume that the adversary will not execute an arbitrary denial of service attack, but will rather delay messages indefinitely and deliver bogus data whenever such data will be accepted as valid.
+%Because operations on the blockchain are verifiable and the SGX enclave can attest to what it is running, we assume those are honest.
+%
+%In this model we show that, for every request which provides a sufficient fee,
+%a valid authenticated datagram will be delivered to the requested callback location in finite time.
+%If the request includes an insufficient fee (but is otherwise valid),
+%the datagram will not be delivered, but the (too-small) fee will still be collected.
+%
+%\begin{lemma} \label{lem:non-bankrupt-p_sgx}
+%If seeded with at least $F_{\rm max}$ ether, the \sgxadd wallet will have
+%at least as much money after each transaction as it had before that transaction.
+%\end{lemma}
+%
+%\begin{proof}
+%\ethan{This is actually a proof sketch, I just put it in a proof tag.}
+%
+%Because all blockchain transactions from \sgxadd must be initiated by the SGX enclave and the SGX only calls \tcont.Deliver,
+%we need only reason about what happens inside that function.
+%Because transactions including \tcont are transmitted securely into the SGX enclave, it will only see valid requests (ones for which $F_{\rm min} \leq \${\sf fee} \leq F_{\rm max}$) and the arguments it sees for those requests will be correct.
+%Moreover, it saves the transaction ID of each request it fulfills and never fulfills a request with the same transaction ID twice.
+%This means that whenever deliver is called, it will be called in connection with a valid request that has not already been delivered.
+%Thus it suffices to show that:
+%\begin{enumerate}
+%  \item The first time a valid request is delivered, \tcont will contain at least $\${\sf fee}$ ether.
+%  \item $\${\sf fee}$ is never lower than the amount \sgxadd must spend in gas.
+%  \item The execution of Deliver will never run out of gas (and thus always succeed).
+%\end{enumerate}
+%
+%To prove claim 1 we first note that ether can only be removed from \tcont as part of a call to Deliver from \sgxadd.
+%Because \sgxadd is honest, it will only make this call in connection with a valid request, and the specified value of $\${\sf fee}$ will always be the fee submitted with that request.
+%Because \tcont pays out the specified $\${\sf fee}$ on the call to Deliver, the ether is always exactly the ether stored from a previous, valid, undelivered request, and thus will always be present in \tcont.
+%
+%To prove claim 2 first note that a request is only considered valid if $\${\sf fee} \geq F_{\rm min}$.
+%$F_{\rm min}$ is defined so that it is high enough to cover gas costs for all of Deliver except the execution of the provided ${\sf callback}$.
+%However, ${\sf callback}$ is only given $\${\sf fee} - F_{\rm min}$ ether worth of gas to execute.
+%Therefore it is impossible for the entire call of Deliver to spend more than $F_{\rm min} + (\${\sf fee} - F_{\rm min}) = \${\sf fee}$ ether on gas.
+%
+%To prove claim 3 we note that $\${\sf fee} \leq F_{\rm max}$ and, by construction, \sgxadd will always provide at least $F_{\rm max}$ in gas for the execution of Deliver.
+%Therefore we have that \sgxadd will always provide at least $\${\sf fee}$ in gas to execute Deliver.
+%By the argument above, Deliver can never use more than $\${\sf fee}$ in gas, so therefore an SGX-initialized call to Deliver will never run out of gas.
+%\end{proof}
+%
+%
+%
+%\begin{lemma} \label{lem:authentic-delivery}
+%Any data given as an argument to ${\sf callback}$ in \tcont's Deliver method is verifiably authentic.
+%\end{lemma}
+%
 
 \subsection{Other security concerns}
 We treat side-channel attacks as outside the scope of our initial \tc architecture. Such attacks would be of particular concern should the \medname be compromised. Intel explicitly disclaims protections against side-channel attacks in SGX. The ability for the OS to monitor page faults incurred by a process running in an enclave is an example shown to be potentially serious in practice~\cite{}. Additionally, the \medname or any network adversary can potentially perform traffic analysis to determine what content the \encname is retrieving from a remote server~\cite{}, a potential threat to the confidentiality of private datagrams.
