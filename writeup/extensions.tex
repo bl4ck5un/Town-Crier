@@ -238,13 +238,26 @@ The \tcs~\encname \engine.
 \label{fig:engineprot}
 \end{figure}
 
+More specifically, We will use the following notation to denote regular currency units and gas. 
 
-\paragraph{Notation.}
-We will use the following notation to denote regular currency units and gas. 
-
-\begin{tabular}{rl}
-$\smaroon{\$ F}_{\text{deliver}}$ & b\\
+\begin{table}[!h]
+\begin{tabular}{p{0.16\columnwidth}p{0.82\columnwidth}}
+\hline
+$\smaroon{{\$ F}_{\text{deliver}}}$ & currency a requester deposits to refund the gas Town Crier
+must advance to deliver a datagram\\
+\hline
+$\smaroon{{\$ \overline{F}}_{\text{deliver}}}$ & currency deposited upon cancellation 
+to refund the gas Town Crier  
+expends should a datagram be delivered after cancellation\\
+\hline
+$\sbrown{{\$ G}_{\text{deliver}}}$,
+$\sbrown{{\$ G}_{\text{request}}}$,
+$\sbrown{{\$ G}_{\text{cancel}}}$ & 
+Max gas needed to execute the {\bf Deliver}, {\bf Request}, {\bf Cancel} entries points
+respectively \\
+\hline
 \end{tabular}
+\end{table}
 
 \paragraph{Town Crier protocol with transaction fees.}
 Our basic Town Crier implements a policy where the requester pays for all gas 
