@@ -209,16 +209,13 @@ puts in
 $\sbrown{\$ \overline{G}_{\text{request}}} + 
 \sbrown{\$ \overline{G}_{\text{deliver}}}$
 amount with each request to $\tcont$,
-%where $\sbrown{\$ G_{\text{request}}}$
-%is equal to the gas cost of executing the
-%{\bf Request} entry point,
-%and $\smaroon{\$ F_{\text{deliver}}}$ is the gas cost
-%of executing the {\bf Deliver} entry point (including
-%the cost of executing the user-defined ${\sf callback}$ function).
-Regardless of what the adversary does,  
+
+\paragraph{Case 1.}
+For a specific ${\sf id}$,
 if the line marked (*) %``Set ${\sf bDelivered[{\sf id}]}$''
 in \tcont
-is reached for some ${\sf id}$ at any point,
+is reached,
+%for some ${\sf id}$ at any point,
 then it is guaranteed that the following assertions
 hold:
 %${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$,
@@ -230,16 +227,44 @@ In this case,
 would have obtained the resulting 
 datagram for the correct ${\sf params}$ specified in the request.
 %and before the requested deadline ${\color{blue} \Time_{\text{timeout}}}$.
+Now the honest requester may have invoked {\bf Cancel}
+before it receives the delivered datagram. 
+In this case, the honest requester pays $\sbrown{\overline{G}_{\text{cancel}}} + 
+\sbrown{\overline{G}_\emptyset}$
+upfront for the cancellation request.
+Therefore, the total the honest requester loses in this case
+is bounded by 
+$\sbrown{\$ \overline{G}_{\text{request}}} + \sbrown{\$ \overline{G}_{\text{deliver}}} + 
+\sbrown{\$ \overline{G}_{\text{cancel}}}
++ \sbrown{\$ \overline{G}_{\emptyset}}$.
+
+
+\paragraph{Case 2.}
+%Else, if 
+%the line ``Set ${\sf bDelivered[{\sf id}]}$''
+%in \tcont
+%is never reached for some ${\sf id}$ before the requested deadline 
+%${\color{blue} \Time_{\text{timeout}}}$, 
 Else, if 
-the line ``Set ${\sf bDelivered[{\sf id}]}$''
+${\sf bCanceled}[{\sf id}]$ is set before 
+if the line marked (*) 
 in \tcont
-is never reached for some ${\sf id}$ before the requested deadline 
-${\color{blue} \Time_{\text{timeout}}}$, then 
-the honest requester $\reqcont$ can invoke the {\bf Cancel}
-entry point to obtain a refund 
-of $\smaroon{\$F_{\text{deliver}}}$ before ${\color{blue} \Time_{\text{timeout}}}$ ---
-in this case the honest requester would have lost
-no more than $\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{cancel}}}$.
+is reached --- note that in this case, the line 
+marked (*) will not be reached for ${\sf id}$ --- 
+then the honest requester would have invoked  $\reqcont$.
+An honest requester pays $\sbrown{\overline{G}_{\text{cancel}}} + 
+\sbrown{\overline{G}_\emptyset}$
+upfront for the cancellation request --- this ensures that
+the requester will be refunded the amount $\smaroon{\${F}} := \sbrown{\overline{G}_{\text{deliver}}}$, and since
+It is not hard to see that the honest requester loses at most
+$\sbrown{\$ \overline{G}_{\text{request}}} + 
+\sbrown{\$ \overline{G}_{\text{cancel}}}
++ \sbrown{\$ \overline{G}_{\emptyset}}$ in this case.
+%can invoke the {\bf Cancel}
+%entry point to obtain a refund 
+%of $\smaroon{\$F_{\text{deliver}}}$ before ${\color{blue} \Time_{\text{timeout}}}$ ---
+%in this case the honest requester would have lost
+%no more than $\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{cancel}}}$.
 \end{proof}
 
 
