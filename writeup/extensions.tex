@@ -246,10 +246,10 @@ More specifically, We will use the following notations to denote regular currenc
 \begin{table}[!h]
 \begin{tabular}{p{0.13\columnwidth}p{0.8\columnwidth}}
 \hline
-$\smaroon{{\$ F}_{\text{deliver}}}$ & currency a requester deposits to refund the gas Town Crier
+$\smaroon{{\$ F}}$ & currency a requester deposits to refund the gas Town Crier
 must advance to deliver a datagram\\
 \hline
-$\smaroon{{\$ \overline{F}}_{\text{deliver}}}$ & currency deposited upon cancellation 
+$\smaroon{{\$ F}_{\emptyset}}$ & currency deposited upon cancellation 
 to refund the gas Town Crier  
 expends should a datagram be delivered after cancellation\\
 \hline
@@ -259,13 +259,13 @@ $\sbrown{{\$ G}_{\text{cancel}}}$ &
 gas attached when invoking the {\bf Deliver}, {\bf Request}, {\bf Cancel} entries points
 respectively \\
 \hline
-$\sbrown{{\$ \overline{G}}_{\text{deliver}}}$
+$\sbrown{{\$ \overline{G}}_{\emptyset}}$
 & gas needed to execute {\bf Deliver} should it happen after cancellation\\
 \hline
-$\sbrown{{\$ G}_{\text{max}}}$
+$\sbrown{{\$ \overline{G}}_{\text{max}}}$
 & amount of gas in Town Crier's account $\tcadd$ \\
 \hline
-$\sbrown{{\$ G}_{\text{min}}}$
+$\sbrown{{\$ \overline{G}}_{\text{min}}}$
 & gas required for the {\bf Deliver} entry point when ${\sf callback}$ is empty \\
 \hline
 \end{tabular}
