@@ -284,6 +284,26 @@ $\sbrown{{\$ \overline{G}}_{\text{min}}}$
 \end{tabular}
 \end{table}
 
+Note that $\sbrown{{\$ \overline{G}}_{\emptyset}}$, 
+$\sbrown{{\$ \overline{G}}_{\text{max}}}$, and $\sbrown{{\$ \overline{G}}_{\text{min}}}$
+are fixed system parameters;
+whereas 
+$\smaroon{\$ F}$
+and 
+$\smaroon{{\$ F}_{\emptyset}}$
+amount of currency 
+submitted by the requester (and can be malicious values if the requester is malicious).
+Similarly, 
+$\sbrown{{\$ G}_{\text{deliver}}}$,
+$\sbrown{{\$ G}_{\text{request}}}$,
+and $\sbrown{{\$ G}_{\text{cancel}}}$
+are actual amounts of gas
+submitted by Town Crier, and can be malicious values if the Town Crier Relay is malicious.  
+Later in Section \elaine{refer}, 
+we will prove that our protocol ensures that Town Crier does not lose gas,
+and that the 
+requester's loss is limited even against a malicious Town Crier.
+
 \paragraph{Town Crier protocol with transaction fees.}
 Our basic Town Crier implements a policy where the requester pays for all gas 
 needed and Town Crier in effect pays nothing.
