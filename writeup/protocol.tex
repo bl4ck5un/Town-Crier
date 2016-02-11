@@ -302,7 +302,7 @@ The \tcs~\encname \engine.
 \label{fig:engineprotocol}
 \end{figure}
 
-\paragraph{The \medname \relay.} As noted in Section~\ref{sec:architecture}, \relay performs distinct three forms of data passing, which we  specify more precisely here. It scrapes the blockchain, monitoring \tcont for new datagram requests $({\sf id}, {\sf params})$. It boots the \engine with an \initcall call and handles incoming requests by invoking \engine with a \resumecall call. Finally, it forwards datagram responses from \engine to the blockchain; recall that it inserts data onto the blockchain and thus forward responses through \tcadd. The program for \relay is shown in Fig.~\ref{fig:relayprotocol}. Here, the function AuthSend denotes a blockchain transaction (sent from $\tcadd$ signed with $\skTC$).
+\paragraph{The \medname \relay.} As noted in Section~\ref{sec:architecture}, \relay performs distinct three forms of data passing, which we  specify more precisely here. It scrapes the blockchain, monitoring \tcont for new datagram requests $({\sf id}, {\sf params})$. It boots the \engine with an \initcall call and handles incoming requests by invoking \engine with a \resumecall call. Finally, it forwards datagram responses from \engine to the blockchain; recall that it inserts data onto the blockchain and thus forward responses through \tcadd. The program for \relay is shown in Fig.~\ref{fig:relayprotocol}. Here, the function {\sf AuthSend} inserts a transaction to blockchain (``as $\tcadd$'' means the transaction is signed with $\skTC$).
 
 \begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}

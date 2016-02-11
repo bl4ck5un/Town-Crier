@@ -200,23 +200,27 @@ necessary for invoking the {\bf Cancel} entry point.
 {\bf Program for Town Crier \medname $\relay$}
 \end{center}
 \begin{tabular}{l}
-{\bf Initialize}: Same as Figure~\ref{fig:relayprot} \ethan{Referring to itself?}\\
+  {\bf Initialize}: Same as Figure~\ref{fig:relayprotocol} \\[5pt]
 %Send \initcall to $\fsgx[\enclaveprog, \relay]$\\
 %On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 %\quad Publish $(\pkTC, \sigatt)$\\[5pt]
 
-{\bf  Loop forever}: \\
-Whenever \tcont records 
-a request
-$({\sf id}, {\sf params}, \_, \_,$ $\sbrown{\$ G_{\text{request}}}$ $+ \smaroon{\$ F})$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
-\ \quad Assert $\sbrown{\$ \overline{G}_{\text{min}}} \leq  
-\smaroon{\$ F}
-\leq \sbrown{\$ \overline{G}_{\text{max}}} $ \\
-\ \quad Send $(\text{\resumecall}, ({\sf id}, {\sf params}, {\tt F} )$ to $\fsgx[\enclaveprog, \relay]$ \\
-\ \quad On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
-\ \quad \quad  
-{\sf AuthSend} $(({\sf id}, {\sf params}, {\sf data}, \smaroon{\$ F}))$ to \tcont as \tcadd \\
-\hspace{50mm} \sgray{\it //~{\bf msg.}~$m_3$}
+{\bf Handle}$(T, {\sf id, params}, \smaroon{\$ F})$: \\
+Wait until $\clock() \geq T$\\
+Assert $\sbrown{\$ \overline{G}_{\text{min}}} \leq  \smaroon{\$ F} \leq \sbrown{\$ \overline{G}_{\text{max}}} $ \\
+Send $(\text{\resumecall}, ({\sf id}, {\sf params}, {\tt F} )$ to $\fsgx[\enclaveprog, \relay]$ \\
+On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
+\quad \sgray{\it //send out ~{\bf msg.}~$m_3$}\\
+\quad {\sf AuthSend} $(({\sf id}, {\sf params}, {\sf data}, \smaroon{\$ F}))$ to \tcont as \tcadd \\[5pt]
+
+{\bf  Main}: \\
+%{\bf Request}:
+Loop Forever:\\ 
+\quad Wait until \tcont records a request \\
+\quad \ $({\sf id}, {\sf params}, \_, \_,$ $\sbrown{\$ G_{\text{request}}}$ $+ \smaroon{\$ F})$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
+\quad Parse {\sf params} as $(\weburl, \dgspec, T)$\\
+\quad Fork a process of {\bf Handle}($T, {\sf id, params}, \smaroon{\$ F}$)\\
+End \\
 \end{tabular}
 \end{boxedminipage}
 \caption{The Town Crier \medname \relay (with fees).}
