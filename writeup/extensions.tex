@@ -80,8 +80,8 @@ $\sbrown{\$ {\tt G_{\text{deliver}}}}$ )$ from $\tcadd$: \\
 % & Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$ \\
                  & Assert ${\sf params} = {\sf params}'$\\
                 &   Assert $\smaroon{\$ F} \leq \sbrown{\$ G_{\text{deliver}}}$\\
-		& Set ${\sf bDelivered}[{\sf id}]$ \ \ \  (*)\\
-                 & Send $\smaroon{\$F}$ to $\tcadd$ \\
+		& Set ${\sf bDelivered}[{\sf id}]$ \ \ \  \sgray{//~(*)}\\
+                 & Send $\smaroon{\$F}$ to $\tcadd$ \ \ \ \sgray{//~(**)} \\
                  & Call ${\sf callback}({\sf data})$ \\[2pt] %[-10pt]
 %    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
 %    & {\it {\color{gray} {//~all remaining {gas returned to $\tcadd$}}} }\\

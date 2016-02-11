@@ -132,15 +132,14 @@ Since the relay is honest, every time
 $\pksgx$ invokes the {\bf Deliver}
 entry point, the following holds:
 1) 
-$\smaroon{\$ F_{\text{deliver}}}
-= \sbrown{\$ G_{\text{deliver}}}$;
+$\sbrown{\$ G_{\text{deliver}}}
+= \smaroon{\$ F}$;
 i.e., the gas $\tcadd$ advances is equal
 to the fees the 
 requester deposited with the \tcont contract;
 2)
 the amount gas sent 
-$\sbrown{\$ G_{\text{deliver}}} = 
-\smaroon{\$ F_{\text{deliver}}}
+$\sbrown{\$ G_{\text{deliver}}} 
 \leq 
 \sbrown{\$ G_{\text{max}}} 
 $;
@@ -151,12 +150,10 @@ in its wallet;
 and
 3) 
 $\sbrown{\$ G_{\text{min}}} \leq
-\sbrown{\$ G_{\text{deliver}}} = 
-\smaroon{\$ F_{\text{deliver}}}
-$; in other words, the statement that refunds
+\sbrown{\$ G_{\text{deliver}}}$; in other words, the statement that refunds
 $\tcadd$ 
-$\smaroon{\$ F_{\text{deliver}}}$
-amount will definitely be invoked. This 
+$\smaroon{\$ F}$
+amount, denoted (**) in Figure \elaine{fill in ref}, will definitely be invoked. This 
 ensures that the full gas amount 
 $\sbrown{\$ G_{\text{deliver}}}$
 that $\tcadd$ advanced will be refunded (and anything more left
@@ -174,22 +171,30 @@ by an honest requester $\reqcont$;
 %${\sf id}$ by $\tcont$;
 then 
 either 
-\begin{itemize}
+\begin{itemize}[leftmargin=5mm]
 \item ${\sf callback}$ will be invoked  
 with a valid datagram matching requested parameters
 ${\sf params}$,
 and the requester consumes at most
-$\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{deliver}}} + 
-\sbrown{\$ {G}_{\text{cancel}}}
-+ \sbrown{\$ \overline{G}_{\text{deliver}}}$;
+$\sbrown{\$ \overline{G}_{\text{request}}} + \sbrown{\$ \overline{G}_{\text{deliver}}} + 
+\sbrown{\$ \overline{G}_{\text{cancel}}}
++ \sbrown{\$ \overline{G}_{\emptyset}}$;
 or 
 \item
 $\reqcont$ 
 consumes at most 
-$\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{cancel}}} + 
-\sbrown{\$ \overline{G}_{\text{deliver}}}$ after calling {\bf Cancel}.
+$\sbrown{\$ \overline{G}_{\text{request}}} + \sbrown{\$ \overline{G}_{\text{cancel}}} + 
+\sbrown{\$ \overline{G}_{\emptyset}}$ after calling {\bf Cancel}.
 %after ${\color{blue} \Time_{\text{timeout}}}$.
 \end{itemize}
+In the above, $\sbrown{\overline{G}_{\text{request}}}$,
+$\sbrown{\$ \overline{G}_{\text{deliver}}}$,
+and $\sbrown{\$ \overline{G}_{\text{cancel}}}$ 
+denotes the maximum gas required
+to execute the {\bf Request}, {\bf Cancel} entry points respectively;
+and $\sbrown{\$ \overline{G}_{\emptyset}}$ denotes the 
+gas needed for {\bf Deliver} -- should the datagram delivery
+happen after a cancellation has happened.
 \end{theorem}
 
 \begin{proof}[(sketch.)]
@@ -201,15 +206,15 @@ $\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{cancel}}} +
 %only the first occurrence of ${\sf id}$ is preserved. 
 An honest requester $\reqcont$  
 puts in 
-$\sbrown{\$ G_{\text{request}}} + \smaroon{\$ F_{\text{deliver}}}$
+$\sbrown{\$ \overline{G}_{\text{request}}} + 
+\sbrown{\$ \overline{G}_{\text{deliver}}}$
 amount with each request to $\tcont$,
-where $\sbrown{\$ G_{\text{request}}}$
-is equal to the gas cost of executing the
-{\bf Request} entry point,
-and $\smaroon{\$ F_{\text{deliver}}}$ is the gas cost
-of executing the {\bf Deliver} entry point (including
-the cost of executing the user-defined ${\sf callback}$ function).
-
+%where $\sbrown{\$ G_{\text{request}}}$
+%is equal to the gas cost of executing the
+%{\bf Request} entry point,
+%and $\smaroon{\$ F_{\text{deliver}}}$ is the gas cost
+%of executing the {\bf Deliver} entry point (including
+%the cost of executing the user-defined ${\sf callback}$ function).
 Regardless of what the adversary does,  
 if the line marked (*) %``Set ${\sf bDelivered[{\sf id}]}$''
 in \tcont
@@ -218,13 +223,14 @@ then it is guaranteed that the following assertions
 hold:
 %${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$,
 ${\sf params} = {\sf params}'$,
-and $\smaroon{\$ F_{\text{deliver}}} \leq 
+and $\smaroon{\$ F} = \sbrown{\$ \overline{G}_{\text{deliver}}} \leq 
 \sbrown{\$ G_{\text{deliver}}}$.
-In this case, \tcont will finish execution and the requester
+In this case, 
+\tcont will finish execution and the requester
 would have obtained the resulting 
-datagram for the correct ${\sf params}$ specified in the request,
-and before the requested deadline ${\color{blue} \Time_{\text{timeout}}}$.
-Else, if this line 
+datagram for the correct ${\sf params}$ specified in the request.
+%and before the requested deadline ${\color{blue} \Time_{\text{timeout}}}$.
+Else, if 
 the line ``Set ${\sf bDelivered[{\sf id}]}$''
 in \tcont
 is never reached for some ${\sf id}$ before the requested deadline 
