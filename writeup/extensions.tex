@@ -77,7 +77,7 @@ $\sbrown{\$ {\tt G_{\text{deliver}}}}$ )$ from $\tcadd$: \\
                  & Let $({\sf id}, {\sf params'}, {\sf callback}, \smaroon{\$ F}, \_)$ be the first recorded tuple for ${\sf id}$ \sgray{\it //~abort if not found}\\
 % & Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$ \\
                  & Assert ${\sf params} = {\sf params}'$\\
-                &   Assert $\smaroon{\$ F} \leq \sbrown{\$ G_{\text{deliver}}}$\\
+                &   Assert $\smaroon{\$ F} = \sbrown{\$ G_{\text{deliver}}}$\\
 		& Set ${\sf bDelivered}[{\sf id}]$ \ \ \  \sgray{//~(*)}\\
                  & Send $\smaroon{\$F}$ to $\tcadd$ \ \ \ \sgray{//~(**)} \\
                  & Call ${\sf callback}({\sf data})$ \\[2pt] %[-10pt]
@@ -105,6 +105,8 @@ required to execute the {\bf Deliver} entry point including ${\sf callback}$.
 Town Crier sets $\sbrown{\$ G_{\text{deliver}}} := \smaroon{\$ F}$,
 and this amount will be refunded if the datagram delivery 
 succeeds.
+\ethan{As per a previous discussion, this is subtly different from the implementation.
+  I think this is fine for the protocol and formal reasoning, but we do need to explain the difference somewhere any why it doesn't matter.}
 If the datagram delivery happens after 
 cancellation, then unspent portions of $\sbrown{\$ G_{\text{deliver}}}$ 
 gets refunded by Ethereum's underlying gas operational semantics,
@@ -198,7 +200,7 @@ necessary for invoking the {\bf Cancel} entry point.
 {\bf Program for Town Crier \medname $\relay$}
 \end{center}
 \begin{tabular}{l}
-{\bf Initialize}: Same as Figure~\ref{fig:relayprot}\\
+{\bf Initialize}: Same as Figure~\ref{fig:relayprot} \ethan{Referring to itself?}\\
 %Send \initcall to $\fsgx[\enclaveprog, \relay]$\\
 %On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 %\quad Publish $(\pkTC, \sigatt)$\\[5pt]
@@ -255,7 +257,7 @@ The \tcs~\encname \engine.
 More specifically, We will use the following notations to denote regular currency units and gas. 
 
 \begin{table}[!h]
-\begin{tabular}{p{0.13\columnwidth}p{0.8\columnwidth}}
+\begin{tabular}{m{0.13\columnwidth}m{0.8\columnwidth}}
 \hline
 $\smaroon{{\$ F}}$ & currency a requester deposits to refund the gas Town Crier
 must advance to deliver a datagram\\
@@ -274,7 +276,9 @@ $\sbrown{{\$ \overline{G}}_{\emptyset}}$
 & gas needed to execute {\bf Deliver} should it happen after cancellation\\
 \hline
 $\sbrown{{\$ \overline{G}}_{\text{max}}}$
-& amount of gas deposited in Town Crier's account $\tcadd$ \\
+& amount of gas deposited in Town Crier's account $\tcadd$ 
+  \ethan{Ethereum actually imposes a gas limit for a transaction that is currently a bit over 3.1 million.
+  Do we want to mention that here? That's how I actually picked $\sbrown{\$ \overline{G}_\text{max}}$ when I wrote the code.} \\
 \hline
 $\sbrown{{\$ \overline{G}}_{\text{min}}}$
 & gas needed for the {\bf Deliver} entry point when ${\sf callback}$ is empty \\
@@ -297,6 +301,9 @@ $\sbrown{{\$ G}_{\text{request}}}$,
 and $\sbrown{{\$ G}_{\text{cancel}}}$
 denote gas
 chosen by Town Crier, and can be malicious values if the Town Crier Relay is malicious.  
+\ethan{I don't think this is true.
+  I believe the gas is specified as part of the transaction, which means the enclave picks the number.
+  The only thing a malicious relay can do is make it so $\tcadd$ doesn't have $\sbrown{\$ \overline{G}_{\text{max}}}$ to front.}
 Later in Section \elaine{refer}, 
 we will prove that our protocol ensures that Town Crier does not lose gas,
 and that the 
@@ -330,7 +337,7 @@ been cancelled,
 a small amount of gas equal to $\sbrown{\$ \overline{G}_\emptyset}$ 
 is consumed from $\sbrown{\$ G_{\text{deliver}}}$
 which will be entirely refunded 
-to $\tcadd$ (since the requester must deposit $\smaroon{\$ F_{\emptyset}} \geq \sbrown{\$ G_{\text{deliver}}}$) for cancellation;
+to $\tcadd$ (since the requester must deposit $\smaroon{\$ F_{\emptyset}} \geq \sbrown{\$ \overline{G}_{\emptyset}}$) for cancellation;
 %(denoted by $\smaroon{\overline{F}_{\text{deliver}}}$); 
 and further all gas remaining  
 from $\sbrown{\$ G_{\text{deliver}}}$ will automatically 
@@ -365,6 +372,8 @@ the {\bf Deliver} entry point should
 have sufficient gas to execute everything excluding the user-defined
 callback -- this guarantees that the statement
 where Town Crier gets refunded for the gas is always reached.
+\ethan{Right now we're running this check inside \tcont and the request isn't even recorded if the check fails.
+  This means the relay only has to watch for valid (recorded) requests, and it doesn't have to sanity check anything.}
 
 
 Finally, the Town Crier relay passes
@@ -413,6 +422,10 @@ to execute the {\bf Cancel} entry point, and $\smaroon{\$ {F}_{\emptyset}} :=
 is a small amount of money paid to perform cancellation, 
 such that Town Crier will be refunded for the small amount of gas expended,
 should it deliver a datagram after a cancellation happened.
+
+\ethan{It sounds like you're expecting an honest \reqcont to pass in $({\sf id}, \sbrown{\$ G_{\text{cancel}}} + \smaroon{\$ {F}_\emptyset})$ and get $\smaroon{\$F}$ back out.
+I don't have a problem with the model, but the implementation has \reqcont pass in $({\sf id}, \sbrown{\$ G_\text{cancel}})$ and get $\smaroon{\$F} - \sbrown{\$\overline{G}_{\emptyset}}$ back out.
+This actually eliminates the need for $\smaroon{\$F_\emptyset}$ entirely and works if $\sbrown{\$\overline{G}_\emptyset} \leq \sbrown{\$\overline{G}_\text{min}}$.}
 \end{itemize}
 
 

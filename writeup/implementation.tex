@@ -2,6 +2,66 @@
 
 
 \subsection{TC Contract}
+
+To implement the TC Contract we implemented the version of \tcont including fees and cancellation as described in Section~\ethan{ref}.
+The contract is implemented in Solidity, a high-level language with JavaScript-like syntax which compiles to Ethereum Virtual Machine bytecode---the language that can be executed as a contract on the blockchain.
+
+In order to handle the most general type of requests---including encrypted parameters---the \tcont implementation requires two parameter fields.
+The first specifies what type of request is being made (e.g. stock price or flight status).
+The second is a byte array of user-specified size.
+This byte array will be parsed and interpreted inside the enclave when it fulfills the request, but is treated as an opaque byte array by \tcont.
+
+As we discuss in Section~\ethan{ref authenticity}, TC must pass the entire byte array back to {\bf Deliver} to ensure that the request has not been modified.
+Unfortunately, this verification (as well as Ethereum's cost on each byte in a transaction) means the size of this byte array greatly affects the cost of calling the {\bf Deliver} entry point.
+In fact, when the byte array contains 400 bytes of data, this extra cost outweighs all other costs of {\bf Deliver} combined (not including \dgcallback).
+In order to achieve our desired guarantees of cost while not demanding excessive fees for requests which supply only a few bytes of data,
+our implementation scales the minimum fee with the length of the user provided byte array.
+
+
+\ethan{This figure really doesn't belong here. It probably belongs with the gas explanation that Elaine wrote, but we can move it later.}
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}
+  [local-entity/.style={entity,minimum height=3.5em,text width=8em}]
+  \node[local-entity,trusted] (ctc) {};
+  \node[local-entity,draw=none,anchor=north] (ctc-inner) at (ctc.north) {TC Contract\\$\tcont$};
+  \node[local-entity,trusted,right=6em of ctc,text width=5em] (enc) {Enclave};
+  \node[local-entity,fill=white,below=3.5em of ctc] (cu) {User Contract\\$\reqcont$};
+  \node[local-entity,fill=red!30,below=3em of cu] (user) {User};
+
+  \path[-stealth,color=red,ultra thick] (user) edge [transform canvas={xshift=-3.5em}] ([yshift=0.75em]cu.south);
+  \path[color=red,thick] (cu.south) edge [right,transform canvas={xshift=-3.5em}] node [text=black,text width=4em,align=center,yshift=1.75em] {\footnotesize Insufficient\\[-0.25em]gas aborts\\[-0.2em]with no\\[-0.5em]effect} (ctc.south);
+  \node[draw=red,cross out,minimum size=1ex,thick] () at ([xshift=-3.5em]ctc.south) {};
+
+  \draw[-stealth,color=green!50!black,line width=0.8ex] ([yshift=-0.25em]enc.west) -- ([xshift=-1.2em,yshift=-0.25em]ctc.east);
+  \draw[-stealth,color=green!50!black,line width=0.5ex] ([yshift=-0.25em]enc.west) -| ([xshift=3em,yshift=-0.9em]cu.north);
+  \draw[color=green!50!black,thick,dashed]  ([xshift=3.75em]cu.north) |- ([yshift=-1.25em]ctc.east);
+  \path[-stealth,color=green!50!black,ultra thick,dashed]  ([yshift=-1.25em]ctc.east) edge [below] node [text=black,text width=4em,align=center,xshift=-0.4em] {\footnotesize Extra gas\\[-0.4em]refunded} ([xshift=0.8em,yshift=-1.25em]enc.west);
+
+  \begin{pgfonlayer}{background}
+    \node[bg-box,
+          blockchain-color,
+          fit={($(ctc.north west)+(-0.3em,0.3em)$)($(cu.south east)+(0.3em,-0.3em)$)},
+          label=above:{\bf Blockchain}] () {};
+    \node[bg-box,
+          tc-server-color,
+          fit={($(enc.north east)+(0.3em,0.3em)$)($(enc.south west)+(-0.3em,-0.3em)$)},
+          label=above:{\bf TC Server}] () {};
+  \end{pgfonlayer}
+\end{tikzpicture}
+\caption{{\bf Gas Payment in Ethereum}
+  When an Ethereum function is invoked, all operations must be paid for in gas.
+  All gas is provided by the user initiating the transaction, even if that transaction includes nested function calls.
+  By default, a contract calling a function passes that function all gas available to the parent call, but it has the option of limiting that gas.
+  If more gas is provided than is used, all remaining gas is automatically refunded.
+  If more gas is required than provided, all gas provided is expended and the function call reverts all changes and aborts.}
+\label{fig:gas}
+\end{figure}
+
+
+
+
 \subsection{TC Server}
 \subsubsection{The \medname}
 \subsubsection{The \encname}

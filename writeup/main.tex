@@ -12,12 +12,23 @@
 \usepackage{xspace}
 \usepackage{amsmath,amstext,amssymb,amsfonts,latexsym}
 \usepackage{url,hyperref}
+\usepackage{setspace}
 
 \usepackage{tikz}
-\usetikzlibrary{arrows,calc,fit,positioning}
+\usetikzlibrary{arrows,calc,fit,positioning,shapes.misc}
 
 \pgfdeclarelayer{background}
 \pgfsetlayers{background,main}
+
+\tikzset{%
+  entity/.style={rectangle,draw=black,align=center},
+  trusted/.style={fill=green!30},
+  communication/.style={blue},
+  comm-link/.style={communication,ultra thick,text=black},
+  bg-box/.style={rectangle,rounded corners,draw=black,dashed},
+  blockchain-color/.style={fill=yellow!25},
+  tc-server-color/.style={fill=black!20}
+}
 
 \DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
 
