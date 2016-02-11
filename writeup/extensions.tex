@@ -1,5 +1,10 @@
 \section{Extensions}
 
+\elaine{TODO: there are some uncolored fee notations that need to be changed}
+
+\elaine{TODO: fix notation, distinguish between gas required and gas actually
+paid.}
+
 \subsection{Handling Transaction Fees}
 
 To mitigate potential Denial-of-Service (DoS) attacks, 
@@ -12,10 +17,10 @@ corresponding entry point.
 
 \paragraph{Notations and assumed execution model.}
 In Figure \elaine{fill}, we
-use the notation $\sbrown{\Delta F}$
+use the notation $\sbrown{\$ G}$
 to denote transaction fees (i.e., gas), 
-where $\Delta$ is a type annotation 
-and ${\tt F}$ denotes the numerical amount of the  
+where $\$$ is a type annotation 
+and ${\tt G}$ denotes the numerical amount of the  
 gas. Other non-gas, normal currency units 
 are denoted as $\smaroon{\$ F}$ where $\$$ is a type annotation,
 and ${\tt F}$ denotes the amount of the currency. 
@@ -54,54 +59,128 @@ state reverted to before the function is invoked.
   \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont with fees}} \\ [1ex]
   {\bf Request:} & On recv $({\sf params}, 
 {\sf callback},  
-{\color{blue} \Time_{\text{timeout}}},
-\sbrown{\Delta F_{\text{request}}}$ $+$ 
+%{\color{blue} \Time_{\text{timeout}}},
+\sbrown{\$ G_{\text{request}}}$ $+$ 
 $\smaroon{\$F_{\text{deliver}}})$ from some $\reqcont$: \\
-		& Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$\\
+%		& Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$\\
 		& ${\sf id}$ := Counter; \ \  Counter := Counter + 1\\
-                 & Record $({\sf id}, {\sf params}, {\sf callback}, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, {\reqcont})$
+                 & Record $({\sf id}, {\sf params}, {\sf callback}, \smaroon{\$ F_{\text{deliver}}}, {\reqcont})$
 %\elaine{this makes it look like it's sending money}
 \\[-10pt]
-    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{request}}}}$ {gas consumed}}} }\\[-10pt]
-    & {\it {\color{gray} {//~all remaining {gas returned to $\reqcont$}}} }\\[-10pt]
+%    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{request}}}}$ {gas consumed}}} }\\[-10pt]
+%    & {\it {\color{gray} {//~all remaining {gas returned to $\reqcont$}}} }\\[-10pt]
     & {\it {\color{gray} {//~$\smaroon{\$ F_{\text{deliver}}}$} held by contract}} \\
   {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data}, 
-$\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\tcadd$: \\
-                 & Let $({\sf id}, {\sf params'}, {\sf callback}, \smaroon{\$ F'_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \_)$ be the first recorded tuple for ${\sf id}$\\
- & Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$ \\
-                 & Assert ${\sf params} = {\sf params}'$\\
-                &   Assert $\smaroon{\$ F'_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{deliver}}}$\\
-		& Set ${\sf bDelivered}[{\sf id}]$ \\
-                 & Send $\smaroon{\$F'_{\text{deliver}}}$ to $\tcadd$ \\
-                 & Call ${\sf callback}({\sf data})$ \\[-10pt]
-    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
-    & {\it {\color{gray} {//~all remaining {gas returned to $\tcadd$}}} }\\
+$\sbrown{\$ {\tt G_{\text{deliver}}}}$ )$ from $\tcadd$: \\
+	& If ${\sf bCanceled}[{\sf id}]$ and not ${\sf bDelivered}[{\sf id}]$:\\
+		& \quad Send $\smaroon{\$\overline{F}_{\text{deliver}}}$ to $\tcadd$  \\
+		& \quad Set ${\sf bDelivered}[{\sf id}]$ and return\\
 
-{\bf Cancel:} & On recv $({\sf id}, \sbrown{\Delta F_{\text{cancel}}})$ 
+                 & Let $({\sf id}, {\sf params'}, {\sf callback}, \smaroon{\$ F_{\text{deliver}}}, \_)$ be the first recorded tuple for ${\sf id}$ \sgray{\it //~abort if not found}\\
+% & Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$ \\
+                 & Assert ${\sf params} = {\sf params}'$\\
+                &   Assert $\smaroon{\$ F_{\text{deliver}}} \leq \sbrown{\$ G_{\text{deliver}}}$\\
+		& Set ${\sf bDelivered}[{\sf id}]$ \ \ \  (*)\\
+                 & Send $\smaroon{\$F_{\text{deliver}}}$ to $\tcadd$ \\
+                 & Call ${\sf callback}({\sf data})$ \\[2pt] %[-10pt]
+%    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
+%    & {\it {\color{gray} {//~all remaining {gas returned to $\tcadd$}}} }\\
+
+{\bf Cancel:} & On recv $({\sf id}, \sbrown{\$ G_{\text{cancel}}} + \smaroon{\$ \overline{F}_{\text{deliver}}})$ 
 from some $\reqcont$\\
-  & Let $({\sf id}, \_, \_, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \reqcont')$ be the first recorded tuple for ${\sf id}$ \\
+  & Let $({\sf id}, \_, \_, \smaroon{\$ F_{\text{deliver}}}, \reqcont')$ be the first recorded tuple for ${\sf id}$ \ \  \sgray{\it //~abort if not found}\\
    & Assert $\reqcont = \reqcont'$\\
-   & Assert ${\sf bDelivered}[{\sf id}]$ not set \\ 
-   & Assert ${\sf cur\_time} \geq {\color{blue} \Time_{\text{timeout}}}$\\
-  & Send $\smaroon{\$ F_{\text{deliver}}}$ to \reqcont\\
+%& Assert ${\sf id}$ has been seen \\
+   & Assert ${\sf bDelivered}[{\sf id}]$ not set \\
+   & Assert ${\sf bCanceled[{\sf id}]}$ not set \\ 
+%   & Assert ${\sf cur\_time} \geq {\color{blue} \Time_{\text{timeout}}}$\\
+& Assert $\smaroon{\$ \overline{F}_{\text{deliver}}} \geq \sbrown{\$ \overline{G}_{\text{deliver}}} $ \\
+  & Set ${\sf bCanceled[{\sf id}]}$\\
+  & Send $\smaroon{\$ {F}_{\text{deliver}}}$ to \reqcont\\[-10pt]
+    & {\it {\color{gray} {//~$\smaroon{\$ \overline{F}_{\text{deliver}}}$} held by contract}} \\
   \hline
 \end{tabularx}
 \caption{
 Town Crier contract \tcont reflecting fees.
-$\sbrown{\Delta F_{\text{request}}}$ denotes the gas for executing the {\bf Request} 
+$\sbrown{\$ G_{\text{request}}}$ denotes the gas for executing the {\bf Request} 
 entry point. 
-$\sbrown{\Delta F_{\text{deliver}}}$ denotes the gas for executing the {\bf Deliver} entry point
-that includes the user-defined ${\sf callback}$.
+$\sbrown{\$ G_{\text{deliver}}}$ denotes the gas for executing the {\bf Deliver} entry point.
+%that includes the user-defined ${\sf callback}$.
 \smaroon{\$F_{\text{deliver}}} denotes 
 ${\tt F_{\text{deliver}}}$ amount of 
 explicit, non-gas currency units.
 Essentially, the requester first pays 
 $\smaroon{\$ F_{\text{deliver}}}$ currency units which will be used to refund
-the $\sbrown{\Delta F_{\text{deliver}}}$ amount of gas
-that $\pksgx$ will need to put in to call the {\bf Deliver} entry point.
+the $\sbrown{\$ G_{\text{deliver}}}$ amount of gas
+that $\pksgx$ will need to advance to call the {\bf Deliver} entry point.
+$\smaroon{\overline{F}_{\text{deliver}}}$ denotes the amount of gas
+refunded to Town Crier 
+in case Town Crier sends in a datagram  
+after the request has been cancelled (e.g., due to a race condition).
 }
 \label{tbl:tc-contract}
 \end{figure}
+
+
+
+
+
+
+%\begin{figure}
+%\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
+%  \hline
+%
+%  \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont with fees}} \\ [1ex]
+%  {\bf Request:} & On recv $({\sf params}, 
+%{\sf callback},  
+%{\color{blue} \Time_{\text{timeout}}},
+%\sbrown{\Delta F_{\text{request}}}$ $+$ 
+%$\smaroon{\$F_{\text{deliver}}})$ from some $\reqcont$: \\
+%		& Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$\\
+%		& ${\sf id}$ := Counter; \ \  Counter := Counter + 1\\
+%                 & Record $({\sf id}, {\sf params}, {\sf callback}, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, {\reqcont})$
+%%\elaine{this makes it look like it's sending money}
+%\\[-10pt]
+%    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{request}}}}$ {gas consumed}}} }\\[-10pt]
+%    & {\it {\color{gray} {//~all remaining {gas returned to $\reqcont$}}} }\\[-10pt]
+%    & {\it {\color{gray} {//~$\smaroon{\$ F_{\text{deliver}}}$} held by contract}} \\
+%  {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data}, 
+%$\sbrown{\Delta {\tt F_{\text{deliver}}}}$ )$ from $\tcadd$: \\
+%                 & Let $({\sf id}, {\sf params'}, {\sf callback}, \smaroon{\$ F'_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \_)$ be the first recorded tuple for ${\sf id}$\\
+% & Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$ \\
+%                 & Assert ${\sf params} = {\sf params}'$\\
+%                &   Assert $\smaroon{\$ F'_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{deliver}}}$\\
+%		& Set ${\sf bDelivered}[{\sf id}]$ \\
+%                 & Send $\smaroon{\$F'_{\text{deliver}}}$ to $\tcadd$ \\
+%                 & Call ${\sf callback}({\sf data})$ \\[-10pt]
+%    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
+%    & {\it {\color{gray} {//~all remaining {gas returned to $\tcadd$}}} }\\
+%
+%{\bf Cancel:} & On recv $({\sf id}, \sbrown{\Delta F_{\text{cancel}}})$ 
+%from some $\reqcont$\\
+%  & Let $({\sf id}, \_, \_, \smaroon{\$ F_{\text{deliver}}}, {\color{blue} \Time_{\text{timeout}}}, \reqcont')$ be the first recorded tuple for ${\sf id}$ \\
+%   & Assert $\reqcont = \reqcont'$\\
+%   & Assert ${\sf bDelivered}[{\sf id}]$ not set \\ 
+%   & Assert ${\sf cur\_time} \geq {\color{blue} \Time_{\text{timeout}}}$\\
+%  & Send $\smaroon{\$ F_{\text{deliver}}}$ to \reqcont\\
+%  \hline
+%\end{tabularx}
+%\caption{
+%Town Crier contract \tcont reflecting fees.
+%$\sbrown{\Delta F_{\text{request}}}$ denotes the gas for executing the {\bf Request} 
+%entry point. 
+%$\sbrown{\Delta F_{\text{deliver}}}$ denotes the gas for executing the {\bf Deliver} entry point
+%that includes the user-defined ${\sf callback}$.
+%\smaroon{\$F_{\text{deliver}}} denotes 
+%${\tt F_{\text{deliver}}}$ amount of 
+%explicit, non-gas currency units.
+%Essentially, the requester first pays 
+%$\smaroon{\$ F_{\text{deliver}}}$ currency units which will be used to refund
+%the $\sbrown{\Delta F_{\text{deliver}}}$ amount of gas
+%that $\pksgx$ will need to put in to call the {\bf Deliver} entry point.
+%}
+%\label{tbl:tc-contract}
+%\end{figure}
 
 \begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}
@@ -117,14 +196,14 @@ that $\pksgx$ will need to put in to call the {\bf Deliver} entry point.
 {\bf  Loop forever}: \\
 Whenever \tcont records 
 a request
-$({\sf id}, {\sf params}, \_, \_,$ $\sbrown{\Delta F_{\text{request}}}$ $+ \smaroon{\$ F_{\text{deliver}}})$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
-\ \quad Assert $\sbrown{\Delta F_{\text{min}}} \leq  
+$({\sf id}, {\sf params}, \_, \_,$ $\sbrown{\$ G_{\text{request}}}$ $+ \smaroon{\$ F_{\text{deliver}}})$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
+\ \quad Assert $\sbrown{\$ G_{\text{min}}} \leq  
 \smaroon{\$ F_{\text{deliver}}}
-\leq \sbrown{\Delta F_{\text{max}}} $ \\
+\leq \sbrown{\$ G_{\text{max}}} $ \\
 \ \quad Send $(\text{\resumecall}, ({\sf id}, {\sf params}, {\tt F_{\text{deliver}}} )$ to $\fsgx[\enclaveprog, \relay]$ \\
 \ \quad On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
 \ \quad \quad  
-{\sf AuthSend} $(({\sf id}, {\sf params}, {\sf data}, \sbrown{\Delta F_{\text{deliver}}}))$ to \tcont as \tcadd \\
+{\sf AuthSend} $(({\sf id}, {\sf params}, {\sf data}, \sbrown{\$ G_{\text{deliver}}}))$ to \tcont as \tcadd \\
 \hspace{50mm} \sgray{\it //~{\bf msg.}~$m_3$}
 \end{tabular}
 \end{boxedminipage}
@@ -152,8 +231,8 @@ Same as Figure \elaine{refer}
 {\bf Resume:} On recv (\resumecall, $({\sf id}, {\sf params}, {\tt F_{\text{deliver}}}))$\\
 \quad Same as before except the last two statements:\\
 \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, ({\sf id}, {\sf params}, {\sf data},
-\sbrown{\Delta F_{\text{deliver}}}))$\\
-\quad Output $(({\sf id}, {\sf params}, {\sf data}, \sbrown{\Delta F_{\text{deliver}}}), \sigma)$
+\sbrown{\$ G_{\text{deliver}}}))$\\
+\quad Output $(({\sf id}, {\sf params}, {\sf data}, \sbrown{\$ G_{\text{deliver}}}), \sigma)$
 \end{tabular}
 \end{boxedminipage}
 \caption{
@@ -162,7 +241,35 @@ The \tcs~\encname \engine.
 \label{fig:engineprot}
 \end{figure}
 
+More specifically, We will use the following notations to denote regular currency units and gas. 
 
+\begin{table}[!h]
+\begin{tabular}{p{0.13\columnwidth}p{0.8\columnwidth}}
+\hline
+$\smaroon{{\$ F}_{\text{deliver}}}$ & currency a requester deposits to refund the gas Town Crier
+must advance to deliver a datagram\\
+\hline
+$\smaroon{{\$ \overline{F}}_{\text{deliver}}}$ & currency deposited upon cancellation 
+to refund the gas Town Crier  
+expends should a datagram be delivered after cancellation\\
+\hline
+$\sbrown{{\$ G}_{\text{deliver}}}$
+$\sbrown{{\$ G}_{\text{request}}}$
+$\sbrown{{\$ G}_{\text{cancel}}}$ & 
+gas attached when invoking the {\bf Deliver}, {\bf Request}, {\bf Cancel} entries points
+respectively \\
+\hline
+$\sbrown{{\$ \overline{G}}_{\text{deliver}}}$
+& gas needed to execute {\bf Deliver} should it happen after cancellation\\
+\hline
+$\sbrown{{\$ G}_{\text{max}}}$
+& amount of gas in Town Crier's account $\tcadd$ \\
+\hline
+$\sbrown{{\$ G}_{\text{min}}}$
+& gas required for the {\bf Deliver} entry point when ${\sf callback}$ is empty \\
+\hline
+\end{tabular}
+\end{table}
 
 \paragraph{Town Crier protocol with transaction fees.}
 Our basic Town Crier implements a policy where the requester pays for all gas 
@@ -175,7 +282,7 @@ the fee-free protocol described in Section \elaine{refer}.
 \item
 {\it Initialization.}
 To initialize the system, we assume that Town Crier 
-deposits a fixed amount $\sbrown{\Delta F_{\text{max}}}$ 
+deposits a fixed amount $\sbrown{\$ G_{\text{max}}}$ 
 into the wallet account $\pksgx$.
 \item
 {\it Town Crier blockchain contract.}
@@ -185,33 +292,42 @@ Since Town Crier's account
 $\pksgx$ has to invoke the {\bf Deliver} entry point, it has
 to advance 
 a gas payment 
-$\sbrown{\Delta F_{\text{deliver}}}$.
-This amount will be entirely refunded through money deposited in the contract 
+$\sbrown{\$ G_{\text{deliver}}}$.
+If the deliver operation is successful, 
+this amount will be entirely refunded through money deposited in the contract 
 by the requester.
+Otherwise, should the deliver operation happen after the request has already
+been cancelled, 
+a small amount of gas is consumed from $\sbrown{\$ G_{\text{deliver}}}$
+which will be entirely refunded 
+to $\tcadd$ (denoted by $\smaroon{\overline{F}_{\text{deliver}}}$); and further 
+all gas remaining  
+from $\sbrown{\$ G_{\text{deliver}}}$ will automatically 
+be refunded to $\tcadd$ due to Ethereum's operational semantics for gas. 
 \item
 {\it Town Crier Relay.}
 The Town Crier relay monitors
 the blockchain, and whenever
 the blockchain contract \tcont
 receives a new request $({\sf params}, {\sf callback}, 
-\sbrown{\Delta F_{\text{request}}}+\smaroon{\$ F_{\text{deliver}}})$,
+\sbrown{\$ G_{\text{request}}}+\smaroon{\$ F_{\text{deliver}}})$,
 it asserts that 
 \[
-\sbrown{\Delta F_{\text{min}}}
-\leq \smaroon{\$ F_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{max}}}
+\sbrown{\$ G_{\text{min}}}
+\leq \smaroon{\$ F_{\text{deliver}}} \leq \sbrown{\$ G_{\text{max}}}
 \]
-where $\sbrown{\Delta F_{\text{max}}}$ is the total amount of money
+where $\sbrown{\$ G_{\text{max}}}$ is the total amount of money
 in Town Crier's account $\pksgx$, 
-and $\sbrown{\Delta F_{\text{min}}}$
+and $\sbrown{\$ G_{\text{min}}}$
 is the cost of executing the {\bf Deliver} entry point 
 when the user-defined callback is empty.
 The check 
-$\smaroon{\$ F_{\text{deliver}}} \leq \sbrown{\Delta F_{\text{max}}}$
+$\smaroon{\$ F_{\text{deliver}}} \leq \sbrown{\$ G_{\text{max}}}$
 ensures that Town Crier's enclave  
 has sufficient funds to advance
 for the {\bf Deliver} phase.
 The check 
-$\sbrown{\Delta F_{\text{min}}}
+$\sbrown{\$ G_{\text{min}}}
 \leq \smaroon{\$ F_{\text{deliver}}}$
 ensures that 
 the {\bf Deliver} entry point should 
@@ -235,20 +351,20 @@ described in Figure \elaine{refer}.
 Instead of signing the tuple $({\sf id}, {\sf params}, {\sf data})$
 at the end of the enclave's execution, the enclave now signs 
 the tuple $({\sf id}, {\sf params}, {\sf data}, 
-\sbrown{\Delta F_{\text{deliver}}})$
+\sbrown{\$ G_{\text{deliver}}})$
 instead, where signing 
-$\sbrown{\Delta F_{\text{deliver}}}$ authorizes a
-gas amount of $\sbrown{\Delta F_{\text{deliver}}}$ to be advanced
+$\sbrown{\$ G_{\text{deliver}}}$ authorizes a
+gas amount of $\sbrown{\$ G_{\text{deliver}}}$ to be advanced
 to the contract (which will be refunded later).
 \item
 {\it Requester.}
 The honest requester would behave the same way as in Figure \elaine{refer},
 except for additionally putting 
-in $\sbrown{\Delta F_{\text{request}}} + \smaroon{\$ F_{\text{deliver}}}$ 
+in $\sbrown{\$ G_{\text{request}}} + \smaroon{\$ F_{\text{deliver}}}$ 
 amount with each request, 
 where the honest 
 requester would set  
-$\sbrown{\Delta F_{\text{request}}}$
+$\sbrown{\$ G_{\text{request}}}$
 to the gas cost of executing the  
 {\bf Request} entry point,
 and set $\smaroon{\$ F_{\text{deliver}}}$ to be the cost 
@@ -256,11 +372,15 @@ of executing the {\bf Deliver} entry point (including
 the cost of executing the user-defined ${\sf callback}$ function).
 
 If the honest request $\reqcont$ did not receive
-a callback for some ${\sf id}$  
-before the specified deadline ${\color{blue} \Time_{\text{timeout}}}$,
-it will invoke  
-{\bf Cancel}
-with (${\sf id}$, $\sbrown{\Delta F_{\text{cancel}}}$).
+a callback for some ${\sf id}$,  
+%before the specified deadline ${\color{blue} \Time_{\text{timeout}}}$,
+it can invoke {\bf Cancel}
+with (${\sf id}$, $\sbrown{\$ G_{\text{cancel}} + \smaroon{\$ \overline{F}_{\text{deliver}}}}$),
+where $\sbrown{\$ G_{\text{cancel}}}$ is the amount of gas needed 
+to execute the {\bf Cancel} entry point, and $\smaroon{\$ \overline{F}_{\text{deliver}}} := \sbrown{\$ \overline{G}_{\text{deliver}}}$
+is a small amount of money paid to perform cancellation, 
+such that Town Crier will be refunded for the small amount of gas expended,
+should it deliver a datagram after a cancellation happened.
 \end{itemize}
 
 
