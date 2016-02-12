@@ -1,44 +1,39 @@
-\fan{TODO: clock()}
+% programming model
+% ecall and ocall
 
-Using the recently release Intel SGX SDK, we implmented TC Server as an SGX
-application.  The programming model of SGX applications is to seperate out the
-security-sensitive part of an application into a trusted partition, while the
-remainder of the application is deemed untrusted.  The trusted partition is
-later loaded into a SGX enclave and execuate there. 
 
-The idea behind the programming model is that the major body of the application
-is just a normal C/C++ application that is execuated as usual. The trusted part
-is invoked by the application when the application needs to perform a
-security-sensitive task, such as to generate a key pair only unknown to the
-trusted part. To call a function in the enclave, the untrusted part first
-prepare the arguments and issue a \texttt{EENTER} instruction with the address
-of functions being called as arguments.  After the issueing of \texttt{EENTER},
-control is transferred to the program insided the enclave until it returns or a
-Exit Event happens~\cite{sgxman}. This process is referred to as making
-\emph{ecall}s in the SGX documentation.
+Using the recently released Intel SGX SDK~\cite{sgxsdk}, we implmented TC Server
+as an SGX-enabled application. The programming model employed by the SDK is 
+that the major body of an SGX-enabled
+application remains to be an ordinary C/C++ application that execuates in the
+ordinary memory, while an relatively small (in terms of code complexity and
+memory size) piece of security-sensitive code is loaded to an enclave. 
+The enclave part can be
+viewed as a shared library exposing APIs (referred to as \emph{ecalls} by the
+SGX documentation) to be invoked by the untrusted application. However SGX
+guarantees that once the API is invoked, the control is transferred to the 
+enclave code until it finishes or some special event happens~\cite{sgxmanual}.
+As we assume SGX provides a perfect isolation, the untrusted application can not
+observe or alter the execution of ecalls.
 
-An SGX enclave is an isolated execution envirtonment where the enclave program
-can be loaded and execuated. As a result of being isolated, the flexibility of
-enclave programs is trimmed. For example, some instructions, such as IO
-instructions and system calls\fan{add more}, are not allowed in the enclave.
-Thus an enclave program has no access to the services and resources provided by
-operating systems (such as file systems and networking). In order for the enclave
-program to make use of OS services, the enclave program first have to exit the 
-enclave. The \texttt{EEXIT} takes a function pointer as input and will transfer
-control to that address after exiting. Ususally the function being pointed to
-is a wrapper function of a system call, where it first make the system call and
-gather the result, then it transfer control back to the enclave code so that the
-enclave can make use of the data. This process is referred as making \emph{ocall}
-in the SGX documentation.
+As noted in Section \ref{}, an implementation challenge is that enclave program
+can not access services provided by the operating system.  However the TLS layer
+in the \encname relies on the TCP service to talk with web serveres. In order to
+circumvent this, the SGX SDK provides a mechanism called \emph{ocall}. In
+essence, calling an ocall causes the enclave program first to exit the enclave.
+Once the ocall is the fulfilled, execution is transferred back to the calling
+enclave.  \tc server makes extensive use of ocalls to communicate with the
+\medname. 
 
-In the context of TC Server, the trusted part implements Figure. \fan{ref to
-prog}, which emcompasses a TLS layer, a partical HTTP protocol, a set of
-algorithms that can extract information from web pages, and a request handler
-that can parse and generate Ethereum transactions and sign it properly with
-\skTC.  The untrusted part of TC Server implements Figure \fan{ref to prog},
-which roughly emcompasses of two parts: (1) an access point to various OS
-services and (2) interfaces with users and Ethereum blockchain. Figure
-\ref{fig:tcserver_impl} summarizes these components and their interaction.
+In the context of TC Server, the enclave part implements Figure. \fan{ref to
+prog}, which encompasses the implementation of a TLS layer, a partial HTTP
+layer, a set of algorithms that extract information from web pages, and a
+request handler that can parse and generate Ethereum transactions and sign it
+properly with \skTC.  The untrusted part of TC Server implements Figure \fan{ref
+to prog}, which roughly encompasses of two parts: (1) an access point to various
+OS services, (2) an interface with Ethereum blockchain and (3) an interface with
+clients. Figure \ref{fig:tcserver_impl} summarizes these components and their
+interaction.
 
 \begin{figure}[h]
     \centering
@@ -49,44 +44,54 @@ services and (2) interfaces with users and Ethereum blockchain. Figure
 
 \subsubsection{The \medname}
 
-\paragraph{Attestation Server.} As is described \fan{somewhere}, an user starts
-using \tc by requesting an attestation to the \tc server and verifying it.  The
-Attestation Server is the interface through which an user can request an
-attestation and a unix timestamp signed with \pkTC. An attestation is generated
-by sending a report of TC enclave (obtained by \texttt{EGETREPORT}) to the Quoting Enclave(QE). 
-QE then verify the report and tag it with an EPID signature signed by \sksgx. 
-A SGX attestation can be written as $H(M) || \pkTC || sign(\sksgx, H(M), \pkTC$.
-The EPID group signature is used by Intel SGX and users can verify the signature
-by access Intel Attestation Server (IAS). 
+\paragraph{Attestation Server.} As described in Section \ref{sec:architecture},
+a client starts using \tc by requesting and verifying an attestation.  The
+Attestation Server (AttServer) is the interface for doing this.  The AttServer
+listens for requests and calls into the Attestation Generation logic in the
+enclave (by making an ecall) to get an attestation, along with an Unix timestamp
+signed by \pkTC, and forward both to the requesting client.  The EPID group
+signature can verified by accessing Intel Attestation Service (IAS)~\cite{}. 
 
-\paragraph{OS Services.} Enclave relies on \medname to access various services 
-provided by OS. For example, TC \medname relies on the TCP service provided by
-the OS to transport TLS records. Although OS services are used, they don't need
-to be trusted. 
+\paragraph{OS Services.} The \encname relies on \medname for networking and
+time provided by the OS. We implemented wrapper functions for these OS services 
+that can be invoked by the \encname as ocalls.
 
-\paragraph{Blockchain Interface.} To interact with the Ethereum blockchain, we
-incorporated an offcial Ethereum client (we chose geth in particular) into the
-\medname.  Geth client can be configured to set a JSON RPC server through which
-the other part of \medname can communicate with the blockchain indirectly. 
-For example, to deliver a signed transaction to TC contract, the Monitor can
-call \texttt{eth\_sendRawTransaction} RPC call and geth will speak with the blockchain.
-By looping an Ethereum client into \medname, we don't have to deal with the Ethereum
-specifics.
-
+\paragraph{Blockchain Interface.} The \medname is responsible to watch the
+blockchain for incoming requests and insert transactions to the blockchain to
+deliver datagrams. To interact with the Ethereum blockchain, we incorporated an
+official Ethereum client (geth~\cite{geth} in particular) into the \medname.
+Geth client can be configured to setup a JSON RPC server through which the
+Monitor can communicate with the blockchain indirectly by sending RPC calls to
+geth. For example, to insert a signed transaction, the Monitor can simply call
+\texttt{eth\_sendRawTransaction} with the bytes array of the serialized
+transaction, and geth do the rest of the work. Looping an Ethereum
+client into \medname saves us the cost of reinventing the wheel. 
+Note that the signing of transactions is done within the enclave, as the key
+\pkTC only accessible to the enclave program.
 
 \subsubsection{The \encname}
 
-\paragraph{HTTPS in the \encname} We ported mbedTLS into SGX style so it can be used within the 
-enclave.
+\paragraph{HTTPS in the \encname.} 
+The \encname needs the TLS layer to talk with remote HTTPS web servers.  We
+ported a TLS library (mbedTLS) into the SGX environment so it can be used within
+the enclave.  To verify the certificates presented by remote servers, a
+collection of trusted root CAs are manually selected \xxx[Fan]{what's the best
+practice? Maybe we can choose the same root CAs as Chrome or Firefox?} and their
+certificates are hardcoded in the enclave program. A certificate is verified
+only if it is finally issued by one of the trusted root CA.
 
-\paragraph{Info Extraction} Extracting useful information from a website is implemented
-in a ad-hoc manner. For the purpose of demonstration, we implemented three web scrapers
-as examples. 
+\paragraph{Web Scrapers.} Extracting useful information from a given website is
+implemented in a ad-hoc manner. For the purpose of demonstration, we implemented
+three web scrapers as examples. \xxx[Fan]{Elaborate}.
 
-\paragraph{Request Handler} Request handler has two job: 1) to parse the request (decrypt it
-if it is encrypted under \pkTC) and dispatch it to the right scraper; 2) to generate a 
-Ethereum transaction, sign it with \pkTC and serilize it properly so that it can be
-inserted to the blockchain. In essence, we implmented Ethereum ABI and RLP which is use to
-serilize arguments and transactions respectively. 
-\paragraph{Attestation Generation} The same with Attestation Server.
-\paragraph{Key Management} Discuss.
+\paragraph{Request Handler} Request handler has two jobs: 1) to parse the
+request is serialized in the form of Ethereum ABI, decrypt it if encrypted under
+\pkTC, and dispatch it to the right scraper; 2) to generate a Ethereum
+transaction, sign it with \pkTC and serialize it properly so that it can be
+inserted to the blockchain. In essence, we implemented Ethereum ABI and RLP which
+is use to serialize arguments and transactions respectively.
+In addition, the signature algorithm used in signing Ethereum transactions is
+ECDSA on the curve Secp256k1. SHA3 is used.
+
+\paragraph{Attestation Generation} The same with Attestation Server.\xxx[Fan]{Elaborate.}
+\paragraph{Key Management} \xxx[Fan]{TBD.}
