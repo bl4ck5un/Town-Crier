@@ -4,7 +4,7 @@
 
 We now describe the operation of \tc at the protocol level. The basic protocol is conceptually simple: A user contract \reqcont requests a datagram from the \tcontract \tcont. \tcont forwards the request to \engine and then returns the request to \reqcont. There are many details, however, relating to message contents and protection and the need to connect the off-chain parts of \tc with the blockchain.
 
-First, we give a brief protocol overview. Then we enumerate the data flows in \tc. Finally, we provide a component-level view of the protocol by specifying the functionalities embodied in the \tcontract, \medname, and \encname. We present these  as ideal functionalities, inspired by the universal-composability (UC) framework, in order to abstract away implementation details and as a springboard for formal proofs of security. We omit details in this section on how payment is incorporated into \tc; this delicate aspect of the system design is deferred to Section~\ref{}.
+First, we give a brief protocol overview. Then we enumerate the data flows in \tc. Finally, we provide a component-level view of the protocol by specifying the functionalities embodied in the \tcontract, \medname, and \encname. We present these  as ideal functionalities, inspired by the universal-composability (UC) framework, in order to abstract away implementation details and as a springboard for formal proofs of security. We omit details in this section on how payment is incorporated into \tc; this delicate aspect of the system design is deferred to Section~\ref{sec:impl}.
 
 \subsection{Datagram lifecycle}
 
@@ -127,7 +127,7 @@ We abstract away details of the functioning of SGX in two ways.
 First, we abstract away the use of group signatures in EPID and simply denote the keypair associated with group signatures for all legitimate SGX hosts by $(\pkM, \skM)$. 
 We let $\Sigma.{\sf Sign}({\sk}, X)$ denote a digital signature under private key $\sk$ of message $X$, and $\Sigma.{\sf Verify}({\sk}, \sigma, X)$ denote the corresponding verification operation. 
 
-Second, we model execution in SGX in terms of a functionality $\fsgx$ operating in a stateful manner on \enclaveprog, and specified in Figure~\ref{fig:SGX_abstraction}. $\fsgx$ may be be invoked with one of two messages to \enclaveprog: \initcall, which creates the enclave with \enclaveprog as its initial state and triggers measurement quotes and (\resumecall, $X$) which initiates an execution of \enclaveprog on a fresh input $X$. (We assume that \enclaveprog exits only when it completes processing of a given input.) We let $\fsgx[\enclaveprog, \relay]$ denote invocation of $\fsgx$ on \enclaveprog by \relay. 
+Second, we model execution in SGX in terms of a functionality $\fsgx$ operating in a stateful manner on \enclaveprog \xxx[Fan]{Do we want to provide some intuition such that people with no UC background can still read our protocol correctly? For example, maybe we can briefly explain the difference between functionality and protocol?}, and specified in Figure~\ref{fig:SGX_abstraction}. $\fsgx$ may be be invoked with one of two messages to \enclaveprog : \initcall, which creates the enclave with \enclaveprog as its initial state and triggers measurement quotes, and (\resumecall, $X$) which initiates an execution of \enclaveprog on a fresh input $X$. (We assume that \enclaveprog exits only when it completes processing of a given input.) We let $\fsgx[\enclaveprog, \relay]$ denote invocation of $\fsgx$ on \enclaveprog by \relay. 
 
 
 \begin{figure}[ht!]
@@ -154,19 +154,19 @@ On receive (``resume'', ${\sf params}$) from $\relay$: \\
 \end{tabular}
 \end{boxedminipage}
 \caption{Formal abstraction for SGX execution capturing a subset of SGX features
-  sufficient for implementation of \tc.\fan{A minor issue: \sigatt should include Hash(\enclaveprog), not \enclaveprog}
-}
+sufficient for implementation of \tc.\fan{1) A minor issue: SGX \sigatt includes Hash(\enclaveprog), not \enclaveprog.  2) Shall we move hardcoded and assume into the caption (or make it look different), as they're not entry points. }}
 \label{fig:SGX_abstraction}
 \end{figure}
 
 
 \paragraph{Binding $\enclaveprog$ to Ethereum wallet \tcadd.}
+\xxx[Fan]{Would it be more intuitive if we use $\mathcal{W}_{TC}$ to denote a Wallet?}
 Information can only be inserted into the blockchain in Ethereum as a transaction from a wallet. Thus, the only way the \medname can relay messages form the \encname to \tcont is through a wallet (again, formally, an externally owned account) \tcadd. Since the \medname may corrupt messages, however, it is critical that they be authenticated by the \encname. Since Ethereum itself 
 already verifies signatures on transactions from externally owned accounts (i.e., users interact with the  Ethereum blockchain through an authenticated channel), \tc uses a trick to {\it piggyback verification of enclave signatures on top of Ethereum's already existing transaction signature verification mechanism}. 
 
 Very simply, the \encname creates \tcadd with the public key \pkTC. 
 
-To make this idea work fully, the public key $\pkTC$ must be hardcoded into \tcont. A client creating or relying on a contract that uses \tcont is responsible for making sure that this hardcoded $\pkTC$ has an appropriate SGX attestation before interacting with the $\tcont$  blockchain contract.  Let {\sf Verify} denote a verification algorithm for EPID signatures. Fig.~\ref{fig:att_check} gives the protocol for a client to check that \tcont is backed by a valid \encname instance. This protocol does not include a mechanism for \emph{revocation} of a compromised SGX instance, an issue we discuss later in the paper.
+To make this idea work fully, the public key $\pkTC$ must be hardcoded into \tcont. A client creating or relying on a contract that uses \tcont is responsible for making sure that this hardcoded $\pkTC$ has an appropriate SGX attestation before interacting with the $\tcont$  blockchain contract.  Let {\sf Verify}\xxx[Fan]{no leading \sigsgx ?} denote a verification algorithm for EPID signatures. Fig.~\ref{fig:att_check} gives the protocol for a client to check that \tcont is backed by a valid \encname instance. This protocol does not include a mechanism for \emph{revocation} of a compromised SGX instance, an issue we discuss later in the paper.
 
 In summary, then, we may assume in our protocol specifications that {\em all relying clients have verified an attestation for \encname and thus that datagram responses passed from \tcadd to \tcont are trusted to originate from \engine.} 
 
@@ -189,6 +189,7 @@ Assert \tcont is correct and parametrized w/ \pkTC\\
 \caption{A client checks an SGX attestation on the enclave's code $\enclaveprog$ and public key $\pkTC$; the client
 checks that $\pkTC$ is hardcoded into \tc blockchain contract \tcont before 
 using \tcont.
+\fan{1) Hash(\enclaveprog) in the \sigatt; 2) time is in the \sigatt as well? This is inconsistent with section 3 $\to$ the relay $\to$ clients. }
 } 
 \label{fig:att_check}
 \end{figure}
@@ -223,7 +224,7 @@ When $\tcont$ obtains a valid response
 from $\tcadd$,   
 it 
 sends the resulting datagram $\dgm$ to the entry point \dgcallback 
-specified by the requesting contract \reqcont. As explained above, because the response (msg. $m_2$) comes from $\tcadd$, the blockchain automatically verifies that the response is correctly signed under $\engine$'s key $\pkTC$, and \tcont need not verify the signature explicitly. \tc does, however, have a subtle security requirement. Specifically,  for a given datagram request $\dgid$, \tcont must verify that $\dgform' = \dgform$, where $\dgform$ is the digitally signed message produced by \engine and $\dgform$ is the locally stored parameters. The check is necessary to prevent \relay from corrupting datagram requests passed by \tcont (which, as a public function, has no means of digitally signing requests). 
+specified by the requesting contract \reqcont. As explained above, because the response (msg. $m_2$) comes from $\tcadd$, the blockchain automatically verifies that the response is correctly signed under $\engine$'s key $\pkTC$, and \tcont need not verify the signature explicitly. \tc does, however, have a subtle security requirement. Specifically,  for a given datagram request $\dgid$, \tcont must verify that $\dgform' = \dgform$, where $\dgform'$ is the digitally signed message produced by \engine and $\dgform$ is the locally stored parameters. The check is necessary to prevent \relay from corrupting datagram requests passed by \tcont (which, as a public function, has no means of digitally signing requests). 
 
 \tcont is specified in Fig.~\ref{fig:tc-contract}. Here, Call denotes a call to a contact entry point, while Return denotes a message returned by the blockchain in response to a function call. Counter is a variable such that Counter = 0 upon creation of \tcont.
 \begin{figure}[!htb]
@@ -260,7 +261,7 @@ The Town Crier \tcontract \tcont.
 \label{fig:tc-contract}
 \end{figure}
 
-\paragraph{The \encname \engine.} When initialized through an \initcall call, \engine sets its absolute clock (by setting a reference point) and generates a keypair $(\pkTC,\skTC)$ to which it binds by placing $\pkTC$ in attestation requests. Given input \resumecall $({\sf id}, {\sf params})$, \engine contacts the requested data source via HTTPS and checks that the corresponding certificate {\sf cert} is valid, i.e., not expired. We defer discussion of certificate revocation to Section~\ref{}. \engine then fetches the requested datagram and returns it to \relay along with the inputs, all digitally signed. The protocol for \engine is shown in Fig.~\ref{fig:engineprotocol}.
+\paragraph{The \encname \engine.} When initialized through an \initcall call, \engine sets its absolute clock (by setting a reference point) and generates a keypair $(\pkTC,\skTC)$ to which it binds by placing $\pkTC$ in attestation requests. Given input \resumecall $({\sf id}, {\sf params})$, \engine contacts the requested data source via HTTPS and checks that the corresponding certificate {\sf cert} is valid, i.e., not expired \xxx[Fan]{it's more than this. Several root CA certs are hardcoded in the enclave and website certificates are verified only if they're finally issued by one of the root CA we trusted.}. We defer discussion of certificate revocation to Section~\ref{}. \engine then fetches the requested datagram and returns it to \relay along with the inputs, all digitally signed. The protocol for \engine is shown in Fig.~\ref{fig:engineprotocol}.
 
 \begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}
@@ -302,7 +303,7 @@ The \tcs~\encname \engine.
 \label{fig:engineprotocol}
 \end{figure}
 
-\paragraph{The \medname \relay.} As noted in Section~\ref{sec:architecture}, \relay performs distinct three forms of data passing, which we  specify more precisely here. It scrapes the blockchain, monitoring \tcont for new datagram requests $({\sf id}, {\sf params})$. It boots the \engine with an \initcall call and handles incoming requests by invoking \engine with a \resumecall call. Finally, it forwards datagram responses from \engine to the blockchain; recall that it inserts data onto the blockchain and thus forward responses through \tcadd. The program for \relay is shown in Fig.~\ref{fig:relayprotocol}. Here, the function {\sf AuthSend} inserts a transaction to blockchain (``as $\tcadd$'' means the transaction is signed with $\skTC$).
+\paragraph{The \medname \relay.} As noted in Section~\ref{sec:architecture}, \relay performs distinct three forms of data passing, which we  specify more precisely here. It scrapes the blockchain, monitoring \tcont for new datagram requests $({\sf id}, {\sf params})$. It boots the \engine with an \initcall call and handles incoming requests by invoking \engine with a \resumecall call. Finally, it forwards datagram responses from \engine to the blockchain; recall that it inserts transactis to the blockchain and thus forward responses as \tcadd. The program for \relay is shown in Fig.~\ref{fig:relayprotocol}. Here, the function {\sf AuthSend} inserts a transaction to blockchain (``as $\tcadd$'' means the transaction is signed with $\skTC$).
 
 \begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}

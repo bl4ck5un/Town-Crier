@@ -33,11 +33,33 @@
 \DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
 
 \newcommand{\kyle}[1]{\textcolor{blue}{[\textsf{Kyle:  #1}]}}
-\newcommand{\fan}[1]{\textcolor{red}{[\textsf{Fan:  #1}]}}
+\newcommand{\fan}[1]{\textcolor{red}{[\small \bf {Fan:  #1}]}}
 \definecolor{darkgreen}{rgb}{0,0.6,0}
 \newcommand{\ari}[1]{\textcolor{darkgreen}{[\textsf{Ari:  #1}]}}
 \newcommand{\ethan}[1]{\textcolor{cyan}{[\textsf{Ethan: #1}]}}
 \newcommand{\elaine}[1]{\textcolor{magenta}{[\textsf{elaine:  #1}]}}
+
+% Complex \xxx for making notes of things to do.  Use \xxx{...} for general
+% notes, and \xxx[who]{...} if you want to blame someone in particular.
+% Puts text in brackets and in bold font, and normally adds a marginpar
+% with the text ``xxx'' so that it is easy to find.  On the other hand, if
+% the comment is in a minipage, figure, or caption, the xxx goes in the text,
+% because marginpars are not possible in these situations.
+{\makeatletter
+ \gdef\xxxmark{%
+   \expandafter\ifx\csname @mpargs\endcsname\relax % in minipage?
+     \expandafter\ifx\csname @captype\endcsname\relax % in figure/caption?
+       \marginpar{\textcolor{red}{xxx~}}% not in a caption or minipage, can use marginpar
+     \else
+       \textcolor{red}{xxx~}% notice trailing space
+     \fi
+   \else
+     \textcolor{red}{xxx~}% notice trailing space
+   \fi}
+ \gdef\xxx{\@ifnextchar[\xxx@lab\xxx@nolab}
+ \long\gdef\xxx@lab[#1]#2{{\bf \small [\xxxmark \textcolor{red}{#2} ---{\sc #1}]}\xspace}
+ \long\gdef\xxx@nolab#1{{\bf \small [\xxxmark \textcolor{red}{#1}]}\xspace}
+}
 
 \newtheorem{lemma}{Lemma}
 \newtheorem{definition}{Definition}
@@ -125,7 +147,7 @@ Name Institution
 %\newcommand{\digest}{\ensuremath{{\sf digest}}}
 \newcommand{\enclaveprog}{\ensuremath{{\sf prog}_{\textrm{encl}}}\xspace}
 \newcommand{\prog}{\ensuremath{{\sf prog}}\xspace}
-\newcommand{\sigatt}{\ensuremath{{\sigma_{\textrm{att}}}}}
+\newcommand{\sigatt}{\ensuremath{{\sigma_{\textrm{att}}}}\xspace}
 \newcommand{\sigsgx}{\ensuremath{{\Sigma_{\textrm{sgx}}}}}
 \newcommand{\weburl}{\ensuremath{{{\sf url}}}\xspace}
 \newcommand{\clock}{\ensuremath{{{\sf clock}}}}
