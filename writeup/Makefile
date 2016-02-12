@@ -9,6 +9,7 @@ TARGET=main.pdf
 all: $(TARGET)
 
 $(TARGET): $(TARGET:.pdf=.tex) *.tex *.bib 
+	epstopdf figures/impl.eps
 	$(LATEX) $(TEXFLAGS) $<
 	$(LATEX) $(TEXFLAGS) $<
 	bibtex $(basename $<)
