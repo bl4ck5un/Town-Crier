@@ -122,6 +122,54 @@ If the {\bf Deliver} is called after cancellation, then at most $\constgascancel
 \label{tbl:tc-contract2}
 \end{figure}
 
+\begin{figure}
+\centering
+\begin{tikzpicture}
+  [contract/.style={entity,minimum height=3.5em,text width=7.5em},
+   wallet/.style={entity,minimum height=3.5em,text width=5em}]
+  \node[wallet,fill=white] (user) {User ${\cal P}_U$};
+  \node[contract,fill=white,right=6.5em of user] (cu) {User Contract\\$\reqcont$};
+  \node[wallet,trusted,below=5em of user] (tc-wallet) {$\tcadd$};
+  \node[contract,trusted,right=6.5em of tc-wallet] (ctc) {TC Contract\\$\tcont$};
+
+  \draw[color=gold,opacity=0.35,line width=1ex] ([yshift=1.25em]user.east) -| ([xshift=3.25em]cu.south);
+  \path[-stealth,color=gold,line width=1.15ex] (user) edge [transform canvas={yshift=1.25em}] (cu);
+  \path[-stealth,color=gold,line width=1ex] (cu) edge [transform canvas={xshift=3.25em}] (ctc);
+  \path[-stealth,color=maroon,ultra thick] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [text=black,align=center,text width=3.25em,yshift=0.9em] {\small {\bf \underline{Request}}\\[0.1em]$\fee +$\\[-0.3em]$\gasrequest$} ([yshift=-1.25em]ctc.north);
+  \node[color=maroon,anchor=east] (fee) at (ctc.east) {\small $\fee$};
+
+  \path[-stealth,color=gold,line width=0.8ex] ([yshift=1em]tc-wallet.east) edge [above] node {\small $\gasdeliver$} ([yshift=1em]ctc.west);
+  \draw[color=gold,opacity=0.35,line width=0.8ex] ([yshift=1em]tc-wallet.east) -| ([xshift=-3em]ctc.north);
+  \path[-stealth,color=gold,line width=0.4ex] (ctc.north) edge [transform canvas={xshift=-3em}] node [fill=black!10,text=black,text width=2.25em,align=center] {\small $\fee -$\\[-0.2em]$\constgasmin$} (cu.south);
+  \path[-stealth,color=maroon,ultra thick] (ctc.west) edge node [blockchain-color,xshift=0.4em] {\small $\fee$} ([xshift=-0.8em]tc-wallet.east);
+  \path[-stealth,color=gold,ultra thick,dashed] (ctc.west) edge [below,transform canvas={yshift=-1em}] node [text=black,xshift=0.4em] {\small $\gasdeliver - \fee$} ([xshift=-0.8em]tc-wallet.east);
+
+  \node[xshift=-0.6em,yshift=0.6em,anchor=south east] () at (ctc.north west) {\small \bf \underline{Deliver}};
+
+  \begin{pgfonlayer}{background}
+    \node[bg-box,
+          blockchain-color,
+          fit={($(ctc.south east)+(0.75em,-0.75em)$)($(user.north west)+(-0.75em,1.75em)$)},
+          label=above:{\bf Blockchain}] () {};
+    \node[bg-box,
+          fill=black!10,
+          fit={($(ctc.south east)+(0.2em,-0.2em)$)($(cu.north west)+(-0.2em,0.2em)$)},
+          label=above:{\bf Contracts}] () {};
+    \node[bg-box,
+          fill=black!10,
+          fit={($(tc-wallet.south east)+(0.2em,-0.2em)$)($(user.north west)+(-0.2em,0.2em)$)},
+          label=above:{\bf Wallets}] () {};
+  \end{pgfonlayer}
+\end{tikzpicture}
+\caption{{\bf Blockchain Money Flow within Town Crier.}
+Red arrows are used to denote the flow of money.
+Solid brown arrows show gas provided to function calls and the dashed brown arrow indicates the refund of unused gas.
+}
+\label{fig:money-flow}
+\end{figure}
+
+
+
 
 \ethan{I'm not copying Elaine's text about defining values here because I don't have significant changes.}
 
@@ -192,6 +240,19 @@ For any request $(\dgform, \dgcallback, \_)$ submitted by an honest user $\reqco
   \item $\reqcont$ invokes {\bf Cancel} and loses at most $\gasrequest + \gascancel + \constgascancel$ money.
 \end{itemize}
 \end{theorem}
+
+\begin{proof}[(sketch)]
+If the requester is honest, then $\fee$ will be enough to cover delivery including $\dgcallback$.
+If this is the case and {\bf Deliver} is called while $\tcadd$ has $\gasdeliver$ available (i.e. has not had a malicious relay burn money)
+then the requester gets its datagram.
+
+If the requester doesn't get its datagram but provided a sufficient $\fee$, the request cannot have been marked as delivered.
+As long as the request remains undelivered, the requester can call {\bf Cancel}.
+Cancel refunds all but $\constgascancel$ of $\fee$, so the requester had to pay $\gasrequest + \gascancel + \fee$ and was refunded $\fee - \constgascancel$, so the requesters total expenditure is
+\begin{align*}
+  (\gasrequest + \gascancel + \fee) - (\fee - \constgascancel& ) \\ = \gasrequest + \gascancel & + \constgascancel.
+\end{align*}
+\end{proof}
 
 
 
