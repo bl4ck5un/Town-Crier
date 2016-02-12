@@ -317,7 +317,8 @@ On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 \quad Publish $(\pkTC, \sigatt)$\\[5pt]
 
 
-{\bf Handle}$(T, {\sf id, params})$: \\
+{\bf Handle}$({\sf id, params})$: \\
+Parse {\sf params} as $(\_, \_, T)$\\
 Wait until $\clock() \geq T$\\
 Send $(\text{\resumecall}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
 On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
@@ -327,8 +328,7 @@ On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclavepro
 %{\bf Request}:
 Loop Forever:\\ 
 \quad Wait until \tcont records a request $({\sf id}, {\sf params}, \_)$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
-\quad Parse {\sf params} as $(\weburl, \dgspec, T)$\\
-\quad Fork a process of {\bf Handle}($T, {\sf id, params}$)\\
+\quad Fork a process of {\bf Handle}(${\sf id, params}$)\\
 End \\
 \end{tabular}
 \end{boxedminipage}
