@@ -1,29 +1,30 @@
 % programming model
 % ecall and ocall
 
+\subsubsection{Overview of SGX-enabled applications}
 
-Using the recently released Intel SGX SDK~\cite{sgxsdk}, we implmented TC Server
-as an SGX-enabled application. The programming model employed by the SDK is 
-that the major body of an SGX-enabled
-application remains to be an ordinary C/C++ application that execuates in the
-ordinary memory, while an relatively small (in terms of code complexity and
-memory size) piece of security-sensitive code is loaded to an enclave. 
-The enclave part can be
-viewed as a shared library exposing APIs (referred to as \emph{ecalls} by the
-SGX documentation) to be invoked by the untrusted application. However SGX
-guarantees that once the API is invoked, the control is transferred to the 
+Using the recently released Intel SGX SDK~\cite{sgxsdk}, we implmented the \tc
+Server as an SGX-enabled application in C++. The programming model employed by
+the SDK is that the major body of an SGX-enabled application remains an
+ordinary user-space application, while an relatively small piece of security-sensitive code
+is teased out and runs in an isolated environment, namely in an SGX enclave.
+
+The enclave part of an SGX-enabled application can be
+viewed as a shared library exposing APIs, referred to as \emph{ecalls} by~\cite{sgxsdk},
+to be invoked by the untrusted application. However, unlike a share library,  
+once ecalls are invoked, the control is transferred to the 
 enclave code until it finishes or some special event happens~\cite{sgxmanual}.
 As we assume SGX provides a perfect isolation, the untrusted application can not
 observe or alter the execution of ecalls.
 
-As noted in Section \ref{}, an implementation challenge is that enclave program
-can not access services provided by the operating system.  However the TLS layer
-in the \encname relies on the TCP service to talk with web serveres. In order to
-circumvent this, the SGX SDK provides a mechanism called \emph{ocall}. In
-essence, calling an ocall causes the enclave program first to exit the enclave.
-Once the ocall is the fulfilled, execution is transferred back to the calling
-enclave.  \tc server makes extensive use of ocalls to communicate with the
-\medname. 
+In addition, the SGX SDK implements a mechanism called \emph{ocall} with which enclave
+programs can invoke functions defined outside of the enclave. In essence,
+calling an ocall causes the enclave program first to exit the enclave. Once the
+ocall is fulfilled, execution is transferred back to the calling enclave. 
+Although it is permissible to make arbitrary ocalls, special caution must be 
+as ocalls are fulfilled in the untrusted world.
+The ocall interface between \encname and \medname is carefully designed such that the 
+the \medname can not subvert the security of \tc.
 
 In the context of TC Server, the enclave part implements Figure. \fan{ref to
 prog}, which encompasses the implementation of a TLS layer, a partial HTTP
