@@ -1,0 +1,197 @@
+
+\section{Handling gas as implemented}
+
+\ethan{This section is a writeup of the things that need to change to make sure that protocol with fees conforms more precisely to the implementation.}
+
+\subsection{Handling Transaction Fees}
+
+To mitigate potential Denial-of-service (DoS) attacks, Ethereum employs a fee mechanism, referred to as ``gas'',
+where the user requesting a transaction (that can invoke an entry point to a contract) pays a transaction fee.
+The fee is proportional to the computation required to execute the specified transaction.
+
+
+\paragraph{Notations and assumed execution model.}
+In Figure \ref{tbl:tc-contract2}, we use the notation $\gas$ to denote transaction fees (i.e. gas) where \$ is a type annotation of {\sf G} denotes the numerical amount of gas.
+Non-gas currency is denoted $\fee$ where \$ is again a type annotation and {\tt F} denotes the amount.
+For simplicity, our notation assumes that gas and normal currency adopt the same units.
+
+We assume the blockchain contract adopts the following execution model which closely resembles that of Ethereum.
+This model is also described graphically in Figure \ref{fig:gas-model}.
+
+\begin{itemize}[leftmargin=1.5em]
+  \item {\it Providing gas.}
+    When a transaction is submitted, it invokes an entry point in the contract.
+    The transaction submitter provides a gas amount to activate the entry point.
+
+  \item {\it Extra gas.}
+    If a transaction includes more gas than is necessary to process that transaction,
+    \emph{all excess gas is refunded to the caller as part of the transaction}.
+
+  \item {\it Gas exhaustion.}
+    Consider the entry point of a contract as a function.
+    If a function calls another function, the parent may limit the gas available to the child.
+    This limit may not exceed the remaining gas available to the parent.
+    If no limit is specified, all remaining gas is available to the child.
+    When a function cannot be executed to completion within the specified gas limit,
+    the function execution is aborted and all state is reverted to immediately preceding that function call.
+    Note that if the original entry point runs out of gas, the entire transaction is aborted.
+
+\end{itemize}
+
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+  [local-entity/.style={entity,minimum height=3.5em,text width=8em}]
+  \node[local-entity,trusted] (ctc) {};
+  \node[local-entity,draw=none,anchor=north] (ctc-inner) at (ctc.north) {TC Contract\\$\tcont$};
+  \node[local-entity,trusted,right=6em of ctc,text width=5em] (enc) {Enclave};
+  \node[local-entity,fill=white,below=3.5em of ctc] (cu) {User Contract\\$\reqcont$};
+  \node[local-entity,fill=red!30,below=2.5em of cu] (user) {User};
+
+  \path[-stealth,color=red,ultra thick] (user) edge [transform canvas={xshift=-3.5em}] ([yshift=0.75em]cu.south);
+  \path[color=red,thick] (cu.south) edge [right,transform canvas={xshift=-3.5em}] node [text=black,text width=4em,align=center,yshift=1.75em] {\footnotesize Insufficient\\[-0.25em]gas aborts\\[-0.2em]with no\\[-0.5em]effect} (ctc.south);
+  \node[draw=red,cross out,minimum size=1ex,thick] () at ([xshift=-3.5em]ctc.south) {};
+
+  \draw[-stealth,color=green!50!black,line width=0.8ex] ([yshift=-0.25em]enc.west) -- ([xshift=-1.2em,yshift=-0.25em]ctc.east);
+  \draw[-stealth,color=green!50!black,line width=0.5ex] ([yshift=-0.25em]enc.west) -| ([xshift=3em,yshift=-0.9em]cu.north);
+  \draw[color=green!50!black,thick,dashed]  ([xshift=3.75em]cu.north) |- ([yshift=-1.25em]ctc.east);
+  \path[-stealth,color=green!50!black,ultra thick,dashed]  ([yshift=-1.25em]ctc.east) edge [below] node [text=black,text width=4em,align=center,xshift=-0.4em] {\footnotesize Extra gas\\[-0.4em]refunded} ([xshift=0.8em,yshift=-1.25em]enc.west);
+
+  \begin{pgfonlayer}{background}
+    \node[bg-box,
+          blockchain-color,
+          fit={($(ctc.north west)+(-0.3em,0.3em)$)($(cu.south east)+(0.3em,-0.3em)$)},
+          label=above:{\bf Blockchain}] () {};
+    \node[bg-box,
+          tc-server-color,
+          fit={($(enc.north east)+(0.3em,0.3em)$)($(enc.south west)+(-0.3em,-0.3em)$)},
+          label=above:{\bf TC Server}] () {};
+  \end{pgfonlayer}
+\end{tikzpicture}
+\caption{{\bf Gas Payment in Ethereum}}
+\label{fig:gas-model}
+\end{figure}
+
+
+
+\begin{figure}
+\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
+  \hline
+
+  \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont with fees}} \\
+  {\bf Request:} & On recv $({\sf params}, {\sf callback}, \gasrequest + \fee)$ from some $\reqcont$: \\
+                 & Assert $\constgasmin \leq \fee \leq \constgasmax$ \\
+                 & $\dgid := \text{Counter}$; \ \ $\text{Counter} := \text{Counter} + 1$ \\
+                 & Store $(\dgid, \dgform, \dgcallback, \fee, \reqcont)$ \\[-0.8em]
+                 & {\it \sgray{//~$\fee$ held by contract}} \\
+
+  {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm, \gasdeliver)$ from $\tcadd$: \\
+                 & If ${\sf bCanceled}[{\sf id}]$ and not ${\sf bDelivered}[{\sf id}]$: \\
+                 & \quad Send \constgascancel\ to \tcadd \\
+                 & \quad Set ${\sf bDelivered}[\dgid]$ \\
+                 & \quad Return \\
+                 & Retrieve stored $(\dgid, \dgform', \dgcallback, \fee, \_)$ \\
+                 & \quad \sgray{\it //~abort if not found} \\
+                 & Assert $\dgform = \dgform'$ \\
+                 & Assert $\fee \leq \gasdeliver$ \\
+                 & Set ${\sf bDelivered}[\dgid]$ \\
+                 & Send $\fee$ to \tcadd \\
+                 & Call $\dgcallback(\dgm)$ with $\fee - \constgasmin$ max gas \\
+
+  {\bf Cancel:}  & On recv $(\dgid, \gascancel)$ from \reqcont \\
+                 & Retrieve stored $(\dgid, \_, \_, \fee, \reqcont')$ \\
+                 & \quad \sgray{\it //~abort if not found} \\
+                 & Assert $\reqcont = \reqcont'$ \\
+                 & Assert ${\sf bDelivered}[\dgid]$ not set \\
+                 & Assert ${\sf bCanceled}[\dgid]$ not set \\
+                 & Assert $\fee \geq \constgascancel$ \\
+                 & Set ${\sf bCanceled}[\dgid]$ \\
+                 & Send $(\fee - \constgascancel)$ to \reqcont \\[-0.8em]
+                 & {\it \sgray{//~\constgascancel\ held by contract}} \\
+  \hline
+\end{tabularx}
+\caption{
+Town Crier contract \tcont reflecting fees.
+An honest requester would set $\fee$ to be the gas amount
+required to execute the {\bf Deliver} entry point including $\dgcallback$.
+Town Crier sets $\gasdeliver := \constgasmax$, but limits gas provided for $\dgcallback$ ensure that no more than $\fee$ is spent.
+Ethereum automatically refunds any unspent gas, so Town Crier will not lose money.
+If the {\bf Deliver} is called after cancellation, then at most $\constgascancel$ will be spent, which is exactly the amount retained from the requester's fee when {\bf Cancel} is called.
+}
+\label{tbl:tc-contract2}
+\end{figure}
+
+
+\ethan{I'm not copying Elaine's text about defining values here because I don't have significant changes.}
+
+
+
+\paragraph{Town Crier protocol with transaction fees.}
+Our basic Town Crier system implements a policy where the requester pays for all gas needed and Town Crier effectively pays nothing.
+We now describe how this can be realized by modifying the fee-free protocol described in Section \ethan{refer}.
+
+\begin{itemize}[leftmargin=1.5em]
+  \item {\it Initialization.}
+    We assume that Town Crier deposits at least $\constgasmax$ into the wallet $\tcadd$.
+
+  \item {\it Town Crier blockchain contract.}
+    Figure \ref{tbl:tc-contract2} describes the Town Crier blockchain contract reflecting fees.
+    Since Town Crier's account $\tcadd$ has to invoke the {\bf Deliver} entry point, it advances a gas payment $\constgasmax$.
+    We prove in Section \ethan{ref-gas-neutrality} that this is always enough gas and providing extra is not a problem.
+
+  \item {\it Town Crier Relay.}
+    The relay behavior does not change with the presence of fees.
+    It still monitors the blockchain and whenever the contract \tcont stores a new request $(\dgid, \dgform, \_, \_, \_)$,
+    it invokes $\enclaveprog$ with $\resumecall(\dgid, \dgform)$.
+
+  \item {\it Town Crier enclave.}
+    We make the following small modification to the fee-free protocol.
+    Instead of signing the tuple $(\dgid, \dgform, \dgm)$ at the end of its execution,
+    the enclave now signs the tuple $(\dgid, \dgform, \dgm, \gasdeliver)$ where $\gasdeliver = \constgasmax$.
+
+  \item {\it Requester.}
+    An honest requester would behave the same was as in Figure \ethan{refer} except for additionally sending $\gasrequest$ gas and $\fee$ money with each request.
+    It would set $\gasrequest$ to be at least the cost of executing the {\bf Request} entry point
+    and $\fee$ to be the cost of executing the {\bf Deliver} entry point (including executing the user-defined $\dgcallback$ function).
+
+    If the honest requester did not receive a callback for some $\dgid$ (or simply no longer needs the response),
+    it can invoke {\bf Cancel} with $(\dgid, \gascancel)$ where $\gascancel$ is the gas cost of executing the {\bf Cancel} entry point.
+    In this case the requester will be refunded $\fee - \constgascancel$ with $\constgascancel$ withheld as a cancellation fee
+    to reimburse Town Crier for the small amount of gas expected should it try to deliver a datagram after the cancellation.
+\end{itemize}
+
+
+
+
+\subsection{Gas Neutrality}
+
+
+\begin{theorem}[Gas neutrality for Town Crier]
+Assuming an honest Town Crier relay,
+Town Crier's wallet account $\tcadd$ will have at least $\constgasmax$ remaining after each {\bf Deliver} call.
+\end{theorem}
+
+\begin{proof}[(sketch)]
+Honest relay means $\resumecall(\dgid, \dgform)$ will always be legitimate and $\dgform = \dgform'$ in {\bf Deliver}.
+Also, $\gasdeliver = \constgasmax \geq \fee$, and we will never respond to the same request twice (these are specified in the relay protocol), so we will never abort.
+
+If ${\sf bIsCanceled}[\dgid]$, then there is at least $\constgascancel$ left in \tcont from {\bf Cancel} which is returned to $\tcadd$,
+and, by design, that is enough to cover gas costs when a request is canceled.
+
+Otherwise we limit the gas provided to $\dgcallback$ to $\fee - \constgasmin$, and $\constgasmin$ is set so that it is at least the cost of {\bf Deliver} not including $\dgcallback$.
+This means that the total gas used is no greater than $\constgasmin + (\fee - \constgasmin) = \fee$, which is exactly what $\tcadd$ is sent for reimbursement.
+\end{proof}
+
+
+\begin{theorem}[Bounded loss for honest requester]
+For any request $(\dgform, \dgcallback, \_)$ submitted by an honest user $\reqcont$, one of the following will occur:
+\begin{itemize}
+  \item $\dgcallback$ will be successfully invoked with a valid datagram matching the requested parameters.
+
+  \item $\reqcont$ invokes {\bf Cancel} and loses at most $\gasrequest + \gascancel + \constgascancel$ money.
+\end{itemize}
+\end{theorem}
+
+
+
