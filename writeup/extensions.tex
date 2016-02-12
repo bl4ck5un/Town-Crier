@@ -209,7 +209,7 @@ necessary for invoking the {\bf Cancel} entry point.
 {\bf Handle}$(T, {\sf id, params}, \smaroon{\$ F})$: \\
 Wait until $\clock() \geq T$\\
 Assert $\sbrown{\$ \overline{G}_{\text{min}}} \leq  \smaroon{\$ F} \leq \sbrown{\$ \overline{G}_{\text{max}}} $ \\
-Send $(\text{\resumecall}, ({\sf id}, {\sf params}, {\tt F} )$ to $\fsgx[\enclaveprog, \relay]$ \\
+Send $(\text{\resumecall}, ({\sf id}, {\sf params}, {\tt F} )$ to $\fsgx[\enclaveprog, \relay]$) \\
 On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
 \quad \sgray{\it //send out ~{\bf msg.}~$m_3$}\\
 \quad {\sf AuthSend} $(({\sf id}, {\sf params}, {\sf data}, \smaroon{\$ F}))$ to \tcont as \tcadd \\[5pt]
