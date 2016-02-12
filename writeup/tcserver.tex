@@ -37,7 +37,7 @@ interaction.
 
 \begin{figure}[h]
     \centering
-%    \includegraphics[width=0.4\textwidth]{figures/impl}
+    \includegraphics[width=0.4\textwidth]{figures/impl}
     \caption{Detailed Architecture of TC Server}
     \label{fig:tcserver_impl}
 \end{figure}
@@ -85,13 +85,13 @@ implemented in a ad-hoc manner. For the purpose of demonstration, we implemented
 three web scrapers as examples. \xxx[Fan]{Elaborate}.
 
 \paragraph{Request Handler} Request handler has two jobs: 1) to parse the
-request is serialized in the form of Ethereum ABI, decrypt it if encrypted under
+request which is serialized in the format specified by Ethereum ABI, decrypt it if encrypted under
 \pkTC, and dispatch it to the right scraper; 2) to generate a Ethereum
 transaction, sign it with \pkTC and serialize it properly so that it can be
-inserted to the blockchain. In essence, we implemented Ethereum ABI and RLP which
-is use to serialize arguments and transactions respectively.
+inserted to the blockchain. In essence, we implemented the Ethereum ABI and RLP which
+specifies the serialization of arguments and transactions respectively.
 In addition, the signature algorithm used in signing Ethereum transactions is
-ECDSA on the curve Secp256k1. SHA3 is used.
+ECDSA on the curve Secp256k1. SHA3 is used to generate message digests.
 
 \paragraph{Attestation Generation} The same with Attestation Server.\xxx[Fan]{Elaborate.}
 \paragraph{Key Management} \xxx[Fan]{TBD.}
