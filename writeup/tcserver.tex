@@ -22,40 +22,41 @@ programs can invoke functions defined outside of the enclave. In essence,
 calling an ocall causes the enclave program first to exit the enclave. Once the
 ocall is fulfilled, execution is transferred back to the calling enclave. 
 Although it is permissible to make arbitrary ocalls, special caution must be 
-as ocalls are fulfilled in the untrusted world.
-The ocall interface between \encname and \medname is carefully designed such that the 
-the \medname can not subvert the security of \tc.
-
-In the context of TC Server, the enclave part implements Figure. \fan{ref to
-prog}, which encompasses the implementation of a TLS layer, a partial HTTP
-layer, a set of algorithms that extract information from web pages, and a
-request handler that can parse and generate Ethereum transactions and sign it
-properly with \skTC.  The untrusted part of TC Server implements Figure \fan{ref
-to prog}, which roughly encompasses of two parts: (1) an access point to various
-OS services, (2) an interface with Ethereum blockchain and (3) an interface with
-clients. Figure \ref{fig:tcserver_impl} summarizes these components and their
-interaction.
+taken as ocalls are fulfilled in the untrusted world.
+The ocall interface between the \encname and the \medname is carefully designed
+in the security model of \tc.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.4\textwidth]{figures/impl}
-    \caption{Detailed Architecture of TC Server}
+    \includegraphics[width=0.45\textwidth]{figures/impl}
+    \caption{Components of \tc Server}
     \label{fig:tcserver_impl}
 \end{figure}
 
+In the context of TC Server, Fig~\ref{fig:engineprotocol} is implmented as the
+enclave part, which encompasses a TLS layer, a (partial) HTTP layer, a set of
+algorithms that extract information from web pages, and a request handler that
+can parse and generate Ethereum transactions signed with \skTC. The untrusted
+part of \tc Server implements Fig~\ref{fig:relayprotocol}, which roughly
+encompasses three parts: an access point to various OS services, an interface
+with Ethereum blockchain and an interface with clients.
+Fig~\ref{fig:tcserver_impl} summarizes these components and their interaction.
+
+
 \subsubsection{The \medname}
 
-\paragraph{Attestation Server.} As described in Section \ref{sec:architecture},
+\paragraph{Client Interface.} As described in Section \ref{sec:architecture},
 a client starts using \tc by requesting and verifying an attestation.  The
-Attestation Server (AttServer) is the interface for doing this.  The AttServer
-listens for requests and calls into the Attestation Generation logic in the
+Client Interface part of \medname is dedicated for doing this.  The Client Interface 
+listens for requests over network and calls into the Attestation Generation logic in the
 enclave (by making an ecall) to get an attestation, along with an Unix timestamp
-signed by \pkTC, and forward both to the requesting client.  The EPID group
+signed by \pkTC, and forward both to the requesting client. The EPID group
 signature can verified by accessing Intel Attestation Service (IAS)~\cite{}. 
 
-\paragraph{OS Services.} The \encname relies on \medname for networking and
-time provided by the OS. We implemented wrapper functions for these OS services 
-that can be invoked by the \encname as ocalls.
+\paragraph{OS Services.} The \encname relies on \medname to access networking and 
+time services provided by the OS. This is implemented as ocalls.
+Since the \encname is potentially malicious, the ocall interface is carefully
+designed.
 
 \paragraph{Blockchain Interface.} The \medname is responsible to watch the
 blockchain for incoming requests and insert transactions to the blockchain to
@@ -94,5 +95,4 @@ specifies the serialization of arguments and transactions respectively.
 In addition, the signature algorithm used in signing Ethereum transactions is
 ECDSA on the curve Secp256k1. SHA3 is used to generate message digests.
 
-\paragraph{Attestation Generation} The same with Attestation Server.\xxx[Fan]{Elaborate.}
-\paragraph{Key Management} \xxx[Fan]{TBD.}
+\paragraph{Attestation Generation} \xxx[Fan]{Elaborate.}
