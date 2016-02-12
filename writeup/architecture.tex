@@ -66,22 +66,24 @@ The \tcs system includes three main components: The \tcontract (\tcont), the \en
   \begin{pgfonlayer}{background}
     \node[bg-box,
           blockchain-color,
-          fit={($(ctc.north east)+(0.25em,0.25em)$)($(cu.south west)+(-0.25em,-0.25em)$)},
+          fit={($(ctc.north east)+(0.5em,0.5em)$)($(cu.south west)+(-0.5em,-0.5em)$)},
           label=above:{\bf Blockchain}] (blockchain) {};
     \node[rectangle,
           draw=black,
           tc-server-color,
-          fit={($(relay.north east)+(0.25em,0.25em)$)($(enc.south west)+(-0.25em,-0.25em)$)},
+          inner sep=0,
+          fit={($(relay.north east)+(0.5em,0.5em)$)($(enc.south west)+(-0.5em,-0.5em)$)},
           label=above:{\bf TC Server}] (tc) {};
   \end{pgfonlayer}
 
   \node[right=-0.1em of tc,communication,transform canvas={yshift=2.5em}] (https) {\scriptsize \bf HTTPS};
 %  \node[rectangle,draw=black,trusted,right=2.75em of tc,text width=4.5em,minimum height=9.75em,align=center,label=above:{\bf Data Source}] (data) {\tt lots-o-\\data.com};
   \node[cloud,draw=black,trusted,cloud puffs=11,cloud puff arc=100,aspect=0.67,inner xsep=-0.15em,right=2.3em of tc,text width=4.15em,align=center] (data) {\tt lots-o-\\data.com};
+  \node[minimum height=9.5em,minimum width=4em,label=above:{\bf Data Source}] () at (data) {};
 
   \draw[stealth-stealth,comm-link] ([xshift=-0.75em,yshift=-0.75em]ctc.east) -| ([xshift=-0.75em,yshift=-0.75em]enc.north);
   \draw[stealth-stealth,comm-link] ([yshift=0.75em]ctc.south) -- ([yshift=-0.75em]cu.north);
-  \draw[stealth-stealth,comm-link] ([xshift=0.75em,yshift=-0.75em]enc.north) |- ([xshift=1.25em,yshift=1.75em]data.west);
+  \draw[stealth-stealth,comm-link] ([xshift=0.75em,yshift=-0.75em]enc.north) |- ([xshift=1.1em,yshift=1.75em]data.west);
 \end{tikzpicture}
 \caption{{\bf Basic Town Crier architecture.} Trusted components are depicted in green.}
 \label{fig:overview}

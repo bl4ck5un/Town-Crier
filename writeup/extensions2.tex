@@ -61,11 +61,11 @@ This model is also described graphically in Figure \ref{fig:gas-model}.
   \begin{pgfonlayer}{background}
     \node[bg-box,
           blockchain-color,
-          fit={($(ctc.north west)+(-0.3em,0.3em)$)($(cu.south east)+(0.3em,-0.3em)$)},
+          fit={($(ctc.north west)+(-0.5em,0.5em)$)($(cu.south east)+(0.5em,-0.5em)$)},
           label=above:{\bf Blockchain}] () {};
     \node[bg-box,
           tc-server-color,
-          fit={($(enc.north east)+(0.3em,0.3em)$)($(enc.south west)+(-0.3em,-0.3em)$)},
+          fit={($(enc.north east)+(0.5em,0.5em)$)($(enc.south west)+(-0.5em,-0.5em)$)},
           label=above:{\bf TC Server}] () {};
   \end{pgfonlayer}
 \end{tikzpicture}
@@ -130,37 +130,37 @@ If the {\bf Deliver} is called after cancellation, then at most $\constgascancel
    type-box-color/.style={fill=black!10},
    blocked-out-label/.style={text=black,type-box-color,text height=0.6em}]
   \node[wallet,fill=white] (user) {User ${\cal P}_U$};
-  \node[contract,fill=white,right=6.5em of user] (cu) {User Contract\\$\reqcont$};
+  \node[contract,fill=white,right=6em of user] (cu) {User Contract\\$\reqcont$};
   \node[wallet,trusted,below=6em of user] (tc-wallet) {$\tcadd$};
-  \node[contract,trusted,right=6.5em of tc-wallet] (ctc) {TC Contract\\$\tcont$};
+  \node[contract,trusted,right=6em of tc-wallet] (ctc) {TC Contract\\$\tcont$};
+  \node[color=maroon,draw,anchor=south east] (fee) at ([xshift=-0.25em,yshift=0.25em]ctc.south east) {\small $\fee$};
 
   \draw[color=gold,opacity=0.35,line width=1ex] ([yshift=1.25em]user.east) -| ([xshift=3.25em]cu.south);
   \path[-stealth,color=gold,line width=1.15ex] (user) edge [transform canvas={yshift=1.25em}] (cu);
   \path[-stealth,color=gold,line width=1ex] (cu) edge [transform canvas={xshift=3.25em}] (ctc);
-  \path[-stealth,color=maroon,ultra thick] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1.4em] {\small \smash{$\gasrequest + \fee$}} ([yshift=-1.25em]ctc.north);
-  \node[color=maroon,anchor=east] (fee) at (ctc.east) {\small $\fee$};
+  \path[-stealth,color=maroon,ultra thick] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1.4em] {\small \smash{$\gasrequest + \fee$}} ([yshift=-1.5em]ctc.north);
   \node[anchor=north,xshift=1em,yshift=-0.75em] () at (cu.south) {\small \bf \underline{\smash{Request}}};
 
-  \path[-stealth,color=gold,line width=0.8ex] ([yshift=1em]tc-wallet.east) edge [above] node () {\small $\gasdeliver$} ([yshift=1em]ctc.west);
-  \draw[color=gold,opacity=0.35,line width=0.5ex] ([yshift=1em]tc-wallet.east) -| ([xshift=-3em]ctc.north);
+  \path[-stealth,color=gold,line width=0.8ex] ([yshift=0.6em]tc-wallet.east) edge [above] node () {\small $\gasdeliver$} ([yshift=0.6em]ctc.west);
+  \draw[color=gold,opacity=0.35,line width=0.5ex] ([yshift=0.6em]tc-wallet.east) -| ([xshift=-3em]ctc.north);
   \path[-stealth,color=gold,line width=0.5ex] (ctc.north) edge [transform canvas={xshift=-3em}] node [blocked-out-label,xshift=0.9em,yshift=-1.25em] {\small \smash{$\fee - \constgasmin$}} (cu.south);
-  \path[-stealth,color=maroon,ultra thick] (ctc.west) edge node [blockchain-color,xshift=0.4em] {\small $\fee$} ([xshift=-0.8em]tc-wallet.east);
-  \path[-stealth,color=gold,ultra thick,dashed] (ctc.west) edge [below,transform canvas={yshift=-1em}] node [text=black,xshift=0.4em] {\small $\gasdeliver - \fee$} ([xshift=-0.8em]tc-wallet.east);
+  \path[-stealth,color=maroon,ultra thick] (ctc.west) edge [below,transform canvas={yshift=-0.6em}] node [xshift=0.4em] {\small $\fee$} ([xshift=-0.8em]tc-wallet.east);
+%  \path[-stealth,color=gold,ultra thick,dashed] (ctc.west) edge [below,transform canvas={yshift=-1em}] node [text=black,xshift=0.4em] {\small $\gasdeliver - \fee$} ([xshift=-0.8em]tc-wallet.east);
 
   \path[] (tc-wallet.north east) edge [draw=none,above] node [yshift=1em] {\small \bf \underline{Deliver}} (ctc.north west);
 
   \begin{pgfonlayer}{background}
     \node[bg-box,
           blockchain-color,
-          fit={($(ctc.south east)+(0.75em,-0.75em)$)($(user.north west)+(-0.75em,1.75em)$)},
+          fit={($(ctc.south east)+(1em,-1em)$)($(user.north west)+(-1em,2em)$)},
           label=above:{\bf Blockchain}] () {};
     \node[bg-box,
           type-box-color,
-          fit={($(ctc.south east)+(0.2em,-0.2em)$)($(cu.north west)+(-0.2em,0.2em)$)},
+          fit={($(ctc.south east)+(0.5em,-0.5em)$)($(cu.north west)+(-0.5em,0.5em)$)},
           label=above:{\bf Contracts}] () {};
     \node[bg-box,
           type-box-color,
-          fit={($(tc-wallet.south east)+(0.2em,-0.2em)$)($(user.north west)+(-0.2em,0.2em)$)},
+          fit={($(tc-wallet.south east)+(0.5em,-0.5em)$)($(user.north west)+(-0.5em,0.5em)$)},
           label=above:{\bf Wallets}] () {};
   \end{pgfonlayer}
 \end{tikzpicture}
