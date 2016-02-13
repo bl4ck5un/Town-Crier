@@ -60,8 +60,8 @@ The \tcs system includes three main components: The \tcontract (\tcont), the \en
    contract/.style={entity,minimum height=3.5em,text width=5.7em}]
   \node[contract,trusted] (ctc) {TC Contract\\$\tcont$};
   \node[contract,fill=white,below=1.5em of ctc] (cu) {User Contract\\$\reqcont$};
-  \node[tc-entity,fill=none,right=2.5em of ctc] (relay) {Relay};
-  \node[tc-entity,trusted,right=2.5em of cu] (enc) {Enclave};
+  \node[tc-entity,fill=none,right=2.5em of ctc] (relay) {Relay\\$\relay$};
+  \node[tc-entity,trusted,right=2.5em of cu] (enc) {Enclave\\$\enclaveprog$};
 
   \begin{pgfonlayer}{background}
     \node[bg-box,
@@ -78,7 +78,7 @@ The \tcs system includes three main components: The \tcontract (\tcont), the \en
 
   \node[right=-0.1em of tc,communication,transform canvas={yshift=2.5em}] (https) {\scriptsize \bf HTTPS};
 %  \node[rectangle,draw=black,trusted,right=2.75em of tc,text width=4.5em,minimum height=9.75em,align=center,label=above:{\bf Data Source}] (data) {\tt lots-o-\\data.com};
-  \node[cloud,draw=black,trusted,cloud puffs=11,cloud puff arc=100,aspect=0.67,inner xsep=-0.15em,right=2.3em of tc,text width=4.15em,align=center] (data) {\tt lots-o-\\data.com};
+  \node[cloud,draw=black,trusted,cloud puffs=11,cloud puff arc=100,aspect=0.6,inner xsep=-0.35em,right=2.5em of tc,text width=4.15em,align=center] (data) {\tt lots-o-\\data.com};
   \node[minimum height=9.5em,minimum width=4em,label=above:{\bf Data Source}] () at (data) {};
 
   \draw[stealth-stealth,comm-link] ([xshift=-0.75em,yshift=-0.75em]ctc.east) -| ([xshift=-0.75em,yshift=-0.75em]enc.north);

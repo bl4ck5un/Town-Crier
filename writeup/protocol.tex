@@ -76,9 +76,8 @@ Fig.~\ref{fig:dataflow} shows the data flows involved in processing a datagram r
 \centering
 \begin{tikzpicture}
   [local-entity/.style={entity,minimum height=3em,text width=6em}]
-  \node[local-entity,trusted] (ctc) {};
-  \node[local-entity,draw=none,anchor=north] (ctc-inner) at (ctc.north) {TC Contract\\$\tcont$};
-  \node[local-entity,trusted,right=7em of ctc] (enc) {Enclave};
+  \node[local-entity,trusted] (ctc) {TC Contract\\$\tcont$};
+  \node[local-entity,trusted,right=7em of ctc] (enc) {Enclave\\$\enclaveprog$};
   \node[local-entity,fill=white,below=5em of ctc] (cu) {User Contract\\$\reqcont$};
   \node[below=1em of enc,align=center] (data) {\small (obtains $\dgm$\\from data source)};
 
