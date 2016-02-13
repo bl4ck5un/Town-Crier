@@ -1,5 +1,47 @@
+
 \section{\tc Implementation Details}
 \label{sec:impl}
+
+In our implementation of TC, we use Ethereum smart contracts and an SGX enclave to provide trusted computing environments.
+The details of resource management within Ethereum present new challenges as they open TC to new attacks.
+
+During the creation and fulfillment of any request, there are two untrusted parties:
+the requesting user and the TC relay and network (which we view as a single adversary).
+The protocol discussed in Section \ethan{ref no-gas} guarantees authenticity of data for an honest requester even in the face of a malicious relay.
+However, the TC system has no vulnerable resources and requests are separated from each other preventing a malicious user from causing harm.
+In Ethereum, executing computation is not free.
+This means that TC needs to maintain enough money to deliver datagrams which means users must pay a fee to reimburse costs.
+The fee raises the concern that a compromised relay may be able to prevent delivery of a datagram and cost an honest requester money for no gain.
+
+While designing the implementation, we consider three cases:
+\begin{itemize}
+  \item {\it Honest requester and relay.}
+    The requester must receive a valid authenticated response from TC.
+
+  \item {\it Malicious requester and honest relay.}
+    TC must still be able to respond correctly to requests from other (honest) users.
+    To do this, we must prevent a malicious user from interfering directly with other requests (which we cover in our payment-free protocol in Section \ethan{ref no-gas})
+    or exhausting the financial resources of TC.
+
+  \item {\it Honest requester and malicious relay.}
+    The requester cannot receive invalid data that looks valid (which we is also guaranteed by our payment-free protocol)
+    and the requester should be able to recover as much money as possible.
+\end{itemize}
+We formalize these properties in Section \ethan{refer} and prove that our protocol provides these guarantees.
+We intentionally ignore the case where both the requester and the relay are dishonest.
+If the requester is dishonest we need to not protect their request, and if the relay is dishonest we cannot protect the TC system.
+
+In this section we describe a precise model for payment and give a protocol that incorporates these costs.
+
+
+
+\ethan{I think we should rearrange things below this.
+  My suggestion is to put our model of the gas system next, followed by the protocol that includes fees and gas payments.
+  I can pull the current subsection on the contract implementation into that as a subsubsection with some extra notes.
+  Then we can go into the server implementation and then have Section 6 start discussing more formal guarantees and providing proofs (or pointers to proofs in an appendix).}
+
+
+
 
 \subsection{TC Contract}
 

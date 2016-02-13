@@ -245,11 +245,11 @@ For any request $(\dgform, \dgcallback, \_)$ submitted by an honest user $\reqco
 \end{theorem}
 
 \begin{proof}[(sketch)]
-If the requester is honest, then $\fee$ will be enough to cover delivery including $\dgcallback$.
+If the requester is honest, then the value submitted as $\fee$ will be enough to cover delivery including $\dgcallback$.
 If this is the case and {\bf Deliver} is called while $\tcadd$ has $\gasdeliver$ available (i.e. has not had a malicious relay burn money)
 then the requester gets its datagram.
 
-If the requester doesn't get its datagram but provided a sufficient $\fee$, the request cannot have been marked as delivered.
+If the requester doesn't get its datagram but provided a sufficient value for $\fee$, the request cannot have been marked as delivered.
 As long as the request remains undelivered, the requester can call {\bf Cancel}.
 Cancel refunds all but $\constgascancel$ of $\fee$, so the requester had to pay $\gasrequest + \gascancel + \fee$ and was refunded $\fee - \constgascancel$, so the requesters total expenditure is
 \begin{align*}
