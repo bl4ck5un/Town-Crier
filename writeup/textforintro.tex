@@ -1,0 +1,111 @@
+\subsection{Alt. Intro Text}
+
+\elaine{Ari, you asked me to write some alternative text for intro, here it is.}
+
+We present the design of Town Crier, an authenticated data feed service for smart contracts. 
+Town Crier bridges the gap between data 
+feed providers (e.g., various websites)
+and smart contracts (e.g., those running on modern blockchains
+such as Ethereum). Since the deployment
+of many interesting smart contracts 
+today are hampered by the lack of authenticated data feeds,
+we believe that a service like Town Crier will like
+fuel the deployment of a rich spectrum  
+of smart contract applications.
+Town Crier can provide attestations of the following nature:
+
+\begin{itemize}[leftmargin=3mm]
+\item[]
+\noindent {``datagram $X$ is  
+presented by an HTTPS-enabled website $Y$ 
+{\it after} a certain time $T$''}
+\end{itemize}
+
+\elaine{we really need to explain this ``after'' somewhere. it is catchy and will
+draw criticism if we don't explain it carefully. I also don't think obscurity of abstraction
+will help solve this problem, if anything, reviewers will be more upset
+if we don't explain this upfront.}
+
+The security of such data feed attestations
+are backed by the security of trusted hardware --- in particular,
+our current implementation relies on the newly released Intel SGX secure processor.
+In designing and building Town Crier, we make the following contributions:
+
+\paragraph{Full-fledged implementation, pending open-source and launch.}
+We designed and built a full-fledged
+implementation of Town Crier, offering formal security guarantees
+(at the cryptography protocol level).
+The design and implementation of Town Crier is meant not only to be  
+an interesting academic exercise, but we also plan
+to launch Town Crier 
+in a production environment (namely, atop Ethereum)
+in the near future. 
+Our current implementation already offers complete features, and is
+only awaiting  
+the launch of Intel SGX's attestation service  
+to go alive.
+When launched, Town Crier will offer a free service to smart contract users, in the sense
+that the user only needs to pay for the extra (small amount of) gas
+needed to invoke the Town Crier
+service on the blockchain. 
+
+We also plan to open source all of Town Crier's code --- in this way, 
+users will be able to audit Town Crier's SGX enclave implementation
+to verify its trustworthiness.
+
+
+\paragraph{Formal security.}
+Smart contracts  typically execute in an adversarial environment
+where contractual parties are incentivized to 
+deviate from the prescribed protocol, to maximize their financial gains.
+Legal recourse is often too costly or 
+not possible due to the following reasons:
+1) one compelling feature of 
+smart contracts is that they enable 
+micro-contracts or micro-transactions that 
+would not make sense in the presence of high legal fees;
+and 2) contractual parties can be arbitrary, pseudonymous users on the Internet.
+
+Due to the above reasons, formal security is of vital importance
+in the design of Town Crier.
+We offer formal modeling and proofs for Town Crier's security.
+In particular, Town Crier ensures  
+the following guarantees:
+
+\begin{itemize}[leftmargin=5mm]
+\item
+{\it Authenticity}: If a data feed is returned
+to a requester contract, the data feed is guaranteed
+to truly reflect the state of 
+the requested website $Y$ 
+at some point $t \geq T$, where $T$ is a parameter  specified 
+by the requester.
+\item
+{\it Gas neutrality for Town Crier.} 
+Assuming that Town Crier itself is honest, 
+then Town Crier does not lose money   
+even when blockchain users or requester contracts
+can behave arbitrarily maliciously.
+\item
+{\it Bounded expenditure for the requester.} 
+Even when all other users, contracts, and Town Crier itself 
+can be malicious, 
+if an honest requester  
+fails to obtain a valid data feed, its loss is bounded by a tiny 
+amount of gas.
+If a requester obtains a valid data feed, besides paying for the gas
+needed to execute the requester's own program logic, the honest requester's 
+extra expenditure  
+is bounded by a tiny amount of gas.
+\end{itemize}
+
+\elaine{there needs to be threat model somewhere}
+
+\paragraph{Show-case applications and pending launch.}
+
+
+
+
+
+
+
