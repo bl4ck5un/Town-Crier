@@ -1,58 +1,14 @@
  \section{\tc Architecture and Security Model}
  \label{sec:architecture}
 
-\elaine{TODO: clearly define relation between $P_{TC}.pk$ and $pk_{TC}$}
+The \tcs system includes three main components: The \tcontract (\tcont), the \encname (whose code is denoted by \engine), and the \medname (\relay). The \encname and \medname reside on the \tc server, while the \tcontract  resides on the blockchain. We denote a smart contract making use of the \tcs service as a {\em requester} or {\em relying} contract; we denote this contract by $\reqcont$, and its (off-chain) owner as a \emph{client} or \emph{user}. A \emph{data source}, or \emph{source} for short, is an online server (running HTTPS) that provides data which \tc draws on to compose datagrams. 
 
-%In this section, we discuss the general design of \tc. First we present a strawman system design that illustrates some of the technical challenges that arise in the design of \tc. We then present our \tc architecture, describing the front-end (blockchain) and back-end (off-chain) components, and give a high-level view of the security model underpinning our design.
+An architectural schematic of \tc showing its interaction with external entities is given in Figure~\ref{fig:overview}.
 
-\iffalse{
-\subsection{Strawman design}
+\subsection{Basic terminology}
 
-Here we sketch a simple (but, as we show, na\"{i}ve) strawman design that provides authenticated data feeds along with accompanying attestations. 
 
-%To harmonize with terminology introduced shortly in the paper, we refer to the untrusted component of a \tc host as the \medname and the code running in an SGX enclave as the \encname.
 
-The strawman solution is as follows:
-
-\begin{itemize}[leftmargin=5mm]
-\item
-{\bf Monitor and relay.}
-The \tc system
-monitors the blockchain for 
-datagram requests. A contract \reqcont 
-requests a datagram by including a distinguished message in its state (e.g., ``\tc service \#123 request:''), along with
-a specification \dgform of the requested datagram.
-Monitoring happens in the untrusted part of the \tc server, which controls the network stack. Any scraped specification \dgform is passed to a (trusted) enclave process.
-\item
-{\bf Securely fetch feed.}
-Based on the \dgform, the trusted enclave process contacts a data source, establishing an HTTPS channel to a suitable target web page $\weburl$ (which might, e.g., be specified in \dgform). 
-The process verifies that the validity of the certificate for the host serving \weburl.
-It then fetches page contents, parses them, and extracts a datagram \dgm as specified in \dgform.
-
-Finally, the enclave process produces an attestation $\att$ on: its code in the enclave, $\dgform$, a timestamp $T$ on the fetched data, and $\dgm$. 
-It sends $\att$ to $\reqcont$.
-\item
-{\bf Verify}.
-\reqcont verifies the attestation $\att$. If successful, \reqcont consumes \dgm (potentially matching \dgform against an internal queue of datagram requests).
-\end{itemize}
-
-This strawman scheme has a few nice features: conceptual simplicity, no need to maintain a \tc contract on the blockchain, and the ability for \reqcont to check the freshness of \att. It has a few serious drawbacks, however.
-
-\paragraph{Problems with the strawman scheme.}
-Our strawman scheme is unworkable for several reasons. First, verification of \att in the requesting contract \reqcont is not practical. Although SGX provides a 
-trusted clock, the clock does not provide absolute time, but only time relative to a host-specific reference point.
-Thus it is not clear in our strawman scheme how to produce a timestamp $T$ in absolute time. Furthermore, in Ethereum, opcodes for in-contract cryptographic operations are very limited and do not support the proprietary EPID group-signature scheme present in SGX attestations. While achievable in principle, as the Ethereum virtual machine is Turing-complete, verification of attestations would impose prohibitively expensive gas costs on \reqcont. 
-
-To address these problems, our \tc architecture supports only off-chain verification of attestations.
-
-Another problem with our strawman scheme is that it lacks an on-blockchain mechanism to enforce payment for datagrams. It is desirable for \tc to accept payments via a smart contract in order to permit payment in the system's cryptocurrency (e.g., Ether) and to ensure a {\em fair exchange} between payments and datagrams. Even a not-for-profit \tc service might accept small gas payments to cover the cost of datagram transmission. Without enforcement of fair exchange, relying contracts or the \tc service would risk being defrauded by the other party. \tc could attempt to deliver datagrams only to contracts whose code guarantees payment to \tc, but verifying this property even in templated code would be challenging, given the many complicated dependencies in a smart-contract system (e.g., a contract might attempt to make payment but lack gas or ether). 
-
-To address these problems, our \tc architecture uses a smart contract \tcont as a blockchain front end.
-\fi
-
-The \tcs system includes three main components: The \tcontract (\tcont), the \encname (\engine), and the \medname (\relay). The \encname and \medname reside on the \tc server, while the \tcontract  resides on the blockchain. An architectural schematic showing the roles of these components is given in Figure~\ref{fig:overview}.
-
-\vspace{-2mm}
 \begin{figure}[h!]
 \centering
 \begin{tikzpicture}
@@ -60,42 +16,38 @@ The \tcs system includes three main components: The \tcontract (\tcont), the \en
    contract/.style={entity,minimum height=3.5em,text width=5.7em}]
   \node[contract,trusted] (ctc) {TC Contract\\$\tcont$};
   \node[contract,fill=white,below=1.5em of ctc] (cu) {User Contract\\$\reqcont$};
-  \node[tc-entity,fill=none,right=2.5em of ctc] (relay) {Relay};
-  \node[tc-entity,trusted,right=2.5em of cu] (enc) {Enclave};
+  \node[tc-entity,fill=none,right=2.5em of ctc] (relay) {Relay\\$\relay$};
+  \node[tc-entity,trusted,right=2.5em of cu] (enc) {Enclave\\$\enclaveprog$};
 
   \begin{pgfonlayer}{background}
     \node[bg-box,
           blockchain-color,
-          fit={($(ctc.north east)+(0.25em,0.25em)$)($(cu.south west)+(-0.25em,-0.25em)$)},
+          fit={($(ctc.north east)+(0.5em,0.5em)$)($(cu.south west)+(-0.5em,-0.5em)$)},
           label=above:{\bf Blockchain}] (blockchain) {};
     \node[rectangle,
           draw=black,
           tc-server-color,
-          fit={($(relay.north east)+(0.25em,0.25em)$)($(enc.south west)+(-0.25em,-0.25em)$)},
+          inner sep=0,
+          fit={($(relay.north east)+(0.5em,0.5em)$)($(enc.south west)+(-0.5em,-0.5em)$)},
           label=above:{\bf TC Server}] (tc) {};
   \end{pgfonlayer}
 
   \node[right=-0.1em of tc,communication,transform canvas={yshift=2.5em}] (https) {\scriptsize \bf HTTPS};
 %  \node[rectangle,draw=black,trusted,right=2.75em of tc,text width=4.5em,minimum height=9.75em,align=center,label=above:{\bf Data Source}] (data) {\tt lots-o-\\data.com};
-  \node[cloud,draw=black,trusted,cloud puffs=11,cloud puff arc=100,aspect=0.67,inner xsep=-0.15em,right=2.3em of tc,text width=4.15em,align=center] (data) {\tt lots-o-\\data.com};
+  \node[cloud,draw=black,trusted,cloud puffs=11,cloud puff arc=100,aspect=0.6,inner xsep=-0.35em,right=2.5em of tc,text width=4.15em,align=center] (data) {\tt lots-o-\\data.com};
+  \node[minimum height=9.5em,minimum width=4em,label=above:{\bf Data Source}] () at (data) {};
 
   \draw[stealth-stealth,comm-link] ([xshift=-0.75em,yshift=-0.75em]ctc.east) -| ([xshift=-0.75em,yshift=-0.75em]enc.north);
   \draw[stealth-stealth,comm-link] ([yshift=0.75em]ctc.south) -- ([yshift=-0.75em]cu.north);
-  \draw[stealth-stealth,comm-link] ([xshift=0.75em,yshift=-0.75em]enc.north) |- ([xshift=1.25em,yshift=1.75em]data.west);
+  \draw[stealth-stealth,comm-link] ([xshift=0.75em,yshift=-0.75em]enc.north) |- ([xshift=1.1em,yshift=1.75em]data.west);
 \end{tikzpicture}
 \caption{{\bf Basic Town Crier architecture.} Trusted components are depicted in green.}
 \label{fig:overview}
 \end{figure}
 
-%\begin{figure}[h!]
-%\centering
-%\includegraphics[width=\columnwidth]{figures/OverviewFig}
-%\caption{{\bf Basic Town Crier architecture.}}
-%\label{fig:overview}
-%\end{figure}
-\vspace{-2mm}
 
-\paragraph{The \tcontract \tcont.} The \tcontract (denoted by \tcont) is a smart contract that acts as the blockchain front end of the \tc service. It is designed to present a simple API to a relying contract \reqcont for its requests from \xxx[Fan]{should this be a ``to''?}\tc. Very simply, \tcont accepts datagram requests from a requester \reqcont and returns corresponding datagrams from \tc. Additionally, \tcont manages \tc monetary resources, which in Ethereum take the form of ether (money) and gas (``fuel'' for contracts).
+
+\paragraph{The \tcontract \tcont.} The \tcontract (denoted by \tcont) is a smart contract that acts as the blockchain front end of the \tc service. It is designed to present a simple API to a relying contract \reqcont for its requests to \tc. Very simply, \tcont accepts datagram requests from a requester \reqcont and returns corresponding datagrams from \tc. Additionally, \tcont manages \tc monetary resources, which in Ethereum take the form of ether (money) and gas (``fuel'' for contracts).
 
 \paragraph{The \encname.}
 We refer to an instance of the TC code running in an SGX enclave simply as the \encname and denote the code itself by  \engine. In TC, the \encname ingests and fulfills datagram requests from the blockchain. To obtain the data for inclusion in datagrams, it queries external data sources, specifically HTTPS-enabled internet services. It returns a datagram to a requesting contract \reqcont as a digitally signed blockchain message. Under our assumed security model for SGX, apart from its network functions, the \encname runs in complete isolation from an adversarial OS as well as other process on the host. 

@@ -1,6 +1,8 @@
 \section{Future Work}
+\label{sec:future}
 
-We will continue to develop \tc after its initial deployment and expect it to evolve to incorporate a number of additional features, most importantly:
+We will continue to develop \tc after its initial deployment and expect it to evolve to incorporate a number of additional features. These fall into two categories: (1) Expanding the security model to address threats outside the scope of the initial version and (2) Extending the functionality of \tc.
+
 
 \begin{itemize}
 \item{\em Revocation support.} Revocation of two forms can impact the \tc service. First, the certificates of data sources may be revoked. To address this issue, given its ability to establish external HTTPS connections, \tc can make use of Online Certificate Status Protocol (OCSP). Second, should an SGX host be known to have been compromised, Intel has indicated support for an online attestation verification service that will permit detection and blacklisting. Clients may use this service when checking the attestation $\sigatt$, so no modification to \tc is required to support the service.

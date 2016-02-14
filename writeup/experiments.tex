@@ -6,3 +6,21 @@
 \item Gas costs
 \end{itemize}
 
+\subsection{Gas costs}
+
+At the writing of this paper, 1 ether is worth approximately \$0.20, and 1 gas costs $5 \cdot 10^{-8}$ ether.
+This means that 1 million gas costs approximately \$0.01.
+The required gas to execute each of the of the entry points to \tcont is as follows:
+\begin{itemize}
+  \item {\bf Request}.
+    This is the most expensive entry point due to the cost of storing data.
+    This costs approximately 141000 gas plus 22600 more for every 32 bytes of request parameters $\dgform$.
+
+  \item {\bf Deliver}.
+    This costs approximately 30000 gas plus 2600 for every 32 bytes of request parameters
+    plus the cost of executing the callback, which is entirely determined by the requester.
+
+  \item {\bf Cancel}.
+\end{itemize}
+
+
