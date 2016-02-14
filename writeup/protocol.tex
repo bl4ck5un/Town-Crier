@@ -286,10 +286,11 @@ The Town Crier \tcontract \tcont.
 
 {\bf Resume:} On recv (\resumecall, $({\sf id}, {\sf params}))$\\
 \quad Parse ${\sf params}$ as $(\weburl, \dgspec, T) $:\\
-\quad Assert $\clock() \geq T$\\
+\quad Assert $\clock() \geq T.{\sf min}$\\
 \quad Contact $\weburl$ via HTTPS, obtaining ${\sf cert}$ \\
 \quad Verify {\sf cert} is valid for time $\clock()$\\
 \quad Obtain webpage $w$ from $\weburl$ \\
+\quad Assert $\clock() \leq T.{\sf max}$\\
 \quad Parse $w$ to extract \dgm with specification (\dgspec, $T$) \\
 \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, ({\sf id}, {\sf params}, {\sf data}))$\\
 \quad Output $(({\sf id}, {\sf params}, {\sf data}), \sigma)$
@@ -317,7 +318,7 @@ On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 
 {\bf Handle}$({\sf id, params})$: \\
 Parse {\sf params} as $(\_, \_, T)$\\
-Wait until $\clock() \geq T$\\
+Wait until ${\sf clock}() \geq T.{\sf min}$\\
 Send $(\text{\resumecall}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
 On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
 \quad \sgray{\it //send out ~{\bf msg.}~$m_3$}\\
