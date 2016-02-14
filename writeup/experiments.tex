@@ -15,20 +15,20 @@ Here we give values for our implementation for the gas variables we defined in S
     \hline
     $\constgasmax$ & \num[group-separator={,}]{3100000} \\
     \hline
-    $\constgascancel$ & \num[group-separator={,}]{24500} \\
-    \hline
+%    $\constgascancel$ & \num[group-separator={,}]{24500} \\
+%    \hline
 %    $\gascancel$ & \num[group-separator={,}]{38000} \\
 %    \hline
 %    $\gasrequest$ & \num[group-separator={,}]{120000} + \num[group-separator={,}]{2700}/32 bytes \\
 %    \hline
   \end{tabular}
 \end{center}
-Note that $\constgasmax$ cannot currently go above this level because the Ethereum system will refuse to accept transactions where {\tt GASLIMIT} is above approximately 3.1 million.
+Note that $\constgasmax$ is currently limited to the above value because Ethereum will refuse to accept transactions with {\tt GASLIMIT} above 3.1 million.
 
-The cost of executing the {\bf Cancel} entry point (i.e. the value an honest user will assign to $\gascancel$) is about \num[group-separator={,}]{38000} gas.
+%The cost of executing the {\bf Cancel} entry point (i.e. the value an honest user will assign to $\gascancel$) is about \num[group-separator={,}]{38000} gas.
 
-The higher expense is due to the high cost of on-blockchain storage.
-The scaling is due to the fact that the caller must pay gas for including more bytes in a transaction.
-The cost for executing {\bf Request} is approximately \num[group-separator={,}]{120000} gas plus an additional \num[group-separator={,}]{2700} for every 32 bytes of request parameters.
+The cost for executing {\bf Request} is approximately \num[group-separator={,}]{120000} gas plus \num[group-separator={,}]{2700} gas for every 32 bytes of request parameters.
+The high expense is due to the cost of on-blockchain storage
+while the scaling is because the caller must pay gas for including more bytes in a transaction.
 
 
