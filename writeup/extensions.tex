@@ -16,13 +16,13 @@ corresponding entry point.
 
 \paragraph{Notations and assumed execution model.}
 In Figure \elaine{fill}, we
-use the notation $\sbrown{\$ G}$
+use the notation $\gas$
 to denote transaction fees (i.e., gas), 
 where $\$$ is a type annotation 
-and ${\tt G}$ denotes the numerical amount of the  
+and ${\tt g}$ denotes the numerical amount of the  
 gas. Other non-gas, normal currency units 
-are denoted as $\smaroon{\$ F}$ where $\$$ is a type annotation,
-and ${\tt F}$ denotes the amount of the currency. 
+are denoted as $\fee$ where $\$$ is a type annotation,
+and ${\tt f}$ denotes the amount of the currency. 
 For simplicity, our notational system assumes 
 that gas and normal currency adopt
 the same currency unit. 
@@ -56,62 +56,62 @@ state reverted to before the function is invoked.
   \hline
 
   \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont with fees}} \\ [1ex]
-  {\bf Request:} & On recv $({\sf params}, 
-{\sf callback},  
+  {\bf Request:} & On recv $(\dgform, 
+\dgcallback,  
 %{\color{blue} \Time_{\text{timeout}}},
-\sbrown{\$ G_{\text{request}}}$ $+$ 
-$\smaroon{\$F})$ from some $\reqcont$: \\
+\gasrequest$ $+$ 
+$\fee)$ from some $\reqcont$: \\
 %		& Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$\\
-		& ${\sf id}$ := Counter; \ \  Counter := Counter + 1\\
-                 & Record $({\sf id}, {\sf params}, {\sf callback}, \smaroon{\$ F}, {\reqcont})$
+		& $\dgid$ := Counter; \ \  Counter := Counter + 1\\
+                 & Record $(\dgid, \dgform, \dgcallback, \fee, \reqcont)$
 %\elaine{this makes it look like it's sending money}
 \\[-10pt]
 %    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{request}}}}$ {gas consumed}}} }\\[-10pt]
 %    & {\it {\color{gray} {//~all remaining {gas returned to $\reqcont$}}} }\\[-10pt]
-    & {\it {\color{gray} {//~$\smaroon{\$ F}$} held by contract}} \\
-  {\bf Deliver:} & On recv $({\sf id}, {\sf params}, {\sf data}, 
-$\sbrown{\$ {\tt G_{\text{deliver}}}}$ )$ from $\tcadd$: \\
-	& If ${\sf bCanceled}[{\sf id}]$ and not ${\sf bDelivered}[{\sf id}]$:\\
-		& \quad Send $\smaroon{\${F}_{\emptyset}}$ to $\tcadd$  \\
-		& \quad Set ${\sf bDelivered}[{\sf id}]$ and return\\
+    & {\it {\color{gray} {//~$\fee$} held by contract}} \\
+  {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm, 
+\gasdeliver )$ from $\tcadd$: \\
+	& If ${\sf bCanceled}[\dgid]$ and not ${\sf bDelivered}[\dgid]$:\\
+		& \quad Send $\feecancel$ to $\tcadd$  \\
+		& \quad Set ${\sf bDelivered}[\dgid]$ and return\\
 
-                 & Let $({\sf id}, {\sf params'}, {\sf callback}, \smaroon{\$ F}, \_)$ be the first recorded tuple for ${\sf id}$ \sgray{\it //~abort if not found}\\
+                 & Let $(\dgid, \dgform', \dgcallback, \fee, \_)$ be the first recorded tuple for $\dgid$ \sgray{\it //~abort if not found}\\
 % & Assert ${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$ \\
-                 & Assert ${\sf params} = {\sf params}'$\\
-                &   Assert $\smaroon{\$ F} = \sbrown{\$ G_{\text{deliver}}}$\\
-		& Set ${\sf bDelivered}[{\sf id}]$ \ \ \  \sgray{//~(*)}\\
+                 & Assert $\dgform = \dgform'$\\
+                &   Assert $\fee = \gasdeliver$\\
+		& Set ${\sf bDelivered}[\dgid]$ \ \ \  \sgray{//~(*)}\\
                  & Send $\smaroon{\$F}$ to $\tcadd$ \ \ \ \sgray{//~(**)} \\
-                 & Call ${\sf callback}({\sf data})$ \\[2pt] %[-10pt]
+                 & Call $\dgcallback(\dgm)$ \\[2pt] %[-10pt]
 %    & {\it {\color{gray} {//~at most ${{\Delta F_{\textrm{deliver}}}}$ {gas consumed}}} }\\[-10pt]
 %    & {\it {\color{gray} {//~all remaining {gas returned to $\tcadd$}}} }\\
 
-{\bf Cancel:} & On recv $({\sf id}, \sbrown{\$ G_{\text{cancel}}} + \smaroon{\$ {F}_{\emptyset}})$ 
+{\bf Cancel:} & On recv $(\dgid, \gascancel + \feecancel)$ 
 from some $\reqcont$\\
-  & Let $({\sf id}, \_, \_, \smaroon{\$ F}, \reqcont')$ be the first recorded tuple for ${\sf id}$ \ \  \sgray{\it //~abort if not found}\\
+  & Let $(\dgid, \_, \_, \smaroon{\$ F}, \reqcont')$ be the first recorded tuple for $\dgid$ \ \  \sgray{\it //~abort if not found}\\
    & Assert $\reqcont = \reqcont'$\\
-%& Assert ${\sf id}$ has been seen \\
-   & Assert ${\sf bDelivered}[{\sf id}]$ not set \\
-   & Assert ${\sf bCanceled[{\sf id}]}$ not set \\ 
+%& Assert $\dgid$ has been seen \\
+   & Assert ${\sf bDelivered}[\dgid]$ not set \\
+   & Assert ${\sf bCanceled[\dgid]}$ not set \\ 
 %   & Assert ${\sf cur\_time} \geq {\color{blue} \Time_{\text{timeout}}}$\\
-& Assert $\smaroon{\$ {F}_{\emptyset}} \geq \sbrown{\$ \overline{G}_{\emptyset}} $ \\
-  & Set ${\sf bCanceled[{\sf id}]}$\\
-  & Send $\smaroon{\$ {F}}$ to \reqcont\\[-10pt]
-    & {\it {\color{gray} {//~$\smaroon{\$ {F}_{\emptyset}}$} held by contract}} \\
+& Assert $\feecancel \geq \constgascancel $ \\
+  & Set ${\sf bCanceled[\dgid]}$\\
+  & Send $\fee$ to \reqcont\\[-10pt]
+    & {\it {\color{gray} {//~$\feecancel$} held by contract}} \\
   \hline
 \end{tabularx}
 \caption{
 Town Crier contract \tcont reflecting fees.
 An honest requester would set $\smaroon{\$ F}$ to be the gas amount 
-required to execute the {\bf Deliver} entry point including ${\sf callback}$. 
-Town Crier sets $\sbrown{\$ G_{\text{deliver}}} := \smaroon{\$ F}$,
+required to execute the {\bf Deliver} entry point including $\dgcallback$. 
+Town Crier sets $\gasdeliver := \fee$,
 and this amount will be refunded if the datagram delivery 
 succeeds.
 \ethan{As per a previous discussion, this is subtly different from the implementation.
   I think this is fine for the protocol and formal reasoning, but we do need to explain the difference somewhere any why it doesn't matter.}
 If the datagram delivery happens after 
-cancellation, then unspent portions of $\sbrown{\$ G_{\text{deliver}}}$ 
+cancellation, then unspent portions of $\gasdeliver$ 
 gets refunded by Ethereum's underlying gas operational semantics,
-whereas a small amount of gas spent $\sbrown{\$ G_{\emptyset}}$ gets  
+whereas a small amount of gas spent $\constgascancel$ gets  
 refunded through an amount deposited
 by the requester
 necessary for invoking the {\bf Cancel} entry point.
@@ -206,21 +206,21 @@ necessary for invoking the {\bf Cancel} entry point.
 %On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
 %\quad Publish $(\pkTC, \sigatt)$\\[5pt]
 
-{\bf Handle}$(T, {\sf id, params}, \smaroon{\$ F})$: \\
+{\bf Handle}$(T, \dgid, \dgform, \fee)$: \\
 Wait until $\clock() \geq T$\\
-Assert $\sbrown{\$ \overline{G}_{\text{min}}} \leq  \smaroon{\$ F} \leq \sbrown{\$ \overline{G}_{\text{max}}} $ \\
-Send $(\text{\resumecall}, ({\sf id}, {\sf params}, {\tt F} )$ to $\fsgx[\enclaveprog, \relay]$) \\
-On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
+Assert $\constgasmin \leq  \fee \leq \constgasmax $ \\
+Send $(\text{\resumecall}, (\dgid, \dgform, {\tt F} )$ to $\fsgx[\enclaveprog, \relay]$) \\
+On recv $((\dgid, \dgform, \dgm), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
 \quad \sgray{\it //send out ~{\bf msg.}~$m_3$}\\
-\quad {\sf AuthSend} $(({\sf id}, {\sf params}, {\sf data}, \smaroon{\$ F}))$ to \tcont as \tcadd \\[5pt]
+\quad {\sf AuthSend} $((\dgid, \dgform, \dgm, \fee))$ to \tcont as \tcadd \\[5pt]
 
 {\bf  Main}: \\
 %{\bf Request}:
 Loop Forever:\\ 
 \quad Wait until \tcont records a request \\
-\quad \ $({\sf id}, {\sf params}, \_, \_,$ $\sbrown{\$ G_{\text{request}}}$ $+ \smaroon{\$ F})$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
-\quad Parse {\sf params} as $(\weburl, \dgspec, T)$\\
-\quad Fork a process of {\bf Handle}($T, {\sf id, params}, \smaroon{\$ F}$)\\
+\quad \ $(\dgid, \dgform, \_, \_,$ $\gasrequest$ $+ \fee)$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
+\quad Parse \dgform as $(\weburl, \dgspec, T)$\\
+\quad Fork a process of {\bf Handle}($T, \dgid, \dgform, \fee$)\\
 End \\
 \end{tabular}
 \end{boxedminipage}
@@ -245,12 +245,12 @@ Same as Figure \elaine{refer}
 %\quad Call quoting enclave with supp.~data $(\pkTC, T)$
 %\\[5pt]
 
-{\bf Resume:} On recv (\resumecall, $({\sf id}, {\sf params}, {\tt F}))$\\
+{\bf Resume:} On recv (\resumecall, $(\dgid, \dgform, {\tt F}))$\\
 \quad Same as before except the last two statements:\\
-\quad Let $\sbrown{\$ G_{\text{deliver}}} := {\tt F}$\\
-\quad $\sigma := \Sigma.{\sf Sign}({\skTC}, ({\sf id}, {\sf params}, {\sf data},
-\sbrown{\$ G_{\text{deliver}}}))$\\
-\quad Output $(({\sf id}, {\sf params}, {\sf data}, \sbrown{\$ G_{\text{deliver}}}), \sigma)$
+\quad Let $\gasdeliver := {\tt F}$\\
+\quad $\sigma := \Sigma.{\sf Sign}({\skTC}, (\dgid, \dgform, \dgm,
+\gasdeliver))$\\
+\quad Output $((\dgid, \dgform, \dgm, \gasdeliver), \sigma)$
 \end{tabular}
 \end{boxedminipage}
 \caption{
@@ -264,51 +264,51 @@ More specifically, We will use the following notations to denote regular currenc
 \begin{table}[!h]
 \begin{tabular}{m{0.13\columnwidth}m{0.8\columnwidth}}
 \hline
-$\smaroon{{\$ F}}$ & currency a requester deposits to refund the gas Town Crier
+$\fee$ & currency a requester deposits to refund the gas Town Crier
 must advance to deliver a datagram\\
 \hline
-$\smaroon{{\$ F}_{\emptyset}}$ & currency deposited upon cancellation 
+$\feecancel$ & currency deposited upon cancellation 
 to refund the gas Town Crier  
 expends should a datagram be delivered after cancellation\\
 \hline
-$\sbrown{{\$ G}_{\text{deliver}}}$
-$\sbrown{{\$ G}_{\text{request}}}$
-$\sbrown{{\$ G}_{\text{cancel}}}$ & 
+$\gasdeliver$
+$\gasrequest$
+$\gascancel$ & 
 gas attached when invoking the {\bf Deliver}, {\bf Request}, {\bf Cancel} entries points
 respectively \\
 \hline
-$\sbrown{{\$ \overline{G}}_{\emptyset}}$
+$\constgascancel$
 & gas needed to execute {\bf Deliver} should it happen after cancellation\\
 \hline
-$\sbrown{{\$ \overline{G}}_{\text{max}}}$
+$\constgasmax$
 & amount of gas deposited in Town Crier's account $\tcadd$ 
   \ethan{Ethereum actually imposes a gas limit for a transaction that is currently a bit over 3.1 million.
-  Do we want to mention that here? That's how I actually picked $\sbrown{\$ \overline{G}_\text{max}}$ when I wrote the code.} \\
+  Do we want to mention that here? That's how I actually picked $\constgasmax$ when I wrote the code.} \\
 \hline
-$\sbrown{{\$ \overline{G}}_{\text{min}}}$
-& gas needed for the {\bf Deliver} entry point when ${\sf callback}$ is empty \\
+$\constgasmin$
+& gas needed for the {\bf Deliver} entry point when $\dgcallback$ is empty \\
 \hline
 \end{tabular}
 \end{table}
 
-Note that $\sbrown{{\$ \overline{G}}_{\emptyset}}$, 
-$\sbrown{{\$ \overline{G}}_{\text{max}}}$, and $\sbrown{{\$ \overline{G}}_{\text{min}}}$
+Note that $\constgascancel$, 
+$\constgasmax$, and $\constgasmin$
 are fixed system parameters;
 whereas 
-$\smaroon{\$ F}$
+$\fee$
 and 
-$\smaroon{{\$ F}_{\emptyset}}$
+$\feecancel$
 are chosen 
 by the requester (and can be malicious values if the requester is malicious).
 Similarly, 
-$\sbrown{{\$ G}_{\text{deliver}}}$,
-$\sbrown{{\$ G}_{\text{request}}}$,
-and $\sbrown{{\$ G}_{\text{cancel}}}$
+$\gasdeliver$,
+$\gasrequest$,
+and $\gascancel$
 denote gas
 chosen by Town Crier, and can be malicious values if the Town Crier Relay is malicious.  
 \ethan{I don't think this is true.
   I believe the gas is specified as part of the transaction, which means the enclave picks the number.
-  The only thing a malicious relay can do is make it so $\tcadd$ doesn't have $\sbrown{\$ \overline{G}_{\text{max}}}$ to front.}
+  The only thing a malicious relay can do is make it so $\tcadd$ doesn't have $\constgasmax$ to front.}
 Later in Section \elaine{refer}, 
 we will prove that our protocol ensures that Town Crier does not lose gas,
 and that the 
@@ -324,7 +324,7 @@ the fee-free protocol described in Section \elaine{refer}.
 \item
 {\it Initialization.}
 To initialize the system, we assume that Town Crier 
-deposits a fixed amount $\sbrown{\$ G_{\text{max}}}$ 
+deposits a fixed amount $\constgasmax$ 
 into the wallet account $\pksgx$.
 \item
 {\it Town Crier blockchain contract.}
@@ -333,45 +333,44 @@ Town Crier blockchain contract reflecting fees.
 Since Town Crier's account 
 $\pksgx$ has to invoke the {\bf Deliver} entry point, it 
 advances a gas payment 
-$\sbrown{\$ G_{\text{deliver}}} := \smaroon{\$ F}$.
+$\gasdeliver := \fee$.
 If the deliver operation is successful, 
 this amount will be entirely refunded through money deposited in the contract 
 by the requester.
 Otherwise, should the deliver operation happen after the request has already
 been cancelled, 
-a small amount of gas equal to $\sbrown{\$ \overline{G}_\emptyset}$ 
-is consumed from $\sbrown{\$ G_{\text{deliver}}}$
+a small amount of gas equal to $\constgascancel$ 
+is consumed from $\gasdeliver$
 which will be entirely refunded 
-to $\tcadd$ (since the requester must deposit $\smaroon{\$ F_{\emptyset}} \geq \sbrown{\$ \overline{G}_{\emptyset}}$) for cancellation;
+to $\tcadd$ (since the requester must deposit $\feecancel \geq \constgascancel$) for cancellation;
 %(denoted by $\smaroon{\overline{F}_{\text{deliver}}}$); 
 and further all gas remaining  
-from $\sbrown{\$ G_{\text{deliver}}}$ will automatically 
+from $\gasdeliver$ will automatically 
 be refunded to $\tcadd$ due to Ethereum's operational semantics for gas. 
 \item
 {\it Town Crier Relay.}
 The Town Crier relay monitors
 the blockchain, and whenever
 the blockchain contract \tcont
-receives a new request $({\sf params}, {\sf callback}, 
-\sbrown{\$ G_{\text{request}}}+\smaroon{\$ F})$,
+receives a new request $(\dgform, \dgcallback, 
+\gasrequest+\fee)$,
 it asserts that 
 \[
-\sbrown{\$ \overline{G}_{\text{min}}}
-\leq \smaroon{\$ F} \leq \sbrown{\$ \overline{G}_{\text{max}}}
+\constgasmin
+\leq \fee \leq \constgasmax
 \]
-where $\sbrown{\$ \overline{G}_{\text{max}}}$ is the total amount of money
+where $\constgasmax$ is the total amount of money
 in Town Crier's account $\pksgx$, 
-and $\sbrown{\$ \overline{G}_{\text{min}}}$
+and $\constgasmin$
 is the cost of executing the {\bf Deliver} entry point 
 when the user-defined callback is empty.
 The check 
-$\smaroon{\$ F} \leq \sbrown{\$ \overline{G}_{\text{max}}}$
+$\fee \leq \constgasmax$
 ensures that Town Crier's enclave  
 has sufficient funds to advance
 for the {\bf Deliver} phase.
 The check 
-$\sbrown{\$ \overline{G}_{\text{min}}}
-\leq \smaroon{\$ F}$
+$\constgasmin \leq \fee$
 ensures that 
 the {\bf Deliver} entry point should 
 have sufficient gas to execute everything excluding the user-defined
@@ -382,10 +381,7 @@ where Town Crier gets refunded for the gas is always reached.
 
 
 Finally, the Town Crier relay passes
-the tuple $({\tt resume}, 
-({\sf id}, {\sf params}, 
-{\tt F}
-))$
+the tuple $({\tt resume}, (\dgid, \dgform, {\tt f}))$
 as input to the enclave.
 
 
@@ -393,44 +389,42 @@ as input to the enclave.
 {\it Town Crier enclave.}
 We make the following small modification to the fee-free protocol
 described in Figure \elaine{refer}.
-Instead of signing the tuple $({\sf id}, {\sf params}, {\sf data})$
+Instead of signing the tuple $(\dgid, \dgform, \dgm)$
 at the end of the enclave's execution, the enclave now signs 
-the tuple $({\sf id}, {\sf params}, {\sf data}, 
-\sbrown{\$ G_{\text{deliver}}})$
+the tuple $(\dgid, \dgform, \dgm, \gasdeliver)$
 instead, where signing 
-$\sbrown{\$ G_{\text{deliver}}}$ authorizes a
-gas amount of $\sbrown{\$ G_{\text{deliver}}}$ to be advanced
+$\gasdeliver$ authorizes a
+gas amount of $\gasdeliver$ to be advanced
 to the contract (which will be refunded later).
 \item
 {\it Requester.}
 The honest requester would behave the same way as in Figure \elaine{refer},
 except for additionally putting 
-in $\sbrown{\$ G_{\text{request}}} + \smaroon{\$ F}$ 
+in $\gasrequest + \fee$ 
 amount with each request, 
 where the honest 
 requester would set  
-$\sbrown{\$ G_{\text{request}}}$
+$\gasrequest$
 to the gas cost of executing the  
 {\bf Request} entry point,
-and set $\smaroon{\$ F}$ to be the cost 
+and set $\fee$ to be the cost 
 of executing the {\bf Deliver} entry point (including
-the cost of executing the user-defined ${\sf callback}$ function).
+the cost of executing the user-defined $\dgcallback$ function).
 
 If the honest request $\reqcont$ did not receive
-a callback for some ${\sf id}$,  
+a callback for some $\dgid$,  
 %before the specified deadline ${\color{blue} \Time_{\text{timeout}}}$,
 it can invoke {\bf Cancel}
-with (${\sf id}$, $\sbrown{\$ G_{\text{cancel}} + \smaroon{\$ {F}_\emptyset}}$),
-where $\sbrown{\$ G_{\text{cancel}}}$ is the amount of gas needed 
-to execute the {\bf Cancel} entry point, and $\smaroon{\$ {F}_{\emptyset}} := 
-\sbrown{\$ \overline{G}_{\emptyset}}$
+with ($\dgid$, $\gascancel + \feecancel$),
+where $\gascancel$ is the amount of gas needed 
+to execute the {\bf Cancel} entry point, and $\feecancel := \constgascancel$
 is a small amount of money paid to perform cancellation, 
 such that Town Crier will be refunded for the small amount of gas expended,
 should it deliver a datagram after a cancellation happened.
 
-\ethan{It sounds like you're expecting an honest \reqcont to pass in $({\sf id}, \sbrown{\$ G_{\text{cancel}}} + \smaroon{\$ {F}_\emptyset})$ and get $\smaroon{\$F}$ back out.
-I don't have a problem with the model, but the implementation has \reqcont pass in $({\sf id}, \sbrown{\$ G_\text{cancel}})$ and get $\smaroon{\$F} - \sbrown{\$\overline{G}_{\emptyset}}$ back out.
-This actually eliminates the need for $\smaroon{\$F_\emptyset}$ entirely and works if $\sbrown{\$\overline{G}_\emptyset} \leq \sbrown{\$\overline{G}_\text{min}}$.}
+\ethan{It sounds like you're expecting an honest \reqcont to pass in $(\dgid, \gascancel + \feecancel)$ and get $\fee$ back out.
+I don't have a problem with the model, but the implementation has \reqcont pass in $(\dgid, \gascancel)$ and get $\fee - \constgascancel$ back out.
+This actually eliminates the need for $\feecancel$ entirely and works if $\constgascancel \leq \constgasmin$.}
 \end{itemize}
 
 
