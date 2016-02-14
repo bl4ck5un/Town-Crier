@@ -1,4 +1,4 @@
-\subsection{Alt. Intro Text}
+\subsection{Technical Contributions}
 
 \elaine{there needs to be threat model somewhere}
 
@@ -118,6 +118,22 @@ of Kosba et al.~\cite{hawk}
 and Ethereum's instantiation  
 turns out to be important in the design of Town Crier's
 gas handling and its formal reasoning.  \elaine{actually write this.}
+
+
+\paragraph{Majority voting.}
+Town Crier effectively minimizes the 
+Trusted Computing Base (TCB) needed to ensure
+the authenticity of the data feed.
+The remaining TCB include the Intel SGX 
+instance employed as well as the source website. 
+To hedge against the risk of a single SGX instance
+or website compromised, Town Crier further supports 
+various modes of majority voting,  
+including voting amongst multiple 
+websites offering the same piece of data (e.g., stock price),  
+as well as voting among multiple SGX instances possibly
+hosted in different geographical locations.
+
 
 
 \paragraph{Show-case applications and pending launch.}
