@@ -103,7 +103,7 @@ If it is too small, Ethereum will abort the transaction and there will not be a 
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
   \hline
 
-  \multicolumn{2}{|c|}{{\bf Town Crier blockchain contract \tcont with fees}} \\[1ex]
+  \multicolumn{2}{|c|}{{\bf \tcs blockchain contract \tcont with fees}} \\[1ex]
   {\bf Request:} & On recv $({\sf params}, {\sf callback}, \fee, \gasrequest)$ from some $\reqcont$: \\
                  & Assert $\constgasmin \leq \fee \leq \constgasmax$ \\
                  & $\dgid := \text{Counter}$; \ \ $\text{Counter} := \text{Counter} + 1$ \\
@@ -193,7 +193,7 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
 \caption{{\bf Blockchain Money Flow within Town Crier.}
 Red arrows denote flow of money and brown arrows denote gas provided for function execution.
 The thickness of the line indicates the quantity of the resource.
-The $\gascallback$ is thin because that value is limited by {\bf Deliver}.
+The $\gascallback$ is thin because that value is limited by {\bf Deliver} to $\fee - \constgasmin$.
 }
 \label{fig:money-flow}
 \end{figure}
@@ -208,11 +208,12 @@ We now describe how this can be realized by modifying the fee-free protocol desc
   \item {\it Initialization.}
     We assume that Town Crier deposits at least $\constgasmax$ into the wallet $\tcadd$.
 
-  \item {\it Town Crier blockchain contract.}
-    Figure \ref{tbl:tc-contract2} describes the Town Crier blockchain contract reflecting fees.
-    Since $\tcadd$ must invoke {\bf Deliver}, \tc will pays the gast cost.
+  \item {\it \tcs blockchain contract.}
+    Figure \ref{tbl:tc-contract2} describes the \tcs blockchain contract reflecting fees.
+    Since $\tcadd$ must invoke {\bf Deliver}, \tc will pays the gas cost.
     It sets the {\tt GASLIMIT} $\gasdeliver := \constgasmax$.
-    We prove in Section \ethan{ref gas-neutrality} that this is always enough gas and it will not spend more than is refunded.
+    To ensure that the gas spent will not exceed the reimbursement available ($\fee$),
+    \tcont sets the {\tt GASLIMIT} $\gascallback$ for the sub-call to $\dgcallback$ to $\fee - \constgasmin$.
 
   \item {\it Town Crier Relay.}
     The relay behavior does not change with the presence of fees.
