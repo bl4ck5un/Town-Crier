@@ -25,7 +25,14 @@ A smart contract in Ethereum is represented as what is called a \emph{contract a
 
 A smart contract accepts messages as inputs to any of a number of designated functions. These entry points are determined by the contract creator and represent the API of the contract. Once created, a contract executes autonomously; it persists indefinitely, with even its creator unable to modify its code. (There's one exception: a special opcode \texttt{suicide} will wipe code from a contract account.) As a simple abstraction, then, a smart contract may be viewed as an {\em autonomous agent} on the blockchain. \ethan{I'm concerned that this makes it sound like contracts can be self-activating. Someone needs to call a function explicitly for them to do anything.} 
 
-To prevent denial-of-service attacks, inadvertent infinite looping within contracts, and generally to control resource expenditure by the network, Ethereum implements uses a resource called \emph{gas} to power contracts. Opcodes in smart contracts have globally specified, fixed gas costs, as do the use of a contract's persistent storage and the data in transactions and messages. Transactions and messages include a parameter (\texttt{GASLIMIT}) specifying a bound on amount of gas expended by the computations they initiate. Gas is carried along the execution path induced when a transaction or message is passed to a contract, and depleted as instructions are executed or reads or writes are made to persistent storage. Should a function fail to complete due to a shortfall in gas, it is aborted and any state changes induced by the partial computation are rolled back to their pre-call state; previous computations along the call path, however, are retained. 
+To prevent Denial-of-Service (DoS) attacks, inadvertent infinite looping within contracts, and generally to control resource expenditure by the network,
+Ethereum implements uses a resource called \emph{gas} to power contracts.
+Every operation, including sending data to a transaction, executing computation, and storing data, has a fixed gas cost.
+Transactions and messages include a parameter (\texttt{GASLIMIT}) specifying a bound on the amount of gas expended by the computations they initiate.
+When a function call is made, the child function expends gas from the same source as the parent function.
+Should a function fail to complete due to a shortfall in gas,
+it is aborted and any state changes induced by the partial computation are rolled back to their pre-call state;
+previous computations along the call path, however, are retained.
 
 Along with the \texttt{GASLIMIT} parameter, a \texttt{GASPRICE} parameter is included that specifies the maximum amount in ether that the transaction is willing to pay per unit of gas. The transaction thus succeeds only if the initiating account has a balance of \texttt{GASLIMIT} $\times$ \texttt{GASPRICE} ether and \texttt{GASPRICE} is high enough to be accepted by the system (miner). 
 
