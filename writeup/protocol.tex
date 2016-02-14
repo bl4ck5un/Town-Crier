@@ -321,8 +321,8 @@ Parse {\sf params} as $(\_, \_, T)$\\
 Wait until ${\sf clock}() \geq T.{\sf min}$\\
 Send $(\text{\resumecall}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
 On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
-\quad \sgray{\it //send out ~{\bf msg.}~$m_3$}\\
-\quad  {\sf AuthSend} $({\sf id}, {\sf params}, {\sf data})$ to \tcont as \tcadd \\[5pt]
+\quad  {\sf AuthSend} $({\sf id}, {\sf params}, {\sf data})$ to \tcont as \tcadd \\
+\quad \sgray{\it //send out ~{\bf msg.}~$m_3$}\\[5pt]
 {\bf  Main}: \\
 %{\bf Request}:
 Loop Forever:\\ 
