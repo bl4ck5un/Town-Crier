@@ -143,7 +143,7 @@ $\enclaveprog$ has entry points {\bf Initialize} and \\ {\bf Resume}\\[5pt]
 On receive ``initialize'' from $\relay$: \\
 \quad Let ${\sf outp} := \enclaveprog.{\bf Initalize}()$  \\
 \quad $\sigatt := \sigsgx.{\sf Sign}(\skM, (\enclaveprog, {\sf outp}))$ \\[-1pt]
-\qquad \qquad {\it //~models EPID sig.}\\
+\qquad \qquad \sgray{\it //~models EPID sig.}\\
 \quad Output  $({\sf outp}, \sigatt)$\\[5pt]
 
 {\bf Resume:}\\
@@ -182,7 +182,7 @@ In summary, then, we may assume in our protocol specifications that {\em all rel
 Assert $\enclaveprog$ is the expected enclave code\\
 Assert $\sigsgx.{\sf Verify}(\pkM, \sigatt, (\enclaveprog, \pkTC))$ \\
 Assert \tcont is correct and parametrized w/ \pkTC\\
-{\it //~now okay to rely on \tcont}
+\sgray{\it //~now okay to rely on \tcont}
 \end{tabular}
 \end{boxedminipage}
 \caption{A client checks an SGX attestation on the enclave's code $\enclaveprog$ and public key $\pkTC$; the client
@@ -291,7 +291,7 @@ The Town Crier \tcontract \tcont.
 \quad Verify {\sf cert} is valid for time $\clock()$\\
 \quad Obtain webpage $w$ from $\weburl$ \\
 \quad Assert $\clock() \leq T.{\sf max}$\\
-\quad Parse $w$ to extract \dgm with specification (\dgspec, $T$) \\
+\quad Parse $w$ to extract \dgm with specification \dgspec \\
 \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, ({\sf id}, {\sf params}, {\sf data}))$\\
 \quad Output $(({\sf id}, {\sf params}, {\sf data}), \sigma)$
 \end{tabular}
