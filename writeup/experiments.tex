@@ -10,17 +10,28 @@
 
 At the writing of this paper, 1 ether is worth approximately \$0.20, and 1 gas costs $5 \cdot 10^{-8}$ ether.
 This means that 1 million gas costs approximately \$0.01.
-The required gas to execute each of the of the entry points to \tcont is as follows:
-\begin{itemize}
-  \item {\bf Request}.
-    This is the most expensive entry point due to the cost of storing data.
-    This costs approximately 141000 gas plus 22600 more for every 32 bytes of request parameters $\dgform$.
+Here we give values for our implementation for the gas variables we defined in Section \ethan{ref gas constant definitions} (all units are in gas).
+\begin{center}
+  \begin{tabular}{lr}
+    \hline
+    $\constgasmin$ & \num[group-separator={,}]{35000} \\
+    \hline
+    $\constgasmax$ & \num[group-separator={,}]{3100000} \\
+    \hline
+    $\constgascancel$ & \num[group-separator={,}]{24500} \\
+    \hline
+%    $\gascancel$ & \num[group-separator={,}]{38000} \\
+%    \hline
+%    $\gasrequest$ & \num[group-separator={,}]{120000} + \num[group-separator={,}]{2700}/32 bytes \\
+%    \hline
+  \end{tabular}
+\end{center}
+Note that $\constgasmax$ cannot currently go above this level because the Ethereum system will refuse to accept transactions where {\tt GASLIMIT} is above approximately 3.1 million.
 
-  \item {\bf Deliver}.
-    This costs approximately 30000 gas plus 2600 for every 32 bytes of request parameters
-    plus the cost of executing the callback, which is entirely determined by the requester.
+The cost of executing the {\bf Cancel} entry point (i.e. the value an honest user will assign to $\gascancel$) is about \num[group-separator={,}]{38000} gas.
 
-  \item {\bf Cancel}.
-\end{itemize}
+The higher expense is due to the high cost of on-blockchain storage.
+The scaling is due to the fact that the caller must pay gas for including more bytes in a transaction.
+The cost for executing {\bf Request} is approximately \num[group-separator={,}]{120000} gas plus an additional \num[group-separator={,}]{2700} for every 32 bytes of request parameters.
 
 

@@ -6,7 +6,7 @@ contract FlightInsurance {
     event PaymentInfo(address payee, uint payeeBalance, uint gasRemaining, uint64 requestId, uint delay, uint amount);
     event FlightCancel(address canceller, address requester, bool success);
 
-    uint constant TC_FEE = (30000 + (2600 * 32) + 4400) * 5 * 10**10;
+    uint constant TC_FEE = (35000 + 4400) * 5 * 10**10;
     uint constant FEE = 5 * 10**18;
     uint constant PAYOUT = 10**20;
     uint32 constant PAYOUT_DELAY = 30;

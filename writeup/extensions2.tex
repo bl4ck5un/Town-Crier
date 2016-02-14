@@ -11,8 +11,8 @@ The fee is proportional to the computation required to execute the specified tra
 
 
 \paragraph{Notations and assumed execution model.}
-In Figure \ref{tbl:tc-contract2}, we use the notation $\gas$ to denote transaction fees (i.e. gas) where \$ is a type annotation of {\sf G} denotes the numerical amount of gas.
-Non-gas currency is denoted $\fee$ where \$ is again a type annotation and {\tt F} denotes the amount.
+In Figure \ref{tbl:tc-contract2}, we use the notation $\gas$ to denote transaction fees (i.e. gas) where \$ is a type annotation of {\sf g} denotes the numerical amount of gas.
+Non-gas currency is denoted $\fee$ where \$ is again a type annotation and {\tt f} denotes the amount.
 For simplicity, our notation assumes that gas and normal currency adopt the same units.
 
 We assume the blockchain contract adopts the following execution model which closely resembles that of Ethereum.
@@ -113,7 +113,7 @@ This model is also described graphically in Figure \ref{fig:gas-model}.
 \end{tabularx}
 \caption{
 Town Crier contract \tcont reflecting fees.
-An honest requester would set $\fee$ to be the gas amount
+An honest requester sets $\fee$ to be the gas amount
 required to execute the {\bf Deliver} entry point including $\dgcallback$.
 Town Crier sets $\gasdeliver := \constgasmax$, but limits gas provided for $\dgcallback$ ensure that no more than $\fee$ is spent.
 Ethereum automatically refunds any unspent gas, so Town Crier will not lose money.
@@ -202,11 +202,11 @@ We now describe how this can be realized by modifying the fee-free protocol desc
     the enclave now signs the tuple $(\dgid, \dgform, \dgm, \gasdeliver)$ where $\gasdeliver = \constgasmax$.
 
   \item {\it Requester.}
-    An honest requester would behave the same was as in Figure \ethan{refer} except for additionally sending $\gasrequest$ gas and $\fee$ money with each request.
-    It would set $\gasrequest$ to be at least the cost of executing the {\bf Request} entry point
+    An honest requester behaves the same was as in Figure \ethan{refer} except for sending $\gasrequest$ gas and $\fee$ money with each request.
+    It sets $\gasrequest$ to be at least the cost of executing the {\bf Request} entry point
     and $\fee$ to be the cost of executing the {\bf Deliver} entry point (including executing the user-defined $\dgcallback$ function).
 
-    If the honest requester did not receive a callback for some $\dgid$ (or simply no longer needs the response),
+    If the honest requester does not receive a callback for some $\dgid$ (or simply no longer needs the response),
     it can invoke {\bf Cancel} with $(\dgid, \gascancel)$ where $\gascancel$ is the gas cost of executing the {\bf Cancel} entry point.
     In this case the requester will be refunded $\fee - \constgascancel$ with $\constgascancel$ withheld as a cancellation fee
     to reimburse Town Crier for the small amount of gas expected should it try to deliver a datagram after the cancellation.
@@ -225,20 +225,24 @@ Town Crier's wallet account $\tcadd$ will have at least $\constgasmax$ remaining
 
 \begin{proof}[(sketch)]
 Honest relay means $\resumecall(\dgid, \dgform)$ will always be legitimate and $\dgform = \dgform'$ in {\bf Deliver}.
-Also, $\gasdeliver = \constgasmax \geq \fee$, and we will never respond to the same request twice (these are specified in the relay protocol), so we will never abort.
+While $\fee$ is specified by a potentially malicious user, \tcont rejects the request unless $\constgasmin \leq \fee \leq \constgasmax$.
+This means $\gasdeliver = \constgasmax \geq \fee$.
+We also will never respond to the same request twice (these are specified in the enclave protocol), so we will never abort.
 
 If ${\sf bIsCanceled}[\dgid]$, then there is at least $\constgascancel$ left in \tcont from {\bf Cancel} which is returned to $\tcadd$,
 and, by design, that is enough to cover gas costs when a request is canceled.
 
-Otherwise we limit the gas provided to $\dgcallback$ to $\fee - \constgasmin$, and $\constgasmin$ is set so that it is at least the cost of {\bf Deliver} not including $\dgcallback$.
+Otherwise we limit the gas provided to $\dgcallback$ to $\fee - \constgasmin$ (which must be positive because of the check in {\bf Request}),
+and $\constgasmin$ is set so that it is at least the cost of {\bf Deliver} not including $\dgcallback$.
 This means that the total gas used is no greater than $\constgasmin + (\fee - \constgasmin) = \fee$, which is exactly what $\tcadd$ is sent for reimbursement.
+We also don't run out of gas because $\fee \leq \constgasmax = \gasdeliver$, so we canot use more gas than we provide.
 \end{proof}
 
 
 \begin{theorem}[Bounded loss for honest requester]
-For any request $(\dgform, \dgcallback, \_)$ submitted by an honest user $\reqcont$, one of the following will occur:
+For any request $(\dgform, \dgcallback, \fee)$ submitted by an honest user $\reqcont$, one of the following will occur:
 \begin{itemize}
-  \item $\dgcallback$ will be successfully invoked with a valid datagram matching the requested parameters.
+  \item $\dgcallback$ will be successfully invoked with a valid datagram matching the requested parameters and the requester will spend at most $\gasrequest + \gascancel + \fee$ money (where $\fee \leq \constgasmax$).
 
   \item $\reqcont$ invokes {\bf Cancel} and loses at most $\gasrequest + \gascancel + \constgascancel$ money.
 \end{itemize}
@@ -248,6 +252,9 @@ For any request $(\dgform, \dgcallback, \_)$ submitted by an honest user $\reqco
 If the requester is honest, then the value submitted as $\fee$ will be enough to cover delivery including $\dgcallback$.
 If this is the case and {\bf Deliver} is called while $\tcadd$ has $\gasdeliver$ available (i.e. has not had a malicious relay burn money)
 then the requester gets its datagram.
+Moreover, the honest requester calls {\bf Request} once providing $\gasrequest + \fee$ to that call, and {\bf Cancel} at most once, providing $\gascancel$.
+If {\bf Cancel} is called, the requester will not receive any money back because the datagram has been delivered.
+However, this still bounds expenditures at $\gasrequest + \gascancel + \fee$.
 
 If the requester doesn't get its datagram but provided a sufficient value for $\fee$, the request cannot have been marked as delivered.
 As long as the request remains undelivered, the requester can call {\bf Cancel}.
