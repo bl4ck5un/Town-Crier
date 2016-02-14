@@ -45,19 +45,20 @@ In this section we describe a precise model for payment and give a protocol that
 
 \subsection{TC Contract}
 
-To implement the TC Contract we implemented the version of \tcont including fees and cancellation as described in Section~\ethan{ref}.
+To implement the \tcont we implemented the version including fees and cancellation as described in Section~\ethan{ref}.
 The contract is implemented in Solidity, a high-level language with JavaScript-like syntax which compiles to Ethereum Virtual Machine bytecode---the language that can be executed as a contract on the blockchain.
 
 In order to handle the most general type of requests---including encrypted parameters---the \tcont implementation requires two parameter fields.
-The first specifies what type of request is being made (e.g. stock price or flight status).
+The first is a single byte specifying what type of request is being made (e.g. stock price or flight status).
 The second is a byte array of user-specified size.
 This byte array will be parsed and interpreted inside the enclave when it fulfills the request, but is treated as an opaque byte array by \tcont.
 
-As we discuss in Section~\ethan{ref authenticity}, TC must pass the entire byte array back to {\bf Deliver} to ensure that the request has not been modified.
-Unfortunately, this verification (as well as Ethereum's cost on each byte in a transaction) means the size of this byte array greatly affects the cost of calling the {\bf Deliver} entry point.
-In fact, when the byte array contains 400 bytes of data, this extra cost outweighs all other costs of {\bf Deliver} combined (not including \dgcallback).
-In order to achieve our desired guarantees of cost while not demanding excessive fees for requests which supply only a few bytes of data,
-our implementation scales the minimum fee with the length of the user provided byte array.
+As we discuss in Section \ethan{ref authenticity}, \tcont must store the parameters and \tc must pass them back in {\bf Deliver} to ensure that the request has not been modified.
+In order to reduce costs and prevent extremely expensive verification for requests with a long parameter array, we instead store and verify a hash of the parameters.
+In particular, we store the $\shathree$ hash of the concatenation of the request type byte and the byte array.
+The relay scrapes the actual request bytes and passes them into the enclave.
+When calling {\bf Deliver}, \enclaveprog computes the same hash and passes that back for validation.
+This allows us to continue validating long requests at low cost.
 
 
 
