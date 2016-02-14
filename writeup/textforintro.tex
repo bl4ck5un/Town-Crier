@@ -1,5 +1,7 @@
 \subsection{Alt. Intro Text}
 
+\elaine{there needs to be threat model somewhere}
+
 \elaine{Ari, you asked me to write some alternative text for intro, here it is.}
 
 We present the design of Town Crier, an authenticated data feed service for smart contracts. 
@@ -69,8 +71,8 @@ and 2) contractual parties can be arbitrary, pseudonymous users on the Internet.
 Due to the above reasons, formal security is of vital importance
 in the design of Town Crier.
 We offer formal modeling and proofs for Town Crier's security.
-In particular, Town Crier ensures  
-the following guarantees:
+In particular, Town Crier formally defines and ensures  
+the following types of guarantees:
 
 \begin{itemize}[leftmargin=5mm]
 \item
@@ -103,8 +105,15 @@ To obtain the above formal guarantees,
 we adopt the formal modeling 
 of blockchains proposed by Kosba et al.~\cite{hawk},
 as well as a formal abstraction for SGX proposed by Shi et al. \elaine{cite}.
+We reveal interesting challenges and technical subtleties
+that arise in the process of formal reasoning.
+For example, in Section \elaine{refer}, we show how 
+a subtle gap between the formal blockchain
+of Kosba et al.~\cite{hawk}
+and Ethereum's instantiation  
+turns out to be important in the design of Town Crier's
+gas handling and its formal reasoning.  \elaine{actually write this.}
 
-\elaine{there needs to be threat model somewhere}
 
 \paragraph{Show-case applications and pending launch.}
 
