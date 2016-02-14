@@ -12,12 +12,12 @@ An architectural schematic of \tc showing its interaction with external entities
 \begin{figure}[h!]
 \centering
 \begin{tikzpicture}
-  [tc-entity/.style={entity,minimum height=3.5em,text width=3.5em},
+  [tc-entity/.style={entity,minimum height=3.5em,text width=3.75em},
    contract/.style={entity,minimum height=3.5em,text width=5.7em}]
-  \node[contract,trusted] (ctc) {TC Contract\\$\tcont$};
+  \node[contract,trusted] (ctc) {\tcontract\\$\tcont$};
   \node[contract,fill=white,below=1.5em of ctc] (cu) {User Contract\\$\reqcont$};
-  \node[tc-entity,fill=none,right=2.5em of ctc] (relay) {Relay\\$\relay$};
-  \node[tc-entity,trusted,right=2.5em of cu] (enc) {Enclave\\$\enclaveprog$};
+  \node[tc-entity,fill=none,right=2.5em of ctc] (relay) {\medname\\$\relay$};
+  \node[tc-entity,trusted,right=2.25em of cu] (enc) {\encname\\{\small $(\enclaveprog)$}};
 
   \begin{pgfonlayer}{background}
     \node[bg-box,
