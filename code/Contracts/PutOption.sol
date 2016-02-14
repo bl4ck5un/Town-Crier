@@ -6,7 +6,7 @@ contract PutOption {
 
     uint constant TC_FEE = (30000 + (2600 * 2) + 18000) * 5 * 10**10;
 
-    bytes4 constant TC_CALLBACK_FID = 0x3d622256; // bytes4(sha3("pay(uint64,bytes32)"));
+    bytes4 constant TC_CALLBACK_FID = 0x212e78ad; // bytes4(sha3("settle(uint64,bytes32)"));
 
     address ISSUER;
 
@@ -68,7 +68,7 @@ contract PutOption {
         TC_CONTRACT.request.value(TC_FEE)(1, this, TC_CALLBACK_FID, tcData);
     }
 
-    function pay(uint64 requestId, bytes32 priceBytes) public {
+    function settle(uint64 requestId, bytes32 priceBytes) public {
         if (msg.sender != address(TC_CONTRACT)) throw;
 
         uint price = uint(priceBytes);
