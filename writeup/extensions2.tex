@@ -38,40 +38,71 @@ This model is also described graphically in Figure \ref{fig:gas-model}.
 
 \end{itemize}
 
+More specifically, we will use the following notations to denote regular currency units and gas.
 
-\begin{figure}
+\begin{table}[!h]
 \centering
-\begin{tikzpicture}
-  [local-entity/.style={entity,minimum height=3.5em,text width=8em}]
-  \node[local-entity,trusted] (ctc) {};
-  \node[local-entity,draw=none,anchor=north] (ctc-inner) at (ctc.north) {TC Contract\\$\tcont$};
-  \node[local-entity,trusted,right=6em of ctc,text width=5em] (enc) {Enclave};
-  \node[local-entity,fill=white,below=3.5em of ctc] (cu) {User Contract\\$\reqcont$};
-  \node[local-entity,fill=red!30,below=2.5em of cu] (user) {User};
+\begin{tabular}{m{0.13\columnwidth}m{0.8\columnwidth}}
+  \hline
+  $\fee$
+  & currency a requester deposits to refund Town Crier's gas advance to deliver a datagram \\
+  \hline
+  $\gasdeliver$ $\gasrequest$ $\gascancel$
+  & gas attached when invoking the {\bf Deliver}, {\bf Request}, {\bf Cancel} entries points respectively \\
+  \hline
+  $\constgasmin$
+  & gas needed for the {\bf Deliver} entry point when $\dgcallback$ is empty \\
+  \hline
+  $\constgasmax$
+  & the maximum amount of gas Town Crier can supply when invoking {\bf Deliver.} \\
+  \hline
+  $\constgascancel$
+  & gas needed to execute {\bf Deliver} should it happen after cancellation \\
+  \hline
+\end{tabular}
+\end{table}
 
-  \path[-stealth,color=red,ultra thick] (user) edge [transform canvas={xshift=-3.5em}] ([yshift=0.75em]cu.south);
-  \path[color=red,thick] (cu.south) edge [right,transform canvas={xshift=-3.5em}] node [text=black,text width=4em,align=center,yshift=1.75em] {\footnotesize Insufficient\\[-0.25em]gas aborts\\[-0.2em]with no\\[-0.5em]effect} (ctc.south);
-  \node[draw=red,cross out,minimum size=1ex,thick] () at ([xshift=-3.5em]ctc.south) {};
+Note that $\constgasmin$, $\constgasmax$, and $\constgascancel$ are system constants,
+$\fee$ is chosen by the requester (and may be malicious if the requester is dishonest),
+and $\gasdeliver$ is chosen by the TC \encname when calling {\bf Deliver}.
+$\gasrequest$ and $\gascancel$ are set by the requester upon creating or cancelling a request,
+but we need not worry about them being malicious because if they are too small
+Ethereum will abort the transaction and it will be as if the entry point was never called.
 
-  \draw[-stealth,color=green!50!black,line width=0.8ex] ([yshift=-0.25em]enc.west) -- ([xshift=-1.2em,yshift=-0.25em]ctc.east);
-  \draw[-stealth,color=green!50!black,line width=0.5ex] ([yshift=-0.25em]enc.west) -| ([xshift=3em,yshift=-0.9em]cu.north);
-  \draw[color=green!50!black,thick,dashed]  ([xshift=3.75em]cu.north) |- ([yshift=-1.25em]ctc.east);
-  \path[-stealth,color=green!50!black,ultra thick,dashed]  ([yshift=-1.25em]ctc.east) edge [below] node [text=black,text width=4em,align=center,xshift=-0.4em] {\footnotesize Extra gas\\[-0.4em]refunded} ([xshift=0.8em,yshift=-1.25em]enc.west);
 
-  \begin{pgfonlayer}{background}
-    \node[bg-box,
-          blockchain-color,
-          fit={($(ctc.north west)+(-0.5em,0.5em)$)($(cu.south east)+(0.5em,-0.5em)$)},
-          label=above:{\bf Blockchain}] () {};
-    \node[bg-box,
-          tc-server-color,
-          fit={($(enc.north east)+(0.5em,0.5em)$)($(enc.south west)+(-0.5em,-0.5em)$)},
-          label=above:{\bf TC Server}] () {};
-  \end{pgfonlayer}
-\end{tikzpicture}
-\caption{{\bf Gas Payment in Ethereum}}
-\label{fig:gas-model}
-\end{figure}
+%\begin{figure}
+%\centering
+%\begin{tikzpicture}
+%  [local-entity/.style={entity,minimum height=3.5em,text width=8em}]
+%  \node[local-entity,trusted] (ctc) {};
+%  \node[local-entity,draw=none,anchor=north] (ctc-inner) at (ctc.north) {TC Contract\\$\tcont$};
+%  \node[local-entity,trusted,right=6em of ctc,text width=5em] (enc) {Enclave};
+%  \node[local-entity,fill=white,below=3.5em of ctc] (cu) {User Contract\\$\reqcont$};
+%  \node[local-entity,fill=red!30,below=2.5em of cu] (user) {User};
+%
+%  \path[-stealth,color=red,ultra thick] (user) edge [transform canvas={xshift=-3.5em}] ([yshift=0.75em]cu.south);
+%  \path[color=red,thick] (cu.south) edge [right,transform canvas={xshift=-3.5em}] node [text=black,text width=4em,align=center,yshift=1.75em] {\footnotesize Insufficient\\[-0.25em]gas aborts\\[-0.2em]with no\\[-0.5em]effect} (ctc.south);
+%  \node[draw=red,cross out,minimum size=1ex,thick] () at ([xshift=-3.5em]ctc.south) {};
+%
+%  \draw[-stealth,color=green!50!black,line width=0.8ex] ([yshift=-0.25em]enc.west) -- ([xshift=-1.2em,yshift=-0.25em]ctc.east);
+%  \draw[-stealth,color=green!50!black,line width=0.5ex] ([yshift=-0.25em]enc.west) -| ([xshift=3em,yshift=-0.9em]cu.north);
+%  \draw[color=green!50!black,thick,dashed]  ([xshift=3.75em]cu.north) |- ([yshift=-1.25em]ctc.east);
+%  \path[-stealth,color=green!50!black,ultra thick,dashed]  ([yshift=-1.25em]ctc.east) edge [below] node [text=black,text width=4em,align=center,xshift=-0.4em] {\footnotesize Extra gas\\[-0.4em]refunded} ([xshift=0.8em,yshift=-1.25em]enc.west);
+%
+%  \begin{pgfonlayer}{background}
+%    \node[bg-box,
+%          blockchain-color,
+%          fit={($(ctc.north west)+(-0.5em,0.5em)$)($(cu.south east)+(0.5em,-0.5em)$)},
+%          label=above:{\bf Blockchain}] () {};
+%    \node[bg-box,
+%          tc-server-color,
+%          fit={($(enc.north east)+(0.5em,0.5em)$)($(enc.south west)+(-0.5em,-0.5em)$)},
+%          label=above:{\bf TC Server}] () {};
+%  \end{pgfonlayer}
+%\end{tikzpicture}
+%\caption{{\bf Gas Payment in Ethereum}}
+%\label{fig:gas-model}
+%\end{figure}
 
 
 
@@ -173,11 +204,6 @@ Solid brown arrows show gas provided to function calls and the dashed brown arro
 
 
 
-
-\ethan{I'm not copying Elaine's text about defining values here because I don't have significant changes.}
-
-
-
 \paragraph{Town Crier protocol with transaction fees.}
 Our basic Town Crier system implements a policy where the requester pays for all gas needed and Town Crier effectively pays nothing.
 We now describe how this can be realized by modifying the fee-free protocol described in Section \ethan{refer}.
@@ -211,6 +237,9 @@ We now describe how this can be realized by modifying the fee-free protocol desc
     In this case the requester will be refunded $\fee - \constgascancel$ with $\constgascancel$ withheld as a cancellation fee
     to reimburse Town Crier for the small amount of gas expected should it try to deliver a datagram after the cancellation.
 \end{itemize}
+
+We will prove in Section \ethan{refer} that this new protocol retains the correctness and authenticity guarantees from the payment-free protocol
+while ensuring that Town Crier cannot lose gas when the \medname is honest and an honest requester's loss is limited even against a malicious Town Crier.
 
 
 
