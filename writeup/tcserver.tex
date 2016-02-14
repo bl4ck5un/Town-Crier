@@ -1,30 +1,20 @@
 % programming model
 % ecall and ocall
 
-\subsubsection{Overview of SGX-enabled applications}
 
 Using the recently released Intel SGX SDK~\cite{sgxsdk}, we implmented the \tc
-Server as an SGX-enabled application in C++. The programming model employed by
-the SDK is that the major body of an SGX-enabled application remains an
-ordinary user-space application, while an relatively small piece of security-sensitive code
-is teased out and runs in an isolated environment, namely in an SGX enclave.
+Server as an SGX-enabled application in C++. In the programming model supported by
+the SDK, the body of an SGX-enabled application runs as an 
+ordinary user-space application, while a relatively small piece of security-sensitive code runs in the isolated environment of the SGX enclave.
 
-The enclave part of an SGX-enabled application can be
-viewed as a shared library exposing APIs, referred to as \emph{ecalls} by~\cite{sgxsdk},
-to be invoked by the untrusted application. However, unlike a share library,  
-once ecalls are invoked, the control is transferred to the 
-enclave code until it finishes or some special event happens~\cite{sgxmanual}.
-As we assume SGX provides a perfect isolation, the untrusted application can not
+The enclave portion of an SGX-enabled application may be
+viewed as a shared library exposing an API in the form of \emph{ecalls}
+to be invoked by the untrusted application. Invocation of an ecall, however, transfers control to the 
+enclave; the enclave code runs until it either terminates and explicitly releases control or some special event happens~\cite{sgxmanual}.
+Again, as we assume SGX provides ideal isolation, the untrusted application cannot
 observe or alter the execution of ecalls.
 
-In addition, the SGX SDK implements a mechanism called \emph{ocall} with which enclave
-programs can invoke functions defined outside of the enclave. In essence,
-calling an ocall causes the enclave program first to exit the enclave. Once the
-ocall is fulfilled, execution is transferred back to the calling enclave. 
-Although it is permissible to make arbitrary ocalls, special caution must be 
-taken as ocalls are fulfilled in the untrusted world.
-The ocall interface between the \encname and the \medname is carefully designed
-in the security model of \tc.
+Enclave programs can make \emph{ocalls} to invoke functions defined outside of the enclave. An ocall triggers an exit from the enclave. Control is returned to the calling enclave code once the ocall completes. As ocalls execute outside the enclave, they must be treated by enclave code as untrusted. We emphasize that in \tc, only network functionality runs outside the enclave.
 
 \begin{figure}[h]
     \centering
@@ -33,66 +23,54 @@ in the security model of \tc.
     \label{fig:tcserver_impl}
 \end{figure}
 
-In the context of TC Server, Fig~\ref{fig:engineprotocol} is implmented as the
-enclave part, which encompasses a TLS layer, a (partial) HTTP layer, a set of
-algorithms that extract information from web pages, and a request handler that
-can parse and generate Ethereum transactions signed with \skTC. The untrusted
-part of \tc Server implements Fig~\ref{fig:relayprotocol}, which roughly
-encompasses three parts: an access point to various OS services, an interface
-with Ethereum blockchain and an interface with clients.
-Fig~\ref{fig:tcserver_impl} summarizes these components and their interaction.
+For \tc, we recall that Fig.~\ref{fig:engineprotocol} shows the enclave code $\engine$ and \ref{fig:relayprotocol} shows the \medname, the untrusted code in \tc. We now give details on the services they encompass and their interaction, summarized in Fig.~\ref{fig:tcserver_impl}, 
 
+\paragraph{\bf The \encname.} There are three components to \engine: An HTTPS service, Web Scrapers, which interact with data sources, and a Request Handler, which services datagram requests. 
 
-\subsubsection{The \medname}
+\vspace{2mm}
 
-\paragraph{Client Interface.} As described in Section \ref{sec:architecture},
-a client starts using \tc by requesting and verifying an attestation.  The
-Client Interface part of \medname is dedicated for doing this.  The Client Interface 
-listens for requests over network and calls into the Attestation Generation logic in the
-enclave (by making an ecall) to get an attestation, along with an Unix timestamp
-signed by \pkTC, and forward both to the requesting client. The EPID group
-signature can verified by accessing Intel Attestation Service (IAS)~\cite{}. 
+\noindent\emph{HTTPS Service.} We recall that the enclave does not have direct access to host network functionality. In \tc, we therefore partition HTTPS into a trusted layer, consisting of HTTP and TLS code, and an untrusted layer that provides low-layer network service in the form of TCP.  This arrangement allows the enclave to establish a secure channel with a web server: The enclave itself performs the TLS handshake with a target server and performs all cryptographic operations internally. The untrusted process acts as a network interface only. (Thus, if malicious, it can do no more harm than a generic network adversary.)  We ported a TLS library (mbedTLS) into the SGX environment as well as HTTP functionality minimized to meet the web-scraping requirements of \tc while keeping the TCB small. To verify certificates presented by remote servers, we hardcoded a collection of root CA certificates into the enclave code; in the first version of \tc, the root CAs are identical to those in Chrome.\ari{This seems reasonable to me, although there may be a better approach.}
 
-\paragraph{OS Services.} The \encname relies on \medname to access networking and 
-time services provided by the OS. This is implemented as ocalls.
-Since the \encname is potentially malicious, the ocall interface is carefully
-designed.
+\vspace{2mm}
 
-\paragraph{Blockchain Interface.} The \medname is responsible to watch the
-blockchain for incoming requests and insert transactions to the blockchain to
-deliver datagrams. To interact with the Ethereum blockchain, we incorporated an
-official Ethereum client (geth~\cite{geth} in particular) into the \medname.
-Geth client can be configured to setup a JSON RPC server through which the
-Monitor can communicate with the blockchain indirectly by sending RPC calls to
-geth. For example, to insert a signed transaction, the Monitor can simply call
-\texttt{eth\_sendRawTransaction} with the bytes array of the serialized
-transaction, and geth do the rest of the work. Looping an Ethereum
-client into \medname saves us the cost of reinventing the wheel. 
-Note that the signing of transactions is done within the enclave, as the key
-\pkTC only accessible to the enclave program.
-
-\subsubsection{The \encname}
-
-\paragraph{HTTPS in the \encname.} 
-The \encname needs the TLS layer to talk with remote HTTPS web servers.  We
-ported a TLS library (mbedTLS) into the SGX environment so it can be used within
-the enclave.  To verify the certificates presented by remote servers, a
-collection of trusted root CAs are manually selected \xxx[Fan]{what's the best
-practice? Maybe we can choose the same root CAs as Chrome or Firefox?} and their
-certificates are hardcoded in the enclave program. A certificate is verified
-only if it is finally issued by one of the trusted root CA.
-
-\paragraph{Web Scrapers.} Extracting useful information from a given website is
+\noindent\emph{Web Scrapers.} Extracting useful information from a given website is
 implemented in a ad-hoc manner. For the purpose of demonstration, we implemented
 three web scrapers as examples. \xxx[Fan]{Elaborate}.
 
-\paragraph{Request Handler} Request handler has two jobs: 1) to parse the
-request which is serialized in the format specified by Ethereum ABI, decrypt it if encrypted under
-\pkTC, and dispatch it to the right scraper; 2) to generate a Ethereum
-transaction, sign it with \pkTC and serialize it properly so that it can be
-inserted to the blockchain. In essence, we implemented the Ethereum ABI and RLP which
-specifies the serialization of arguments and transactions respectively.
-In addition, the signature algorithm used in signing Ethereum transactions is
-ECDSA on the curve Secp256k1. SHA3 is used to generate message digests.
+\vspace{2mm}
+
+\noindent\emph{Request Handler.} The Request Handler has two jobs: (1) Ingesting a datagram request by parsing 
+it in the serialization format specified by Ethereum, decrypting it (if it's a private-datagram request), and dispatching its parameters to the right scraper; and (2) Returning the response to the request by generating an Ethereum
+transaction containing the requested datagram (and parameters), serializing it as a blockchain transaction, and signing it using \skTC. We implemented the Ethereum ABI and RLP, which respectively
+specify the serialization of arguments and transactions in Ethereum. 
 
 \paragraph{Attestation Generation} \xxx[Fan]{Elaborate.}
+
+
+\paragraph{The \medname.} The \medname encompasses three components: A Client Interface, which serves attestations and timestamps, OS services, including networking and time services, and a Blockchain Interface, as follows:
+
+\vspace{2mm}
+
+\noindent\emph{Client Interface.} As described in Section \ref{sec:architecture},
+a client starts using \tc by requesting and verifying an attestation \att and checking the correctness of the clock in the \tc enclave using a fresh timestamp.
+The Client Interface caches \att upon initialization of \engine. When it receives a web request from a client for an attestation,
+it issues an ecall to the enclave to obtain a
+Unix timestamp signed under \pkTC, which it returns to the client along with \att. The client can check the timestamp using any trustworthy time service and verify \att 
+using the Intel Attestation Service (IAS)~\cite{}. 
+
+\vspace{2mm}
+
+\noindent\emph{OS services.} The \encname relies on the \medname to access networking and 
+time services \ari{What time services?} provided by the OS and implemented as ocalls.
+
+\vspace{2mm}
+
+\noindent\emph{Blockchain Interface.} The \medname's Blockchain Interface monitors the
+blockchain for incoming requests and places transactions on the blockchain in order to
+deliver datagrams. The Blockchain Interface incorporates an 
+official Ethereum client, Geth~\cite{geth}. This Geth client is configured with a JSON RPC server through which the
+\medname can communicate with the blockchain indirectly via RPC calls. For example, to insert a signed transaction, the \medname can simply call
+\texttt{eth\_sendRawTransaction} with the byte array of the serialized
+transaction. We emphasize that as the enclave holds \skTC, transactions must be signed within the enclave.
+
+
