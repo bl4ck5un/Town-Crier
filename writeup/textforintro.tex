@@ -148,13 +148,19 @@ hosted in different geographical locations.
 \newcommand{\Ttimeout}{\ensuremath{{\sf T}_{\text{timeout}}}\xspace}
 
 \paragraph{Technical subtleties.}
-One tricky detail for the gas-aware version of the Town Crier 
+We point out an interesting technical subtlety
+that arises due to the subtle mismatch
+between the formal blockchain model of 
+Kosba et al.~\cite{hawk}
+and 
+the real-world instantiation of blockchains such as Ethereum (and Bitcoin). 
+
+Recall that one tricky detail for the gas-aware version of the Town Crier 
 contract arises from the need to deal with  
 with {\bf Deliver}
 arriving after {\bf Cancel}.
-
-Indeed, in the formal blockchain model
-proposed by Kosba et al.~\cite{hawk}, we can get away with this issue 
+In the formal blockchain model
+proposed by Kosba et al.~\cite{hawk}, we can easily get away with this issue 
 by introducing 
 a timeout parameter
 $\Ttimeout$ that the requester attaches to each datagram request. 
