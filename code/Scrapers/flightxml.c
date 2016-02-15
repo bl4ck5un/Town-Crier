@@ -36,6 +36,7 @@ int parse_response(char* resp, int* buf, char* date, char* departure) {
     char actual[11];
     int len, tactual, tscheduled, hours, minutes, seconds, diff;
 
+
     tstamp[10] = 0;
     t = utime(date, departure);
     snprintf(tstamp, 11, "%d", t);
@@ -45,8 +46,10 @@ int parse_response(char* resp, int* buf, char* date, char* departure) {
     len = strlen(resp);
     while(strncmp(temp, tempbuff, 31) != 0) {
         temp+=1;
-        if (temp == resp + len - 32)
+        if (temp == resp + len - 32) {
+            printf("did not find flight\n");
             return -1;
+        }
     }
     sd = temp;
 
@@ -67,8 +70,10 @@ int parse_response(char* resp, int* buf, char* date, char* departure) {
     actual[len] = 0;
     /*printf("%s\n", actual);*/
     tactual = atoi(actual);
-    if (tactual == 0)
+    if (tactual == 0) {
+        /*printf("Flight still enroute");*/
         return -1;
+    }
 
     temp = sd;
     for (i=0; i < 2; i++) {
@@ -140,17 +145,17 @@ int main(int argc, char* argv[]) {
     int rc, delay;
     printf("USAGE: get_flight_delay(YYYYMMDD, HHmm, flight#, return_variable)\n");
     printf("\tdate/time in Zulu/UTC, flight in ICAO\n");
-    rc = get_flight_delay("20160129", "1450", "DAL900", &delay);
+    rc = get_flight_delay("20160214", "1455", "DAL900", &delay);
     if (rc < 0)
         printf("Could not find flight info for DAL900 at specified departure time\n");
     else
-        printf("Delta Airlines flight 900 is %d minutes late on 26 January 2016 (should be 2 minutes late)\n", delay);
+        printf("Delta Airlines flight 900 is %d minutes late on 14 February 2016 (should be 25 minutes late)\n", delay);
 
 
-    rc = get_flight_delay("20160204", "0310", "SWA450", &delay);
-    printf("%d, %d (should be 11)\n", rc, delay);
-    rc = get_flight_delay("20160202", "0650", "UAL1183", &delay);
-    printf("%d, %d (should be -12)\n", rc, delay);
+    rc = get_flight_delay("20160212", "2200", "SWA450", &delay);
+    printf("%d, %d (should be -10)\n", rc, delay);
+    rc = get_flight_delay("20160215", "0655", "UAL1183", &delay);
+    printf("%d, %d (should be -5)\n", rc, delay);
 
     return 0;
 }
