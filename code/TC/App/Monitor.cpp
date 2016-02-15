@@ -52,7 +52,7 @@ int monitor_loop(uint8_t* nonce)
 //    for(int i = 0; i < 100; i++)
     remote_att_init();
     time2 = __rdtsc();
-    LL_CRITICAL("remote_att %llu", (time2-time1));
+    LL_CRITICAL("remote_att overall %llu", (time2-time1));
 
     int ret = 0;
     char req[64] = {0};
