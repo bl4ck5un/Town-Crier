@@ -141,6 +141,57 @@ hosted in different geographical locations.
 
 
 
+\section{Text to Insert for Gas Section} 
+
+
+
+\newcommand{\Ttimeout}{\ensuremath{{\sf T}_{\text{timeout}}}\xspace}
+
+\paragraph{Technical subtleties.}
+One tricky detail for the gas-aware version of the Town Crier 
+contract arises from the need to deal with  
+with {\bf Deliver}
+arriving after {\bf Cancel}.
+
+Indeed, in the formal blockchain model
+proposed by Kosba et al.~\cite{hawk}, we can get away with this issue 
+by introducing 
+a timeout parameter
+$\Ttimeout$ that the requester attaches to each datagram request. 
+If the datagram fails to arrive before $\Ttimeout$, 
+the requester can call {\bf Cancel}
+any time after 
+$\Ttimeout + \Delta T$.  
+On the surface, this 
+seems to ensure that no {\bf Deliver} will be invoked
+after {\bf Cancel} assuming Town Crier is honest. 
+
+However, we did not adopt this approach due to a technical subtlety
+that arises in this context, namely, the fact that  
+the Ethereum blockchain does not  
+perfectly match the formal blockchain 
+model specified by Kosba et al~\cite{hawk}.
+Specifically, the blockchain model by Kosba et al.
+assumes that every message (i.e., transaction) will be delivered 
+to the blockchain 
+by the end of each epoch and that the adversary cannot drop
+any message.
+In practice, however, 
+Ethereum adopts a dictatorship 
+strategy in the mining protocol, and the winning miner 
+for an epoch can censor transactions for this specific epoch, and thus
+effectively this transaction will be deferred to later epochs.
+Further, in case there are more incoming transactions than the block size
+capacity of Ethereum, a backlog of transactions will build up, 
+and similarly in this case there is also no guarantee of 
+ordering of backlogged transactions.
+Due to these considerations, we defensively design our Town Crier contract
+such that gas neutrality is attained for Town Crier,
+even if the {\bf Deliver} transaction arrives after {\bf Cancel}.
+
+%\elaine{in extension, we can support an abstraction
+%where the datagram must be delivered by some timeout}
+
 
 
 
