@@ -31,22 +31,18 @@ We formalize these properties in Section \ethan{refer} and prove that our protoc
 We intentionally ignore the case where both the requester and the relay are dishonest.
 If the requester is dishonest we need to not protect their request, and if the relay is dishonest we cannot protect the TC system.
 
-In this section we describe a precise model for payment and give a protocol that incorporates these costs.
 
+\subsection{Handling Fees in Ethereum}
+\label{sec:gas-protocol}
 
-
-\ethan{I think we should rearrange things below this.
-  My suggestion is to put our model of the gas system next, followed by the protocol that includes fees and gas payments.
-  I can pull the current subsection on the contract implementation into that as a subsubsection with some extra notes.
-  Then we can go into the server implementation and then have Section 6 start discussing more formal guarantees and providing proofs (or pointers to proofs in an appendix).}
-
+\input{gas-protocol}
 
 
 
 \subsection{TC Contract}
 
-To implement the \tcont we implemented the version including fees and cancellation as described in Section~\ethan{ref}.
-The contract is implemented in Solidity, a high-level language with JavaScript-like syntax which compiles to Ethereum Virtual Machine bytecode---the language that can be executed as a contract on the blockchain.
+We implemente \tcont with fees as described in Section~\ref{sec:gas-protocol} in Solidity,
+a high-level language with JavaScript-like syntax which compiles to Ethereum Virtual Machine bytecode---the language Ethereum contracts use.
 
 In order to handle the most general type of requests---including encrypted parameters---the \tcont implementation requires two parameter fields.
 The first is a single byte specifying what type of request is being made (e.g. stock price or flight status).
@@ -54,9 +50,9 @@ The second is a byte array of user-specified size.
 This byte array will be parsed and interpreted inside the enclave when it fulfills the request, but is treated as an opaque byte array by \tcont.
 
 As we discuss in Section \ethan{ref authenticity}, \tcont must store the parameters and \tc must pass them back in {\bf Deliver} to ensure that the request has not been modified.
-In order to reduce costs and prevent extremely expensive verification for requests with a long parameter array, we instead store and verify a hash of the parameters.
+In order to reduce the verification costs for requests with long parameter arrays, we instead store and verify a hash of the parameters.
 In particular, we store the SHA3-256 hash of the concatenation of the request type byte and the byte array.
-The relay scrapes the actual request bytes and passes them into the enclave.
+The relay scrapes the actual parameters and passes them into the enclave.
 When calling {\bf Deliver}, \enclaveprog computes the same hash and passes that back for validation.
 This allows us to continue validating long requests at low cost.
 
