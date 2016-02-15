@@ -228,8 +228,7 @@ We now describe how this can be realized by modifying the fee-free protocol desc
     and $\fee$ to be the cost of executing the {\bf Deliver} entry point (including executing the user-defined $\dgcallback$ function).
 \end{itemize}
 
-These changes do not modify the properties on which our authenticity proof in Section \ethan{ref authenticity} relied, so that result still holds.
-We will prove in Section \ethan{refer} that this new protocol ensures that \tc cannot lose money when the \medname is honest
-and that an honest requester's loss is limited even against a malicious \tc.
+We prove in Section \ethan{refer} that this protocol ensures authenticity of the datagram, that \tc cannot lose money when the \medname is honest,
+and that an honest requester's loss is bounded even against a malicious \tc.
 
 
