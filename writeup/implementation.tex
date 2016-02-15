@@ -25,7 +25,7 @@ While designing the implementation, we consider three cases:
 
   \item {\it Honest requester and malicious relay.}
     The requester cannot receive invalid data that looks valid (which we is also guaranteed by our payment-free protocol)
-    and the requester should be able to recover as much money as possible.
+    and the requester must lose a bounded amount of money.
 \end{itemize}
 We formalize these properties in Section \ethan{refer} and prove that our protocol provides these guarantees.
 We intentionally ignore the case where both the requester and the relay are dishonest.
