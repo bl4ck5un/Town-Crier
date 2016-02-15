@@ -1,7 +1,7 @@
 
 
 
-As we described in Section \ethan{ref gas-desc}, Ethereum employs \emph{gas}, a fee mechanism, to mitigate DoS attacks.
+As we described in Section~\ref{sec:contracts-and-gas}, Ethereum employs \emph{gas}, a fee mechanism, to mitigate DoS attacks.
 In order to sustainably operate \tc on Ethereum, we develop a novel two-currency resource management system which allows
 \tc to make gas payments up front while preventing a malicious requester from exhausting \tc's resources.
 
@@ -26,7 +26,7 @@ In order to sustainably operate \tc on Ethereum, we develop a novel two-currency
 %
 %\end{itemize}
 
-We take Ethereum's gas model ask described in Section \ethan{ref gas-desc}.
+We take Ethereum's gas model ask described in Section~\ref{sec:contracts-and-gas}.
 We use the notation $\gas$ to denote gas and $\fee$ to denote non-gas currency.
 In both cases \$ is a type annotation and the letter denotes the numerical amount.
 For simplicity, our notation assumes that gas and normal currency adopt the same units (allowing us to perform arithmetic without conversion).
@@ -228,7 +228,7 @@ We now describe how this can be realized by modifying the fee-free protocol desc
     and $\fee$ to be the cost of executing the {\bf Deliver} entry point (including executing the user-defined $\dgcallback$ function).
 \end{itemize}
 
-We prove in Section \ethan{refer} that this protocol ensures authenticity of the datagram, that \tc cannot lose money when the \medname is honest,
+We prove in Section~\ref{sec:analysis} that this protocol ensures authenticity of the datagram, that \tc cannot lose money when the \medname is honest,
 and that an honest requester's loss is bounded even against a malicious \tc.
 
 
