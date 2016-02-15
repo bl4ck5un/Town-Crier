@@ -68,7 +68,7 @@ int parse_response(unsigned char* resp, char* buf) {
     return len;
 }
 
-float get_closing_price(int month, int day, int year, char* symbol) {
+double get_closing_price(int month, int day, int year, char* symbol) {
     int ret;
     unsigned char buf[SSL_MAX_CONTENT_LEN]={0};
     char query[128] = {0};

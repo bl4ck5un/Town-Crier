@@ -69,7 +69,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>Intel C++ Compiler XE 13.0</PlatformToolset>
+    <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Prerelease|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -192,16 +192,17 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <AdditionalIncludeDirectories>$(SGXSDKInstallPath)\include;$(SolutionDir)\Include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\jsonrpc-cpp-0.5\include;$(SolutionDir)\Common;$(SolutionDir)\win32-deps\include;$(SGXSDKInstallPath)\include;$(SolutionDir)\mbedtls-2.2.1\include;$(SGXSDKInstallPath)\include\epid;$(SolutionDir)\App;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_MBCS;%(PreprocessorDefinitions);</PreprocessorDefinitions>
-      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SGXSDKInstallPath)\bin\$(Platform)\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sgx_uae_service.lib;sgx_urts.lib;jsoncpp.lib;libcurl_imp.lib;sqlite3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\$(Configuration);$(SolutionDir)\win32-deps\lib;$(SGXSDKInstallPath)\bin\$(Platform)\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
       <IgnoreSpecificDefaultLibraries>libcmt.lib</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -269,7 +270,6 @@
   <ItemGroup>
     <ClCompile Include="..\Common\Debug.c" />
     <ClCompile Include="..\Common\Log.c" />
-    <ClCompile Include="..\jsonrpc-cpp-0.5\examples\tcp-client.cpp" />
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_client.cpp" />
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_handler.cpp" />
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_httpclient.cpp" />
@@ -303,7 +303,7 @@
     <ClCompile Include="App.cpp" />
     <ClCompile Include="Monitor.cpp" />
     <ClCompile Include="printf.c" />
-    <ClCompile Include="RemoteAtt.c" />
+    <ClCompile Include="RemoteAtt.cpp" />
     <ClCompile Include="EthRPC.cpp" />
     <ClCompile Include="sys_helper.cpp" />
     <ClCompile Include="net_u.c" />

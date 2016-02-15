@@ -11,11 +11,13 @@
 #include "App.h"
 #include <Debug.h>
 #include "Utils.h"
+#include <Constants.h>
+#include "RemoteAtt.h"
+#include "Constants.h"
 
 #define RPC_HOSTNAME    "localhost"
 #define RPC_PORT        8200
 
-//#define SIMULATE
 
 inline uint64_t swap_uint64(uint64_t X) {
     uint64_t x = X;
@@ -33,19 +35,71 @@ inline uint32_t swap_uint32( uint32_t num )
                     ((num<<24)&0xff000000); // byte 0 to byte 3
 }
 
+long g_frequency = 2500000000;
 
 int monitor_loop(uint8_t* nonce)
 {
-#ifdef SIMULATE
-    int ret;
+#ifdef E2E_BENCHMARK
+    // prepare
+    long long time1, time2;
+    time1 = __rdtsc();
+    LL_CRITICAL("Starting..");
+    time2 = __rdtsc();
+    LL_CRITICAL("print overhead: %llu", time2-time1);
+
+    // benchmark remote att
+    time1 = __rdtsc();
+//    for(int i = 0; i < 100; i++)
+    remote_att_init();
+    time2 = __rdtsc();
+    LL_CRITICAL("remote_att %llu", (time2-time1));
+
+    int ret = 0;
     char req[64] = {0};
     req[0] = 'G';
     req[1] = 'O';
     req[2] = 'O';
     req[3] = 'G';
     req[4] = 'L';
-    char tx[1024];
-    handle_request(global_eid, &ret, 1, 1, req, sizeof req, tx, sizeof tx);
+    uint8_t raw_tx[TX_BUF_SIZE];
+    int raw_tx_len = sizeof raw_tx;
+
+    // benchmark request handling
+    time1 = __rdtsc();
+    LL_CRITICAL("Entering handle_request: %llu", time1);
+    handle_request(global_eid, &ret, nonce, 0xFF, 0x01, (uint8_t*) req, sizeof req, raw_tx, &raw_tx_len);
+    time2 = __rdtsc();
+    LL_CRITICAL("overall: %llu", time2-time1);
+    
+    if (ret != 0)
+    {
+        LL_CRITICAL("handle_request returned %d", ret);
+        return -1;
+    }
+    char* tx_str = (char*) malloc(raw_tx_len * 2 + 1);
+    char2hex(raw_tx, raw_tx_len, tx_str);
+
+#ifdef VERBOSE
+    dump_buf("tx body: ", raw_tx, raw_tx_len);
+    printf("tx_str: %s\n", tx_str);
+#endif
+#ifdef E2E_BENCHMARK
+    ret = -1;
+#else
+    ret = send_transaction(tx_str);
+#endif
+    if (ret != 0)
+    {
+        fprintf(stderr, "send_raw_tx returned %d\n", ret);
+        return -1;       
+    }
+    else
+    {
+        dump_buf("new nonce being dumped: ", nonce, 32);
+        // add accounting info
+        dump_nonce(nonce);
+    }
+//    free(tx_str);
     return ret;
 #else
     unsigned next_wanted = 1;

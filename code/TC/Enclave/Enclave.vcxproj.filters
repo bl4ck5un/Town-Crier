@@ -41,9 +41,6 @@
     <ClCompile Include="ECDAS.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RemoteAtt.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="keccak.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -79,6 +76,9 @@
     </ClCompile>
     <ClCompile Include="StockTicker.cpp">
       <Filter>Source Files\scrapers</Filter>
+    </ClCompile>
+    <ClCompile Include="Attestation_Enc.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
