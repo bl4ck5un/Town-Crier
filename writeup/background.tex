@@ -3,7 +3,7 @@
 
 In this section, we provide basic background respectively on the main technologies \tc incorporates, namely SGX, TLS / HTTPS, and smart contracts.
 
-\subsection{SGX}
+\paragraph{\bf SGX.}
 Intel's Software Guard Extensions (SGX) is a set of new instructions that confer hardware protections on user-level code. Its goal is to provide \emph{isolated execution}. SGX enables a process to execute in a protected address space known as an {\em enclave}. It protects the confidentiality and integrity of a process in an enclave from other software on the same host, including the operating system, as well as from certain forms of hardware attack, such as memory probes. 
 
 A enclave process cannot make system calls, nor can it execute code outside the enclave region. As a means of communicating with processes outside the enclave, however, it can read and write memory outside the enclave region, consistent with OS setting of page permissions. Thus  isolated execution in SGX may be viewed in terms of an ideal model in which a process is guaranteed to execute correctly and with perfect confidentiality, but relies on a (potentially malicious) operating system for network and file-system access.\footnote{This model is a simplification, as SGX is known to expose some of the internal state of an enclave to the operating system (e.g., making page faults or cache timings visible to the exception handler~\cite{sgxexplained}), creating potential side-channel vulnerabilities. We regard side channels as outside the scope of this paper, and thus assume an ideal model of isolated execution.}
@@ -12,12 +12,12 @@ Another feature of SGX is its support for \emph{attestation}, which allows a rem
 
 SGX additionally provides a trusted time source via the function \texttt{sgx\_get\_trusted\_time}.~On invoking this function, an enclave obtains a measure of time relative to a reference point labeled with a nonce. We refer to this as the \emph{clock reference point}. It remains stable for a given nonce, but SGX does not provide a source of absolute or wall-clock time, a limitation that we must work around in \tc.
 
-\subsection{HTTPS / TLS}
+\paragraph{\bf HTTPS / TLS.}
 
 We assume basic familiarity by readers with TLS and HTTPS (HTTP over TLS). As we explain later, an important feature of HTTPS that we employ in \tc is its amenability to partitioning into interoperable layers: an HTTP layer interacting with web servers, a TLS layer handling handshakes and secure communication, and a TCP layer providing reliable data stream. \tc places the HTTP layer and TLS layer in an enclave, enabling code in the enclave to establish a secure channel with a remote server, with only the TCP layer controlled by untrusted code outside the enclave. 
 
 
-\subsection{Smart contracts}
+\paragraph{\bf Smart contracts.}
 \label{sec:contracts-and-gas}
 
 Smart contracts are the expression of contractual agreements, including financial instruments, as executable code. In the context of cryptocurrencies, the term refers specifically to autonomously executing scripts that reside on a blockchain and can manipulate and control currency. Bitcoin has a scripting language that can serve to implement a limited form of smart contract, but it is not Turing-complete and lacks support for loops. 
@@ -26,7 +26,7 @@ Ethereum is the first decentralized blockchain with a Turing-complete scripting 
 
 A smart contract in Ethereum is represented as what is called a \emph{contract account}, endowed with code, a currency balance, and persistent memory in the form of a key/value store. Contract code executes in response to receipt of a \emph{message} from another contract or a \emph{transaction} from a non-contract (\emph{externally owned}) account, informally what we call a ``wallet.'' Thus, contract execution is always initiated by a transaction. Informally, a contract only executes when ``poked,'' and poking progresses through a sequence of entry points until no further message passing occurs (or until there is a shortfall in gas, as explained below). Transactions in Ethereum are digitally signed for a wallet using ECDSA on the curve Secp256k1 and the hash function SHA3-256. \ethan{should we cite the yellow paper here?}
 
-A smart contract accepts messages as inputs to any of a number of designated functions. These entry points are determined by the contract creator and represent the API of the contract. Once created, a contract executes autonomously; it persists indefinitely, with even its creator unable to modify its code. (There's one exception: a special opcode \texttt{suicide} will wipe code from a contract account.) As a simple abstraction, then, a smart contract may be viewed as an {\em autonomous agent} on the blockchain. \ethan{I'm concerned that this makes it sound like contracts can be self-activating. Someone needs to call a function explicitly for them to do anything.} 
+A smart contract accepts messages as inputs to any of a number of designated functions. These entry points are determined by the contract creator and represent the API of the contract. Once created, a contract executes autonomously; it persists indefinitely, with even its creator unable to modify its code. (One exception is a special opcode \texttt{suicide} that wipes code from a contract account.) As a simple abstraction, then, a smart contract may be viewed as an {\em autonomous agent} on the blockchain (with the technical limitation that contract execution is ultimately triggered by a transaction from a wallet). 
 
 To prevent Denial-of-Service (DoS) attacks, inadvertent infinite looping within contracts, and generally to control resource expenditure by the network,
 Ethereum implements uses a resource called \emph{gas} to power contracts.
