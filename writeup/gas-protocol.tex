@@ -1,12 +1,9 @@
 
-\section{Handling gas as implemented}
 
-\subsection{Handling Transaction Fees}
 
 As we described in Section \ethan{ref gas-desc}, Ethereum employs \emph{gas}, a fee mechanism, to mitigate DoS attacks.
-In order to sustainably operate \tcs on Ethereum, we must account for this cost and include reimbursement fees from requesters.
-Unfortunately gas can only be used to pay for transactions, so instead we develop a two-currency resource management system
-and prove that it provides reasonable guarantees for both honest requesters and \tcs.
+In order to sustainably operate \tc on Ethereum, we develop a novel two-currency resource management system which allows
+\tc to make gas payments up front while preventing a malicious requester from exhausting \tc's resources.
 
 
 \paragraph{Execution model and notation.}
@@ -45,7 +42,7 @@ We use the following identifiers to denote currency and gas amounts.
   & {\tt GASLIMIT} when invoking {\bf Deliver} and {\bf Request}, respectively \\
   \hline
   $\gascallback$
-  & {\tt GASLIMIT} for $\dgcallback$ while executing {\bf Deliver} \\
+  & {\tt GASLIMIT} for $\dgcallback$ while executing {\bf Deliver}, set to the max value that can be reimbursed \\
   \hline
   $\constgasmin$
   & Gas required for {\bf Deliver} excluding $\dgcallback$ \\
@@ -127,7 +124,7 @@ An honest requester sets $\fee$ to be the gas amount
 required to execute the {\bf Deliver} entry point including $\dgcallback$.
 Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dgcallback$ ensure that no more than $\fee$ is spent.
 }
-\label{tbl:tc-contract2}
+\label{tbl:gas-tc-contract}
 \end{figure}
 
 \begin{figure}[!h]
@@ -135,12 +132,12 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
 \centering
 {\bf Program for \tcs~\encname ($\enclaveprog$)} \\[1ex]
 \begin{tabular}{l}
-{\bf Initialize}: Same as Figure \ethan{refer} \\[3pt]
+  {\bf Initialize}: Same as Figure \ethan{refer} \\[3pt]
 
-{\bf Resume:} On recv $(\resumecall, (\dgid, \dgform))$ \\
-\quad Same as before except the last two statements: \\
-\quad $\sigma := \Sigma.{\sf Sign}({\skTC}, (\dgid, \dgform, \dgm, \constgasmax))$ \\
-\quad Output $((\dgid, \dgform, \dgm, \constgasmax), \sigma)$ \\
+  {\bf Resume:} On recv $(\resumecall, (\dgid, \dgform))$ \\
+  \quad Same as before except the last two statements: \\
+  \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, (\dgid, \dgform, \dgm, \constgasmax))$ \\
+  \quad Output $((\dgid, \dgform, \dgm, \constgasmax), \sigma)$ \\
 \end{tabular}
 \end{boxedminipage}
 \caption{The \tcs~\encname \engine.}
@@ -209,11 +206,11 @@ We now describe how this can be realized by modifying the fee-free protocol desc
     We assume that Town Crier deposits at least $\constgasmax$ into the wallet $\tcadd$.
 
   \item {\it \tcs blockchain contract.}
-    Figure \ref{tbl:tc-contract2} describes the \tcs blockchain contract reflecting fees.
+    Figure \ref{tbl:gas-tc-contract} describes the \tcs blockchain contract reflecting fees.
     Since $\tcadd$ must invoke {\bf Deliver}, \tc will pays the gas cost.
     It sets the {\tt GASLIMIT} $\gasdeliver := \constgasmax$.
     To ensure that the gas spent will not exceed the reimbursement available ($\fee$),
-    \tcont sets the {\tt GASLIMIT} $\gascallback$ for the sub-call to $\dgcallback$ to $\fee - \constgasmin$.
+    \tcont sets the {\tt GASLIMIT} $\gascallback$ for the sub-call to $\dgcallback$ to the reimbursement remaining: $\fee - \constgasmin$.
 
   \item {\it Town Crier Relay.}
     The relay behavior does not change with the presence of fees.
@@ -234,42 +231,5 @@ We now describe how this can be realized by modifying the fee-free protocol desc
 These changes do not modify the properties on which our authenticity proof in Section \ethan{ref authenticity} relied, so that result still holds.
 We will prove in Section \ethan{refer} that this new protocol ensures that \tc cannot lose money when the \medname is honest
 and that an honest requester's loss is limited even against a malicious \tc.
-
-
-
-
-\subsection{Gas Neutrality}
-
-
-\begin{theorem}[Gas neutrality for Town Crier]
-Assuming an honest Town Crier relay,
-Town Crier's wallet account $\tcadd$ will have at least $\constgasmax$ remaining after each {\bf Deliver} call.
-\end{theorem}
-
-\begin{proof}[(sketch)]
-Honest relay means $\resumecall(\dgid, \dgform)$ will always be legitimate and $\dgform = \dgform'$ in {\bf Deliver}.
-While $\fee$ is specified by a potentially malicious user, \tcont rejects the request unless $\constgasmin \leq \fee \leq \constgasmax$.
-This means $\gasdeliver = \constgasmax \geq \fee$.
-We also will never respond to the same request twice (these are specified in the enclave protocol), so we will never abort.
-
-We limit the gas provided to $\dgcallback$ to $\fee - \constgasmin$ (which must be positive because of the check in {\bf Request}),
-and $\constgasmin$ is set so that it is at least the cost of {\bf Deliver} not including $\dgcallback$.
-This means that the total gas used is no greater than $\constgasmin + (\fee - \constgasmin) = \fee$, which is exactly what $\tcadd$ is sent for reimbursement.
-We also don't run out of gas because $\fee \leq \constgasmax = \gasdeliver$, so we cannot use more gas than we provide.
-\end{proof}
-
-
-\begin{theorem}[Bounded loss for honest requester]
-For any request $(\dgform, \dgcallback, \fee)$ submitted by an honest user $\reqcont$,
-the requester will lose no more than $\gasrequest + \constgasmax$ money.
-\end{theorem}
-
-\begin{proof}[(sketch)]
-In Ethereum, all money must be sent by the address controlling that money.
-An honest user will only send $\gasrequest + \fee$ to a given request and no more with $\fee \leq \constgasmax$.
-They will not continue to send money to \tcont without receiving a response, so that means that they cannot lose more than $\gasrequest + \constgasmax$
-even if \tc is malicious and does not deliver data.
-\end{proof}
-
 
 

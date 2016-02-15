@@ -1,4 +1,4 @@
-import "TownCrier.sol";
+import "TownCrier-vote.sol";
 
 contract PutOption {
     event Put(bytes32 timestamp, uint gas, bytes32[] data);
@@ -10,7 +10,7 @@ contract PutOption {
 
     address ISSUER;
 
-    TownCrier public TC_CONTRACT;
+    TownCrierVote public TC_CONTRACT;
     bytes32 public TICKER;
     uint public UNIT_PRICE;
     uint public MAX_UNITS;
@@ -23,7 +23,7 @@ contract PutOption {
     bool optionPut;
     bool cancelled;
 
-    function PutOption(TownCrier tcContract, bytes32 ticker, uint unitPrice, uint maxUnits, uint strikePrice, uint exprDate) public {
+    function PutOption(TownCrierVote tcContract, bytes32 ticker, uint unitPrice, uint maxUnits, uint strikePrice, uint exprDate) public {
         if (msg.value < (strikePrice - unitPrice) * maxUnits + TC_FEE) throw;
 
         ISSUER = msg.sender;

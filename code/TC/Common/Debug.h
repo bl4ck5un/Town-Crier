@@ -11,7 +11,6 @@ void hexdump(const char* title, void const * data, unsigned int len);
 void string_dump(const char* title, void const* data, size_t len);
 
 
-
 #if defined(__cplusplus)
 }
 #endif

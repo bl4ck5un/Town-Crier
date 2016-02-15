@@ -1,4 +1,4 @@
-import "TownCrier.sol";
+import "TownCrier-vote.sol";
 
 contract FlightInsurance {
     event Insure(address sender, uint dataLength, bytes32[] data, int72 requestId);
@@ -6,17 +6,18 @@ contract FlightInsurance {
     event PaymentInfo(address payee, uint payeeBalance, uint gasRemaining, uint64 requestId, uint delay, uint amount);
     event FlightCancel(address canceller, address requester, bool success);
 
-    uint constant TC_FEE = (35000 + 4400) * 5 * 10**10;
+//    uint constant TC_FEE = (35000 + 4400) * 5 * 10**10;
+    uint constant TC_FEE = (168500 + 20000) * 5 * 10**10;
     uint constant FEE = 5 * 10**18;
     uint constant PAYOUT = 10**20;
     uint32 constant PAYOUT_DELAY = 30;
 
     bytes4 constant TC_CALLBACK_FID = 0x3d622256; // bytes4(sha3("pay(uint64,bytes32)"));
 
-    TownCrier TC_CONTRACT;
+    TownCrierVote TC_CONTRACT;
     address[2**64] requesters;
 
-    function FlightInsurance(TownCrier tcCont) public {
+    function FlightInsurance(TownCrierVote tcCont) public {
         TC_CONTRACT = tcCont;
     }
 
@@ -56,18 +57,18 @@ contract FlightInsurance {
         PaymentLog(2);
     }
 
-    function cancel(uint64 requestId) public returns (bool) {
-        if (requesters[requestId] == msg.sender) {
-            bool tcCancel = TC_CONTRACT.cancel(requestId);
-            if (tcCancel) {
-                FlightCancel(msg.sender, requesters[requestId], true);
-                requesters[requestId] = 0;
-                msg.sender.send(FEE);
-                return true;
-            }
-        }
-        FlightCancel(msg.sender, requesters[requestId], false);
-        return false;
-    }
+//    function cancel(uint64 requestId) public returns (bool) {
+//        if (requesters[requestId] == msg.sender) {
+//            bool tcCancel = TC_CONTRACT.cancel(requestId);
+//            if (tcCancel) {
+//                FlightCancel(msg.sender, requesters[requestId], true);
+//                requesters[requestId] = 0;
+//                msg.sender.send(FEE);
+//                return true;
+//            }
+//        }
+//        FlightCancel(msg.sender, requesters[requestId], false);
+//        return false;
+//    }
 }
 

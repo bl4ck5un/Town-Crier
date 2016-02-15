@@ -42,10 +42,16 @@ typedef struct ms_Test_main_t {
 } ms_Test_main_t;
 
 typedef struct ms_ecall_create_report_t {
-	sgx_status_t ms_retval;
+	int ms_retval;
 	sgx_target_info_t* ms_quote_enc_info;
 	sgx_report_t* ms_report;
+	time_t ms_wall_clock;
+	uint8_t* ms_wtc_rsv;
 } ms_ecall_create_report_t;
+
+typedef struct ms_rdtsc_t {
+	long long ms_retval;
+} ms_rdtsc_t;
 
 typedef struct ms_ocall_mbedtls_net_connect_t {
 	int ms_retval;
@@ -165,12 +171,13 @@ static sgx_status_t SGX_CDECL sgx_handle_request(void* pms)
 		memset((void*)_in_tx, 0, _len_tx);
 	}
 	if (_tmp_len != NULL) {
-		if ((_in_len = (int*)malloc(_len_len)) == NULL) {
+		_in_len = (int*)malloc(_len_len);
+		if (_in_len == NULL) {
 			status = SGX_ERROR_OUT_OF_MEMORY;
 			goto err;
 		}
 
-		memset((void*)_in_len, 0, _len_len);
+		memcpy(_in_len, _tmp_len, _len_len);
 	}
 	ms->ms_retval = handle_request(_in_nonce, ms->ms_request_id, ms->ms_request_type, _in_req, _tmp_req_len, _in_tx, _in_len);
 err:
@@ -214,10 +221,14 @@ static sgx_status_t SGX_CDECL sgx_ecall_create_report(void* pms)
 	sgx_report_t* _tmp_report = ms->ms_report;
 	size_t _len_report = sizeof(*_tmp_report);
 	sgx_report_t* _in_report = NULL;
+	uint8_t* _tmp_wtc_rsv = ms->ms_wtc_rsv;
+	size_t _len_wtc_rsv = 65 * sizeof(*_tmp_wtc_rsv);
+	uint8_t* _in_wtc_rsv = NULL;
 
 	CHECK_REF_POINTER(pms, sizeof(ms_ecall_create_report_t));
 	CHECK_UNIQUE_POINTER(_tmp_quote_enc_info, _len_quote_enc_info);
 	CHECK_UNIQUE_POINTER(_tmp_report, _len_report);
+	CHECK_UNIQUE_POINTER(_tmp_wtc_rsv, _len_wtc_rsv);
 
 	if (_tmp_quote_enc_info != NULL) {
 		_in_quote_enc_info = (sgx_target_info_t*)malloc(_len_quote_enc_info);
@@ -236,12 +247,24 @@ static sgx_status_t SGX_CDECL sgx_ecall_create_report(void* pms)
 
 		memset((void*)_in_report, 0, _len_report);
 	}
-	ms->ms_retval = ecall_create_report(_in_quote_enc_info, _in_report);
+	if (_tmp_wtc_rsv != NULL) {
+		if ((_in_wtc_rsv = (uint8_t*)malloc(_len_wtc_rsv)) == NULL) {
+			status = SGX_ERROR_OUT_OF_MEMORY;
+			goto err;
+		}
+
+		memset((void*)_in_wtc_rsv, 0, _len_wtc_rsv);
+	}
+	ms->ms_retval = ecall_create_report(_in_quote_enc_info, _in_report, ms->ms_wall_clock, _in_wtc_rsv);
 err:
 	if (_in_quote_enc_info) free(_in_quote_enc_info);
 	if (_in_report) {
 		memcpy(_tmp_report, _in_report, _len_report);
 		free(_in_report);
+	}
+	if (_in_wtc_rsv) {
+		memcpy(_tmp_wtc_rsv, _in_wtc_rsv, _len_wtc_rsv);
+		free(_in_wtc_rsv);
 	}
 
 	return status;
@@ -261,10 +284,11 @@ SGX_EXTERNC const struct {
 
 SGX_EXTERNC const struct {
 	size_t nr_ocall;
-	uint8_t entry_table[10][3];
+	uint8_t entry_table[11][3];
 } g_dyn_entry_table = {
-	10,
+	11,
 	{
+		{0, 0, 0, },
 		{0, 0, 0, },
 		{0, 0, 0, },
 		{0, 0, 0, },
@@ -278,6 +302,21 @@ SGX_EXTERNC const struct {
 	}
 };
 
+
+sgx_status_t SGX_CDECL rdtsc(long long* retval)
+{
+	sgx_status_t status = SGX_SUCCESS;
+
+	ms_rdtsc_t* ms;
+	OCALLOC(ms, ms_rdtsc_t*, sizeof(*ms));
+
+	status = sgx_ocall(0, ms);
+
+	if (retval) *retval = ms->ms_retval;
+
+	sgx_ocfree();
+	return status;
+}
 
 sgx_status_t SGX_CDECL ocall_mbedtls_net_connect(int* retval, mbedtls_net_context* ctx, const char* host, const char* port, int proto)
 {
@@ -320,7 +359,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_connect(int* retval, mbedtls_net_contex
 	}
 	
 	ms->ms_proto = proto;
-	status = sgx_ocall(0, ms);
+	status = sgx_ocall(1, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -370,7 +409,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_bind(int* retval, mbedtls_net_context* 
 	}
 	
 	ms->ms_proto = proto;
-	status = sgx_ocall(1, ms);
+	status = sgx_ocall(2, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -397,7 +436,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_set_block(int* retval, mbedtls_net_cont
 		return SGX_ERROR_INVALID_PARAMETER;
 	}
 	
-	status = sgx_ocall(2, ms);
+	status = sgx_ocall(3, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -424,7 +463,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_set_nonblock(int* retval, mbedtls_net_c
 		return SGX_ERROR_INVALID_PARAMETER;
 	}
 	
-	status = sgx_ocall(3, ms);
+	status = sgx_ocall(4, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -441,7 +480,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_usleep(unsigned long int usec)
 	OCALLOC(ms, ms_ocall_mbedtls_net_usleep_t*, sizeof(*ms));
 
 	ms->ms_usec = usec;
-	status = sgx_ocall(4, ms);
+	status = sgx_ocall(5, ms);
 
 
 	sgx_ocfree();
@@ -478,7 +517,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_recv(int* retval, mbedtls_net_context* 
 	}
 	
 	ms->ms_len = len;
-	status = sgx_ocall(5, ms);
+	status = sgx_ocall(6, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -518,7 +557,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_send(int* retval, mbedtls_net_context* 
 	}
 	
 	ms->ms_len = len;
-	status = sgx_ocall(6, ms);
+	status = sgx_ocall(7, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -558,7 +597,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_recv_timeout(int* retval, mbedtls_net_c
 	
 	ms->ms_len = len;
 	ms->ms_timeout = timeout;
-	status = sgx_ocall(7, ms);
+	status = sgx_ocall(8, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -586,7 +625,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_free(mbedtls_net_context* ctx)
 		return SGX_ERROR_INVALID_PARAMETER;
 	}
 	
-	status = sgx_ocall(8, ms);
+	status = sgx_ocall(9, ms);
 
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
 
@@ -612,7 +651,7 @@ sgx_status_t SGX_CDECL ocall_print_string(int* retval, const char* str)
 		return SGX_ERROR_INVALID_PARAMETER;
 	}
 	
-	status = sgx_ocall(9, ms);
+	status = sgx_ocall(10, ms);
 
 	if (retval) *retval = ms->ms_retval;
 

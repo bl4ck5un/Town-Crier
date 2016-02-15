@@ -3,18 +3,24 @@
 
 
 Using the recently released Intel SGX SDK~\cite{sgxsdk}, we implmented the \tc
-Server as an SGX-enabled application in C++. In the programming model supported by
-the SGX SDK, the body of an SGX-enabled application runs as an 
-ordinary user-space application, while a relatively small piece of security-sensitive code runs in the isolated environment of the SGX enclave.
+Server as an SGX-enabled application in C++. In the programming model supported
+by the SGX SDK, the body of an SGX-enabled application runs as an ordinary
+user-space application, while a relatively small piece of security-sensitive
+code runs in the isolated environment of the SGX enclave.
 
-The enclave portion of an SGX-enabled application may be
-viewed as a shared library exposing an API in the form of \emph{ecalls}
-to be invoked by the untrusted application. Invocation of an ecall transfers control to the 
-enclave; the enclave code runs until it either terminates and explicitly releases control, or some special event (e.g., exception) happens~\cite{sgxmanual}.
-Again, as we assume SGX provides ideal isolation, the untrusted application cannot
-observe or alter the execution of ecalls.
+The enclave portion of an SGX-enabled application may be viewed as a shared
+library exposing an API in the form of \emph{ecalls} to be invoked by the
+untrusted application. Invocation of an ecall transfers control to the enclave;
+the enclave code runs until it either terminates and explicitly releases
+control, or some special event (e.g., exception) happens~\cite{sgxmanual}.
+Again, as we assume SGX provides ideal isolation, the untrusted application
+cannot observe or alter the execution of ecalls.
 
-Enclave programs can make \emph{ocalls} to invoke functions defined outside of the enclave. An ocall triggers an exit from the enclave; control is returned once the ocall completes. As ocalls execute outside the enclave, they must be treated by enclave code as untrusted. 
+Enclave programs can make \emph{ocalls} to invoke functions defined outside of
+the enclave. An ocall triggers an exit from the enclave; control is returned
+once the ocall completes. As ocalls execute outside the enclave, they must be
+treated by enclave code as untrusted. 
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=0.45\textwidth]{figures/impl}
@@ -22,29 +28,58 @@ Enclave programs can make \emph{ocalls} to invoke functions defined outside of t
     \label{fig:tcserver_impl}
 \end{figure}
 
-For \tc, we recall that Fig.~\ref{fig:engineprotocol} shows the \encname code $\engine$. Fig.~\ref{fig:relayprotocol} specifies the operation of the \medname, the untrusted code in \tc, which we emphasize again provides essentially only network functionality. We now give details on the services in the \encname and the \medname and describe their interaction, as summarized in Fig.~\ref{fig:tcserver_impl}.
+For \tc, we recall that Fig.~\ref{fig:engineprotocol} shows the \encname code
+$\engine$. Fig.~\ref{fig:relayprotocol} specifies the operation of the \medname,
+the untrusted code in \tc, which we emphasize again provides essentially only
+network functionality. We now give details on the services in the \encname and
+the \medname and describe their interaction, as summarized in
+Fig.~\ref{fig:tcserver_impl}.
 
-\paragraph{\bf The \encname.} There are three components to the enclave code \engine: An HTTPS service, Web Scrapers, which interact with data sources, and a Request Handler, which services datagram requests. 
-
-\vspace{2mm}
-
-\noindent\emph{HTTPS Service.} We recall that the enclave does not have direct access to host network functionality. \tc thus partitions HTTPS into a trusted layer, consisting of HTTP and TLS code, and an untrusted layer that provides low-layer network service, specifically TCP.  This arrangement allows the enclave to establish a secure channel with a web server: The enclave itself performs the TLS handshake with a target server and performs all cryptographic operations internally, while the untrusted process acts as a network interface only. We ported a TLS library (mbedTLS) into the SGX environment, as well as HTTP code, which we minimized to meet the web-scraping requirements of \tc while keeping the TCB small. To verify certificates presented by remote servers, we hardcoded a collection of root CA certificates into the enclave code; in the first version of \tc, the root CAs are identical to those in Chrome.\ari{This seems reasonable to me, although there may be a better approach.}
-
-\vspace{2mm}
-
-\noindent\emph{Web Scrapers.} Extracting useful information from a given website is
-implemented in a ad-hoc manner. For the purpose of demonstration, we implemented
-three web scrapers as examples. \xxx[Fan]{Elaborate}.
+\paragraph{\bf The \encname.} There are three components to the enclave code
+\engine: An HTTPS service, Web Scrapers, which interact with data sources, and a
+Request Handler, which services datagram requests. 
 
 \vspace{2mm}
 
-\noindent\emph{Request Handler.} The Request Handler has two jobs: (1) Ingesting a datagram request by parsing 
-it in the serialization format specified by Ethereum, decrypting it (if it's a private-datagram request), and dispatching its parameters to the right scraper; and (2) Returning the response to the request by generating an Ethereum
-transaction containing the requested datagram (and parameters), serializing it as a blockchain transaction, and signing it using \skTC. We implemented the Ethereum ABI and RLP, which respectively
-specify the serialization of arguments and transactions in Ethereum. 
+\noindent\emph{HTTPS Service.} We recall that the enclave does not have direct
+access to host network functionality. \tc thus partitions HTTPS into a trusted
+layer, consisting of HTTP and TLS code, and an untrusted layer that provides
+low-layer network service, specifically TCP.  This arrangement allows the
+enclave to establish a secure channel with a web server: The enclave itself
+performs the TLS handshake with a target server and performs all cryptographic
+operations internally, while the untrusted process acts as a network interface
+only. We ported a TLS library (mbedTLS) into the SGX environment, as well as
+HTTP code, which we minimized to meet the web-scraping requirements of \tc while
+keeping the TCB small. To verify certificates presented by remote servers, we
+hardcoded a collection of root CA certificates into the enclave code; in the
+first version of \tc, the root CAs are identical to those in Chrome~\cite{}.
 
-\paragraph{Attestation Generation} \xxx[Fan]{Elaborate.}
+\vspace{2mm}
 
+\noindent\emph{Web Scrapers.} Extracting useful information from a given website
+is implemented in a ad-hoc manner. For the purpose of demonstration, we
+implemented three web scrapers as examples. \xxx[Fan]{Elaborate}.
+
+\vspace{2mm}
+
+\noindent\emph{Request Handler.} The Request Handler has two jobs: (1) Ingesting
+a datagram request by parsing it in the serialization format specified by
+Ethereum, decrypting it (if it's a private-datagram request), and dispatching
+its parameters to the right scraper; and (2) Returning the response to the
+request by generating an Ethereum transaction containing the requested datagram
+(and parameters), serializing it as a blockchain transaction, and signing it
+using \skTC. We implemented the Ethereum ABI and RLP, which respectively specify
+the serialization of arguments and transactions in Ethereum. 
+
+\vspace{2mm}
+
+\noindent\emph{Attestation Generation.} Recall in Section \ref{sec:background}
+we mentioned that an \emph{attestation} is an \emph{report} digitally signed by
+the Intel-provided Quoting Enclave (QE).  Therefore two phases are involved in
+generating \att. First, the \encname calls \texttt{sgx\_create\_report} to
+generate a report with QE as the target enclave. Then the \medname forwards the
+report to QE and calls \texttt{sgx\_get\_quote} to get a signed version of the
+report, namely an attestation.
 
 \paragraph{The \medname.} The \medname encompasses three components: A Client Interface, which serves attestations and timestamps, OS services, including networking and time services, and a Blockchain Interface. 
 

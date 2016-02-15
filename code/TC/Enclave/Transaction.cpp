@@ -11,7 +11,6 @@
 
 #include "ABI.h"
 #include "Commons.h"
-#include <Debug.h>
 
 #include "Transaction.h"
 
@@ -191,7 +190,11 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
                       uint8_t* resp_data, int resp_len,
                       uint8_t* serialized_tx, int* o_len)
 {
-    if (serialized_tx == nullptr || o_len == nullptr) {printf("Error: get_raw_tx gets NULL input\n"); return -1;}
+    long long time1, time2;
+    rdtsc(&time1);
+    if (serialized_tx == nullptr || o_len == nullptr) 
+        {printf("Error: get_raw_tx gets NULL input\n"); return -1;}
+
     bytes out;
     int ret;
 
@@ -239,6 +242,9 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
     // insert function selector
     for (int i = 0; i < 4; i++) {abi_str.insert(abi_str.begin(), func_selector[3 - i]);}
     
+    rdtsc(&time2);
+    LL_CRITICAL("ABI encoding: %llu", time2-time1);
+
     TX tx(TX::MessageCall);
     uint8_t hash[32]; 
 
@@ -256,7 +262,6 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
     tx.m_data.clear();
     tx.m_data = abi_str;
 
-#define VERBOSE
 #ifdef VERBOSE
     hexdump("ABI:", &abi_str[0], abi_str.size());
     hexdump("NONCE:", tx.m_nonce.b, 32);
@@ -274,6 +279,7 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
     }
 
 
+
     ret = keccak(&out[0], out.size(), hash, 32);
     if (ret != 0)
     {
@@ -284,11 +290,17 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
     if (ret != 0) { LL_CRITICAL("Error: signing returned %d\n", ret); return ret;}
     else {tx.r.size = 32; tx.s.size = 32;}
 
+    rdtsc(&time1);
+    LL_CRITICAL("Sign %llu", time1 - time2);
+
     out.clear();
 
     tx.rlp_list(out, true);
 
-    if (out.size() > 2048) { LL_CRITICAL("Error buffer size (%d) is too small.\n", *o_len); return -1;}
+    rdtsc(&time2);
+    LL_CRITICAL("RLP %llu", time2 - time1);
+
+    if (out.size() > TX_BUF_SIZE) { LL_CRITICAL("Error buffer size (%d) is too small.\n", *o_len); return -1;}
 
 #ifdef VERBOSE
     hexdump("RLP:", &out[0], out.size());
@@ -297,11 +309,8 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
     memcpy(serialized_tx, &out[0], out.size());
     *o_len = out.size();
 
-#pragma warning (push)
-#pragma warning (disable: 4102)
-cleanup:
-#pragma warning (pop)
-//    for (size_t i = 0; i < request_data.size(); i++)
+//cleanup:
+//    fosr (size_t i = 0; i < request_data.size(); i++)
 //    {
 //        delete request_data[i];
 //    }

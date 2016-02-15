@@ -36,9 +36,6 @@
     <ClCompile Include="net_u.c">
       <Filter>TLSSupport</Filter>
     </ClCompile>
-    <ClCompile Include="..\jsonrpc-cpp-0.5\examples\tcp-client.cpp">
-      <Filter>jsonrpc-cpp</Filter>
-    </ClCompile>
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_client.cpp">
       <Filter>jsonrpc-cpp</Filter>
     </ClCompile>
@@ -72,9 +69,6 @@
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\system.cpp">
       <Filter>jsonrpc-cpp</Filter>
     </ClCompile>
-    <ClCompile Include="RemoteAtt.c">
-      <Filter>RemoteAtt</Filter>
-    </ClCompile>
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -101,6 +95,9 @@
     </ClCompile>
     <ClCompile Include="sys_helper.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RemoteAtt.cpp">
+      <Filter>RemoteAtt</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
