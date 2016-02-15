@@ -36,7 +36,7 @@ int parse_response(char* resp, int* buf, char* date, char* departure) {
     char actual[11];
     int len, tactual, tscheduled, hours, minutes, seconds, diff;
 
-    tstamp[11] = 0;
+    tstamp[10] = 0;
     t = utime(date, departure);
     snprintf(tstamp, 11, "%d", t);
 
