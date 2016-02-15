@@ -13,6 +13,7 @@
 #include "Log.h"
 #include "Monitor.h"
 #include "Utils.h"
+#include "Constants.h"
 
 #include <sstream>
 #include <string>
@@ -172,7 +173,7 @@ int main()
 //    std::cout << "nonce: " << nonces << std::endl;
 
 
-    dump_buf("nonce to be used: ", nonce, 32);
+//    dump_buf("nonce to be used: ", nonce, 32);
 
 #if defined(_MSC_VER)
     if (query_sgx_status() < 0) {
@@ -186,8 +187,10 @@ int main()
     }
 
     // main loop
-    monitor_loop(nonce);
-
+#ifdef E2E_BENCHMARK
+//    for (int i = 0; i < 5; i++)
+        monitor_loop(nonce);
+#endif
 exit:
     // test_RLP(global_eid, &ret);
 //    sqlite3_close(db);

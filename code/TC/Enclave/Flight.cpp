@@ -6,6 +6,7 @@
 #include "Log.h"
 
 #include "dispatcher.h"
+#include <cstring>
 
 static int utime(const char* ds, const char* ts) {
     char year[5], month[3], day[3], hour[3], minute[3];
@@ -55,9 +56,9 @@ int construct_query(char* flight, char** buf) {
     // a full test URL
     // http://cromak4:2c3b86b8c77eea0c24ff088a2f56da2b98d40547@flightxml.flightaware.com/json/FlightXML2/FlightInfoEx?ident=DAL900&howMany=30&offset=0
 //    strcat(query, "https://cromak4:2c3b86b8c77eea0c24ff088a2f56da2b98d40547@");
-    strcat(query, "/json/FlightXML2/FlightInfoEx?ident=");
-    strcat(query, flight);
-    strcat(query, "&howMany=30&offset=0 HTTP/1.1");
+    strncat(query, "/json/FlightXML2/FlightInfoEx?ident=", sizeof query);
+    strncat(query, flight, sizeof query);
+    strncat(query, "&howMany=30&offset=0 HTTP/1.1", sizeof query);
 
     len = strlen(query);
     *buf = (char*)malloc(len+1);
@@ -72,7 +73,7 @@ int parse_response(char* resp, int* buf, char* date, char* departure) {
     char* end;
     char* sd;
 
-    char tempbuff[100];
+    char tempbuff[100] = {0};
     char tstamp[11] = {0};
     /*struct tm t1;*/
     /*time_t t;*/
@@ -85,7 +86,7 @@ int parse_response(char* resp, int* buf, char* date, char* departure) {
     snprintf(tstamp, 11, "%d", t);
 
     strncpy(tempbuff, "filed_departuretime\":\0", 22);
-    strcat(tempbuff, tstamp);
+    strncat(tempbuff, tstamp, sizeof tempbuff);
     len = strlen(resp);
     while(strncmp(temp, tempbuff, 31) != 0) {
         temp+=1;

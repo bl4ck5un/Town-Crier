@@ -18,7 +18,7 @@ enum {
  
 #ifndef LOG_BUILD_LEVEL
 #ifdef NDEBUG
-#define LOG_BUILD_LEVEL LVL_LOG
+#define LOG_BUILD_LEVEL LOG_LVL_CRITICAL
 #else
 #define LOG_BUILD_LEVEL LOG_LVL_DEBUG
 #endif
@@ -32,10 +32,6 @@ extern const char * log_level_strings [];
 // it should be set to LVL_NOTICE
  
 #define LOG_SHOULD_I( level ) ( level <= LOG_BUILD_LEVEL && level <= log_run_level )
-
-
-
-
 
 #if (defined(WIN32) || defined(_WIN32))
 #define LOG(level, fmt, ...) do {	\
@@ -67,7 +63,7 @@ extern const char * log_level_strings [];
 #define LL_WARNING( fmt, arg... ) LOG( LOG_LVL_WARNING, fmt, ##arg )
 #define LL_CRITICAL( fmt, arg... ) LOG( LOG_LVL_CRITICAL, fmt, ##arg )
 #endif
- 
+
 #ifdef	__cplusplus
 }
 #endif

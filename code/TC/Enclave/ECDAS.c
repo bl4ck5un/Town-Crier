@@ -54,8 +54,6 @@ ADR: 89b44e4d3c81ede05d0f5de8d1a68f754d73d997
 */
 
 
-
-
 static int pubkey_to_address (unsigned char *pubkey, size_t pubkey_len, unsigned char* addr)
 {
     int ret;
@@ -188,8 +186,6 @@ exit:
 #endif
 
 }
-
-
 
 int sign(uint8_t* data, int in_len, uint8_t* rr, uint8_t *ss, uint8_t* vv)
 {

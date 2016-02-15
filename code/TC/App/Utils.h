@@ -1,12 +1,23 @@
-#include <cstdint>
+#pragma once
+
 #include <vector>
 #include "sgx_error.h"
 
+
+
 void fromHex(const char* src, uint8_t* target, unsigned* len);
 void fromHex(const char* src, std::vector<uint8_t> & out);
+
+//#if defined(__cplusplus)
+//extern "C" {
+//#endif
 // Utils.cpp
 void print_error_message(sgx_status_t ret);
 int initialize_enclave(void);
+
+//#if defined(__cplusplus)
+//}
+//#endif
 
 inline void char2hex(const uint8_t* bytes, int len, char* hex) {
     int i;
