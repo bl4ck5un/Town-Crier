@@ -103,7 +103,7 @@ echo "sgxBeforeCash2 = Number(debug.dumpBlock('latest').accounts['9d10ea5ad51e1a
 echo "tc.deliver.sendTransaction(1, paramsHash, '0x00000000000000000000000000000000000000000000000000000000000000aa', {from: minerAddr, gas: gasCnt, gasPrice: 5e+10})"
 echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
 
-echo "tc.deliver.sendTransaction(1, paramsHash, '0x000000000000000000000000000000000000000000000000000000000000000a', {from: userAddr, gas: gasCnt, gasPrice: 5e+10})"
+echo "tc.deliver.sendTransaction(1, paramsHash, '0x00000000000000000000000000000000000000000000000000000000000000aa', {from: userAddr, gas: gasCnt, gasPrice: 5e+10})"
 echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
 
 echo "tc.deliver.sendTransaction(1, paramsHash, '0x0000000000000000000000000000000000000000000000000000000000000001', {from: sgxAddr, gas: gasCnt, gasPrice: 5e+10})"

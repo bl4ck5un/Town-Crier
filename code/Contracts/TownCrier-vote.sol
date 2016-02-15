@@ -4,19 +4,13 @@ contract TownCrierVote {
         address callbackAddr;
         bytes4 callbackFID;
         bytes32 paramsHash;
-    }
-
-    struct Response {
-        bool sgx1Responded;
-        bool sgx2Responded;
-        bool sgx3Responded;
-        bytes32 sgx1;
-        bytes32 sgx2;
-        bytes32 sgx3;
+        uint8 responseCnt;
+        bytes32 response0;
+        bytes32 response1;
     }
 
     event RequestLog(uint gasLeft, int16 flag);
-    event RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, bytes32 paramsHash, bytes32[] requestData);
+    event RequestInfo(uint64 id, uint fee, bytes32 paramsHash, uint8 requestType, uint timestamp, bytes32[] requestData);
     event DeliverLog(uint gasLeft, address sender, int flag);
     event DeliverInfo(uint64 requestId, uint fee, uint gasPrice, uint gasLeft, uint callbackGas, bytes32 paramsHash, bytes32 response);
     event Cancel(uint64 requestId, address canceller, address requester, int flag);
@@ -36,31 +30,28 @@ contract TownCrierVote {
 
     uint64 requestCnt = 0;
     Request[2**64] requests;
-    Response[2**64] responses;
 
     function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, bytes32[] requestData) public returns (uint64) {
 //    function request(uint8 requestType, address callbackAddr, bytes32[] requestData) public returns (uint64) {
 //        bytes4 callbackFID = bytes4(0);
         RequestLog(msg.gas, 0);
         if (msg.value < MIN_FEE || msg.value > MAX_FEE) {
-            RequestInfo(0, requestType, msg.sender, msg.value, callbackAddr, 0, requestData);
+            RequestInfo(0, msg.value, 0, requestType, block.timestamp, requestData);
             RequestLog(msg.gas, -1);
             return 0;
         } else {
             requestCnt++;
             uint64 requestId = requestCnt;
 
-            bytes32 paramsHash = sha3(requestType, block.timestamp, requestData);
+            uint timestamp = block.timestamp;
+            bytes32 paramsHash = sha3(requestType, timestamp, requestData);
             requests[requestId].fee = msg.value;
             requests[requestId].callbackAddr = callbackAddr;
             requests[requestId].callbackFID = callbackFID;
             requests[requestId].paramsHash = paramsHash;
+            requests[requestId].responseCnt = 0;
 
-            responses[requestId].sgx1Responded = false;
-            responses[requestId].sgx2Responded = false;
-            responses[requestId].sgx3Responded = false;
-
-            RequestInfo(requestId, requestType, msg.sender, msg.value, callbackAddr, paramsHash, requestData);
+            RequestInfo(requestId, msg.value, paramsHash, requestType, timestamp, requestData);
             RequestLog(msg.gas, 1);
             return requestId;
         }
@@ -72,69 +63,42 @@ contract TownCrierVote {
             DeliverInfo(requestId, fee, tx.gasprice, msg.gas, 0, paramsHash, respData);
             DeliverLog(msg.gas, msg.sender, -1);
             return;
+        } else if (msg.sender != SGX1_ADDRESS
+                && msg.sender != SGX2_ADDRESS
+                && msg.sender != SGX3_ADDRESS) {
+            DeliverInfo(requestId, fee, tx.gasprice, msg.gas, 0, paramsHash, respData);
+            DeliverLog(msg.gas, msg.sender, -2);
+            return;
         } else if (requests[requestId].paramsHash != paramsHash) {
             DeliverInfo(requestId, fee, tx.gasprice, msg.gas, 0, paramsHash, respData);
             DeliverLog(msg.gas, msg.sender, -3);
             return;
         }
 
-        uint8 previouslyDeliveredCnt = 0;
-        if (responses[requestId].sgx1Responded) previouslyDeliveredCnt++;
-        if (responses[requestId].sgx2Responded) previouslyDeliveredCnt++;
-        if (responses[requestId].sgx3Responded) previouslyDeliveredCnt++;
-
-        bytes32 response1;
-        bytes32 response2;
-        bytes32 response3;
-        if (msg.sender == SGX1_ADDRESS) {
-            if (previouslyDeliveredCnt < 2) {
-                responses[requestId].sgx1Responded = true;
-                responses[requestId].sgx1 = respData;
-            } else {
-                response1 = respData;
-                response2 = responses[requestId].sgx2;
-                response3 = responses[requestId].sgx3;
-            }
-        } else if (msg.sender == SGX2_ADDRESS) {
-            if (previouslyDeliveredCnt < 2) {
-                responses[requestId].sgx2Responded = true;
-                responses[requestId].sgx2 = respData;
-            } else {
-                response1 = respData;
-                response2 = responses[requestId].sgx1;
-                response3 = responses[requestId].sgx3;
-            }
-        } else if (msg.sender == SGX3_ADDRESS) {
-            if (previouslyDeliveredCnt < 2) {
-                responses[requestId].sgx3Responded = true;
-                responses[requestId].sgx3 = respData;
-            } else {
-                response1 = respData;
-                response2 = responses[requestId].sgx1;
-                response3 = responses[requestId].sgx2;
-            }
-        } else {
-            DeliverInfo(requestId, fee, tx.gasprice, msg.gas, 0, paramsHash, respData);
-            DeliverLog(msg.gas, msg.sender, -4);
-            return;
-        }
-
-        if (previouslyDeliveredCnt == 0) {
+        uint8 responseCnt = requests[requestId].responseCnt;
+        if (responseCnt == 0) {
+            requests[requestId].response0 = respData;
+            requests[requestId].responseCnt++;
             DeliverLog(msg.gas, msg.sender, 1);
             msg.sender.send(FIRST_DELIVER_COST);
             return;
-        } else if (previouslyDeliveredCnt == 1) {
+        } else if (responseCnt == 1) {
+            requests[requestId].response1 = respData;
+            requests[requestId].responseCnt++;
             DeliverLog(msg.gas, msg.sender, 2);
             msg.sender.send(SECOND_DELIVER_COST);
             return;
         }
 
         DeliverLog(msg.gas, msg.sender, 3);
+
+        bytes32 response0 = requests[requestId].response0;
+        bytes32 response1 = requests[requestId].response1;
         bytes32 response;
-        if (response1 == response2 || response1 == response3) {
+        if (respData == response0 || respData == response1) {
+            response = respData;
+        } else if (response0 == response1) {
             response = response1;
-        } else if (response2 == response3) {
-            response = response2;
         } else {
             // None of the options won, so refund gas costs and abort without delivering data.
             DeliverLog(msg.gas, 0, -8);
