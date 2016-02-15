@@ -118,153 +118,188 @@ Therefore, $\algB$ simply outputs this as a signature forgery.
 
 
 
-\subsection{Gas neutrality}
+\subsection{Gas Neutrality}
+
 
 \begin{theorem}[Gas neutrality for Town Crier]
-Assuming that the Town Crier relay is honest, 
-then Town Crier's wallet account $\pksgx$ 
-will have at least $\sbrown{\$ G_{\text{max}}}$
-amount remaining after each {\bf Deliver}  
-call finishes execution.
+Assuming an honest Town Crier relay,
+Town Crier's wallet account $\tcadd$ will have at least $\constgasmax$ remaining after each {\bf Deliver} call.
 \end{theorem}
-\begin{proof}[(sketch).]
-Since the relay is honest, every time 
-$\pksgx$ invokes the {\bf Deliver}
-entry point, the following holds:
-1) 
-$\sbrown{\$ G_{\text{deliver}}}
-= \smaroon{\$ F}$;
-i.e., the gas $\tcadd$ advances is equal
-to the fees the 
-requester deposited with the \tcont contract;
-2)
-the amount gas sent 
-$\sbrown{\$ G_{\text{deliver}}} 
-\leq 
-\sbrown{\$ G_{\text{max}}} 
-$;
-in other words, 
-$\tcadd$ has sufficient funds  
-if it starts out with $\sbrown{\$ G_{\text{max}}}$
-in its wallet;
-and
-3) 
-$\sbrown{\$ G_{\text{min}}} \leq
-\sbrown{\$ G_{\text{deliver}}}$; in other words, the statement that refunds
-$\tcadd$ 
-$\smaroon{\$ F}$
-amount, denoted (**) in Figure \elaine{fill in ref}, will definitely be invoked. This 
-ensures that the full gas amount 
-$\sbrown{\$ G_{\text{deliver}}}$
-that $\tcadd$ advanced will be refunded (and anything more left
-at the end of the execution will also be refunded);
+
+\begin{proof}[(sketch)]
+Honest relay means $\resumecall(\dgid, \dgform)$ will always be legitimate and $\dgform = \dgform'$ in {\bf Deliver}.
+While $\fee$ is specified by a potentially malicious user, \tcont rejects the request unless $\constgasmin \leq \fee \leq \constgasmax$.
+This means $\gasdeliver = \constgasmax \geq \fee$.
+We also will never respond to the same request twice (these are specified in the enclave protocol), so we will never abort.
+
+We limit the gas provided to $\dgcallback$ to $\fee - \constgasmin$ (which must be positive because of the check in {\bf Request}),
+and $\constgasmin$ is set so that it is at least the cost of {\bf Deliver} not including $\dgcallback$.
+This means that the total gas used is no greater than $\constgasmin + (\fee - \constgasmin) = \fee$, which is exactly what $\tcadd$ is sent for reimbursement.
+We also don't run out of gas because $\fee \leq \constgasmax = \gasdeliver$, so we cannot use more gas than we provide.
 \end{proof}
-
-
-
 
 
 \begin{theorem}[Bounded loss for honest requester]
-Suppose request $({\sf params}, {\sf callback}, \_)$ was submitted
-by an honest requester $\reqcont$;
-%and got assigned a unique identifier
-%${\sf id}$ by $\tcont$;
-then 
-either 
-\begin{itemize}[leftmargin=5mm]
-\item ${\sf callback}$ will be invoked  
-with a valid datagram matching requested parameters
-${\sf params}$,
-and the requester consumes at most
-$\sbrown{\$ \overline{G}_{\text{request}}} + \sbrown{\$ \overline{G}_{\text{deliver}}} + 
-\sbrown{\$ \overline{G}_{\text{cancel}}}
-+ \sbrown{\$ \overline{G}_{\emptyset}}$;
-or 
-\item
-$\reqcont$ 
-consumes at most 
-$\sbrown{\$ \overline{G}_{\text{request}}} + \sbrown{\$ \overline{G}_{\text{cancel}}} + 
-\sbrown{\$ \overline{G}_{\emptyset}}$ after calling {\bf Cancel}.
-%after ${\color{blue} \Time_{\text{timeout}}}$.
-\end{itemize}
-In the above, $\sbrown{\overline{G}_{\text{request}}}$,
-$\sbrown{\$ \overline{G}_{\text{deliver}}}$,
-and $\sbrown{\$ \overline{G}_{\text{cancel}}}$ 
-denotes the maximum gas required
-to execute the {\bf Request}, {\bf Cancel} entry points respectively;
-and $\sbrown{\$ \overline{G}_{\emptyset}}$ denotes the 
-gas needed for {\bf Deliver} -- should the datagram delivery
-happen after a cancellation has happened.
+For any request $(\dgform, \dgcallback, \fee)$ submitted by an honest user $\reqcont$,
+the requester will lose no more than $\gasrequest + \constgasmax$ money.
 \end{theorem}
 
-\begin{proof}[(sketch.)]
-%An honest requester $\reqcont$  
-%picks a random, sufficiently long ${\sf id}$ such
-%that the probability of collision with an existing ${\sf id}$ 
-%is negligible.
-%Recall that $\tcont$ ignores all future occurrences of ${\sf id}$, i.e.,
-%only the first occurrence of ${\sf id}$ is preserved. 
-An honest requester $\reqcont$  
-puts in 
-$\sbrown{\$ \overline{G}_{\text{request}}} + 
-\sbrown{\$ \overline{G}_{\text{deliver}}}$
-amount with each request to $\tcont$,
-
-\paragraph{Case 1.}
-For a specific ${\sf id}$,
-if the line marked (*) %``Set ${\sf bDelivered[{\sf id}]}$''
-in \tcont
-is reached,
-%for some ${\sf id}$ at any point,
-then it is guaranteed that the following assertions
-hold:
-%${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$,
-${\sf params} = {\sf params}'$,
-and $\smaroon{\$ F} = \sbrown{\$ \overline{G}_{\text{deliver}}} \leq 
-\sbrown{\$ G_{\text{deliver}}}$.
-In this case, 
-\tcont will finish execution and the requester
-would have obtained the resulting 
-datagram for the correct ${\sf params}$ specified in the request.
-%and before the requested deadline ${\color{blue} \Time_{\text{timeout}}}$.
-Now the honest requester may have invoked {\bf Cancel}
-before it receives the delivered datagram. 
-In this case, the honest requester pays $\sbrown{\overline{G}_{\text{cancel}}} + 
-\sbrown{\overline{G}_\emptyset}$
-upfront for the cancellation request.
-Therefore, the total the honest requester loses in this case
-is bounded by 
-$\sbrown{\$ \overline{G}_{\text{request}}} + \sbrown{\$ \overline{G}_{\text{deliver}}} + 
-\sbrown{\$ \overline{G}_{\text{cancel}}}
-+ \sbrown{\$ \overline{G}_{\emptyset}}$.
-
-
-\paragraph{Case 2.}
-%Else, if 
-%the line ``Set ${\sf bDelivered[{\sf id}]}$''
-%in \tcont
-%is never reached for some ${\sf id}$ before the requested deadline 
-%${\color{blue} \Time_{\text{timeout}}}$, 
-Else, if 
-${\sf bCanceled}[{\sf id}]$ is set before 
-the line marked (*) 
-is reached --- note that in this case, the line 
-marked (*) will never be reached for ${\sf id}$ --- 
-then the honest requester would have invoked  $\reqcont$.
-An honest requester pays $\sbrown{\overline{G}_{\text{cancel}}} + 
-\sbrown{\overline{G}_\emptyset}$
-upfront for the cancellation request --- this ensures that
-the requester will be refunded the amount $\smaroon{\${F}} := \sbrown{\overline{G}_{\text{deliver}}}$, and since
-It is not hard to see that the honest requester loses at most
-$\sbrown{\$ \overline{G}_{\text{request}}} + 
-\sbrown{\$ \overline{G}_{\text{cancel}}}
-+ \sbrown{\$ \overline{G}_{\emptyset}}$ in this case.
-%can invoke the {\bf Cancel}
-%entry point to obtain a refund 
-%of $\smaroon{\$F_{\text{deliver}}}$ before ${\color{blue} \Time_{\text{timeout}}}$ ---
-%in this case the honest requester would have lost
-%no more than $\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{cancel}}}$.
+\begin{proof}[(sketch)]
+In Ethereum, all money must be sent by the address controlling that money.
+An honest user will only send $\gasrequest + \fee$ to a given request and no more with $\fee \leq \constgasmax$.
+They will not continue to send money to \tcont without receiving a response, so that means that they cannot lose more than $\gasrequest + \constgasmax$
+even if \tc is malicious and does not deliver data.
 \end{proof}
+
+
+
+%\subsection{Gas neutrality}
+%
+%\begin{theorem}[Gas neutrality for Town Crier]
+%Assuming that the Town Crier relay is honest, 
+%then Town Crier's wallet account $\pksgx$ 
+%will have at least $\sbrown{\$ G_{\text{max}}}$
+%amount remaining after each {\bf Deliver}  
+%call finishes execution.
+%\end{theorem}
+%\begin{proof}[(sketch).]
+%Since the relay is honest, every time 
+%$\pksgx$ invokes the {\bf Deliver}
+%entry point, the following holds:
+%1) 
+%$\sbrown{\$ G_{\text{deliver}}}
+%= \smaroon{\$ F}$;
+%i.e., the gas $\tcadd$ advances is equal
+%to the fees the 
+%requester deposited with the \tcont contract;
+%2)
+%the amount gas sent 
+%$\sbrown{\$ G_{\text{deliver}}} 
+%\leq 
+%\sbrown{\$ G_{\text{max}}} 
+%$;
+%in other words, 
+%$\tcadd$ has sufficient funds  
+%if it starts out with $\sbrown{\$ G_{\text{max}}}$
+%in its wallet;
+%and
+%3) 
+%$\sbrown{\$ G_{\text{min}}} \leq
+%\sbrown{\$ G_{\text{deliver}}}$; in other words, the statement that refunds
+%$\tcadd$ 
+%$\smaroon{\$ F}$
+%amount, denoted (**) in Figure \elaine{fill in ref}, will definitely be invoked. This 
+%ensures that the full gas amount 
+%$\sbrown{\$ G_{\text{deliver}}}$
+%that $\tcadd$ advanced will be refunded (and anything more left
+%at the end of the execution will also be refunded);
+%\end{proof}
+%
+%
+%
+%
+%
+%\begin{theorem}[Bounded loss for honest requester]
+%Suppose request $({\sf params}, {\sf callback}, \_)$ was submitted
+%by an honest requester $\reqcont$;
+%%and got assigned a unique identifier
+%%${\sf id}$ by $\tcont$;
+%then 
+%either 
+%\begin{itemize}[leftmargin=5mm]
+%\item ${\sf callback}$ will be invoked  
+%with a valid datagram matching requested parameters
+%${\sf params}$,
+%and the requester consumes at most
+%$\sbrown{\$ \overline{G}_{\text{request}}} + \sbrown{\$ \overline{G}_{\text{deliver}}} + 
+%\sbrown{\$ \overline{G}_{\text{cancel}}}
+%+ \sbrown{\$ \overline{G}_{\emptyset}}$;
+%or 
+%\item
+%$\reqcont$ 
+%consumes at most 
+%$\sbrown{\$ \overline{G}_{\text{request}}} + \sbrown{\$ \overline{G}_{\text{cancel}}} + 
+%\sbrown{\$ \overline{G}_{\emptyset}}$ after calling {\bf Cancel}.
+%%after ${\color{blue} \Time_{\text{timeout}}}$.
+%\end{itemize}
+%In the above, $\sbrown{\overline{G}_{\text{request}}}$,
+%$\sbrown{\$ \overline{G}_{\text{deliver}}}$,
+%and $\sbrown{\$ \overline{G}_{\text{cancel}}}$ 
+%denotes the maximum gas required
+%to execute the {\bf Request}, {\bf Cancel} entry points respectively;
+%and $\sbrown{\$ \overline{G}_{\emptyset}}$ denotes the 
+%gas needed for {\bf Deliver} -- should the datagram delivery
+%happen after a cancellation has happened.
+%\end{theorem}
+%
+%\begin{proof}[(sketch.)]
+%%An honest requester $\reqcont$  
+%%picks a random, sufficiently long ${\sf id}$ such
+%%that the probability of collision with an existing ${\sf id}$ 
+%%is negligible.
+%%Recall that $\tcont$ ignores all future occurrences of ${\sf id}$, i.e.,
+%%only the first occurrence of ${\sf id}$ is preserved. 
+%An honest requester $\reqcont$  
+%puts in 
+%$\sbrown{\$ \overline{G}_{\text{request}}} + 
+%\sbrown{\$ \overline{G}_{\text{deliver}}}$
+%amount with each request to $\tcont$,
+%
+%\paragraph{Case 1.}
+%For a specific ${\sf id}$,
+%if the line marked (*) %``Set ${\sf bDelivered[{\sf id}]}$''
+%in \tcont
+%is reached,
+%%for some ${\sf id}$ at any point,
+%then it is guaranteed that the following assertions
+%hold:
+%%${\color{blue} \Time_{\text{timeout}}} > {\sf cur\_time}$,
+%${\sf params} = {\sf params}'$,
+%and $\smaroon{\$ F} = \sbrown{\$ \overline{G}_{\text{deliver}}} \leq 
+%\sbrown{\$ G_{\text{deliver}}}$.
+%In this case, 
+%\tcont will finish execution and the requester
+%would have obtained the resulting 
+%datagram for the correct ${\sf params}$ specified in the request.
+%%and before the requested deadline ${\color{blue} \Time_{\text{timeout}}}$.
+%Now the honest requester may have invoked {\bf Cancel}
+%before it receives the delivered datagram. 
+%In this case, the honest requester pays $\sbrown{\overline{G}_{\text{cancel}}} + 
+%\sbrown{\overline{G}_\emptyset}$
+%upfront for the cancellation request.
+%Therefore, the total the honest requester loses in this case
+%is bounded by 
+%$\sbrown{\$ \overline{G}_{\text{request}}} + \sbrown{\$ \overline{G}_{\text{deliver}}} + 
+%\sbrown{\$ \overline{G}_{\text{cancel}}}
+%+ \sbrown{\$ \overline{G}_{\emptyset}}$.
+%
+%
+%\paragraph{Case 2.}
+%%Else, if 
+%%the line ``Set ${\sf bDelivered[{\sf id}]}$''
+%%in \tcont
+%%is never reached for some ${\sf id}$ before the requested deadline 
+%%${\color{blue} \Time_{\text{timeout}}}$, 
+%Else, if 
+%${\sf bCanceled}[{\sf id}]$ is set before 
+%the line marked (*) 
+%is reached --- note that in this case, the line 
+%marked (*) will never be reached for ${\sf id}$ --- 
+%then the honest requester would have invoked  $\reqcont$.
+%An honest requester pays $\sbrown{\overline{G}_{\text{cancel}}} + 
+%\sbrown{\overline{G}_\emptyset}$
+%upfront for the cancellation request --- this ensures that
+%the requester will be refunded the amount $\smaroon{\${F}} := \sbrown{\overline{G}_{\text{deliver}}}$, and since
+%It is not hard to see that the honest requester loses at most
+%$\sbrown{\$ \overline{G}_{\text{request}}} + 
+%\sbrown{\$ \overline{G}_{\text{cancel}}}
+%+ \sbrown{\$ \overline{G}_{\emptyset}}$ in this case.
+%%can invoke the {\bf Cancel}
+%%entry point to obtain a refund 
+%%of $\smaroon{\$F_{\text{deliver}}}$ before ${\color{blue} \Time_{\text{timeout}}}$ ---
+%%in this case the honest requester would have lost
+%%no more than $\sbrown{\$ G_{\text{request}}} + \sbrown{\$ G_{\text{cancel}}}$.
+%\end{proof}
 
 
 
