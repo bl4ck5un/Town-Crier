@@ -176,7 +176,7 @@ static int increase_nonce_by_one(uint8_t* nonce)
 #pragma warning (pop)
     }
     else
-    { printf("NULL input\n!"); return -1; }
+    { LL_CRITICAL("nonce is NULL"); return -1; }
 cleanup:
     mbedtls_mpi_free(&p);
     return ret;
@@ -275,7 +275,8 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
         tx.rlp_list(out, false);
     }
     catch (std::invalid_argument& ex) {
-        LL_CRITICAL("%s\n", ex.what()); return -1;
+        LL_CRITICAL("%s\n", ex.what()); 
+        return -1;
     }
 
 

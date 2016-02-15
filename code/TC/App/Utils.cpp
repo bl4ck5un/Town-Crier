@@ -39,6 +39,11 @@ void print_error_message(sgx_status_t ret)
         printf("Error: Unexpected error occurred.\n");
 }
 
+//const char* get_error_message(sgx_status_t ret)
+//{
+//    
+//}
+
 
 /* Initialize the enclave:
  *   Step 1: retrive the launch token saved by last transaction
@@ -54,27 +59,27 @@ int initialize_enclave(void)
     
     /* Step 1: retrive the launch token saved by last transaction */
 #ifdef _MSC_VER
-    /* try to get the token saved in CSIDL_LOCAL_APPDATA */
-    if (S_OK != SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, token_path)) {
-        strncpy_s(token_path, _countof(token_path), TOKEN_FILENAME, sizeof(TOKEN_FILENAME));
-    } else {
-        strncat_s(token_path, _countof(token_path), "\\" TOKEN_FILENAME, sizeof(TOKEN_FILENAME)+2);
-    }
-
-    /* open the token file */
-    HANDLE token_handler = CreateFileA(token_path, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, NULL, NULL);
-    if (token_handler == INVALID_HANDLE_VALUE) {
-        printf("Warning: Failed to create/open the launch token file \"%s\".\n", token_path);
-    } else {
-        /* read the token from saved file */
-        DWORD read_num = 0;
-        ReadFile(token_handler, token, sizeof(sgx_launch_token_t), &read_num, NULL);
-        if (read_num != 0 && read_num != sizeof(sgx_launch_token_t)) {
-            /* if token is invalid, clear the buffer */
-            memset(&token, 0x0, sizeof(sgx_launch_token_t));
-            printf("Warning: Invalid launch token read from \"%s\".\n", token_path);
-        }
-    }
+//    /* try to get the token saved in CSIDL_LOCAL_APPDATA */
+//    if (S_OK != SHGetFolderPathA(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, token_path)) {
+//        strncpy_s(token_path, _countof(token_path), TOKEN_FILENAME, sizeof(TOKEN_FILENAME));
+//    } else {
+//        strncat_s(token_path, _countof(token_path), "\\" TOKEN_FILENAME, sizeof(TOKEN_FILENAME)+2);
+//    }
+//
+//    /* open the token file */
+//    HANDLE token_handler = CreateFileA(token_path, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, NULL, NULL);
+//    if (token_handler == INVALID_HANDLE_VALUE) {
+//        printf("Warning: Failed to create/open the launch token file \"%s\".\n", token_path);
+//    } else {
+//        /* read the token from saved file */
+//        DWORD read_num = 0;
+//        ReadFile(token_handler, token, sizeof(sgx_launch_token_t), &read_num, NULL);
+//        if (read_num != 0 && read_num != sizeof(sgx_launch_token_t)) {
+//            /* if token is invalid, clear the buffer */
+//            memset(&token, 0x0, sizeof(sgx_launch_token_t));
+//            printf("Warning: Invalid launch token read from \"%s\".\n", token_path);
+//        }
+//    }
 #else /* __GNUC__ */
     /* try to get the token saved in $HOME */
     const char *home_dir = getpwuid(getuid())->pw_dir;
@@ -109,10 +114,11 @@ int initialize_enclave(void)
     /* Debug Support: set 2nd parameter to 1 */
     ret = sgx_create_enclave(ENCLAVE_FILENAME, SGX_DEBUG_FLAG, &token, &updated, &global_eid, NULL);
     if (ret != SGX_SUCCESS) {
+        LL_CRITICAL("sgx_create_enclave returned %#x", ret);
         print_error_message(ret);
 #ifdef _MSC_VER
-        if (token_handler != INVALID_HANDLE_VALUE)
-            CloseHandle(token_handler);
+//        if (token_handler != INVALID_HANDLE_VALUE)
+//            CloseHandle(token_handler);
 #else
         if (fp != NULL) fclose(fp);
 #endif
@@ -121,24 +127,24 @@ int initialize_enclave(void)
 
     /* Step 3: save the launch token if it is updated */
 #ifdef _MSC_VER
-    if (updated == FALSE || token_handler == INVALID_HANDLE_VALUE) {
-        /* if the token is not updated, or file handler is invalid, do not perform saving */
-        if (token_handler != INVALID_HANDLE_VALUE)
-            CloseHandle(token_handler);
-        return 0;
-    }
-    
-    /* flush the file cache */
-    FlushFileBuffers(token_handler);
-    /* set access offset to the begin of the file */
-    SetFilePointer(token_handler, 0, NULL, FILE_BEGIN);
-
-    /* write back the token */
-    DWORD write_num = 0;
-    WriteFile(token_handler, token, sizeof(sgx_launch_token_t), &write_num, NULL);
-    if (write_num != sizeof(sgx_launch_token_t))
-        printf("Warning: Failed to save launch token to \"%s\".\n", token_path);
-    CloseHandle(token_handler);
+//    if (updated == FALSE || token_handler == INVALID_HANDLE_VALUE) {
+//        /* if the token is not updated, or file handler is invalid, do not perform saving */
+//        if (token_handler != INVALID_HANDLE_VALUE)
+//            CloseHandle(token_handler);
+//        return 0;
+//    }
+//    
+//    /* flush the file cache */
+//    FlushFileBuffers(token_handler);
+//    /* set access offset to the begin of the file */
+//    SetFilePointer(token_handler, 0, NULL, FILE_BEGIN);
+//
+//    /* write back the token */
+//    DWORD write_num = 0;
+//    WriteFile(token_handler, token, sizeof(sgx_launch_token_t), &write_num, NULL);
+//    if (write_num != sizeof(sgx_launch_token_t))
+//        printf("Warning: Failed to save launch token to \"%s\".\n", token_path);
+//    CloseHandle(token_handler);
 #else /* __GNUC__ */
     if (updated == FALSE || fp == NULL) {
         /* if the token is not updated, or file handler is invalid, do not perform saving */

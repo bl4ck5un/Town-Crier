@@ -23,9 +23,8 @@
 #endif
 
 #if defined(_MSC_VER)
-# define TOKEN_FILENAME   "Enclave.token"
-# define ENCLAVE_FILENAME "Enclave.signed.dll"
-
+#define TOKEN_FILENAME   "Enclave.token"
+#define ENCLAVE_FILENAME "Enclave.signed.dll"
 #elif defined(__GNUC__)
 # define TOKEN_FILENAME   "enclave.token"
 # define ENCLAVE_FILENAME "enclave.signed.so"

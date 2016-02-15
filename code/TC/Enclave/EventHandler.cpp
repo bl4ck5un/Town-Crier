@@ -57,10 +57,10 @@ static int flight_insurance_handler()
 
     rdtsc(&time1);
     LL_CRITICAL("ctx swtich done:  %llu", time1);
-    
-    ret = get_flight_delay("20160129", "1450", "DAL900", &delay);
+    ret = get_flight_delay("20160215", "0655", "UAL1183", &delay);
     rdtsc(&time2);
     LL_CRITICAL("get_flight_delay: %llu", time2-time1);
+    LL_CRITICAL("delay is %d", delay);
 
     bytes rr;
     enc_int(rr, delay, sizeof delay);;
@@ -68,8 +68,9 @@ static int flight_insurance_handler()
     uint8_t req[64];
     uint8_t raw_tx[1024];
     int raw_tx_len = sizeof raw_tx;
+    uint8_t nonce[32] = {9};
 
-    return get_raw_signed_tx(NULL, 32, 
+    return get_raw_signed_tx(nonce, 32, 
         1, 1, 
         req, sizeof req, 
         &rr[0], 32, 

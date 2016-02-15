@@ -188,8 +188,12 @@ int main()
 
     // main loop
 #ifdef E2E_BENCHMARK
-//    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < 1; i++)
+    {
+        printf("====================(%d)====================\n", i);
         monitor_loop(nonce);
+        printf("\n");
+    }
 #endif
 exit:
     // test_RLP(global_eid, &ret);

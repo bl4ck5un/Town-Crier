@@ -90,8 +90,10 @@ int parse_response(char* resp, int* buf, char* date, char* departure) {
     len = strlen(resp);
     while(strncmp(temp, tempbuff, 31) != 0) {
         temp+=1;
-        if (temp == resp + len - 32)
+        if (temp == resp + len - 32) {
+            LL_CRITICAL("did not find flight");
             return -1;
+        }
     }
     sd = temp;
 
@@ -190,7 +192,7 @@ int get_flight_delay(char* date, char* time, char* flight, int* resp) {
     ret = parse_response(buf, &delay, date, time);
 
     if (ret < 0) {
-        LL_CRITICAL("no data/bad request\n");
+        LL_CRITICAL("no data/bad request");
         ret = -1; goto cleanup;
     }
     else {
