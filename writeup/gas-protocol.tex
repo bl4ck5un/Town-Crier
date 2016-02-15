@@ -1,8 +1,9 @@
 
+
+
 As we described in Section \ethan{ref gas-desc}, Ethereum employs \emph{gas}, a fee mechanism, to mitigate DoS attacks.
-In order to sustainably operate \tcs on Ethereum, we must account for this cost and include reimbursement fees from requesters.
-Unfortunately gas can only be used to pay for transactions, so instead we develop a two-currency resource management system
-and prove that it provides reasonable guarantees for both honest requesters and \tcs.
+In order to sustainably operate \tc on Ethereum, we develop a novel two-currency resource management system which allows
+\tc to make gas payments up front while preventing a malicious requester from exhausting \tc's resources.
 
 
 \paragraph{Execution model and notation.}
@@ -209,7 +210,7 @@ We now describe how this can be realized by modifying the fee-free protocol desc
     Since $\tcadd$ must invoke {\bf Deliver}, \tc will pays the gas cost.
     It sets the {\tt GASLIMIT} $\gasdeliver := \constgasmax$.
     To ensure that the gas spent will not exceed the reimbursement available ($\fee$),
-    \tcont sets the {\tt GASLIMIT} $\gascallback$ for the sub-call to $\dgcallback$ to $\fee - \constgasmin$.
+    \tcont sets the {\tt GASLIMIT} $\gascallback$ for the sub-call to $\dgcallback$ to the reimbursement remaining: $\fee - \constgasmin$.
 
   \item {\it Town Crier Relay.}
     The relay behavior does not change with the presence of fees.
