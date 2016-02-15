@@ -140,16 +140,17 @@ We also don't run out of gas because $\fee \leq \constgasmax = \gasdeliver$, so 
 \end{proof}
 
 
-\begin{theorem}[Bounded loss for honest requester]
+\begin{theorem}[Fair Expenditure for Honest Requester]
 For any request $(\dgform, \dgcallback, \fee)$ submitted by an honest user $\reqcont$,
-the requester will lose no more than $\gasrequest + \constgasmax$ money.
+at most $\constgascancel$ of the user's total payment will not be spent on computation requested by and executed on behalf of that user.
 \end{theorem}
 
 \begin{proof}[(sketch)]
-In Ethereum, all money must be sent by the address controlling that money.
-An honest user will only send $\gasrequest + \fee$ to a given request and no more with $\fee \leq \constgasmax$.
-They will not continue to send money to \tcont without receiving a response, so that means that they cannot lose more than $\gasrequest + \constgasmax$
-even if \tc is malicious and does not deliver data.
+\ethan{I'm working on re-doing this right now since it relies on cancellation.}
+%In Ethereum, all money must be sent by the address controlling that money.
+%An honest user will only send $\gasrequest + \fee$ to a given request and no more with $\fee \leq \constgasmax$.
+%They will not continue to send money to \tcont without receiving a response, so that means that they cannot lose more than $\gasrequest + \constgasmax$
+%even if \tc is malicious and does not deliver data.
 \end{proof}
 
 
