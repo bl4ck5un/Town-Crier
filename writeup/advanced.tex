@@ -11,6 +11,7 @@ We will continue to develop \tc after its initial deployment and expect it to ev
 \item{\em Traffic-analysis protection.} The \medname can observe the pattern of data sources accesses made by \tc. By correlating with activity in \tcont, an adversarial \medname can thus infer the data source targeted by private datagrams, as well as the timing---and potentially, based on traffic analysis, the actual request~\cite{XiaoFeng}. To address this issue, the \encname might incorporate the standard approach of making chaff or decoy data requests, i.e., false requests, to both the true data source and well as non-target data sources.
 \item{\em Migration to data-source feeds.} Ultimately, we envision that data sources may wish themselves to serve as authenticated data feeds. To do so, they could simply stand up \tc as a front end. As a first step along this path, however, an independent \tc service might provide support for XML-labelled data from data sources, enabling more accurate and direct scraping and intentional identification of what data should be served.  
 \item{\em Programmable scrapers and functions.} Relying contracts might provide their own scrapers, enabling new data sources, or their on code for private evaluation in \tc, emulating more sophisticated cryptographic tools for private contract construction such as Hawk~\cite{}. 
+\item{\em SLAs}
 \end{itemize}
 
 
