@@ -19,7 +19,7 @@
 
 
 As mentioned earlier, we adopt the 
-UC model of SGX proposed by Shi et al.\elaine{cite}
+UC model of SGX proposed by Shi et al.~\cite{sgxsok}
 In particular, their 
 abstraction captures a subset of the features 
 of Intel SGX. 
@@ -27,8 +27,7 @@ of Intel SGX.
 %In this paper, we use the same formal abstraction
 %to model SGX (see Figure~\ref{fig:fsgx}).
 %\elaine{explain more here, we can think of fsgx as a trusted third party.}
-The main idea behind the UC modeling by Shi et al.
-\elaine{cite}
+The main idea behind the UC modeling by Shi et al.~\cite{sgxsok}
 is to think of SGX 
 as a trusted third party defined by 
 a global functionality $\fsgx$ (see Figure~\ref{fig:fsgx} of 
@@ -45,13 +44,13 @@ public and secret keys
 are called ``manufacturer keys'' and denoted $\pkM$ and $\skM$ 
 (i.e., think of always signing 
 with the 0-th key of the group signature scheme).
-We adopt this notational choice from Shi et al. \elaine{cite} 
+We adopt this notational choice from Shi et al.~\cite{sgxsok} %\elaine{cite} 
 for simplicity. Later when 
 we need to take revocation into account,
 it is always possible to replace this signature 
 scheme with a group signature scheme in the modeling.
 
-The $\fsgx(\sigsgx)$ functionality described by Shi et al. \elaine{cite}
+The $\fsgx(\sigsgx)$ functionality described by Shi et al.~\cite{sgxsok} %\elaine{cite}
 is a global functionality shared by all protocols, parametrized
 by a signature scheme $\sigsgx$.
 This global \fsgx 
@@ -120,9 +119,12 @@ Shi et al. leave it as an open question to design secure processors
 with clear formal specifications, such that 
 they can be used in the design of larger protocols/systems 
 supporting formal reasoning of security.
-We refer the readers to Shi et al.  \elaine{cite} for a
-more detailed description of the UC modeling of Intel SGX.
+We refer the readers to Shi et al.~\cite{sgxsok} 
+for a more detailed description of the UC modeling of Intel SGX.
 
 
 \subsection{Blockchain Formal Modeling}
 \label{sec:blockchainmodel}
+
+
+

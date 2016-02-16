@@ -125,13 +125,13 @@ Digital signatures are needed to authenticate messages, such as $m_3$, entering 
 \subsection{Use of SGX}
 \label{sec:useofsgx}
 
-Let $\enclaveprog$ represent the code for \encname, which we presume is trusted by all system participants. Our protocols in \tc rely on the ability of SGX to attest to execution of an instance of $\enclaveprog$ and bind a public key $\pkTC$ to this instance. Here we briefly explain how we achieve these goals. First, we present a model that abstracts away implementation details in SGX, helping simplify our protocol presentation and later, our security proofs. We then explain how SGX attestation is used to authenticate datagrams served by \tcont, namely through binding of $\pkTC$ to an Ethereum wallet on the blockchain. Finally, we explain how we use the clock in SGX. Our discussion draws on formalism for SGX from~\cite{ElainesSGXpaper}.
+Let $\enclaveprog$ represent the code for \encname, which we presume is trusted by all system participants. Our protocols in \tc rely on the ability of SGX to attest to execution of an instance of $\enclaveprog$ and bind a public key $\pkTC$ to this instance. Here we briefly explain how we achieve these goals. First, we present a model that abstracts away implementation details in SGX, helping simplify our protocol presentation and later, our security proofs. We then explain how SGX attestation is used to authenticate datagrams served by \tcont, namely through binding of $\pkTC$ to an Ethereum wallet on the blockchain. Finally, we explain how we use the clock in SGX. Our discussion draws on formalism for SGX from~\cite{sgxsok}.
 
 
 
 \paragraph{\bf Formal model and notation.} 
 We adopt a formal abstraction
-of Intel SGX proposed by Shi et al. \elaine{cite}.
+of Intel SGX proposed by Shi et al.~\cite{sgxsok}. %\elaine{cite}.
 Following the UC and GUC paradigms~\cite{uc,guc,juc}, Shi et al.
 propose to 
 abstract away the details of the SGX implementation,
