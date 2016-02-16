@@ -28,36 +28,39 @@ treated by enclave code as untrusted.
 
 \begin{tikzpicture}
   [box/.style={entity, text width=1.5cm, inner sep=5pt},
-   untrusted/.style={fill=red!30},
-   double/.style={rectangle split, rectangle split parts=2}]
-  \matrix (m) [row sep=5mm, column sep=3mm]{
+   untrusted/.style={fill=red!33},
+   double/.style={rectangle split, rectangle split parts=2},
+   ecall/.style={color=blue,thick},
+   ocall/.style={color=red!80!black,thick}]
+  \matrix (m) [row sep=1.2em, column sep=0.6em]{
     \node[inner sep=0pt,anchor=south] (user) {\includegraphics[width=1cm]{figures/user}}; &
     \node[inner sep=0pt,draw,cloud,aspect=2.0,align=center,anchor=south](cloud) {\footnotesize HTTPS \\ websites}; &
-    \node[box, cylinder, shape border rotate=90, aspect=.2,anchor=south](bc){blockchain};  \\[0.25em]
+    \node[box, cylinder, shape border rotate=90, aspect=.2,anchor=south](bc){blockchain};  \\[0.9em]
 
     \node[box,fill=white] (client) {Client \\ Interface}; & 
     \node[box,fill=white] (net) {TCP}; & 
-    \node[box,fill=white,double,text width=2cm] (monitor) {\texttt{geth} \nodepart{second}{Blockchain \\ Interface}}; \\[0.75em]
+    \node[box,fill=white,double,text width=2cm] (monitor) {\texttt{geth} \nodepart{second}{Blockchain \\ Interface}}; \\[0.6em]
 
     \node[box] (att) {Attestation \\ Generation}; &
     \node[box,double] (https) {HTTPS \nodepart{second}{Web \\ Scrapers}}; &
     \node[box,double,text width=2cm,] (req h){Ethereum TX \\ Reader/Writer \nodepart{second}{Request Handler}}; \\
 
-    \node[xshift=-1.25em] (sk) {\sksgx}; &  \node[box,text width=2cm] (keys) {\pkTC, \skTC}; & \\
+    & \node[box,text width=2cm] (keys) {\pkTC, \skTC}; & \\
   };
+  \node[anchor=west] (sk) at (keys.west-|att.west) {\skM};
 
   \draw[<->,thick] (user) -- (client);
   \draw[<->,thick] (net) -- (cloud);
   \draw[<->,thick] (monitor) -- (bc);
 
-  \draw[->,red,thick,transform canvas={xshift=-2mm}] (https) to (net);
-  \draw[->,red,thick,dashed,transform canvas={xshift=+2mm}] (net) to (https);
+  \draw[->,ocall,transform canvas={xshift=-2mm}] (https) to (net);
+  \draw[->,ocall,dashed,transform canvas={xshift=+2mm}] (net) to (https);
 
-  \draw[->,blue,thick,transform canvas={xshift=-2mm}] (client) -- (att);
-  \draw[<-,blue,thick,dashed,transform canvas={xshift=+2mm}] (client) -- (att);
+  \draw[->,ecall,transform canvas={xshift=-2mm}] (client) -- (att);
+  \draw[<-,ecall,dashed,transform canvas={xshift=+2mm}] (client) -- (att);
 
-  \draw[->,blue,thick,transform canvas={xshift=-2mm}] (monitor) -- (req h);
-  \draw[<-,blue,thick,dashed,transform canvas={xshift=+2mm}] (monitor) -- (req h);
+  \draw[->,ecall,transform canvas={xshift=-2mm}] (monitor) -- (req h);
+  \draw[<-,ecall,dashed,transform canvas={xshift=+2mm}] (monitor) -- (req h);
 
   \draw[<->,thick] (https.two east) -- (https.two east -| req h.two west);
 
@@ -66,24 +69,26 @@ treated by enclave code as untrusted.
   \draw[->,thick] (att.south-|sk.north) -- (sk);
 
   \begin{pgfonlayer}{background}
+    \node [bg-box, inner sep=1.2em, tc-server-color, fit=(client)(monitor)(keys)] {};
     \node [inner sep=0.6em, untrusted, fit=(client) (net) (monitor)] {};
     \node [inner sep=0.6em, trusted, fit=(att) (https) (req h) (keys)] {};
   \end{pgfonlayer}
 
-  \matrix [below=0.75em of m, matrix of nodes, column sep=1em, align=center]
+    \matrix (legend) [below=1.2em of m, matrix of nodes, column sep=0.75em, align=center]
   {
-    \node[inner xsep=0] {\bf Legend:}; &
-    \node[untrusted,text width=3.25em] (relay-leg) {Relay\vphantom{Ry}}; &
-    \node[trusted,text width=3.25em] (enc-leg) {Enclave\vphantom{Ry}}; &
-    \node[text width=2em] (ocall-leg) {}; &
-    \node[text width=2em] (ecall-leg) {}; \\
+    \node[inner xsep=0] {\small \bf Legend:}; &
+    \node[untrusted] (relay-leg) {\small Relay\vphantom{Ry}}; &
+    \node[trusted] (enc-leg) {\small Enclave\vphantom{Ry}}; &
+    \node[tc-server-color,rounded corners,text width=2.5em] (server-leg) {\small Server\vphantom{Ry}}; &
+    \node[text width=1.75em] (ecall-leg) {}; &
+    \node[text width=1.75em] (ocall-leg) {}; \\
   };
 
-  \path[->,color=red,thick,above] (ocall-leg.west) edge node {ocall} (ocall-leg.east);
-  \path[<-,color=red,thick,dashed,transform canvas={yshift=-0.4em}] (ocall-leg.west) edge (ocall-leg.east);
+  \path[->,ecall,above] (ecall-leg.west) edge node {\small ecall} (ecall-leg.east);
+  \path[<-,ecall,dashed,transform canvas={yshift=-0.4em}] (ecall-leg.west) edge (ecall-leg.east);
 
-  \path[->,color=blue,thick,above] (ecall-leg.west) edge node {ecall} (ecall-leg.east);
-  \path[<-,color=blue,thick,dashed,transform canvas={yshift=-0.4em}] (ecall-leg.west) edge (ecall-leg.east);
+  \path[->,ocall,above] (ocall-leg.west) edge node {\small ocall} (ocall-leg.east);
+  \path[<-,ocall,dashed,transform canvas={yshift=-0.4em}] (ocall-leg.west) edge (ocall-leg.east);
 \end{tikzpicture}
 \caption{Components of \tc Server}
 \label{fig:tcserver_impl}
