@@ -79,11 +79,11 @@ treated by enclave code as untrusted.
     \node[text width=2em] (ecall-leg) {}; \\
   };
 
-  \path[->,color=red,above] (ocall-leg.west) edge node {ocall} (ocall-leg.east);
-  \path[<-,color=red,dashed,transform canvas={yshift=-0.3em}] (ocall-leg.west) edge (ocall-leg.east);
+  \path[->,color=red,thick,above] (ocall-leg.west) edge node {ocall} (ocall-leg.east);
+  \path[<-,color=red,thick,dashed,transform canvas={yshift=-0.4em}] (ocall-leg.west) edge (ocall-leg.east);
 
-  \path[->,color=blue,above] (ecall-leg.west) edge node {ecall} (ecall-leg.east);
-  \path[<-,color=blue,dashed,transform canvas={yshift=-0.3em}] (ecall-leg.west) edge (ecall-leg.east);
+  \path[->,color=blue,thick,above] (ecall-leg.west) edge node {ecall} (ecall-leg.east);
+  \path[<-,color=blue,thick,dashed,transform canvas={yshift=-0.4em}] (ecall-leg.west) edge (ecall-leg.east);
 \end{tikzpicture}
 \caption{Components of \tc Server}
 \label{fig:tcserver_impl}
