@@ -123,6 +123,7 @@ Digital signatures are needed to authenticate messages, such as $m_3$, entering 
 
 
 \subsection{Use of SGX}
+\label{sec:useofsgx}
 
 Let $\enclaveprog$ represent the code for \encname, which we presume is trusted by all system participants. Our protocols in \tc rely on the ability of SGX to attest to execution of an instance of $\enclaveprog$ and bind a public key $\pkTC$ to this instance. Here we briefly explain how we achieve these goals. First, we present a model that abstracts away implementation details in SGX, helping simplify our protocol presentation and later, our security proofs. We then explain how SGX attestation is used to authenticate datagrams served by \tcont, namely through binding of $\pkTC$ to an Ethereum wallet on the blockchain. Finally, we explain how we use the clock in SGX. Our discussion draws on formalism for SGX from~\cite{ElainesSGXpaper}.
 
@@ -195,6 +196,7 @@ On receive (``resume'', ${\sf params}$) from $\relay$: \\
 \caption{Formal abstraction for SGX execution capturing a subset of SGX features
 sufficient for implementation of \tc.}
 \label{fig:SGX_abstraction}
+\label{fig:fsgx}
 \end{figure}
 
 
