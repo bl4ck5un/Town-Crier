@@ -50,13 +50,14 @@ Legal recourse is often impractical precisely because smart contracts beneficial
 to a requesting contract is guaranteed
 to truly reflect the data served by specified website $Y$ in time interval $T$ with the requester's specified parameters $\dgform$.
 \item
-{\it Gas neutrality (bounded \tc loss).} Assuming that $\tc$ executes honestly, it does not lose money (cannot suffer resource depletion)
+{\it Gas neutrality (bounded \tc loss).} \ethan{zero \tc loss?} Assuming that $\tc$ executes honestly, it does not lose money (cannot suffer resource depletion)
 even when accessed by arbitrarily malicious blockchain contracts and users.
 \item
 {\it Fair expenditure (bounded requester loss).} 
 Even when all other users, contracts, and \tc itself 
 act maliciously, 
 an honest requester's payment will be no more than a tiny amount of gas beyond that in an honest execution environment---whether or not a valid datagram is delivered.
+\ethan{I'd like to discuss the presentation of this gaurantee. I reframed it a bit in Section 6 because ``loss'' is poorly specified.}
 \end{itemize}
 \vspace{-1mm}
 
