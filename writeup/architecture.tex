@@ -76,7 +76,7 @@ Here we give a brief overview of our security model for \tc, providing more deta
 \item {\em \encname security.} We make three assumptions about the \encname : (1) The \encname behaves honestly, i.e., \engine, whose source code is published for clients, correctly executes the \tc protocol; (2) For an \encname-generated keypair $(\skTC, \pkTC)$, the private key $\skTC$ is known only to the \encname; and (3) The \encname has an accurate (internal) real-time clock. We explain below how we achieve these properties through use of SGX. 
 
 
-\item {\em Blockchain communication.} Transaction and message sources are authenticable, i.e., a transaction $m$ sent from an account ${\cal P}_{X}$ (or message $m$ from contract ${\cal C}_{X}$) is identified by the receiving account as originating from $X$. Transactions and messages are integrity protected (as they are digitally signed by the sender), but not confidential. 
+\item {\em Blockchain communication.} Transaction and message sources are authenticable, i.e., a transaction $m$ sent from an account / wallet ${\cal W}_{X}$ (or message $m$ from contract ${\cal C}_{X}$) is identified by the receiving account as originating from $X$. Transactions and messages are integrity protected (as they are digitally signed by the sender), but not confidential. 
 
 \item {\em Network communication.} The \medname (and other untrusted components of the \tc server) can tamper with or delay communications to and from the \encname. (As we explain in our SGX security model, the \medname cannot otherwise observe or alter the behavior of the \encname.) Thus the \medname is subsumed by an adversary that controls the network. 
 
