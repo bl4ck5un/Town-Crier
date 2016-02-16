@@ -80,7 +80,7 @@ If the requester is dishonest we need to not protect their request, and if the \
                  & {\it \sgray{//~$\fee$ held by contract}} \\[0.3em]
 
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm, \gasdeliver)$ from $\tcadd$: \\
-                 & If ${\sf isCanceled}[\dgid]$ and not ${\sf isDelivered}[\dgid]$ \\
+  \sgray{$(\star)$} & If ${\sf isCanceled}[\dgid]$ and not ${\sf isDelivered}[\dgid]$ \\
                  & \quad Send $\constgascancel$ to $\tcadd$ \\
                  & \quad Set ${\sf isDelivered}[\dgid]$ \\
                  & \quad Return \\
@@ -90,7 +90,7 @@ If the requester is dishonest we need to not protect their request, and if the \
                  & Set ${\sf isDelievered}[\dgid]$ \\
                  & Send $\fee$ to \tcadd \\
                  & Set $\gascallback := \fee - \constgasmin$ \\
-                 & Call $\dgcallback(\dgm)$ with $\gascallback$ max gas \\[0.3em]
+  \sgray{$(\dagger)$} & Call $\dgcallback(\dgm)$ with $\gascallback$ max gas \\[0.3em]
 
   {\bf Cancel:}  & On recv $(\dgid, \gascancel)$ from $\reqcont$: \\
                  & Retrieve stored $(\dgid, \_, \_, \fee, \reqcont')$ \\
@@ -100,7 +100,7 @@ If the requester is dishonest we need to not protect their request, and if the \
                  & \quad and ${\sf isDelivered}[\dgid]$ not set \\
                  & \quad and ${\sf isCanceled}[\dgid]$ not set \\
                  & Set ${\sf isCanceled}[\dgid]$ \\
-                 & Send $(\fee - \constgascancel)$ to $\reqcont$ \sgray{\it //~hold $\constgascancel$} \\
+  \sgray{$(\ddagger)$} & Send $(\fee - \constgascancel)$ to $\reqcont$ \sgray{\it //~hold $\constgascancel$} \\
   \hline
 \end{tabularx}
 \caption{

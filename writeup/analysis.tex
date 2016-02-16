@@ -52,18 +52,35 @@ protocol achieves authenticity of data feed by Definition~\ref{defn:auth}.
 
 \paragraph{Fee Safety.}
 Our protocol in Section~\ref{sec:gas-protocol} ensures that an honest \tcs will not run out of money
-and that an honest requester will not pay excessive fees without receiving data.
-These properties are encapsulated in the following theorems.
+and that an honest requester will not pay excessive fees.
 
 \begin{theorem}[Gas neutrality for Town Crier]
+\label{thm:tc-gas-neutral}
 If the \tc~\medname is honest,
 Town Crier's wallet $\tcadd$ will have at least $\constgasmax$ remaining after each {\bf Deliver} call.
 \end{theorem}
 
+An honest user should only have to pay for computation that is executed honestly on their behalf.
+If a valid datagram is delivered, this is a constant value plus the cost of executing \dgcallback.
+Otherwise the request should be able to recover the cost of executing {\bf Deliver}.
+For Theorem~\ref{thm:tc-gas-neutral} to hold, \tcont must retain a small fee on cancellation,
+but we allow the user to recover all but a small constant amount.
+We formalize this intuition in Theorem~\ref{thm:fair-expenditure}
 
 \begin{theorem}[Fair Expenditure for Honest Requester]
+\label{thm:fair-expenditure}
 For any request $(\dgform, \dgcallback, \fee)$ submitted by an honest user $\reqcont$,
-at most $\constgascancel$ of the user's total payment will not be spent on computation requested by and executed on behalf of that user.
+one of the following holds:
+\vspace{-0.4em}
+\begin{itemize}
+  \setlength{\itemsep}{2pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+  \item $\dgcallback$ is invoked with a valid datagram matching the request parameters $\dgform$
+    and the requester spends at most $\gasrequest + \gascancel + \fee$.
+
+  \item The requester spends at most $\gasrequest + \gascancel + \constgascancel$.
+\end{itemize}
 \end{theorem}
 
 

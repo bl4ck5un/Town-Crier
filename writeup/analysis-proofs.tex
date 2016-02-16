@@ -53,25 +53,27 @@ Therefore, $\algB$ simply outputs this as a signature forgery.
 
 
 \begin{proof}[Proof of Gas neutrality for Town Crier (sketch)]
-Honest relay means $\resumecall(\dgid, \dgform)$ will always be legitimate and $\dgform = \dgform'$ in {\bf Deliver}.
-While $\fee$ is specified by a potentially malicious user, \tcont rejects the request unless $\constgasmin \leq \fee \leq \constgasmax$.
-This means $\gasdeliver = \constgasmax \geq \fee$.
-We also will never respond to the same request twice (these are specified in the enclave protocol).
-This means that ${\sf isDelievered}[\dgid]$ will always be unset and we will always successfully retrieve a stored tuple and not abort.
-From here we consider two cases.
-
-\paragraph{Deliver called before Cancel.}
-In this case {\bf Deliver} calls $\dgcallback$ with a gas limit $\gascallback$ of $\fee - \constgasmin$ (which must be positive because of the check in {\bf Request}).
-$\constgasmin$ is set so that it is no less than the gas cost of {\bf Deliver} not including $\dgcallback$.
-That means that the total gas spent for {\bf Deliver} will be no greater than $\constgasmin + (\fee - \constgasmin) = \fee$, which is exactly what $\tcadd$ is sent for reimbursement.
-Moreover, the gas limit provided to {\bf Deliver} must be high enough because $\fee \leq \constgasmax = \gasdeliver$, so we cannot run out of gas.
-Finally, because $\fee$ was deposited with {\bf Request} and neither {\bf Deliver} nor {\bf Cancel} have been called before for this request, there must be at least $\fee$ stored $\tcont$.
-
-\paragraph{Deliver called after Cancel.}
-In this case $\tcadd$ is sent $\constgascancel$ and performs only operations of known cost.
-Because $\constgascancel$ is explicitly set to be the cost of those operations, this reimburses $\tcadd$ properly.
-Since $\fee$ was deposited with {\bf Request}, the first call to {\bf Cancel} leaves $\constgasmax$ associated with that request and subsequent calls do nothing,
-and {\bf Deliver} has not been called before for this request, there must be at least $\constgasmax$ left in $\tcont$ to send.
+\ethan{This needs to be redone more formally to include references to specific lines in the protocol and what they mean.
+I'm going to work on that soon (probably after I eat some food...I'm hungry.}
+%Honest relay means $\resumecall(\dgid, \dgform)$ will always be legitimate and $\dgform = \dgform'$ in {\bf Deliver}.
+%While $\fee$ is specified by a potentially malicious user, \tcont rejects the request unless $\constgasmin \leq \fee \leq \constgasmax$.
+%This means $\gasdeliver = \constgasmax \geq \fee$.
+%We also will never respond to the same request twice (these are specified in the enclave protocol).
+%This means that ${\sf isDelievered}[\dgid]$ will always be unset and we will always successfully retrieve a stored tuple and not abort.
+%From here we consider two cases.
+%
+%\paragraph{Deliver called before Cancel.}
+%In this case {\bf Deliver} calls $\dgcallback$ with a gas limit $\gascallback$ of $\fee - \constgasmin$ (which must be positive because of the check in {\bf Request}).
+%$\constgasmin$ is set so that it is no less than the gas cost of {\bf Deliver} not including $\dgcallback$.
+%That means that the total gas spent for {\bf Deliver} will be no greater than $\constgasmin + (\fee - \constgasmin) = \fee$, which is exactly what $\tcadd$ is sent for reimbursement.
+%Moreover, the gas limit provided to {\bf Deliver} must be high enough because $\fee \leq \constgasmax = \gasdeliver$, so we cannot run out of gas.
+%Finally, because $\fee$ was deposited with {\bf Request} and neither {\bf Deliver} nor {\bf Cancel} have been called before for this request, there must be at least $\fee$ stored $\tcont$.
+%
+%\paragraph{Deliver called after Cancel.}
+%In this case $\tcadd$ is sent $\constgascancel$ and performs only operations of known cost.
+%Because $\constgascancel$ is explicitly set to be the cost of those operations, this reimburses $\tcadd$ properly.
+%Since $\fee$ was deposited with {\bf Request}, the first call to {\bf Cancel} leaves $\constgasmax$ associated with that request and subsequent calls do nothing,
+%and {\bf Deliver} has not been called before for this request, there must be at least $\constgasmax$ left in $\tcont$ to send.
 \end{proof}
 
 
@@ -79,33 +81,29 @@ and {\bf Deliver} has not been called before for this request, there must be at 
 
 
 \begin{proof}[Proof of Fair Expenditure for Honest Requester (sketch)]
-We consider the cases when the request is delivered and when it is not.
+An honest requester $\reqcont$ will spend $\gasrequest$ to call {\bf Request}
+and set $\fee$ to be $\constgasmin$ plus the gas cost of executing $\dgcallback$.
 
 \paragraph{Request Delivered.}
-If the request is delivered, then we know by Theorem \ethan{refer} it is an authentic datagram corresponding to a valid request.
-In this case an honest user pays $\gasrequest$ in gas to execute {\bf Request} and $\fee$ in money to reimburse \tc for {\bf Deliver}.
-By Ethereum's gas model, $\gasrequest$ is exactly the cost of computation for {\bf Request}.
-If we let $\gascallback$ be the gas required to execute $\dgcallback$, then an honest user will set $\fee = \gascallback + \constgasmin$.
-By definition, $\constgasmin$ is exactly the cost of executing {\bf Deliver} not including $\dgcallback$, so therefore $\fee$ is exactly the cost to deliver a datagram.
-\tcs is only reimbursed all of $\fee$ if the datagram is successfully authenticated and delivered, so in this case the requester's expenses total exactly the cost of the computation requested by the user and executed on her behalf.
+If the line marked $(\dagger)$ in Fig.~\ref{tbl:gas-tc-contract} is reached,
+then we are guaranteed thatthat $\dgform = \dgform'$ and $\gasdeliver \geq \fee$.
+Because the requester is honest, $\fee - \constgasmin$ is enough gas to execut $\dgcallback$,
+so $\dgcallback$ will be invoked with a datagram that is a valid and matches the request parameters.
 
-An honest user may believe the request will not be delivered can call {\bf Cancel} at the same time {\bf Deliver} is called, but have {\bf Deliver} be executed first.
-In this case the user will not receive a refund from {\bf Cancel} and will pay $\gascancel$ to execute the computation,
-but this is the same as the above case except the user has requested and paid a {\bf Cancel} operation and no more.
+In this case, the honest requester will have spent $\gasrequest$ to invoke {\bf Request} and $\fee$ in paying \tc's cost for {\bf Deliver}.
+The requester may have also invoked {\bf Cancel} at most once at the cost of $\gascancel$,
+though if $(\dagger)$ has already been reached, then an assertion will fail and $\reqcont$ will receive nothing from the call.
+This means that, in this case, $\reqcont$ will spend at most $\gasrequest + \gascancel + \fee$.
 
 
-\paragraph{Request Not Delivered.}
-If the request is not delivered, an honest user will eventually call {\bf Cancel} for the request (and will do so only once).
-In this case, the user pays $\gasrequest$ for {\bf Request}, $\gascancel$ for {\bf Cancel}, submits $\fee = \gascallback + \constgasmin$ to {\bf Request},
-and is refunded $\fee - \constgascancel$ by {\bf Cancel}.
-
-The computation that was actually executed on the user's behalf was that for {\bf Request} and {\bf Cancel}.
-A completely fair payment would thus require the user to pay $\gasrequest + \gascancel$.
-In our protocol, the user's actual net expense is
+\paragraph{Request not Delivered.}
+If the line marked $(\ddagger)$ is reached, then $\reqcont$ will have spent
+$\gasrequest + \fee$ while executing {\bf Request},
+and spent $\gascancel$ and retrieved $\fee - \constgascancel$ while executing {\bf Cancel}.
+This means the total expenditure in this case will be
 \begin{align*}
-  \gasrequest + \gascancel & + \fee - (\fee - \constgasmin) \\
-                           & = \gasrequest + \gascancel + \constgasmin.
+  \gasrequest + \gascancel & + \fee - (\fee - \constgascancel) \\
+                           & = \gasrequest + \gascancel + \constgascancel.
 \end{align*}
-Thus the user's expense has exceeded the computation executed on her behalf by exactly $\constgasmin$.
 \end{proof}
 
