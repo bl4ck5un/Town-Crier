@@ -126,5 +126,96 @@ for a more detailed description of the UC modeling of Intel SGX.
 \subsection{Blockchain Formal Modeling}
 \label{sec:blockchainmodel}
 
+Our protocol notation adopts the formal blockchain
+framework recently proposed by Kosba et al.~\cite{hawk}.
+Besides UC modeling of blockchain-based protocols, 
+Kosba et al.~\cite{hawk} also 
+design a modular notational system  
+that is intuitive and factors out tedious but common   
+features inside functionality and protocol wrappers (e.g.,
+modeling of time, pseudonyms, adversarial reordering of messages, 
+a global ledger).
+The advantages of 
+adopting Kosba et al.'s notational system is compelling:
+the 
+blockchain contracts and user-side protocols
+in this paper are 
+intuitive to understand on their own; moreover,
+they are endowed with precise, formal meaning
+when  we apply the blockchain wrappers defined
+by Kosba et al.
+
+\newcommand{\Ttimeout}{\ensuremath{{\sf T}_{\text{timeout}}}\xspace}
+
+\paragraph{Technical subtleties.}
+While Kosba et al.'s formal blockchain model is applicable for the most part,
+we point out a subtle mismatch
+between the formal blockchain model of
+Kosba et al.~\cite{hawk} and
+the real-world instantiation of blockchains such as 
+Ethereum (and Bitcoin for that matter).
+The design of Town Crier is secure in a slightly modified
+version of the blockchain model that more accurately reflects
+the real-world Ethereum instantiation of a blockchain.
+%captures 
+%this technical subtlety.
+
+%One technical subtlety we 
+%address in this paper arises from a slight mismatch
+%between the formal model by Kosba et al. 
+%and the real Ethereum instantiation.
+%An interesting technical subtlety
+%arises due to the 
+%subtle mismatch
+%between the formal blockchain model of 
+%Kosba et al.~\cite{hawk} and 
+%the real-world instantiation of blockchains such as Ethereum (and Bitcoin). 
+
+Recall that one tricky detail for the gas-aware version of the Town Crier 
+contract arises from the need to deal with  
+with {\bf Deliver}
+arriving after {\bf Cancel}.
+In the formal blockchain model
+proposed by Kosba et al.~\cite{hawk}, we can easily get away with this issue 
+by introducing 
+a timeout parameter
+$\Ttimeout$ that the requester attaches to each datagram request. 
+If the datagram fails to arrive before $\Ttimeout$, 
+the requester can call {\bf Cancel}
+any time after 
+$\Ttimeout + \Delta T$.  
+On the surface, this 
+seems to ensure that no {\bf Deliver} will be invoked
+after {\bf Cancel} assuming Town Crier is honest. 
+
+However, we did not adopt this approach due to a technical subtlety
+that arises in this context, namely, the fact that  
+the Ethereum blockchain does not  
+perfectly match the formal blockchain 
+model specified by Kosba et al~\cite{hawk}.
+Specifically, the blockchain model by Kosba et al.
+assumes that every message (i.e., transaction) will be delivered 
+to the blockchain 
+by the end of each epoch and that the adversary cannot drop
+any message.
+In practice, however, 
+Ethereum adopts a dictatorship 
+strategy in the mining protocol, and the winning miner 
+for an epoch can censor transactions for this specific epoch, and thus
+effectively this transaction will be deferred to later epochs.
+Further, in case there are more incoming transactions than the block size
+capacity of Ethereum, a backlog of transactions will build up, 
+and similarly in this case there is also no guarantee of 
+ordering of backlogged transactions.
+Due to these considerations, we defensively design our Town Crier contract
+such that gas neutrality is attained for Town Crier,
+even if the {\bf Deliver} transaction arrives after {\bf Cancel}.
+
+%\elaine{in extension, we can support an abstraction
+%where the datagram must be delivered by some timeout}
+
+
+
+
 
 
