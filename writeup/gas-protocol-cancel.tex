@@ -68,7 +68,7 @@ If the requester is dishonest we need to not protect their request, and if the r
 
 
 
-\begin{figure}[t!]
+\begin{figure}[h!]
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
   \hline
 
@@ -77,7 +77,7 @@ If the requester is dishonest we need to not protect their request, and if the r
                  & Assert $\constgasmin \leq \fee \leq \constgasmax$ \\
                  & $\dgid := \text{Counter}$; \ \ $\text{Counter} := \text{Counter} + 1$ \\
                  & Store $(\dgid, \dgform, \dgcallback, \fee, \reqcont)$ \\[-0.8em]
-                 & {\it \sgray{//~$\fee$ held by contract}} \\
+                 & {\it \sgray{//~$\fee$ held by contract}} \\[0.3em]
 
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm, \gasdeliver)$ from $\tcadd$: \\
                  & If ${\sf isCanceled}[\dgid]$ and not ${\sf isDelivered}[\dgid]$ \\
@@ -90,12 +90,13 @@ If the requester is dishonest we need to not protect their request, and if the r
                  & Set ${\sf isDelievered}[\dgid]$ \\
                  & Send $\fee$ to \tcadd \\
                  & Set $\gascallback := \fee - \constgasmin$ \\
-                 & Call $\dgcallback(\dgm)$ with $\gascallback$ max gas \\
+                 & Call $\dgcallback(\dgm)$ with $\gascallback$ max gas \\[0.3em]
 
   {\bf Cancel:}  & On recv $(\dgid, \gascancel)$ from $\reqcont$: \\
                  & Retrieve stored $(\dgid, \_, \_, \fee, \reqcont')$ \\
                  & \quad \sgray{\it //~abort if not found} \\
-                 & Assert $\reqcont = \reqcont'$ and $\fee \geq \constgascancel$ \\
+                 & Assert $\reqcont = \reqcont'$ \\
+                 & \quad and $\fee \geq \constgascancel$ \\
                  & \quad and ${\sf isDelivered}[\dgid]$ not set \\
                  & \quad and ${\sf isCanceled}[\dgid]$ not set \\
                  & Set ${\sf isCanceled}[\dgid]$ \\
@@ -111,10 +112,10 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
 \label{tbl:gas-tc-contract}
 \end{figure}
 
-\begin{figure}[t!]
+\begin{figure}[h!]
 \begin{boxedminipage}{\columnwidth}
 \centering
-{\bf Program for \tcs~\encname ($\enclaveprog$)} \\[1ex]
+{\bf Program for \tcs~\encname $(\enclaveprog)$} \\[1ex]
 \begin{tabular}{l}
   {\bf Initialize}: [Same as Figure~\ref{fig:engineprotocol}] \\[3pt]
 
@@ -133,7 +134,7 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
 \begin{tikzpicture}
   [contract/.style={entity,minimum height=3.5em,text width=7.5em},
    wallet/.style={entity,minimum height=3.5em,text width=5em},
-   type-box-color/.style={fill=black!10},
+   type-box-color/.style={fill=black!15},
    blocked-out-label/.style={text=black,type-box-color,text height=0.6em}]
   \node[wallet,fill=white] (user) {User $\userwallet$};
   \node[contract,fill=white,right=6em of user] (cu) {User Contract\\$\reqcont$};
@@ -153,17 +154,17 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
   \draw[color=gold,rounded corners,opacity=0.25,line width=0.3ex] ([yshift=0.4em]tc-wallet.east) -| ([xshift=-3em]ctc.north);
   \path[->,color=gold,line width=0.3ex] (ctc.north) edge [right,transform canvas={xshift=-3em}] node [yshift=-1.25em] {\small \smash{$\gascallback$}} (cu.south);
   \path[color=maroon,opacity=0.25,line width=0.4ex] (tc-wallet-|fee.west) edge [transform canvas={yshift=-1.25em}] (tc-wallet.east);
-  \path[->,color=maroon,line width=0.4ex] (ctc.west) edge [transform canvas={yshift=-1.25em}] node [blockchain-color,xshift=0.4em] {\small $\fee$} ([xshift=-0.8em]tc-wallet.east);
+  \path[->,color=maroon,line width=0.4ex] (ctc.west) edge [transform canvas={yshift=-1.25em}] node [fill=white,xshift=0.4em] {\small $\fee$} ([xshift=-0.8em]tc-wallet.east);
 %  \path[->,color=gold,ultra thick,dashed] (ctc.west) edge [below,transform canvas={yshift=-1em}] node [text=black,xshift=0.4em] {\small $\gasdeliver - \fee$} ([xshift=-0.8em]tc-wallet.east);
 
   \path[] (tc-wallet.north east) edge [draw=none,above] node [yshift=0.75em] {\small \bf \underline{Deliver}} (ctc.north west);
 
   \begin{pgfonlayer}{background}
-    \node[bg-box,
-          blockchain-color,
-          inner sep=1em,
-          fit={(ctc)($(user.north west)+(0,1em)$)},
-          label=above:{\bf Blockchain}] (blockchain) {};
+%    \node[bg-box,
+%          blockchain-color,
+%          inner sep=1.2em,
+%          fit={(ctc)($(user.north west)+(0,0.9em)$)},
+%          label=above:{\bf Blockchain}] () {};
     \node[bg-box,
           type-box-color,
           fit=(ctc)(cu),
@@ -172,9 +173,15 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
           type-box-color,
           fit=(tc-wallet)(user),
           label=above:{\bf Wallets}] () {};
+
+%    \node[inner xsep=0.5em,blockchain-color,rounded corners] (bc-label) at (blockchain.north) {\bf Blockchain};
+%
+%    \node[inner xsep=0.5em,type-box-color,rounded corners,yshift=0.25em] (conts-label) at (conts.north) {\bf Contracts};
+%    \draw[draw=black,dashed,rounded corners] (conts-label.east) -- (conts-label.north east) -- (conts-label.north east-|conts-label.north west) -- (conts-label.west);
+%
+%    \node[inner xsep=0.5em,type-box-color,rounded corners,yshift=0.25em] (wallets-label) at (wallets.north) {\bf Wallets};
+%    \draw[draw=black,dashed,rounded corners] (wallets-label.east) -- (wallets-label.north east) -- (wallets-label.north east-|wallets-label.north west) -- (wallets-label.west);
   \end{pgfonlayer}
-%  \node[blockchain-color,rounded corners] (bc-label) at (blockchain.north) {\bf Blockchain};
-%  \draw[draw=black,dashed,rounded corners] (bc-label.east) -- (bc-label.north east) -- (bc-label.north east-|bc-label.north west) -- (bc-label.west);
 \end{tikzpicture}
 \caption{{\bf Money Flow for a Delivered Request.}
 Red arrows denote flow of money and brown arrows denote gas limits for functions.

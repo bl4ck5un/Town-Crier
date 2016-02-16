@@ -20,7 +20,7 @@
   $\smaroon{\$F_\text{\tc}}$ & := fee payed to \tc for datagram delivery \\[1ex]
 
   \multicolumn{2}{|l|}{\bf Functions} \\
-  {\bf Init:}   & On recv $(\tcont)$ \\
+  {\bf Init:}   & On recv $(\tcont)$: \\
                 & Save address of \tcont \\[1ex]
 
   {\bf Insure:} & On recv $(encFN, \fee)$ from $\userwallet$: \\
@@ -30,8 +30,7 @@
                 & $\dgid := \tcont.{\bf Request}(\dgform, \dgcallback, \smaroon{\$F_\text{\tc}})$ \\
                 & Store $(\dgid, \userwallet)$ \\[1ex]
 
-  {\bf Pay:}    & On recv $(\dgid, D)$ from $\wallet$: \\
-                & Assert $\wallet = \tcont$ \\
+  {\bf Pay:}    & On recv $(\dgid, D)$ from $\tcont$: \\
                 & Retrieve and remove stored $(\dgid, \userwallet)$ \\
                 & \quad \sgray{\it //~Abort if not found} \\
                 & If $D \geq D_{\rm min}$ \\
@@ -59,7 +58,7 @@
                   & Assert $\fee = (P_S - P_U) \cdot M + \smaroon{\$F_\text{\tc}}$ \\
                   & Save all inputs and $\wallet_\text{issuer}$ to storage. \\[1ex]
 
-      {\bf Buy:} & On recv $(X, \fee)$ from $\userwallet$ \\
+      {\bf Buy:} & On recv $(X, \fee)$ from $\userwallet$: \\
                  & Assert {\sf isRecovered} not set \\
                  & \quad and ${\sf timestamp} < {\sf expr}$ \\
                  & \quad and $\wallet_\text{buyer}$ not set \\
@@ -70,8 +69,7 @@
                  & Send $(P_S - P_U)(M - X)$ to $\wallet_\text{issuer}$ \\[-0.8em]
                  & \sgray{\it //~Hold $P_S \cdot X + \smaroon{\$F_\text{\tc}}$} \\[1ex]
 
-      {\bf Put:} & On recv $()$ from $\userwallet$ \\
-                 & Assert $\userwallet = \wallet_\text{buyer}$ \\
+      {\bf Put:} & On recv $()$ from $\wallet_\text{buyer}$: \\
                  & \quad and ${\sf timestamp} < {\sf expr}$ \\
                  & \quad and ${\sf isPut}$ not set \\
                  & Set {\sf isPut} \\
@@ -79,8 +77,7 @@
                  & $\dgcallback := {\tt this}.{\bf Settle}$ \\
                  & $\tcont.{\bf Request}(\dgform, \dgcallback, \smaroon{\$F_\text{\tc}})$ \\[1ex]
 
-   {\bf Settle:} & On recv $(\dgid, P)$ from $\wallet$ \\
-                 & Assert $\wallet = \tcont$ \\
+   {\bf Settle:} & On recv $(\dgid, P)$ from $\tcont$: \\
                  & If $P \geq P_S$ \\
                  & \quad Send $P_S \cdot X$ to $\wallet_\text{issuer}$ \\
                  & \quad Return \\
@@ -88,8 +85,7 @@
                  & Send all money in contract to $\wallet_\text{issuer}$ \\[0.25em]
                  & Send $P \cdot X$ to $\wallet_\text{issuer}$ \\[1ex]
 
-  {\bf Recover:} & On recv $()$ from $\wallet$ \\
-                 & Assert $\wallet = \wallet_\text{issuer}$ \\
+  {\bf Recover:} & On recv $()$ from $\wallet_\text{issuer}$: \\
                  & \quad and {\sf isPut} not set \\
                  & \quad and {\sf isRecovered} not set \\
                  & \quad and $(\wallet_\text{buyer} \text{ not set}$ \\
