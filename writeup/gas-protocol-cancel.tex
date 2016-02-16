@@ -134,8 +134,7 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
 \begin{tikzpicture}
   [contract/.style={entity,minimum height=3.5em,text width=7.5em},
    wallet/.style={entity,minimum height=3.5em,text width=5em},
-   type-box-color/.style={fill=black!10},
-   type-box/.style={type-box-color,draw=black,dashed},
+   type-box-color/.style={fill=black!15},
    blocked-out-label/.style={text=black,type-box-color,text height=0.6em}]
   \node[wallet,fill=white] (user) {User $\userwallet$};
   \node[contract,fill=white,right=6em of user] (cu) {User Contract\\$\reqcont$};
@@ -155,23 +154,23 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
   \draw[color=gold,rounded corners,opacity=0.25,line width=0.3ex] ([yshift=0.4em]tc-wallet.east) -| ([xshift=-3em]ctc.north);
   \path[->,color=gold,line width=0.3ex] (ctc.north) edge [right,transform canvas={xshift=-3em}] node [yshift=-1.25em] {\small \smash{$\gascallback$}} (cu.south);
   \path[color=maroon,opacity=0.25,line width=0.4ex] (tc-wallet-|fee.west) edge [transform canvas={yshift=-1.25em}] (tc-wallet.east);
-  \path[->,color=maroon,line width=0.4ex] (ctc.west) edge [transform canvas={yshift=-1.25em}] node [blockchain-color,xshift=0.4em] {\small $\fee$} ([xshift=-0.8em]tc-wallet.east);
+  \path[->,color=maroon,line width=0.4ex] (ctc.west) edge [transform canvas={yshift=-1.25em}] node [fill=white,xshift=0.4em] {\small $\fee$} ([xshift=-0.8em]tc-wallet.east);
 %  \path[->,color=gold,ultra thick,dashed] (ctc.west) edge [below,transform canvas={yshift=-1em}] node [text=black,xshift=0.4em] {\small $\gasdeliver - \fee$} ([xshift=-0.8em]tc-wallet.east);
 
   \path[] (tc-wallet.north east) edge [draw=none,above] node [yshift=0.75em] {\small \bf \underline{Deliver}} (ctc.north west);
 
   \begin{pgfonlayer}{background}
+%    \node[bg-box,
+%          blockchain-color,
+%          inner sep=1.2em,
+%          fit={(ctc)($(user.north west)+(0,0.9em)$)},
+%          label=above:{\bf Blockchain}] () {};
     \node[bg-box,
-          blockchain-color,
-          inner sep=1.2em,
-          fit={(ctc)($(user.north west)+(0,0.9em)$)},
-          label=above:{\bf Blockchain}] () {};
-    \node[bg-box,
-          type-box,
+          type-box-color,
           fit=(ctc)(cu),
           label=above:{\bf Contracts}] () {};
     \node[bg-box,
-          type-box,
+          type-box-color,
           fit=(tc-wallet)(user),
           label=above:{\bf Wallets}] () {};
 
