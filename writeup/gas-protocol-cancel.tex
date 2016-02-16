@@ -58,8 +58,8 @@ During the creation and fulfillment of any request, there are two untrusted part
     or exhausting the financial resources of TC.
 
   \item {\it Honest requester and malicious relay.}
-    The requester cannot receive invalid data (which is also assured by thepayment-free protocol)
-    and the requester should avoid paying for computation that is not executed.
+    The requester cannot receive invalid data (which is also assured by the payment-free protocol)
+    and the requester not have to pay computation that is not executed.
 \end{itemize}
 We formalize these properties in Section~\ref{sec:analysis} and prove that our protocol provides these guarantees.
 We intentionally ignore the case where both the requester and the relay are dishonest.
@@ -135,26 +135,26 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
    wallet/.style={entity,minimum height=3.5em,text width=5em},
    type-box-color/.style={fill=black!10},
    blocked-out-label/.style={text=black,type-box-color,text height=0.6em}]
-  \node[wallet,fill=white] (user) {User ${\cal P}_U$};
+  \node[wallet,fill=white] (user) {User $\userwallet$};
   \node[contract,fill=white,right=6em of user] (cu) {User Contract\\$\reqcont$};
   \node[wallet,trusted,below=5em of user] (tc-wallet) {$\tcadd$};
   \node[contract,trusted,right=6em of tc-wallet] (ctc) {TC Contract\\$\tcont$};
   \node[color=maroon,draw,anchor=south east] (fee) at ([xshift=-0.25em,yshift=0.25em]ctc.south east) {\small $\fee$};
 
   \draw[color=gold,rounded corners,opacity=0.25,line width=1ex] ([yshift=1.25em]user.east) -| ([xshift=3.25em]cu.south);
-  \path[-stealth,color=gold,line width=1.15ex] (user) edge [transform canvas={yshift=1.25em}] (cu);
-  \path[-stealth,color=gold,line width=1ex] (cu) edge [transform canvas={xshift=3.25em}] (ctc);
-  \path[-stealth,color=maroon,line width=0.4ex] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1.2em] {\small \smash{$(\gasrequest, \fee)$}} ([yshift=-1.5em]ctc.north);
+  \path[->,color=gold,line width=1.15ex] (user) edge [transform canvas={yshift=1.25em}] (cu);
+  \path[->,color=gold,line width=1ex] (cu) edge [transform canvas={xshift=3.25em}] (ctc);
+  \path[->,color=maroon,line width=0.4ex] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1.2em] {\small \smash{$(\gasrequest, \fee)$}} ([yshift=-1.5em]ctc.north);
   \node[anchor=north,xshift=1em,yshift=-0.75em] () at (cu.south) {\small \bf \underline{\smash{Request}}};
-%  \path[-stealth,color=maroon,line width=0.4ex] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1em] {\small \smash{$(\gasrequest, \fee)$}} ([yshift=-1.5em]ctc.north);
+%  \path[->,color=maroon,line width=0.4ex] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1em] {\small \smash{$(\gasrequest, \fee)$}} ([yshift=-1.5em]ctc.north);
 %  \node[anchor=north,xshift=1em,yshift=-0.5em] () at (cu.south) {\small \bf \underline{\smash{Request}}};
 
-  \path[-stealth,color=gold,line width=1ex] (tc-wallet.east) edge [above,transform canvas={yshift=0.4em}] node () {\small $\gasdeliver$} (ctc.west);
+  \path[->,color=gold,line width=1ex] (tc-wallet.east) edge [above,transform canvas={yshift=0.4em}] node () {\small $\gasdeliver$} (ctc.west);
   \draw[color=gold,rounded corners,opacity=0.25,line width=0.3ex] ([yshift=0.4em]tc-wallet.east) -| ([xshift=-3em]ctc.north);
-  \path[-stealth,color=gold,line width=0.3ex] (ctc.north) edge [right,transform canvas={xshift=-3em}] node [yshift=-1.25em] {\small \smash{$\gascallback$}} (cu.south);
+  \path[->,color=gold,line width=0.3ex] (ctc.north) edge [right,transform canvas={xshift=-3em}] node [yshift=-1.25em] {\small \smash{$\gascallback$}} (cu.south);
   \path[color=maroon,opacity=0.25,line width=0.4ex] (tc-wallet-|fee.west) edge [transform canvas={yshift=-1.25em}] (tc-wallet.east);
-  \path[-stealth,color=maroon,line width=0.4ex] (ctc.west) edge [transform canvas={yshift=-1.25em}] node [blockchain-color,xshift=0.4em] {\small $\fee$} ([xshift=-0.8em]tc-wallet.east);
-%  \path[-stealth,color=gold,ultra thick,dashed] (ctc.west) edge [below,transform canvas={yshift=-1em}] node [text=black,xshift=0.4em] {\small $\gasdeliver - \fee$} ([xshift=-0.8em]tc-wallet.east);
+  \path[->,color=maroon,line width=0.4ex] (ctc.west) edge [transform canvas={yshift=-1.25em}] node [blockchain-color,xshift=0.4em] {\small $\fee$} ([xshift=-0.8em]tc-wallet.east);
+%  \path[->,color=gold,ultra thick,dashed] (ctc.west) edge [below,transform canvas={yshift=-1em}] node [text=black,xshift=0.4em] {\small $\gasdeliver - \fee$} ([xshift=-0.8em]tc-wallet.east);
 
   \path[] (tc-wallet.north east) edge [draw=none,above] node [yshift=0.75em] {\small \bf \underline{Deliver}} (ctc.north west);
 
@@ -190,6 +190,9 @@ Our basic Town Crier system implements a policy where the requester pays for all
 We now describe how this can be realized by modifying the payment-free protocol described in Section~\ref{sec:payment-free-protocol}.
 
 \begin{itemize}[leftmargin=1.5em]
+  \setlength{\itemsep}{2pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
   \item {\it Initialization.}
     We assume that Town Crier deposits at least $\constgasmax$ into the wallet $\tcadd$.
 

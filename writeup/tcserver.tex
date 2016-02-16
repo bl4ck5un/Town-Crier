@@ -22,28 +22,15 @@ once the ocall completes. As ocalls execute outside the enclave, they must be
 treated by enclave code as untrusted. 
 
 
-\usetikzlibrary{matrix,positioning, shapes, calc, backgrounds, fit}
-\tikzset{
- box/.style = {
-    shape = rectangle,
-    align = center,
-    draw  = black,
-    text width=1.5cm,
-    inner sep=5pt,
-},
-double/.style = {
-	rectangle split,
-	rectangle split parts=2},
-every path/.style = {
-	>=latex,},
-}
 \begin{figure}[h]
     \centering
 %    \includegraphics[width=0.45\textwidth]{figures/impl}
 
 \begin{tikzpicture}
+  [box/.style={entity, text width=1.5cm, inner sep=5pt},
+   double/.style={rectangle split, rectangle split parts=2}]
 \matrix (m) [row sep=5mm, column sep=3mm]{
-	\node[inner sep=0pt] (user) {\includegraphics[width=1cm]{figures/user}}; &
+    \node[inner sep=0pt] (user) {\includegraphics[width=1cm]{figures/user}}; &
     \node[inner sep=0pt,draw,cloud,aspect=2.0,align=center](cloud) {\footnotesize HTTPS \\ websites}; &
     \node[box, cylinder, shape border rotate=90, aspect=.2](bc){blockchain};  \\
     
@@ -78,10 +65,10 @@ every path/.style = {
 \draw[->,thick] ($ (att.south) + (5mm,0) $)  |- (keys.west);
 \draw[->,thick] ($ (att.south) - (5mm,0) $)  -- (sk);
 
-\begin{scope}[on background layer]
-\node [inner xsep=2mm, fill=red!30,fit=(client) (net) (monitor) ] {};
-\node [inner xsep=2mm, trusted,fit=(att) (https) (req h) (keys) ] {};
-\end{scope}
+\begin{pgfonlayer}{background}
+  \node [inner xsep=2mm, fill=red!30,fit=(client) (net) (monitor) ] {};
+  \node [inner xsep=2mm, trusted,fit=(att) (https) (req h) (keys) ] {};
+\end{pgfonlayer}
 
 \matrix [below=2mm of m, matrix of nodes, column sep=2mm] 
 {

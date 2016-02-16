@@ -22,7 +22,7 @@
 \setlist[enumerate]{leftmargin=*}
 
 \usepackage{tikz}
-\usetikzlibrary{arrows,calc,fit,positioning,shapes.misc,shapes}
+\usetikzlibrary{arrows,calc,fit,matrix,positioning,shapes.misc,shapes}
 
 \pgfdeclarelayer{background}
 \pgfsetlayers{background,main}
@@ -34,7 +34,8 @@
   comm-link/.style={communication,ultra thick,text=black},
   bg-box/.style={rectangle,rounded corners,draw=black,dashed,inner sep=0},
   blockchain-color/.style={fill=blue!12},
-  tc-server-color/.style={fill=black!20}
+  tc-server-color/.style={fill=black!20},
+  every path/.style={>=stealth},
 }
 
 \DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
@@ -112,17 +113,19 @@
 \newcommand {\Time} {{{\tt T}}}
 
 
-\newcommand {\reqcont} {\ensuremath{{\cal C}_U}\xspace}
-\newcommand {\tcont} {\ensuremath{{\cal C}_{TC}}\xspace}
-\newcommand {\tcadd} {\ensuremath{{\cal W}_{TC}}\xspace}
-\newcommand {\pTC} {\ensuremath{{\cal W}_{TC}}\xspace}
 \newcommand {\cont} {\ensuremath{{\cal C}}\xspace}
-\newcommand {\sgxadd} {\ensuremath{{\cal W}_{SGX}}\xspace}
+\newcommand {\wallet} {\ensuremath{{\cal W}}\xspace}
+\newcommand {\reqcont} {\ensuremath{\cont_U}\xspace}
+\newcommand {\tcont} {\ensuremath{\cont_{TC}}\xspace}
+\newcommand {\tcadd} {\ensuremath{\wallet_{TC}}\xspace}
+\newcommand {\pTC} {\ensuremath{\wallet_{TC}}\xspace}
+\newcommand {\sgxadd} {\ensuremath{\wallet_{SGX}}\xspace}
 \newcommand{\pkTC}{\ensuremath{{\sf pk}_{TC}}\xspace}
 %\newcommand{\pkTC}{\ensuremath{{{\cal P}_{TC}.{\sf pk}}}\xspace}
 %\newcommand{\skTC}{\ensuremath{{{\cal P}_{TC}.{\sf sk}}}\xspace}
 \newcommand{\skTC}{\ensuremath{{\sf sk}_{TC}}\xspace}
 %\newcommand{\skTC}{\ensuremath{{\sf sk}_{\textrm{TC}}}\xspace}
+\newcommand{\userwallet}{\ensuremath{\wallet_U}\xspace}
 
 \newcommand {\dgreq} {{\sf req}\xspace}
 \newcommand {\dgform} {{\sf params}\xspace}
@@ -210,7 +213,7 @@
 %\input{clock}
 \input{analysis-proofs}
 \input{advanced}
-
+\input{pseudocode}
 
 
 
