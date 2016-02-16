@@ -1,17 +1,23 @@
 \section{Future Work}
 \label{sec:future}
 
-We will continue to develop \tc after its initial deployment and expect it to evolve to incorporate a number of additional features. These fall into two categories: (1) Expanding the security model to address threats outside the scope of the initial version and (2) Extending the functionality of \tc.
+We plan to develop \tc after its initial deployment and expect it to evolve to incorporate a number of additional features. These fall into two categories: (1) Expanding the security model to address threats outside the scope of the initial version and (2) Extending the functionality of \tc.
 
+\subsection{Expanding \tc threat model}
 
 \begin{itemize}
 \item{\em Revocation support.} Revocation of two forms can impact the \tc service. First, the certificates of data sources may be revoked. To address this issue, given its ability to establish external HTTPS connections, \tc can make use of Online Certificate Status Protocol (OCSP). Second, should an SGX host be known to have been compromised, Intel has indicated support for an online attestation verification service that will permit detection and blacklisting. Clients may use this service when checking the attestation $\sigatt$, so no modification to \tc is required to support the service.
-\item{\em New opcodes.} Ethereum's developers~\cite{Buterinpersonal} have indicated an intention to expand the range of supported cryptographic primitives in Ethereum and stated that they are amenable to the authors' suggestion of incorporating opcodes supporting Intel's EPID in particular, which would enable attestation verification within the blockchain. 
 \item{\em Freeloading protection.} Concern has arisen about ``parasite contracts'' that forward or resell datagrams---particularly those from fee-based data feeds. We plan to deploy a novel mechanism in \tc to address this concern. Suppose contract \reqcont involves a set of parties / users $U = \{U_i\}_{i=1}^n$. Each player $U_i$ generates an individual share $(\sk_i, \pk_i)$ of a global keypair $(\pk, \sk)$, where $\sk = \sum_{i=1} \sk_i$ and $\pk = \prod_{i=1} \pk_i$ and communicates a ciphertext $E_{\pkTC}[\sk_i]$ to \tcont, e.g., by including it in a datagram request. Players also jointly set  up under public key $\pk$ a wallet ${\cal P}_U$ for datagram transmission by \tcont. Thanks to the homomorphic properties of ECDSA, \tcont can compute $\sk$ (non-interactively) and send datagrams from ${\cal P}_U$. But the users $U$ collaboratively \emph{can also compute $\sk$ and send messages from ${\cal P}_U$}. Consequently, while each user $U_i$ can individually be assured that a datagram sent to \reqcont by \tcont from ${\cal P}_U$ is valid (as $P[i]$ didn't collude in its creation), other players cannot determine whether a datagram was produced by $\tcont$ or $U$, and thus whether or not it is valid. Such a \emph{source-equivocal datagram} renders data from parasite contracts less trustworthy and thus less attractive. 
 \item{\em Traffic-analysis protection.} The \medname can observe the pattern of data sources accesses made by \tc. By correlating with activity in \tcont, an adversarial \medname can thus infer the data source targeted by private datagrams, as well as the timing---and potentially, based on traffic analysis, the actual request~\cite{XiaoFeng}. To address this issue, the \encname might incorporate the standard approach of making chaff or decoy data requests, i.e., false requests, to both the true data source and well as non-target data sources.
+\item{\em SLAs}
+\end{itemize}
+
+\subsection{Expanding \tc functionality}
+
+\begin{itemize}
+\item{\em New opcodes.} Ethereum's developers~\cite{Buterinpersonal} have indicated an intention to expand the range of supported cryptographic primitives in Ethereum and stated that they are amenable to the authors' suggestion of incorporating opcodes supporting Intel's EPID in particular, which would enable attestation verification within the blockchain. 
 \item{\em Migration to data-source feeds.} Ultimately, we envision that data sources may wish themselves to serve as authenticated data feeds. To do so, they could simply stand up \tc as a front end. As a first step along this path, however, an independent \tc service might provide support for XML-labelled data from data sources, enabling more accurate and direct scraping and intentional identification of what data should be served.  
 \item{\em Programmable scrapers and functions.} Relying contracts might provide their own scrapers, enabling new data sources, or their on code for private evaluation in \tc, emulating more sophisticated cryptographic tools for private contract construction such as Hawk~\cite{}. 
-\item{\em SLAs}
 \end{itemize}
 
 
