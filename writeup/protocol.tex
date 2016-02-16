@@ -10,7 +10,11 @@ First, we give a brief protocol overview. Then we enumerate the data flows in \t
 
 The lifecycle of a datagram may be briefly summarized in the following steps:
 
+\vspace{-2mm}
 \begin{itemize}
+  \setlength{\itemsep}{2pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
 \item {\bf Initiate request.} \reqcont sends a datagram request to \tcont on the blockchain.
 
 \item {\bf Monitor and relay.} The \medname monitors \tcont and relays any incoming datagram request with parameters \dgform to the \encname.
@@ -19,8 +23,9 @@ The lifecycle of a datagram may be briefly summarized in the following steps:
 
 \item {\bf Return datagram.} \tcont returns the datagram to \reqcont.
 \end{itemize}
+\vspace{-2mm}
 
-We now make this data flow more precise. 
+\noindent We now make this data flow more precise. 
 
 \subsection{Data flows}
 
@@ -159,7 +164,6 @@ sufficient for implementation of \tc.}
 
 
 \paragraph{Binding $\enclaveprog$ to Ethereum wallet \tcadd.}
-\xxx[Fan]{Would it be more intuitive if we use $\mathcal{W}_{TC}$ to denote a Wallet?}
 Information can only be inserted into the blockchain in Ethereum as a transaction from a wallet. Thus, the only way the \medname can relay messages form the \encname to \tcont is through a wallet (again, formally, an externally owned account) \tcadd. Since the \medname may corrupt messages, however, it is critical that they be authenticated by the \encname. Since Ethereum itself 
 already verifies signatures on transactions from externally owned accounts (i.e., users interact with the  Ethereum blockchain through an authenticated channel), \tc uses a trick to {\it piggyback verification of enclave signatures on top of Ethereum's already existing transaction signature verification mechanism}. 
 
@@ -261,7 +265,9 @@ The Town Crier \tcontract \tcont.
 \label{fig:tc-contract}
 \end{figure}
 
-\paragraph{The \encname \engine.} When initialized through an \initcall call, \engine sets its absolute clock (by setting a reference point) and generates a keypair $(\pkTC,\skTC)$ to which it binds by placing $\pkTC$ in attestation requests. (This is an ECDSA keypair, parameterized as in Ethereum.) Given input \resumecall $({\sf id}, {\sf params})$, \engine contacts the requested data source via HTTPS and checks that the corresponding certificate {\sf cert} is valid. Specifically, \engine currently has several hardcoded root CA certificates; it verifies that {\sf cert} is valid in the chain of trust for one of these root CAs and that it has not expired. We defer discussion of certificate revocation to Section~\ref{sec:future}. \engine then fetches the requested datagram and returns it to \relay along with the inputs, all digitally signed with $\skTC$. The protocol for \engine is shown in Fig.~\ref{fig:engineprotocol}.
+\paragraph{The \encname \engine.} When initialized through an \initcall call, \engine ingests the current wall-clock time; by storing this time and setting a clock reference point, it calibrates its absolute clock. It generates an ECDSA keypair $(\pkTC,\skTC)$ (parameterized as in Ethereum), where $\pkTC$ is bound to the \engine instance through insertion into attestations.  
+
+On input \resumecall $({\sf id}, {\sf params})$, \engine contacts the data source specified by {\sf params} via HTTPS and checks that the corresponding certificate {\sf cert} is valid. (We discuss certificate checking in Section~\ref{sec:impl}.) Then \engine fetches the requested datagram and returns it to \relay along with $\dgform$ and $\dgid$, all digitally signed with $\skTC$.  Fig.~\ref{fig:engineprotocol} shows the protocol for \engine.
 
 \begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}

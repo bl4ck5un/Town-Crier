@@ -133,7 +133,7 @@ only. We ported a TLS library (mbedTLS) into the SGX environment, as well as
 HTTP code, which we minimized to meet the web-scraping requirements of \tc while
 keeping the TCB small. To verify certificates presented by remote servers, we
 hardcoded a collection of root CA certificates into the enclave code; in the
-first version of \tc, the root CAs are identical to those in Chrome~\cite{}.
+first version of \tc, the root CAs are identical to those in Chrome~\cite{}. By using its internal, trusted wall-clock time, it is possible to verify that a certificate has not expired. (We briefly discuss revocation in Appendix~\ref{sec:future}.)
 
 \vspace{2mm}
 

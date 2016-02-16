@@ -114,10 +114,10 @@
 
 \newcommand {\reqcont} {\ensuremath{{\cal C}_U}\xspace}
 \newcommand {\tcont} {\ensuremath{{\cal C}_{TC}}\xspace}
-\newcommand {\tcadd} {\ensuremath{{\cal P}_{TC}}\xspace}
-\newcommand {\pTC} {\ensuremath{{\cal P}_{TC}}\xspace}
+\newcommand {\tcadd} {\ensuremath{{\cal W}_{TC}}\xspace}
+\newcommand {\pTC} {\ensuremath{{\cal W}_{TC}}\xspace}
 \newcommand {\cont} {\ensuremath{{\cal C}}\xspace}
-\newcommand {\sgxadd} {\ensuremath{{\cal P}_{SGX}}\xspace}
+\newcommand {\sgxadd} {\ensuremath{{\cal W}_{SGX}}\xspace}
 \newcommand{\pkTC}{\ensuremath{{\sf pk}_{TC}}\xspace}
 %\newcommand{\pkTC}{\ensuremath{{{\cal P}_{TC}.{\sf pk}}}\xspace}
 %\newcommand{\skTC}{\ensuremath{{{\cal P}_{TC}.{\sf sk}}}\xspace}
@@ -196,22 +196,23 @@
 \input{analysis}
 \input{applications}
 \input{experiments}
-\input{advanced}
+
 \input{related}
 \input{conclusion}
-
-
-\pagebreak
-\input{appendix}
-\input{clock}
-\input{analysis-proofs}
-
-\input{textforintro}
 
 {\footnotesize
   \bibliographystyle{acm}
   \bibliography{ethereum,sgx,elaine}
 }
+
+\pagebreak
+\appendix 
+%\input{clock}
+\input{analysis-proofs}
+\input{advanced}
+
+
+
 
 %\theendnotes
 \end{document}
