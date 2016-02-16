@@ -80,6 +80,9 @@
     <ClCompile Include="Attestation_Enc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Steam2.cpp">
+      <Filter>Source Files\scrapers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Enclave_private.pem">

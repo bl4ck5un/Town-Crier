@@ -53,7 +53,8 @@ int get_page_on_ssl(const char* server_name, const char* url, char* headers[], i
     opt.request_page    = url;
     opt.server_name     = server_name;
     opt.server_port     = "443";
-    opt.debug_level     = 0;
+    opt.debug_level     = 1;
+    opt.read_timeout    = 1000;
 
     return ssl_client(opt, headers, n_header, buf, len);
 }

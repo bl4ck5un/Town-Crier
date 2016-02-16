@@ -1166,8 +1166,6 @@ exit:
     mbedtls_entropy_free( &entropy );
 
     // Shell can not handle large exit numbers -> 1 for errors
-    if( ret < 0 )
-        ret = 1;
 
     return( ret );
 

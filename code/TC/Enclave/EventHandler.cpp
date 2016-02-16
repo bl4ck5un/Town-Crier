@@ -77,6 +77,51 @@ static int flight_insurance_handler()
         raw_tx, &raw_tx_len);
 }
 
+static int steam_exchange()
+{
+    int rc, ret;
+    char * listB[1] = {"Portal"};
+    char * test2[2] = {"Dark Ranger's Headdress", "Death Shadow Bow"};
+    printf("Starting...\n");
+    // needs as input time of request, T_B time for response, key, account # ID_B, list of items L_B, account # ID_S 
+    // I'm not sure how we get time... but so long as we get it somehow...
+    rc = get_steam_transaction(listB, 1, "32884794", 1355220300, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
+
+    if (rc == 0 && ret == 1) {
+        printf("Found a trade, %d, %d\n", rc, ret);
+    }
+    printf("%d, %d\n", rc, ret);
+
+    rc = get_steam_transaction(test2, 2, "32884794", 1355220300, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
+    printf("%d, %d\n", rc, ret);
+
+    // should fail
+    rc = get_steam_transaction(test2, 1, "32884794", 1355220300, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
+    printf("%d, %d\n", rc, ret);
+
+    return ret;
+    long long time1, time2;
+
+    rdtsc(&time1);
+    LL_CRITICAL("ctx swtich done:  %llu", time1);
+    rdtsc(&time2);
+    LL_CRITICAL("get_flight_delay: %llu", time2-time1);
+
+    bytes rr;
+    enc_int(rr, 4, 1);;
+
+    uint8_t req[64];
+    uint8_t raw_tx[1024];
+    int raw_tx_len = sizeof raw_tx;
+    uint8_t nonce[32] = {9};
+
+    return get_raw_signed_tx(nonce, 32, 
+        1, 1, 
+        req, sizeof req, 
+        &rr[0], 32, 
+        raw_tx, &raw_tx_len);
+}
+
 //request(uint8 type, address cb, bytes4 cb_fid, bytes32[] req)
 int handle_request(uint8_t* nonce, uint64_t request_id, uint8_t request_type, 
                    uint8_t* req, int req_len, uint8_t* raw_tx, int* raw_tx_len)
@@ -95,6 +140,7 @@ int handle_request(uint8_t* nonce, uint64_t request_id, uint8_t request_type,
     switch (request_type)
     {
     case REQ_TYPE_FINANCE:
+        return steam_exchange();
         return flight_insurance_handler();
         return stock_ticker_handler(nonce, request_id, request_type, 
             req, req_len, 

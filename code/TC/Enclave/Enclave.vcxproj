@@ -424,6 +424,7 @@
     <ClCompile Include="Scraper_lib.c" />
     <ClCompile Include="RootCerts.c" />
     <ClCompile Include="Enclave_t.c" />
+    <ClCompile Include="Steam2.cpp" />
     <ClCompile Include="StockTicker.cpp" />
     <ClCompile Include="Transaction.cpp" />
   </ItemGroup>
