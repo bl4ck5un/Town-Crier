@@ -43,27 +43,27 @@ If they are too small, Ethereum will abort the transaction and there will not be
 
 \paragraph{Adversarial cases.}
 
-During the creation and fulfillment of any request, there are two untrusted parties: the requesting user and the \tc~\medname. In the \tc implementation, we thus consider three cases:
+During the creation and fulfillment of any request, there are two untrusted parties: the requesting contract / user $\reqcont$ and the \tc~\medname. In the \tc implementation, we thus consider three cases:
 
 \begin{itemize}
   \setlength{\itemsep}{2pt}
   \setlength{\parskip}{0pt}
   \setlength{\parsep}{0pt}
-  \item {\it Honest requester and relay.}
+  \item {\it Honest requester and \medname.}
     The requester must receive a valid authenticated response from TC.
 
-  \item {\it Malicious requester and honest relay.}
+  \item {\it Malicious requester and honest \medname.}
     \tc must still be able to respond to requests from other (honest) users.
     Thus we must prevent a malicious user from interfering directly with other requests (which the payment-free protocol already does)
     or exhausting the financial resources of TC.
 
-  \item {\it Honest requester and malicious relay.}
+  \item {\it Honest requester and malicious \medname.}
     The requester cannot receive invalid data (which is also assured by the payment-free protocol)
     and the requester not have to pay computation that is not executed.
 \end{itemize}
 We formalize these properties in Section~\ref{sec:analysis} and prove that our protocol provides these guarantees.
-We intentionally ignore the case where both the requester and the relay are dishonest.
-If the requester is dishonest we need to not protect their request, and if the relay is dishonest we cannot protect the TC system.
+We intentionally ignore the case where both the requester and the \medname are dishonest.
+If the requester is dishonest we need to not protect their request, and if the \medname is dishonest we cannot protect the TC system.
 
 
 
