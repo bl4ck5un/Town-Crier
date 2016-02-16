@@ -1,7 +1,7 @@
 
 
 \section{\tc Protocol}
-
+\label{sec:protocols}
 We now describe the operation of \tc at the protocol level. The basic protocol is conceptually simple: A user contract \reqcont requests a datagram from the \tcontract \tcont. \tcont forwards the request to \engine and then returns the request to \reqcont. There are many details, however, relating to message contents and protection and the need to connect the off-chain parts of \tc with the blockchain.
 
 First, we give a brief protocol overview. Then we enumerate the data flows in \tc. Finally, we provide a component-level view of the protocol by specifying the operation of the \tcontract, \medname, and \encname. We present these  as ideal functionalities, inspired by the universal-composability (UC) framework, in order to abstract away implementation details and as a springboard for formal proofs of security. We omit details in this section on how payment is incorporated into \tc, deferring this delicate aspect of the system design to Section~\ref{sec:impl}.
