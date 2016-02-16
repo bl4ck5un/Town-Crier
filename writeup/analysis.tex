@@ -123,34 +123,15 @@ Therefore, $\algB$ simply outputs this as a signature forgery.
 
 
 \begin{theorem}[Gas neutrality for Town Crier]
-Assuming an honest Town Crier relay,
-Town Crier's wallet account $\tcadd$ will have at least $\constgasmax$ remaining after each {\bf Deliver} call.
+If the \tc~\medname is honest,
+Town Crier's wallet $\tcadd$ will have at least $\constgasmax$ remaining after each {\bf Deliver} call.
 \end{theorem}
 
-\begin{proof}[(sketch)]
-Honest relay means $\resumecall(\dgid, \dgform)$ will always be legitimate and $\dgform = \dgform'$ in {\bf Deliver}.
-While $\fee$ is specified by a potentially malicious user, \tcont rejects the request unless $\constgasmin \leq \fee \leq \constgasmax$.
-This means $\gasdeliver = \constgasmax \geq \fee$.
-We also will never respond to the same request twice (these are specified in the enclave protocol), so we will never abort.
 
-We limit the gas provided to $\dgcallback$ to $\fee - \constgasmin$ (which must be positive because of the check in {\bf Request}),
-and $\constgasmin$ is set so that it is at least the cost of {\bf Deliver} not including $\dgcallback$.
-This means that the total gas used is no greater than $\constgasmin + (\fee - \constgasmin) = \fee$, which is exactly what $\tcadd$ is sent for reimbursement.
-We also don't run out of gas because $\fee \leq \constgasmax = \gasdeliver$, so we cannot use more gas than we provide.
-\end{proof}
-
-
-\begin{theorem}[Bounded loss for honest requester]
+\begin{theorem}[Fair Expenditure for Honest Requester]
 For any request $(\dgform, \dgcallback, \fee)$ submitted by an honest user $\reqcont$,
-the requester will lose no more than $\gasrequest + \constgasmax$ money.
+at most $\constgascancel$ of the user's total payment will not be spent on computation requested by and executed on behalf of that user.
 \end{theorem}
-
-\begin{proof}[(sketch)]
-In Ethereum, all money must be sent by the address controlling that money.
-An honest user will only send $\gasrequest + \fee$ to a given request and no more with $\fee \leq \constgasmax$.
-They will not continue to send money to \tcont without receiving a response, so that means that they cannot lose more than $\gasrequest + \constgasmax$
-even if \tc is malicious and does not deliver data.
-\end{proof}
 
 
 

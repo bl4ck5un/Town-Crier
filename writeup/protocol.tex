@@ -201,6 +201,8 @@ We let $\clock()$ denote measurement of the SGX clock from within the enclave, e
 
 
 \subsection{A payment-free basic protocol}
+\label{sec:payment-free-protocol}
+
 For simplicity, we first specify a payment-free version of our basic protocol, i.e., one that does not include gas or fees. Later, in our implementation discussion, we explain how we handle these two resources, and we prove payment-related properties in the paper appendix. For simplicity, we assume a single instance of \engine, although our architecture could scale up to multiple enclave and even server instances. To show messages corresponding to those in Fig.~\ref{fig:dataflow}, we use the label ({\bf msg.}~$m_i$)
 
 \paragraph{The Requester Contract $\reqcont$.}

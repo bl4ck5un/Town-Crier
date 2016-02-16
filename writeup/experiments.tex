@@ -111,7 +111,7 @@ Note that $\constgasmax$ is currently limited to the above value because Ethereu
 
 %The cost of executing the {\bf Cancel} entry point (i.e. the value an honest user will assign to $\gascancel$) is about \num[group-separator={,}]{38000} gas.
 
-The cost for executing {\bf Request} is approximately \num[group-separator={,}]{120000} gas plus \num[group-separator={,}]{2700} gas for every 32 bytes of request parameters.
+The cost for executing {\bf Request} is approximately \num[group-separator={,}]{120000} gas plus \num[group-separator={,}]{2500} gas for every 32 bytes of request parameters.
 The high expense is due to the cost of on-blockchain storage
 while the scaling is because the caller must pay gas for including more bytes in a transaction.
 

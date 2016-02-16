@@ -5,13 +5,12 @@
 In our implementation of TC, we use Ethereum smart contracts and an SGX enclave to provide trusted computing environments.
 The details of resource management within Ethereum present new challenges as they open TC to new attacks.
 
-During the creation and fulfillment of any request, there are two untrusted parties:
-the requesting user and the TC relay and network (which we view as a single adversary).
-The protocol discussed in Section \ethan{ref no-gas} guarantees authenticity of data for an honest requester even in the face of a malicious relay.
-However, the TC system has no vulnerable resources and requests are separated from each other preventing a malicious user from causing harm.
-In Ethereum, executing computation is not free.
-This means that TC needs to maintain enough money to deliver datagrams which means users must pay a fee to reimburse costs.
-The fee raises the concern that a compromised relay may be able to prevent delivery of a datagram and cost an honest requester money for no gain.
+During the creation and fulfillment of any request, there are two untrusted parties: the requesting user and the \tc \medname.
+The payment-free protocol in Section~\ref{sec:payment-free-protocol} gaurantees authenticity of data for an honest user.
+However, the \tc system has no vulnerable resources and requests are separated from each, so a malicious user cannot cause harm.
+In Ethereum, computation is not free.
+This means that \tc needs enough money to deliver datagrams, so users must pay a fee to reimburse costs.
+The fee raises the concern that a malicious relay could prevent delivery of a datagram and cost an honest requester money for no gain.
 
 While designing the implementation, we consider three cases:
 \begin{itemize}
@@ -19,15 +18,15 @@ While designing the implementation, we consider three cases:
     The requester must receive a valid authenticated response from TC.
 
   \item {\it Malicious requester and honest relay.}
-    TC must still be able to respond correctly to requests from other (honest) users.
-    To do this, we must prevent a malicious user from interfering directly with other requests (which we cover in our payment-free protocol in Section \ethan{ref no-gas})
+    \tc must still be able to respond to requests from other (honest) users.
+    Thus we must prevent a malicious user from interfering directly with other requests (which the payment-free protocol already does)
     or exhausting the financial resources of TC.
 
   \item {\it Honest requester and malicious relay.}
-    The requester cannot receive invalid data that looks valid (which we is also guaranteed by our payment-free protocol)
-    and the requester must lose a bounded amount of money.
+    The requester cannot receive invalid data (which is also assured by thepayment-free protocol)
+    and the requester should avoid paying for computation that is not executed.
 \end{itemize}
-We formalize these properties in Section \ethan{refer} and prove that our protocol provides these guarantees.
+We formalize these properties in Section~\ref{sec:analysis} and prove that our protocol provides these guarantees.
 We intentionally ignore the case where both the requester and the relay are dishonest.
 If the requester is dishonest we need to not protect their request, and if the relay is dishonest we cannot protect the TC system.
 
@@ -35,7 +34,7 @@ If the requester is dishonest we need to not protect their request, and if the r
 \subsection{Handling Fees in Ethereum}
 \label{sec:gas-protocol}
 
-\input{gas-protocol}
+\input{gas-protocol-cancel}
 
 
 
@@ -48,10 +47,10 @@ In order to handle the most general type of requests---including encrypted param
 The first is a single byte specifying what type of request is being made (e.g. stock price or flight status).
 The second is a byte array of user-specified size.
 This byte array will be parsed and interpreted inside the enclave when it fulfills the request, but is treated as an opaque byte array by \tcont.
+For convenience, we also implicitly include the timestamp of the current block in the parameters.
 
-As we discuss in Section \ethan{ref authenticity}, \tcont must store the parameters and \tc must pass them back in {\bf Deliver} to ensure that the request has not been modified.
-In order to reduce the verification costs for requests with long parameter arrays, we instead store and verify a hash of the parameters.
-In particular, we store the SHA3-256 hash of the concatenation of the request type byte and the byte array.
+To ensure the request has not been modified by the \medname, \tcont must store the parameters and \tc must pass them back in {\bf Deliver}.
+To reduce the verification costs for large arrays, we instead store and verify $\text{SHA3-256}({\sf typeByte} || {\sf timestamp} || {\sf paramArray})$.
 The relay scrapes the actual parameters and passes them into the enclave.
 When calling {\bf Deliver}, \enclaveprog computes the same hash and passes that back for validation.
 This allows us to continue validating long requests at low cost.
