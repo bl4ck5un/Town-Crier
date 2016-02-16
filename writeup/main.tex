@@ -22,7 +22,7 @@
 \setlist[enumerate]{leftmargin=*}
 
 \usepackage{tikz}
-\usetikzlibrary{arrows,calc,fit,positioning,shapes.misc,shapes}
+\usetikzlibrary{arrows,calc,fit,matrix,positioning,shapes.misc,shapes}
 
 \pgfdeclarelayer{background}
 \pgfsetlayers{background,main}
@@ -34,7 +34,8 @@
   comm-link/.style={communication,ultra thick,text=black},
   bg-box/.style={rectangle,rounded corners,draw=black,dashed,inner sep=0},
   blockchain-color/.style={fill=blue!12},
-  tc-server-color/.style={fill=black!20}
+  tc-server-color/.style={fill=black!20},
+  every path/.style={>=stealth},
 }
 
 \DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}

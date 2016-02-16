@@ -52,13 +52,13 @@ Fig.~\ref{fig:dataflow} shows the data flows involved in processing a datagram r
 %  \node[entity,fill=white,below=5em of ctc,anchor=north west,xshift=1em] (cu) {User Contract\\$\reqcont$};
 %  \node[entity,trusted,minimum height=1.5em,text width=3em,anchor=south west] (id-gen) at (ctc.south west) {\footnotesize $\dgid$ gen};
 %
-%  \draw[-stealth,communication] ([yshift=-0.5em]cu.west) -| node [text width=3.3em,align=center,blockchain-color,yshift=3.5em] {\footnotesize $m_0 =$\\[-0.2em]$(\dgform,$\\[-0.2em]$\dgcallback)$} ([xshift=-2.4em]ctc.south);
-%  \draw[-stealth,communication,thick,dashed] ([xshift=-0.5em]ctc.south) |- node [text width=3em,xshift=1.5em,xshift=0.5em,yshift=3em] {\footnotesize $m_1 =$\\[-0.2em]$(\dgid)$} ([yshift=0.5em]cu.west);
-%  \path[-stealth,communication] (ctc) edge [above,transform canvas={yshift=0.6em}] node [text width=4em,align=center,xshift=-0.25em] {\footnotesize $m_2 =$\\[-0.4em]$(\dgid,\dgform)$} (enc);
-%  \path[-stealth,communication] (enc) edge [below,transform canvas={yshift=-0.6em}] node [text width=4em,align=center] {\footnotesize $m_3 =$\\[-0.2em]$(\dgid,\dgform,$\\[-0.3em]$\dgm)$} (ctc);
-%  \draw[-stealth,communication] ([yshift=-1.75em]ctc.east) -| node [text width=3em,align=center,blockchain-color,yshift=-3em] {\footnotesize $m_4 =$\\[-0.4em]$(\dgid,\dgm)$} (cu);
+%  \draw[->,communication] ([yshift=-0.5em]cu.west) -| node [text width=3.3em,align=center,blockchain-color,yshift=3.5em] {\footnotesize $m_0 =$\\[-0.2em]$(\dgform,$\\[-0.2em]$\dgcallback)$} ([xshift=-2.4em]ctc.south);
+%  \draw[->,communication,thick,dashed] ([xshift=-0.5em]ctc.south) |- node [text width=3em,xshift=1.5em,xshift=0.5em,yshift=3em] {\footnotesize $m_1 =$\\[-0.2em]$(\dgid)$} ([yshift=0.5em]cu.west);
+%  \path[->,communication] (ctc) edge [above,transform canvas={yshift=0.6em}] node [text width=4em,align=center,xshift=-0.25em] {\footnotesize $m_2 =$\\[-0.4em]$(\dgid,\dgform)$} (enc);
+%  \path[->,communication] (enc) edge [below,transform canvas={yshift=-0.6em}] node [text width=4em,align=center] {\footnotesize $m_3 =$\\[-0.2em]$(\dgid,\dgform,$\\[-0.3em]$\dgm)$} (ctc);
+%  \draw[->,communication] ([yshift=-1.75em]ctc.east) -| node [text width=3em,align=center,blockchain-color,yshift=-3em] {\footnotesize $m_4 =$\\[-0.4em]$(\dgid,\dgm)$} (cu);
 %
-%  \path[-stealth,green!40!black,text=black,ultra thick] ($(id-gen.east)+(-0.25em,0)$) edge [above right] node [xshift=0.25em,yshift=0.25em] {\footnotesize $\dgid$} ($(id-gen.east)+(1em,1em)$);
+%  \path[->,green!40!black,text=black,ultra thick] ($(id-gen.east)+(-0.25em,0)$) edge [above right] node [xshift=0.25em,yshift=0.25em] {\footnotesize $\dgid$} ($(id-gen.east)+(1em,1em)$);
 %
 %  \begin{pgfonlayer}{background}
 %    \node[bg-box,
@@ -85,10 +85,10 @@ Fig.~\ref{fig:dataflow} shows the data flows involved in processing a datagram r
   \node[local-entity,fill=white,below=5em of ctc] (cu) {User Contract\\$\reqcont$};
   \node[below=1em of enc,align=center] (data) {\small (obtains $\dgm$\\from data source)};
 
-  \path[-stealth,comm-link] (cu) edge [transform canvas={xshift=-1.75em}] node [text width=3.5em,align=center,blockchain-color] {\footnotesize $m_1 =$\\[-0.2em]$(\dgform,$\\[-0.4em]$\dgcallback)$} (ctc);
-  \path[-stealth,comm-link] (ctc) edge [above,transform canvas={yshift=0.6em}] node [text width=4em,align=center] {\footnotesize $m_2 =$\\[-0.4em]$(\dgid,\dgform)$} (enc);
-  \path[-stealth,comm-link] (enc) edge [below,transform canvas={yshift=-0.6em}] node [text width=4em,align=center] {\footnotesize $m_3 =$\\[-0.2em]$(\dgid,\dgform,$\\[-0.4em]$\dgm)$} (ctc);
-  \path[-stealth,comm-link] (ctc) edge [transform canvas={xshift=1.75em}] node [text width=2.5em,align=center,blockchain-color] {\footnotesize $m_4 =$\\[-0.4em]$(\dgm)$} (cu);
+  \path[->,comm-link] (cu) edge [transform canvas={xshift=-1.75em}] node [text width=3.5em,align=center,blockchain-color] {\footnotesize $m_1 =$\\[-0.2em]$(\dgform,$\\[-0.4em]$\dgcallback)$} (ctc);
+  \path[->,comm-link] (ctc) edge [above,transform canvas={yshift=0.6em}] node [text width=4em,align=center] {\footnotesize $m_2 =$\\[-0.4em]$(\dgid,\dgform)$} (enc);
+  \path[->,comm-link] (enc) edge [below,transform canvas={yshift=-0.6em}] node [text width=4em,align=center] {\footnotesize $m_3 =$\\[-0.2em]$(\dgid,\dgform,$\\[-0.4em]$\dgm)$} (ctc);
+  \path[->,comm-link] (ctc) edge [transform canvas={xshift=1.75em}] node [text width=2.5em,align=center,blockchain-color] {\footnotesize $m_4 =$\\[-0.4em]$(\dgm)$} (cu);
 
   \begin{pgfonlayer}{background}
     \node[bg-box,

@@ -142,19 +142,19 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
   \node[color=maroon,draw,anchor=south east] (fee) at ([xshift=-0.25em,yshift=0.25em]ctc.south east) {\small $\fee$};
 
   \draw[color=gold,rounded corners,opacity=0.25,line width=1ex] ([yshift=1.25em]user.east) -| ([xshift=3.25em]cu.south);
-  \path[-stealth,color=gold,line width=1.15ex] (user) edge [transform canvas={yshift=1.25em}] (cu);
-  \path[-stealth,color=gold,line width=1ex] (cu) edge [transform canvas={xshift=3.25em}] (ctc);
-  \path[-stealth,color=maroon,line width=0.4ex] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1.2em] {\small \smash{$(\gasrequest, \fee)$}} ([yshift=-1.5em]ctc.north);
+  \path[->,color=gold,line width=1.15ex] (user) edge [transform canvas={yshift=1.25em}] (cu);
+  \path[->,color=gold,line width=1ex] (cu) edge [transform canvas={xshift=3.25em}] (ctc);
+  \path[->,color=maroon,line width=0.4ex] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1.2em] {\small \smash{$(\gasrequest, \fee)$}} ([yshift=-1.5em]ctc.north);
   \node[anchor=north,xshift=1em,yshift=-0.75em] () at (cu.south) {\small \bf \underline{\smash{Request}}};
-%  \path[-stealth,color=maroon,line width=0.4ex] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1em] {\small \smash{$(\gasrequest, \fee)$}} ([yshift=-1.5em]ctc.north);
+%  \path[->,color=maroon,line width=0.4ex] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1em] {\small \smash{$(\gasrequest, \fee)$}} ([yshift=-1.5em]ctc.north);
 %  \node[anchor=north,xshift=1em,yshift=-0.5em] () at (cu.south) {\small \bf \underline{\smash{Request}}};
 
-  \path[-stealth,color=gold,line width=1ex] (tc-wallet.east) edge [above,transform canvas={yshift=0.4em}] node () {\small $\gasdeliver$} (ctc.west);
+  \path[->,color=gold,line width=1ex] (tc-wallet.east) edge [above,transform canvas={yshift=0.4em}] node () {\small $\gasdeliver$} (ctc.west);
   \draw[color=gold,rounded corners,opacity=0.25,line width=0.3ex] ([yshift=0.4em]tc-wallet.east) -| ([xshift=-3em]ctc.north);
-  \path[-stealth,color=gold,line width=0.3ex] (ctc.north) edge [right,transform canvas={xshift=-3em}] node [yshift=-1.25em] {\small \smash{$\gascallback$}} (cu.south);
+  \path[->,color=gold,line width=0.3ex] (ctc.north) edge [right,transform canvas={xshift=-3em}] node [yshift=-1.25em] {\small \smash{$\gascallback$}} (cu.south);
   \path[color=maroon,opacity=0.25,line width=0.4ex] (tc-wallet-|fee.west) edge [transform canvas={yshift=-1.25em}] (tc-wallet.east);
-  \path[-stealth,color=maroon,line width=0.4ex] (ctc.west) edge [transform canvas={yshift=-1.25em}] node [blockchain-color,xshift=0.4em] {\small $\fee$} ([xshift=-0.8em]tc-wallet.east);
-%  \path[-stealth,color=gold,ultra thick,dashed] (ctc.west) edge [below,transform canvas={yshift=-1em}] node [text=black,xshift=0.4em] {\small $\gasdeliver - \fee$} ([xshift=-0.8em]tc-wallet.east);
+  \path[->,color=maroon,line width=0.4ex] (ctc.west) edge [transform canvas={yshift=-1.25em}] node [blockchain-color,xshift=0.4em] {\small $\fee$} ([xshift=-0.8em]tc-wallet.east);
+%  \path[->,color=gold,ultra thick,dashed] (ctc.west) edge [below,transform canvas={yshift=-1em}] node [text=black,xshift=0.4em] {\small $\gasdeliver - \fee$} ([xshift=-0.8em]tc-wallet.east);
 
   \path[] (tc-wallet.north east) edge [draw=none,above] node [yshift=0.75em] {\small \bf \underline{Deliver}} (ctc.north west);
 
