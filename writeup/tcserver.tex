@@ -63,14 +63,14 @@ every path/.style = {
 \draw[<->,thick] (net) -- (cloud);
 \draw[<->,thick] (monitor) -- (bc);
 
-\draw[->,blue,thick,transform canvas={xshift=-2mm}] (https) to (net);
-\draw[->,blue,thick,dashed,transform canvas={xshift=+2mm}] (net) to (https);
+\draw[->,red,thick,transform canvas={xshift=-2mm}] (https) to (net);
+\draw[->,red,thick,dashed,transform canvas={xshift=+2mm}] (net) to (https);
 
-\draw[->,red,thick,transform canvas={xshift=-2mm}] (client) -- (att);
-\draw[<-,red,thick,dashed,transform canvas={xshift=+2mm}] (client) -- (att);
+\draw[->,blue,thick,transform canvas={xshift=-2mm}] (client) -- (att);
+\draw[<-,blue,thick,dashed,transform canvas={xshift=+2mm}] (client) -- (att);
 
-\draw[->,red,thick,transform canvas={xshift=-2mm}] (monitor) -- (req h);
-\draw[<-,red,thick,dashed,transform canvas={xshift=+2mm}] (monitor) -- (req h);
+\draw[->,blue,thick,transform canvas={xshift=-2mm}] (monitor) -- (req h);
+\draw[<-,blue,thick,dashed,transform canvas={xshift=+2mm}] (monitor) -- (req h);
 
 \draw[<->,thick] (https.two east) -- (https.two east -| req h.two west);
 
