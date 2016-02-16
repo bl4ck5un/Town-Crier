@@ -135,7 +135,7 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
    wallet/.style={entity,minimum height=3.5em,text width=5em},
    type-box-color/.style={fill=black!10},
    blocked-out-label/.style={text=black,type-box-color,text height=0.6em}]
-  \node[wallet,fill=white] (user) {User ${\cal P}_U$};
+  \node[wallet,fill=white] (user) {User $\userwallet$};
   \node[contract,fill=white,right=6em of user] (cu) {User Contract\\$\reqcont$};
   \node[wallet,trusted,below=5em of user] (tc-wallet) {$\tcadd$};
   \node[contract,trusted,right=6em of tc-wallet] (ctc) {TC Contract\\$\tcont$};
