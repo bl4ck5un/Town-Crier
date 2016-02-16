@@ -1,9 +1,6 @@
 
-
-
-As we described in Section~\ref{sec:contracts-and-gas}, Ethereum employs \emph{gas}, a fee mechanism to mitigate DoS attacks.
-To sustainably operate \tc on Ethereum, we develop a novel two-currency resource management system which allows
-\tc to make gas payments up front while preventing a malicious requester from exhausting \tc's resources
+To sustainably operate \tc on Ethereum, and address the concern of attacks on fee management, we employ a novel two-currency resource management system in \tc. This system causes
+requesters to make gas payments up front as ether. It converts ether to gas so as to prevent a malicious requester from exhausting \tc's resources
 or a malicious \tc from stealing an honest user's money.
 
 
@@ -44,40 +41,30 @@ and $\gasdeliver$ is chosen by the \tc~\encname when calling {\bf Deliver}.
 Though $\gasrequest$ and $\gascancel$ are set by the requester, we need not worry about the values.
 If they are too small, Ethereum will abort the transaction and there will not be a request or cancellation.
 
+\paragraph{Adversarial cases.}
 
-%\begin{figure}
-%\centering
-%\begin{tikzpicture}
-%  [local-entity/.style={entity,minimum height=3.5em,text width=8em}]
-%  \node[local-entity,trusted] (ctc) {};
-%  \node[local-entity,draw=none,anchor=north] (ctc-inner) at (ctc.north) {TC Contract\\$\tcont$};
-%  \node[local-entity,trusted,right=6em of ctc,text width=5em] (enc) {Enclave};
-%  \node[local-entity,fill=white,below=3.5em of ctc] (cu) {User Contract\\$\reqcont$};
-%  \node[local-entity,fill=red!30,below=2.5em of cu] (user) {User};
-%
-%  \path[-stealth,color=red,ultra thick] (user) edge [transform canvas={xshift=-3.5em}] ([yshift=0.75em]cu.south);
-%  \path[color=red,thick] (cu.south) edge [right,transform canvas={xshift=-3.5em}] node [text=black,text width=4em,align=center,yshift=1.75em] {\footnotesize Insufficient\\[-0.25em]gas aborts\\[-0.2em]with no\\[-0.5em]effect} (ctc.south);
-%  \node[draw=red,cross out,minimum size=1ex,thick] () at ([xshift=-3.5em]ctc.south) {};
-%
-%  \draw[-stealth,color=green!50!black,line width=0.8ex] ([yshift=-0.25em]enc.west) -- ([xshift=-1.2em,yshift=-0.25em]ctc.east);
-%  \draw[-stealth,color=green!50!black,line width=0.5ex] ([yshift=-0.25em]enc.west) -| ([xshift=3em,yshift=-0.9em]cu.north);
-%  \draw[color=green!50!black,thick,dashed]  ([xshift=3.75em]cu.north) |- ([yshift=-1.25em]ctc.east);
-%  \path[-stealth,color=green!50!black,ultra thick,dashed]  ([yshift=-1.25em]ctc.east) edge [below] node [text=black,text width=4em,align=center,xshift=-0.4em] {\footnotesize Extra gas\\[-0.4em]refunded} ([xshift=0.8em,yshift=-1.25em]enc.west);
-%
-%  \begin{pgfonlayer}{background}
-%    \node[bg-box,
-%          blockchain-color,
-%          fit={($(ctc.north west)+(-0.5em,0.5em)$)($(cu.south east)+(0.5em,-0.5em)$)},
-%          label=above:{\bf Blockchain}] () {};
-%    \node[bg-box,
-%          tc-server-color,
-%          fit={($(enc.north east)+(0.5em,0.5em)$)($(enc.south west)+(-0.5em,-0.5em)$)},
-%          label=above:{\bf TC Server}] () {};
-%  \end{pgfonlayer}
-%\end{tikzpicture}
-%\caption{{\bf Gas Payment in Ethereum}}
-%\label{fig:gas-model}
-%\end{figure}
+During the creation and fulfillment of any request, there are two untrusted parties: the requesting user and the \tc~\medname. In the \tc implementation, we thus consider three cases:
+
+\begin{itemize}
+  \setlength{\itemsep}{2pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+  \item {\it Honest requester and relay.}
+    The requester must receive a valid authenticated response from TC.
+
+  \item {\it Malicious requester and honest relay.}
+    \tc must still be able to respond to requests from other (honest) users.
+    Thus we must prevent a malicious user from interfering directly with other requests (which the payment-free protocol already does)
+    or exhausting the financial resources of TC.
+
+  \item {\it Honest requester and malicious relay.}
+    The requester cannot receive invalid data (which is also assured by thepayment-free protocol)
+    and the requester should avoid paying for computation that is not executed.
+\end{itemize}
+We formalize these properties in Section~\ref{sec:analysis} and prove that our protocol provides these guarantees.
+We intentionally ignore the case where both the requester and the relay are dishonest.
+If the requester is dishonest we need to not protect their request, and if the relay is dishonest we cannot protect the TC system.
+
 
 
 
