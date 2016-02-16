@@ -1,0 +1,58 @@
+\section{Applications: Requesting Contracts}
+\label{sec:applicationsfull}
+
+We now elaborate 
+on the applications described 
+in Section~\ref{sec:applications}
+and we show a short 
+Solidity code sample for one of these applications,
+to demonstrate first-hand what a requester  
+contract would look like 
+to call Town Crier's authenticated data feed service.
+\elaine{TODO: actually put in syntax highlighted code example here.}
+
+%We built and implemented several showcase applications.
+%We give a description of these applications in this section,
+%and show experimental results in Section~\ref{sec:experiments}.
+
+\paragraph{Financial derivative ({\sf CashSettledPut}).}
+Financial derivatives are among the most commonly cited smart contract
+applications,
+and exemplify the need for a data feed on financial instruments.
+We implemented an example contract {\sf CashSettledPut} for a {\em cash-settled put option}.
+This is an agreement for one party to buy an asset from the other at an agreed upon price on or before a particular date.
+It is ``cash-settled'' in that the sale is implicit, i.e. no asset changes hands, only cash reflecting the asset's value.
+In our implementation, the issuer of the option specifies a strike price $P_S$, expiration date, unit price $P_U$, and maximum number of units $M$ she is willing to sell.
+A customer may send a request to the contract specifying the number $X$ of option units to be purchased and containing the associated fee ($X \cdot P_U$).
+A customer may then exercise the option by sending another request prior to the expiration date.
+{\sf CashSettledPut} calls \tc to retrieve the closing price $P_C$ of the underlying instrument on the day the option was exercised, and pays the customer $X \cdot (P_S - P_C)$.
+To ensure sufficient funding to pay out, the contract must be endowed with ether value at least $M \cdot P_S$.
+
+\iffalse
+\paragraph{Financial Derivatives.}  In order to implement a financial derivative as a smart contract, we require information about the corresponding financial instrument upon which the derivative depends (typically a stock).  As an example, we implemented a cash-settled put option.  The issuer of the option creates a contract for a particular stock, strike price, time period, unit price, and the maximum number of units he is willing to sell.  Customers may purchase the option by sending requests to the contract along with the associated fee indicating the number of units of the option they would like to buy.  Until the expiration date, customers may choose to exercise the put option by making another request to the option contract.  The contract then requests that TC retrieve the closing price of the underlying instrument on the day the option was exercised, and pays out to the customer the difference between the strike price and the closing price for each unit of the option purchased.  To ensure the contract always has sufficient funds to pay out, it must control value of at least the strike price times the maximum number of units sold.
+\fi
+
+\paragraph{Flight insurance ({\sf FlightIns}).}
+Flight insurance indemnifies a purchaser should her flight be delayed or canceled.
+We have implemented a simple flight insurance contract called {\sf FlightIns}.
+Our implementation showcases \tc's {\it private-datagram} feature to address an obvious concern:
+customers may not wish to reveal their travel plans publicly on the blockchain. 
+
+An insurer stands up {\sf FlightIns} with a specified policy fee, payout, and lead time $\Delta T$. ($\Delta T$ is set large enough to ensure that a customer can't anticipate flight cancellation or delay due to weather, etc.) To purchase a policy, a customer sends the {\sf FlightIns} a ciphertext  $C$ under the \tc's pubic key $\pkTC$ of the ICAO flight number $FN$ and scheduled time of departure $T_D$ for her flight, along with the policy fee. {\sf FlightIns} sends \tc a private-datagram request containing the current time $T$ and the ciphertext $C$. \tc decrypts $C$ and checks that the lead time meets the policy requirement, i.e., that $T_D - T \geq \Delta T$. \tc then scrapes a flight information data source several hours after $T_D$ to check the flight status, and returns to {\sf FlightIns} predicates on whether the lead time was valid and whether the flight has been delayed or cancelled. If both predicates are true, then {\sf FlightIns} returns the payout to the customer. Note that $FN$ is never exposed in the clear.
+
+Despite the use of private datagrams, {\sf FlightIns} as described here still poses a privacy risk, as the {\em timing} of the predicate delivery by \tc leaks information about $T_D$, which may be sensitive information; this, and the fact that the payout is publicly visible, could also indirectly reveal $FN$. {\sf FlightIns} addresses this issue by including in the private datagram request another parameter $t > T_D$ specifying the time at which predicates should be returned. By randomizing $t$ and making $t - T_D$ sufficiently large, {\sf FlightIns} can substantially reduce the leakage of timing information. 
+
+\paragraph{Steam Marketplace ({\sf SteamTrade}).} Steam~\cite{steam} is an online gaming platform that supports thousands of games and maintains its own marketplace, where users can trade, buy, and sell games and other virtual items.  We implement a contract for the sale of games and items for ether that showcases \tc's support for custom datagrams through the use of Steam's access-controlled API.
+
+A user intending to sell items creates a contract {\sf SteamTrade} with his Steam account number $ID_S$, a list $L$ of items for sale and a price in ether for each.  In order to purchase some subset $L_B$ of the items, a buyer first uses a Steam client to create a trade offer requesting each item $i \in L_B$.  The buyer then submits to {\sf SteamTrade} a ciphertext $C$ under the \tc's public key $\pkTC$ of his Steam API key $K_S$, his account number $ID_B$, the list of items $L_B$, and a time period $T_B$ indicating how long the seller has to respond to the offer, along with an amount of ether equivalent to the sum of the specified prices of all items in $L_B$.  {\sf SteamTrade} sends \tc a custom datagram request containing the current time $T$, the account number $ID_S$, and the ciphertext $C$.  \tc decrypts $C$, delays for time $T_B$, then retrieves all trades between the two accounts identified by $ID_S$ and $ID_B$ within that time period by using the provided API key $K_S$.  \tc verifies whether or not a trade exactly matching the items in $L_B$ successfully occurred between the two accounts and returns the result to {\sf SteamTrade}.  If such a trade occurred, {\sf SteamTrade} sends the buyer's ether to the seller's account.  Otherwise the buyer's ether is refunded.
+
+
+\iffalse
+\paragraph{Steam Marketplace.} Steam \kyle{reference?} is an online gaming platform that supports thousands of games and maintains its own marketplace, where users can trade, buy, and sell games and other virtual items.  Through the Steam trading API, for which a key is issued to each user, we can construct a contract that implements the sale of games and items for ether using custom datagrams.  A user wishing to sell items creates a contract specifying the items to be sold along with a price in ether for each.  A user wishing to buy the items creates a Steam trade offer requesting the items (which the seller must accept out of band through either a Steam client or the Steam API), and then submits an Ethereum transaction with value in ether equal to the specified price along with an attached ciphertext containing a reference to the trade offer and his Steam API key.  The API key of either the buyer or the seller is required in order to view the contents of the trade.  The contract submits a request to TC using the provided ciphertext, and relies on TC to verify the contents and status of the trade and return the result.  If the trade was successfully accepted by the seller and the items transferred to the buyer, then the contract transfers the buyer's ether to the seller's account.  Otherwise if the trade is unsuccessful, the buyer's ether is refunded by the contract.
+
+There is a clear parallel between the exchange of virtual goods for ether and the exchange of fiat currency for ether.  The contract remains mostly the same; virtual goods are simply replaced with dollars and the Steam API is substituted out for a (preferably read-only) API for a user's bank statements.  In both cases, the \encname must be trusted not to compromise the user's privacy (or worse if the provided API keys have additional privileges) when given access to their account statements.
+\fi
+%Discuss flight insurance as an example: We'd like to conceal the flight number and date. We might also want to conceal payment, so TC might ingest encrypted addresses and mix them internally.
+
+%Micro-loans too? Linkage to Facebook / Keybase.io
+
