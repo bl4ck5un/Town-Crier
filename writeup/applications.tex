@@ -38,6 +38,8 @@ It is ``cash-settled'' in that the sale is implicit, i.e. no asset changes hands
 \paragraph{Flight insurance ({\sf FlightIns}).}
 Flight insurance indemnifies a purchaser should her flight be delayed or canceled.
 We have implemented a simple flight insurance contract called {\sf FlightIns}.
+Our implementation showcases \tc's {\it private-datagram} feature to address an obvious concern:
+customers may not wish to reveal their travel plans publicly on the blockchain. 
 Roughly speaking, 
 a customer submits to $\tcont$ a 
 request ${\sf Enc}_{\pkTC}({\sf req})$ 
@@ -48,9 +50,7 @@ sufficiently long before the flight time).
 If well-formed, the enclave will fetch the flight information website
 at a specified later time, and send to $\tcont$ a datagram indicating
 whether the flight is cancelled. 
-Our implementation showcases \tc's {\it private-datagram} feature to address an obvious concern:
-customers may not wish to reveal their travel plans publicly on the blockchain. 
-To avoid leaking information through timing (e.g.,
+Finally, to avoid leaking information through timing (e.g.,
 when the flight 
 information website is accessed), random delays can be introduced to mitigate
 the information leakage. 
