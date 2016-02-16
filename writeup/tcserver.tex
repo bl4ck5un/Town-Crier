@@ -28,8 +28,10 @@ treated by enclave code as untrusted.
 
 \begin{tikzpicture}
   [box/.style={entity, text width=1.5cm, inner sep=5pt},
-   untrusted/.style={fill=red!35},
-   double/.style={rectangle split, rectangle split parts=2}]
+   untrusted/.style={fill=red!33},
+   double/.style={rectangle split, rectangle split parts=2},
+   ecall/.style={color=blue,thick},
+   ocall/.style={color=red!80!black,thick}]
   \matrix (m) [row sep=1.2em, column sep=0.6em]{
     \node[inner sep=0pt,anchor=south] (user) {\includegraphics[width=1cm]{figures/user}}; &
     \node[inner sep=0pt,draw,cloud,aspect=2.0,align=center,anchor=south](cloud) {\footnotesize HTTPS \\ websites}; &
@@ -51,14 +53,14 @@ treated by enclave code as untrusted.
   \draw[<->,thick] (net) -- (cloud);
   \draw[<->,thick] (monitor) -- (bc);
 
-  \draw[->,red,ultra thick,transform canvas={xshift=-2mm}] (https) to (net);
-  \draw[->,red,ultra thick,dashed,transform canvas={xshift=+2mm}] (net) to (https);
+  \draw[->,ocall,transform canvas={xshift=-2mm}] (https) to (net);
+  \draw[->,ocall,dashed,transform canvas={xshift=+2mm}] (net) to (https);
 
-  \draw[->,blue,ultra thick,transform canvas={xshift=-2mm}] (client) -- (att);
-  \draw[<-,blue,ultra thick,dashed,transform canvas={xshift=+2mm}] (client) -- (att);
+  \draw[->,ecall,transform canvas={xshift=-2mm}] (client) -- (att);
+  \draw[<-,ecall,dashed,transform canvas={xshift=+2mm}] (client) -- (att);
 
-  \draw[->,blue,ultra thick,transform canvas={xshift=-2mm}] (monitor) -- (req h);
-  \draw[<-,blue,ultra thick,dashed,transform canvas={xshift=+2mm}] (monitor) -- (req h);
+  \draw[->,ecall,transform canvas={xshift=-2mm}] (monitor) -- (req h);
+  \draw[<-,ecall,dashed,transform canvas={xshift=+2mm}] (monitor) -- (req h);
 
   \draw[<->,thick] (https.two east) -- (https.two east -| req h.two west);
 
@@ -78,15 +80,15 @@ treated by enclave code as untrusted.
     \node[untrusted] (relay-leg) {\small Relay\vphantom{Ry}}; &
     \node[trusted] (enc-leg) {\small Enclave\vphantom{Ry}}; &
     \node[tc-server-color,rounded corners,text width=2.5em] (server-leg) {\small Server\vphantom{Ry}}; &
-    \node[text width=1.75em] (ocall-leg) {}; &
-    \node[text width=1.75em] (ecall-leg) {}; \\
+    \node[text width=1.75em] (ecall-leg) {}; &
+    \node[text width=1.75em] (ocall-leg) {}; \\
   };
 
-  \path[->,color=red,ultra thick,transform canvas={yshift=0.1em},above] (ocall-leg.west) edge node {\small ocall} (ocall-leg.east);
-  \path[<-,color=red,ultra thick,dashed,transform canvas={yshift=-0.4em}] (ocall-leg.west) edge (ocall-leg.east);
+  \path[->,ecall,above] (ecall-leg.west) edge node {\small ecall} (ecall-leg.east);
+  \path[<-,ecall,dashed,transform canvas={yshift=-0.4em}] (ecall-leg.west) edge (ecall-leg.east);
 
-  \path[->,color=blue,ultra thick,transform canvas={yshift=0.1em},above] (ecall-leg.west) edge node {\small ecall} (ecall-leg.east);
-  \path[<-,color=blue,ultra thick,dashed,transform canvas={yshift=-0.4em}] (ecall-leg.west) edge (ecall-leg.east);
+  \path[->,ocall,above] (ocall-leg.west) edge node {\small ocall} (ocall-leg.east);
+  \path[<-,ocall,dashed,transform canvas={yshift=-0.4em}] (ocall-leg.west) edge (ocall-leg.east);
 \end{tikzpicture}
 \caption{Components of \tc Server}
 \label{fig:tcserver_impl}
