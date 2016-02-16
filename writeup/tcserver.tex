@@ -28,69 +28,62 @@ treated by enclave code as untrusted.
 
 \begin{tikzpicture}
   [box/.style={entity, text width=1.5cm, inner sep=5pt},
+   untrusted/.style={fill=red!30},
    double/.style={rectangle split, rectangle split parts=2}]
-\matrix (m) [row sep=5mm, column sep=3mm]{
-    \node[inner sep=0pt] (user) {\includegraphics[width=1cm]{figures/user}}; &
-    \node[inner sep=0pt,draw,cloud,aspect=2.0,align=center](cloud) {\footnotesize HTTPS \\ websites}; &
-    \node[box, cylinder, shape border rotate=90, aspect=.2](bc){blockchain};  \\
-    
+  \matrix (m) [row sep=5mm, column sep=3mm]{
+    \node[inner sep=0pt,anchor=south] (user) {\includegraphics[width=1cm]{figures/user}}; &
+    \node[inner sep=0pt,draw,cloud,aspect=2.0,align=center,anchor=south](cloud) {\footnotesize HTTPS \\ websites}; &
+    \node[box, cylinder, shape border rotate=90, aspect=.2,anchor=south](bc){blockchain};  \\[0.25em]
+
     \node[box,fill=white] (client) {Client \\ Interface}; & 
     \node[box,fill=white] (net) {TCP}; & 
-    \node[box,fill=white,double,text width=2cm] (monitor) {\texttt{geth} \nodepart{second}{Blockchain \\ Interface}}; \\
+    \node[box,fill=white,double,text width=2cm] (monitor) {\texttt{geth} \nodepart{second}{Blockchain \\ Interface}}; \\[0.75em]
 
-    \node[box,trusted] (att) {Attestation \\ Generation}; &
-    \node[box,double,trusted] (https) {HTTPS \nodepart{second}{Web \\ Scrapers}}; &
-    \node[box,double,trusted,text width=2cm,] (req h){\small Etheruem TX \\ Reader/Writer
-      \nodepart{second}{\small Request Handler}}; \\
-    
-    \node[xshift=-5mm] (sk) {\sksgx}; &  \node[box,text width=2cm] (keys) {\pkTC, \skTC}; & \\
-};
+    \node[box] (att) {Attestation \\ Generation}; &
+    \node[box,double] (https) {HTTPS \nodepart{second}{Web \\ Scrapers}}; &
+    \node[box,double,text width=2cm,] (req h){\small Etheruem TX \\ Reader/Writer \nodepart{second}{\small Request Handler}}; \\
 
-\draw[<->,thick] (user) -- (client);
-\draw[<->,thick] (net) -- (cloud);
-\draw[<->,thick] (monitor) -- (bc);
+    \node[xshift=-1.25em] (sk) {\sksgx}; &  \node[box,text width=2cm] (keys) {\pkTC, \skTC}; & \\
+  };
 
-\draw[->,red,thick,transform canvas={xshift=-2mm}] (https) to (net);
-\draw[->,red,thick,dashed,transform canvas={xshift=+2mm}] (net) to (https);
+  \draw[<->,thick] (user) -- (client);
+  \draw[<->,thick] (net) -- (cloud);
+  \draw[<->,thick] (monitor) -- (bc);
 
-\draw[->,blue,thick,transform canvas={xshift=-2mm}] (client) -- (att);
-\draw[<-,blue,thick,dashed,transform canvas={xshift=+2mm}] (client) -- (att);
+  \draw[->,red,thick,transform canvas={xshift=-2mm}] (https) to (net);
+  \draw[->,red,thick,dashed,transform canvas={xshift=+2mm}] (net) to (https);
 
-\draw[->,blue,thick,transform canvas={xshift=-2mm}] (monitor) -- (req h);
-\draw[<-,blue,thick,dashed,transform canvas={xshift=+2mm}] (monitor) -- (req h);
+  \draw[->,blue,thick,transform canvas={xshift=-2mm}] (client) -- (att);
+  \draw[<-,blue,thick,dashed,transform canvas={xshift=+2mm}] (client) -- (att);
 
-\draw[<->,thick] (https.two east) -- (https.two east -| req h.two west);
+  \draw[->,blue,thick,transform canvas={xshift=-2mm}] (monitor) -- (req h);
+  \draw[<-,blue,thick,dashed,transform canvas={xshift=+2mm}] (monitor) -- (req h);
 
-\draw[->,thick] (req h.south) |- (keys.east);
-\draw[->,thick] ($ (att.south) + (5mm,0) $)  |- (keys.west);
-\draw[->,thick] ($ (att.south) - (5mm,0) $)  -- (sk);
+  \draw[<->,thick] (https.two east) -- (https.two east -| req h.two west);
 
-\begin{pgfonlayer}{background}
-  \node [inner xsep=2mm, fill=red!30,fit=(client) (net) (monitor) ] {};
-  \node [inner xsep=2mm, trusted,fit=(att) (https) (req h) (keys) ] {};
-\end{pgfonlayer}
+  \draw[->,thick] (req h.south) |- (keys.east);
+  \draw[->,thick] ([xshift=1.25em]att.south)  |- (keys.west);
+  \draw[->,thick] (att.south-|sk.north) -- (sk);
 
-\matrix [below=2mm of m, matrix of nodes, column sep=2mm] 
-{
-  {\bf keys:} & |[fill=red!30]| \medname & |[trusted]| \encname & 
-  |(t1) []| {} &&& 
-  |(u1) []| {} &
-  |(u2) []| {} &&&
-  |(t2) []| {} \\
-};
+  \begin{pgfonlayer}{background}
+    \node [inner sep=0.6em, untrusted, fit=(client) (net) (monitor), draw=black] {};
+    \node [inner sep=0.6em, trusted, fit=(att) (https) (req h) (keys), draw=black] {};
+  \end{pgfonlayer}
 
-\draw[->,red,transform canvas={yshift=+0.5mm}] (t1) to node[above] {ocall} (u1);
-\draw[<-,red,dashed,transform canvas={yshift=-0.5mm}] (t1) to (u1);
+  \matrix [below=0.75em of m, matrix of nodes, column sep=1em, align=center]
+  {
+    \node[inner xsep=0] {\bf Legend:}; &
+    \node[untrusted,draw=black,text width=3.25em] (relay-leg) {Relay\vphantom{Ry}}; &
+    \node[trusted,draw=black,text width=3.25em] (enc-leg) {Enclave\vphantom{Ry}}; &
+    \node[text width=2em] (ocall-leg) {}; &
+    \node[text width=2em] (ecall-leg) {}; \\
+  };
 
-\draw[->,blue,transform canvas={yshift=+0.5mm}] (u2) to node[above] {ecall} (t2);
-\draw[<-,blue,dashed,transform canvas={yshift=-0.5mm}] (u2) to (t2);
-%    	\node (keys) {\bf keys:};
-%    	\node[fill=red!30,right=2mm of keys] (key-relay) {\medname};
-%    	\node[fill=green!30, right=2mm of key-relay] (key-enc) {\encname};
-%        \node[trusted,minimum width=2mm] (source);
-%		
-%		\draw[->,blue] ($ (key-enc.east) + (14mm, 0) $) to node[above]{ecall} ($ (key-enc.east) + (20mm, 0) $);
-%		\draw[<-,blue,dashed,transform canvas={yshift=-1.5mm}] ($ (key-enc.east) + (14mm, 0) $) to ($ (key-enc.east) + (20mm, 0) $);
+  \path[->,color=red,above] (ocall-leg.west) edge node {ocall} (ocall-leg.east);
+  \path[<-,color=red,dashed,transform canvas={yshift=-0.3em}] (ocall-leg.west) edge (ocall-leg.east);
+
+  \path[->,color=blue,above] (ecall-leg.west) edge node {ecall} (ecall-leg.east);
+  \path[<-,color=blue,dashed,transform canvas={yshift=-0.3em}] (ecall-leg.west) edge (ecall-leg.east);
 \end{tikzpicture}
 \caption{Components of \tc Server}
 \label{fig:tcserver_impl}

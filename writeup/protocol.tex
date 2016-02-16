@@ -93,11 +93,15 @@ Fig.~\ref{fig:dataflow} shows the data flows involved in processing a datagram r
   \begin{pgfonlayer}{background}
     \node[bg-box,
           blockchain-color,
-          fit={($(ctc.north west)+(-0.8em,0.6em)$)($(cu.south east)+(0.8em,-0.6em)$)},
+          inner xsep=0.8em,
+          inner ysep=0.6em,
+          fit=(ctc)(cu),
           label=above:{\bf Blockchain}] () {};
     \node[bg-box,
           tc-server-color,
-          fit={($(enc.north east)+(0.8em,0.6em)$)($(enc.south west)+(-0.8em,-0.6em)$)},
+          inner xsep=0.8em,
+          inner ysep=0.6em,
+          fit=(enc),
           label=above:{\bf TC Server}] () {};
   \end{pgfonlayer}
 \end{tikzpicture}

@@ -18,13 +18,13 @@ An architectural schematic of \tc showing its interaction with external entities
   \begin{pgfonlayer}{background}
     \node[bg-box,
           blockchain-color,
-          fit={($(ctc.north east)+(0.5em,0.5em)$)($(cu.south west)+(-0.5em,-0.5em)$)},
+          fit=(ctc)(cu),
           label=above:{\bf Blockchain}] (blockchain) {};
     \node[rectangle,
           draw=black,
           tc-server-color,
-          inner sep=0,
-          fit={($(relay.north east)+(0.5em,0.5em)$)($(enc.south west)+(-0.5em,-0.5em)$)},
+          inner sep=0.5em,
+          fit=(relay)(enc),
           label=above:{\bf TC Server}] (tc) {};
   \end{pgfonlayer}
 

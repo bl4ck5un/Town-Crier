@@ -161,15 +161,16 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
   \begin{pgfonlayer}{background}
     \node[bg-box,
           blockchain-color,
-          fit={($(ctc.south east)+(1em,-1em)$)($(user.north west)+(-1em,2em)$)},
+          inner sep=1em,
+          fit={(ctc)($(user.north west)+(0,1em)$)},
           label=above:{\bf Blockchain}] (blockchain) {};
     \node[bg-box,
           type-box-color,
-          fit={($(ctc.south east)+(0.5em,-0.5em)$)($(cu.north west)+(-0.5em,0.5em)$)},
+          fit=(ctc)(cu),
           label=above:{\bf Contracts}] () {};
     \node[bg-box,
           type-box-color,
-          fit={($(tc-wallet.south east)+(0.5em,-0.5em)$)($(user.north west)+(-0.5em,0.5em)$)},
+          fit=(tc-wallet)(user),
           label=above:{\bf Wallets}] () {};
   \end{pgfonlayer}
 %  \node[blockchain-color,rounded corners] (bc-label) at (blockchain.north) {\bf Blockchain};
