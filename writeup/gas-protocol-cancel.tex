@@ -68,7 +68,7 @@ If the requester is dishonest we need to not protect their request, and if the r
 
 
 
-\begin{figure}[t!]
+\begin{figure}[h!]
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
   \hline
 
@@ -77,7 +77,7 @@ If the requester is dishonest we need to not protect their request, and if the r
                  & Assert $\constgasmin \leq \fee \leq \constgasmax$ \\
                  & $\dgid := \text{Counter}$; \ \ $\text{Counter} := \text{Counter} + 1$ \\
                  & Store $(\dgid, \dgform, \dgcallback, \fee, \reqcont)$ \\[-0.8em]
-                 & {\it \sgray{//~$\fee$ held by contract}} \\
+                 & {\it \sgray{//~$\fee$ held by contract}} \\[0.3em]
 
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm, \gasdeliver)$ from $\tcadd$: \\
                  & If ${\sf isCanceled}[\dgid]$ and not ${\sf isDelivered}[\dgid]$ \\
@@ -90,12 +90,13 @@ If the requester is dishonest we need to not protect their request, and if the r
                  & Set ${\sf isDelievered}[\dgid]$ \\
                  & Send $\fee$ to \tcadd \\
                  & Set $\gascallback := \fee - \constgasmin$ \\
-                 & Call $\dgcallback(\dgm)$ with $\gascallback$ max gas \\
+                 & Call $\dgcallback(\dgm)$ with $\gascallback$ max gas \\[0.3em]
 
   {\bf Cancel:}  & On recv $(\dgid, \gascancel)$ from $\reqcont$: \\
                  & Retrieve stored $(\dgid, \_, \_, \fee, \reqcont')$ \\
                  & \quad \sgray{\it //~abort if not found} \\
-                 & Assert $\reqcont = \reqcont'$ and $\fee \geq \constgascancel$ \\
+                 & Assert $\reqcont = \reqcont'$ \\
+                 & \quad and $\fee \geq \constgascancel$ \\
                  & \quad and ${\sf isDelivered}[\dgid]$ not set \\
                  & \quad and ${\sf isCanceled}[\dgid]$ not set \\
                  & Set ${\sf isCanceled}[\dgid]$ \\
@@ -111,10 +112,10 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
 \label{tbl:gas-tc-contract}
 \end{figure}
 
-\begin{figure}[t!]
+\begin{figure}[h!]
 \begin{boxedminipage}{\columnwidth}
 \centering
-{\bf Program for \tcs~\encname ($\enclaveprog$)} \\[1ex]
+{\bf Program for \tcs~\encname $(\enclaveprog)$} \\[1ex]
 \begin{tabular}{l}
   {\bf Initialize}: [Same as Figure~\ref{fig:engineprotocol}] \\[3pt]
 
