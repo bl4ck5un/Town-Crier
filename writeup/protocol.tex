@@ -10,7 +10,11 @@ First, we give a brief protocol overview. Then we enumerate the data flows in \t
 
 The lifecycle of a datagram may be briefly summarized in the following steps:
 
+\vspace{-2mm}
 \begin{itemize}
+  \setlength{\itemsep}{2pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
 \item {\bf Initiate request.} \reqcont sends a datagram request to \tcont on the blockchain.
 
 \item {\bf Monitor and relay.} The \medname monitors \tcont and relays any incoming datagram request with parameters \dgform to the \encname.
@@ -19,8 +23,9 @@ The lifecycle of a datagram may be briefly summarized in the following steps:
 
 \item {\bf Return datagram.} \tcont returns the datagram to \reqcont.
 \end{itemize}
+\vspace{-2mm}
 
-We now make this data flow more precise. 
+\noindent We now make this data flow more precise. 
 
 \subsection{Data flows}
 
