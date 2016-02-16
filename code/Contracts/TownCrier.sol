@@ -25,8 +25,18 @@ contract TownCrier {
     uint constant CANCELLED_FEE_FLAG = 1;
     uint constant DELIVERED_FEE_FLAG = 0;
 
-    uint64 requestCnt = 0;
+    uint64 requestCnt;
     Request[2**64] requests;
+
+    function TownCrier() public {
+        // Start request IDs at 1 for two reasons:
+        //   1. We can use 0 to denote an invalid request (ids are unsigned)
+        //   2. Storage is more expensive when changing something from zero to non-zero,
+        //      so this means the first request isn't randomly more expensive.
+        // Reason 2 also makes us want to initialize an array value somewhere.
+        requestCnt = 1;
+        requests[0].requester = msg.sender;
+    }
 
     function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, bytes32[] requestData) public returns (uint64) {
 //    function request(uint8 requestType, address callbackAddr, bytes32[] requestData) public returns (uint64) {
@@ -37,8 +47,8 @@ contract TownCrier {
             RequestLog(msg.gas, -1);
             return 0;
         } else {
-            requestCnt++;
             uint64 requestId = requestCnt;
+            requestCnt++;
 
             bytes32 paramsHash = sha3(requestType, requestData);
             requests[requestId].requester = msg.sender;
