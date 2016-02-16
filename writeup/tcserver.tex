@@ -21,11 +21,92 @@ the enclave. An ocall triggers an exit from the enclave; control is returned
 once the ocall completes. As ocalls execute outside the enclave, they must be
 treated by enclave code as untrusted. 
 
+
+\usetikzlibrary{matrix,positioning, shapes, calc, backgrounds, fit}
+\tikzset{
+ box/.style = {
+    shape = rectangle,
+    align = center,
+    draw  = black,
+    text width=1.5cm,
+    inner sep=5pt,
+},
+double/.style = {
+	rectangle split,
+	rectangle split parts=2},
+every path/.style = {
+	>=latex,},
+}
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.45\textwidth]{figures/impl}
-    \caption{Components of \tc Server}
-    \label{fig:tcserver_impl}
+%    \includegraphics[width=0.45\textwidth]{figures/impl}
+
+\begin{tikzpicture}
+\matrix (m) [row sep=5mm, column sep=3mm]{
+	\node[inner sep=0pt] (user) {\includegraphics[width=1cm]{figures/user}}; &
+    \node[inner sep=0pt,draw,cloud,aspect=2.0,align=center](cloud) {\footnotesize HTTPS \\ websites}; &
+    \node[box, cylinder, shape border rotate=90, aspect=.2](bc){blockchain};  \\
+    
+    \node[box,fill=white] (client) {Client \\ Interface}; & 
+    \node[box,fill=white] (net) {TCP}; & 
+    \node[box,fill=white,double,text width=2cm] (monitor) {\texttt{geth} \nodepart{second}{Blockchain \\ Interface}}; \\
+
+    \node[box,trusted] (att) {Attestation \\ Generation}; &
+    \node[box,double,trusted] (https) {HTTPS \nodepart{second}{Web \\ Scrapers}}; &
+    \node[box,double,trusted,text width=2cm,] (req h){\small Etheruem TX \\ Reader/Writer
+      \nodepart{second}{\small Request Handler}}; \\
+    
+    \node[xshift=-5mm] (sk) {\sksgx}; &  \node[box,text width=2cm] (keys) {\pkTC, \skTC}; & \\
+};
+
+\draw[<->,thick] (user) -- (client);
+\draw[<->,thick] (net) -- (cloud);
+\draw[<->,thick] (monitor) -- (bc);
+
+\draw[->,red,thick,transform canvas={xshift=-2mm}] (https) to (net);
+\draw[->,red,thick,dashed,transform canvas={xshift=+2mm}] (net) to (https);
+
+\draw[->,blue,thick,transform canvas={xshift=-2mm}] (client) -- (att);
+\draw[<-,blue,thick,dashed,transform canvas={xshift=+2mm}] (client) -- (att);
+
+\draw[->,blue,thick,transform canvas={xshift=-2mm}] (monitor) -- (req h);
+\draw[<-,blue,thick,dashed,transform canvas={xshift=+2mm}] (monitor) -- (req h);
+
+\draw[<->,thick] (https.two east) -- (https.two east -| req h.two west);
+
+\draw[->,thick] (req h.south) |- (keys.east);
+\draw[->,thick] ($ (att.south) + (5mm,0) $)  |- (keys.west);
+\draw[->,thick] ($ (att.south) - (5mm,0) $)  -- (sk);
+
+\begin{scope}[on background layer]
+\node [inner xsep=2mm, fill=red!30,fit=(client) (net) (monitor) ] {};
+\node [inner xsep=2mm, trusted,fit=(att) (https) (req h) (keys) ] {};
+\end{scope}
+
+\matrix [below=2mm of m, matrix of nodes, column sep=2mm] 
+{
+  {\bf keys:} & |[fill=red!30]| \medname & |[trusted]| \encname & 
+  |(t1) []| {} &&& 
+  |(u1) []| {} &
+  |(u2) []| {} &&&
+  |(t2) []| {} \\
+};
+
+\draw[->,red,transform canvas={yshift=+0.5mm}] (t1) to node[above] {ocall} (u1);
+\draw[<-,red,dashed,transform canvas={yshift=-0.5mm}] (t1) to (u1);
+
+\draw[->,blue,transform canvas={yshift=+0.5mm}] (u2) to node[above] {ecall} (t2);
+\draw[<-,blue,dashed,transform canvas={yshift=-0.5mm}] (u2) to (t2);
+%    	\node (keys) {\bf keys:};
+%    	\node[fill=red!30,right=2mm of keys] (key-relay) {\medname};
+%    	\node[fill=green!30, right=2mm of key-relay] (key-enc) {\encname};
+%        \node[trusted,minimum width=2mm] (source);
+%		
+%		\draw[->,blue] ($ (key-enc.east) + (14mm, 0) $) to node[above]{ecall} ($ (key-enc.east) + (20mm, 0) $);
+%		\draw[<-,blue,dashed,transform canvas={yshift=-1.5mm}] ($ (key-enc.east) + (14mm, 0) $) to ($ (key-enc.east) + (20mm, 0) $);
+\end{tikzpicture}
+\caption{Components of \tc Server}
+\label{fig:tcserver_impl}
 \end{figure}
 
 For \tc, we recall that Fig.~\ref{fig:engineprotocol} shows the \encname code
