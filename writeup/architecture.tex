@@ -21,7 +21,6 @@ An architectural schematic of \tc showing its interaction with external entities
           fit=(ctc)(cu),
           label=above:{\bf Blockchain}] (blockchain) {};
     \node[rectangle,
-          draw=black,
           tc-server-color,
           inner sep=0.5em,
           fit=(relay)(enc),
@@ -30,7 +29,7 @@ An architectural schematic of \tc showing its interaction with external entities
 
   \node[right=-0.1em of tc,communication,transform canvas={yshift=2.5em}] (https) {\scriptsize \bf HTTPS};
 %  \node[rectangle,draw=black,trusted,right=2.75em of tc,text width=4.5em,minimum height=9.75em,align=center,label=above:{\bf Data Source}] (data) {\tt lots-o-\\data.com};
-  \node[cloud,draw=black,trusted,cloud puffs=11,cloud puff arc=100,aspect=0.6,inner xsep=-0.35em,right=2.5em of tc,text width=4.15em,align=center] (data) {\tt lots-o-\\data.com};
+  \node[cloud,draw=black!20,trusted,cloud puffs=11,cloud puff arc=100,aspect=0.6,inner xsep=-0.35em,right=2.5em of tc,text width=4.15em,align=center] (data) {\tt lots-o-\\data.com};
   \node[minimum height=9.5em,minimum width=4em,label=above:{\bf Data Source}] () at (data) {};
 
   \draw[<->,comm-link] ([xshift=-0.75em,yshift=-0.75em]enc.north) |- ([xshift=-0.75em,yshift=-0.75em]ctc.east);

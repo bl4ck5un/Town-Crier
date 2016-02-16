@@ -135,6 +135,7 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
   [contract/.style={entity,minimum height=3.5em,text width=7.5em},
    wallet/.style={entity,minimum height=3.5em,text width=5em},
    type-box-color/.style={fill=black!10},
+   type-box/.style={type-box-color,draw=black,dashed},
    blocked-out-label/.style={text=black,type-box-color,text height=0.6em}]
   \node[wallet,fill=white] (user) {User $\userwallet$};
   \node[contract,fill=white,right=6em of user] (cu) {User Contract\\$\reqcont$};
@@ -162,20 +163,26 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
   \begin{pgfonlayer}{background}
     \node[bg-box,
           blockchain-color,
-          inner sep=1em,
-          fit={(ctc)($(user.north west)+(0,1em)$)},
-          label=above:{\bf Blockchain}] (blockchain) {};
+          inner sep=1.2em,
+          fit={(ctc)($(user.north west)+(0,0.9em)$)},
+          label=above:{\bf Blockchain}] () {};
     \node[bg-box,
-          type-box-color,
+          type-box,
           fit=(ctc)(cu),
           label=above:{\bf Contracts}] () {};
     \node[bg-box,
-          type-box-color,
+          type-box,
           fit=(tc-wallet)(user),
           label=above:{\bf Wallets}] () {};
+
+%    \node[inner xsep=0.5em,blockchain-color,rounded corners] (bc-label) at (blockchain.north) {\bf Blockchain};
+%
+%    \node[inner xsep=0.5em,type-box-color,rounded corners,yshift=0.25em] (conts-label) at (conts.north) {\bf Contracts};
+%    \draw[draw=black,dashed,rounded corners] (conts-label.east) -- (conts-label.north east) -- (conts-label.north east-|conts-label.north west) -- (conts-label.west);
+%
+%    \node[inner xsep=0.5em,type-box-color,rounded corners,yshift=0.25em] (wallets-label) at (wallets.north) {\bf Wallets};
+%    \draw[draw=black,dashed,rounded corners] (wallets-label.east) -- (wallets-label.north east) -- (wallets-label.north east-|wallets-label.north west) -- (wallets-label.west);
   \end{pgfonlayer}
-%  \node[blockchain-color,rounded corners] (bc-label) at (blockchain.north) {\bf Blockchain};
-%  \draw[draw=black,dashed,rounded corners] (bc-label.east) -- (bc-label.north east) -- (bc-label.north east-|bc-label.north west) -- (bc-label.west);
 \end{tikzpicture}
 \caption{{\bf Money Flow for a Delivered Request.}
 Red arrows denote flow of money and brown arrows denote gas limits for functions.
