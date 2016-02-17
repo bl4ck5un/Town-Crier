@@ -90,7 +90,6 @@ For any such request submitted by an honest user $\reqcont$, one of the followin
 
 
 
-\subsection{Other security concerns}
-We treat side-channel attacks as outside the scope of our initial \tc architecture. Such attacks would be of particular concern should the \medname be compromised. Intel explicitly disclaims protections against side-channel attacks in SGX. The ability for the OS to monitor page faults incurred by a process running in an enclave is an example shown to be potentially serious in practice~\cite{}. Additionally, the \medname or any network adversary can potentially perform traffic analysis to determine what content the \encname is retrieving from a remote server~\cite{}, a potential threat to the confidentiality of private datagrams.
+\paragraph{Other security concerns.} We address concerns about attacks against the basic SGX isolation model embraced in the basic \tc protocol in Section~\ref{subsec:enhanced_robustness}. A threat we do not address in \tc is the risk of traffic analysis by a network adversary or compromised \medname against confidential applications (e.g., with private datagrams), but briefly discuss the issue in Section~\ref{sec:applications}.
 
 
