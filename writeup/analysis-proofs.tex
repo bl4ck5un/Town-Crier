@@ -81,29 +81,31 @@ I'm going to work on that soon (probably after I eat some food...I'm hungry.}
 
 
 \begin{proof}[Proof of Fair Expenditure for Honest Requester (sketch)]
-An honest requester $\reqcont$ will spend $\gasrequest$ to call {\bf Request}
-and set $\fee$ to be $\constgasmin$ plus the gas cost of executing $\dgcallback$.
+$\reqcont$ is honest, so she will spend $\constgasrequest$ to invoke {\bf Request}$(\dgform, \dgcallback, \consthonestfee)$.
+Ethereum does not allow money to change hands without the payer explicitly sending money.
+Therefore we must only examine the explicit function invocations and monetary transfers initiated by $\reqcont$ in connection with the request.
+It is impossible for $\reqcont$ to lose more money than she gives up in these transactions even if \tc is malicious.
 
 \paragraph{Request Delivered.}
 If the line marked $(\dagger)$ in Fig.~\ref{tbl:gas-tc-contract} is reached,
-then we are guaranteed that $\dgform = \dgform'$ and $\gasdeliver \geq \fee$.
-Because the requester is honest, $\fee - \constgasmin$ is enough gas to execut $\dgcallback$,
+then we are guaranteed that $\dgform = \dgform'$ and $\gasdeliver \geq \consthonestfee$.
+By Theorem~\ref{thm:authenticity}, the datagram must therefore be authentic for $\dgform$.
+Because $\consthonestfee$ is chosen honestly for $\dgcallback$, $\consthonestfee - \constgasmin$ is enough gas to execute $\dgcallback$,
 so $\dgcallback$ will be invoked with a datagram that is a valid and matches the request parameters.
 
-In this case, the honest requester will have spent $\gasrequest$ to invoke {\bf Request} and $\fee$ in paying \tc's cost for {\bf Deliver}.
-The requester may have also invoked {\bf Cancel} at most once at the cost of $\gascancel$,
-though if $(\dagger)$ has already been reached, then an assertion will fail and $\reqcont$ will receive nothing from the call.
-This means that, in this case, $\reqcont$ will spend at most $\gasrequest + \gascancel + \fee$.
+In this case, the honest requester will have spent $\constgasrequest$ to invoke {\bf Request} and $\consthonestfee$ in paying \tc's cost for {\bf Deliver}.
+The requester may have also invoked {\bf Cancel} at most once at the cost of $\constgasinvokecancel$.
+While $\reqcont$ may not receive any refund due to {\bf Cancel} aborting, $\reqcont$ will still have spent at most $\constgasrequest + \constgasinvokecancel + \consthonestfee$.
 
 
 \paragraph{Request not Delivered.}
 If the line marked $(\ddagger)$ is reached, then $\reqcont$ will have spent
-$\gasrequest + \fee$ while executing {\bf Request},
-and spent $\gascancel$ and retrieved $\fee - \constgascancel$ while executing {\bf Cancel}.
+$\constgasrequest + \consthonestfee$ while executing {\bf Request},
+and spent $\constgasinvokecancel$ and retrieved $\consthonestfee - \constgascancel$ while executing {\bf Cancel}.
 This means the total expenditure in this case will be
 \begin{align*}
-  \gasrequest + \gascancel & + \fee - (\fee - \constgascancel) \\
-                           & = \gasrequest + \gascancel + \constgascancel.
+  \constgasrequest + \constgasinvokecancel & + \consthonestfee - (\consthonestfee - \constgascancel) \\
+                                           & = \constgasrequest + \constgasinvokecancel + \constgascancel.
 \end{align*}
 \end{proof}
 

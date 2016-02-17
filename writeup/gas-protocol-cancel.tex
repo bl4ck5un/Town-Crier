@@ -29,13 +29,16 @@ We use the following identifiers to denote currency and gas amounts.
   $\constgasmax$
   & Maximum gas \tc can spent to invoke {\bf Deliver} \\
   \hline
+  $\constgasinvokecancel$
+  & Gas needed to invoke {\bf Cancel} \\
+  \hline
   $\constgascancel$
   & Gas needed for {\bf Deliver} on a cancelled request \\
   \hline
 \end{tabular}
 \end{center}
 %
-Note that $\constgasmin$, $\constgasmax$, and $\constgascancel$ are system constants,
+Note that $\constgasmin$, $\constgasmax$, $\constgasinvokecancel$, and $\constgascancel$ are system constants,
 $\fee$ is chosen by the requester (and may be malicious if the requester is dishonest),
 and $\gasdeliver$ is chosen by the \tc~\encname when calling {\bf Deliver}.
 Though $\gasrequest$ and $\gascancel$ are set by the requester, we need not worry about the values.
@@ -197,8 +200,8 @@ Our basic Town Crier system implements a policy where the requester pays for all
 We now describe how this can be realized by modifying the payment-free protocol described in Section~\ref{sec:payment-free-protocol}.
 
 \begin{itemize}[leftmargin=1.5em]
-  \setlength{\itemsep}{2pt}
-  \setlength{\parskip}{0pt}
+  \setlength{\itemsep}{0pt}
+%  \setlength{\parskip}{0pt}
   \setlength{\parsep}{0pt}
   \item {\it Initialization.}
     We assume that Town Crier deposits at least $\constgasmax$ into the wallet $\tcadd$.
@@ -221,12 +224,13 @@ We now describe how this can be realized by modifying the payment-free protocol 
     the enclave now signs the tuple $(\dgid, \dgform, \dgm, \gasdeliver)$ where $\gasdeliver = \constgasmax$.
 
   \item {\it Requester.}
-    An honest requester behaves the same was as in Figure \ethan{refer} except for setting a {\tt GASLIMIT} of $\gasrequest$ and sending $\fee$ money with each request.
-    It sets $\gasrequest$ to be at least the cost of executing the {\bf Request} entry point
-    and $\fee$ to be the cost of executing the {\bf Deliver} entry point (including executing the user-defined $\dgcallback$ function).
+    An honest requester follows the protocol in Fig.~\ref{fig:att_check} to verify the SGX attestation.
+    Then she then prepares $\dgform$ and $\dgcallback$, sets $\gasrequest$ to the gas cost of {\bf Request} with $\dgform$,
+    and $\fee$ to $\constgasmin$ plus the cost of executing $\dgcallback$.
+    The she invokes {\bf Request}$(\dgform, \dgcallback, \fee)$ and {\tt GASLIMIT} $\gasrequest$.
 
-    If an honest requester does not receive a callback, she can invoke {\bf Cancel} with argument $\dgid$ and gas limit $\gascancel$.
-    The requester will be refunded $\fee - \constgascancel$, with $\constgascancel$ withheld to reimburse \tc
-    should it try to deliver a datagram after the cancellation.
+    If $\dgcallback$ is not executed, the requester will invoke {\bf Cancel} with argument $\dgid$ and gas limit $\constgasinvokecancel$ to receive a partial refund.
+    The honest requester will never invoke {\bf Cancel} more than once for the same request
+    and will never invoke {\bf Cancel} with an $\dgid$ that corresponds to a different user's request.
 \end{itemize}
 
