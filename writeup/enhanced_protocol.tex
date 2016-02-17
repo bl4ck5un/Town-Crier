@@ -1,7 +1,18 @@
 
-To sustainably operate \tc on Ethereum, and address the concern of attacks on fee management, we employ a novel two-currency resource management system in \tc. This system causes
+\section{Enhanced Protocol}
+\label{sec:enhanced_protocol}
+
+The simplified payment-free protocol in Section~\ref{sec:payment-free-protocol} guarantees authenticity of data for an honest user.
+In Ethereum, however, computation is not free: Recall from that Ethereum employs \emph{gas} to fuel contracts. This means that \tc needs enough gas to deliver datagrams, so users must pay a fee to reimburse costs. If fees are not properly handled, a malicious relay (or malicious user) could prevent delivery of a datagram and/or cost an honest requester money for no gain. We discuss Section~\ref{sec:gas-protocol} how we address this issue throughout \tc's design We also briefly discuss other enhancements to the basic \tc protocol: Private and custom datagrams (Section~\ref{subsec:private_datagrams}) and use of replication / voting to achieving robustness against SGX host or data source compromise (Section~\ref{subsec:enhanced_robustness}).
+
+
+\subsection{Handling Fees in Ethereum}
+\label{sec:gas-protocol}
+
+
+To address the above concern of attacks on \tc fee management, we employ and prove the security of a novel two-currency resource-management system. This system causes
 requesters to make gas payments up front as ether. It converts ether to gas so as to prevent a malicious requester from exhausting \tc's resources
-or a malicious \tc from stealing an honest user's money.
+or a malicious \tc from stealing an honest user's money. We now give some preliminaries and then explain our system.
 
 
 \paragraph{Execution model and notation.}
@@ -29,13 +40,16 @@ We use the following identifiers to denote currency and gas amounts.
   $\constgasmax$
   & Maximum gas \tc can spent to invoke {\bf Deliver} \\
   \hline
+  $\constgasinvokecancel$
+  & Gas needed to invoke {\bf Cancel} \\
+  \hline
   $\constgascancel$
   & Gas needed for {\bf Deliver} on a cancelled request \\
   \hline
 \end{tabular}
 \end{center}
 %
-Note that $\constgasmin$, $\constgasmax$, and $\constgascancel$ are system constants,
+Note that $\constgasmin$, $\constgasmax$, $\constgasinvokecancel$, and $\constgascancel$ are system constants,
 $\fee$ is chosen by the requester (and may be malicious if the requester is dishonest),
 and $\gasdeliver$ is chosen by the \tc~\encname when calling {\bf Deliver}.
 Though $\gasrequest$ and $\gascancel$ are set by the requester, we need not worry about the values.
@@ -80,17 +94,17 @@ If the requester is dishonest we need to not protect their request, and if the \
                  & {\it \sgray{//~$\fee$ held by contract}} \\[0.3em]
 
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm, \gasdeliver)$ from $\tcadd$: \\
-  \sgray{$(\star)$} & If ${\sf isCanceled}[\dgid]$ and not ${\sf isDelivered}[\dgid]$ \\
-                 & \quad Send $\constgascancel$ to $\tcadd$ \\
+   \sgray{$(1)$} & If ${\sf isCanceled}[\dgid]$ and not ${\sf isDelivered}[\dgid]$ \\
                  & \quad Set ${\sf isDelivered}[\dgid]$ \\
+   \sgray{$(2)$} & \quad Send $\constgascancel$ to $\tcadd$ \\
                  & \quad Return \\
                  & Retrieve stored $(\dgid, \dgform', \dgcallback, \fee, \_)$ \\
                  & \quad \sgray{\it //~abort if not found} \\
                  & Assert $\dgform = \dgform'$ and $\fee \leq \gasdeliver$ \\
                  & Set ${\sf isDelievered}[\dgid]$ \\
-                 & Send $\fee$ to \tcadd \\
+   \sgray{$(3)$} & Send $\fee$ to \tcadd \\
                  & Set $\gascallback := \fee - \constgasmin$ \\
-  \sgray{$(\dagger)$} & Call $\dgcallback(\dgm)$ with $\gascallback$ max gas \\[0.3em]
+   \sgray{$(4)$} & Call $\dgcallback(\dgm)$ with $\gascallback$ max gas \\[0.3em]
 
   {\bf Cancel:}  & On recv $(\dgid, \gascancel)$ from $\reqcont$: \\
                  & Retrieve stored $(\dgid, \_, \_, \fee, \reqcont')$ \\
@@ -100,7 +114,7 @@ If the requester is dishonest we need to not protect their request, and if the \
                  & \quad and ${\sf isDelivered}[\dgid]$ not set \\
                  & \quad and ${\sf isCanceled}[\dgid]$ not set \\
                  & Set ${\sf isCanceled}[\dgid]$ \\
-  \sgray{$(\ddagger)$} & Send $(\fee - \constgascancel)$ to $\reqcont$ \sgray{\it //~hold $\constgascancel$} \\
+   \sgray{$(5)$} & Send $(\fee - \constgascancel)$ to $\reqcont$ \sgray{\it //~hold $\constgascancel$} \\
   \hline
 \end{tabularx}
 \caption{
@@ -197,8 +211,8 @@ Our basic Town Crier system implements a policy where the requester pays for all
 We now describe how this can be realized by modifying the payment-free protocol described in Section~\ref{sec:payment-free-protocol}.
 
 \begin{itemize}[leftmargin=1.5em]
-  \setlength{\itemsep}{2pt}
-  \setlength{\parskip}{0pt}
+  \setlength{\itemsep}{0pt}
+%  \setlength{\parskip}{0pt}
   \setlength{\parsep}{0pt}
   \item {\it Initialization.}
     We assume that Town Crier deposits at least $\constgasmax$ into the wallet $\tcadd$.
@@ -221,12 +235,23 @@ We now describe how this can be realized by modifying the payment-free protocol 
     the enclave now signs the tuple $(\dgid, \dgform, \dgm, \gasdeliver)$ where $\gasdeliver = \constgasmax$.
 
   \item {\it Requester.}
-    An honest requester behaves the same was as in Figure \ethan{refer} except for setting a {\tt GASLIMIT} of $\gasrequest$ and sending $\fee$ money with each request.
-    It sets $\gasrequest$ to be at least the cost of executing the {\bf Request} entry point
-    and $\fee$ to be the cost of executing the {\bf Deliver} entry point (including executing the user-defined $\dgcallback$ function).
+    An honest requester follows the protocol in Fig.~\ref{fig:att_check} to verify the SGX attestation.
+    Then she then prepares $\dgform$ and $\dgcallback$, sets $\gasrequest$ to the gas cost of {\bf Request} with $\dgform$,
+    and $\fee$ to $\constgasmin$ plus the cost of executing $\dgcallback$.
+    The she invokes {\bf Request}$(\dgform, \dgcallback, \fee)$ and {\tt GASLIMIT} $\gasrequest$.
 
-    If an honest requester does not receive a callback, she can invoke {\bf Cancel} with argument $\dgid$ and gas limit $\gascancel$.
-    The requester will be refunded $\fee - \constgascancel$, with $\constgascancel$ withheld to reimburse \tc
-    should it try to deliver a datagram after the cancellation.
+    If $\dgcallback$ is not executed, the requester will invoke {\bf Cancel} with argument $\dgid$ and gas limit $\constgasinvokecancel$ to receive a partial refund.
+    The honest requester will never invoke {\bf Cancel} more than once for the same request
+    and will never invoke {\bf Cancel} with an $\dgid$ that corresponds to a different user's request.
 \end{itemize}
+
+\subsection{Private and custom datagrams}
+\label{subsec:private_datagrams}
+In addition to ordinary datagrams, \tc supports \emph{private datagrams}, which involve requests where $\dgform$ includes ciphertexts under $\pkTC$. Private datagrams can thus enable confidentiality-preserving applications despite the public readability of the blockchain.  \emph{Custom datagrams}, also supported by \tc, allow a contract to specify a particular web-scraping target, potentially involving multiple interactions, and thus greatly expand the range of possible relying contracts for \tc. We give examples of both datagram types in Section~\ref{sec:applications}.
+
+\subsection{Enhanced robustness via replication}
+\label{subsec:enhanced_robustness}
+Our basic security model for \tc assumes the ideal isolation model for SGX described above, as well as client trust in data sources. We nonetheless include hedges in \tc, given various concerns about SGX security~\cite{sgxexplained,7163052}, and the possible fallibility of data sources. Briefly...
+\ari{For Kyle to fill in}
+
 

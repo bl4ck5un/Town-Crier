@@ -178,7 +178,9 @@
 \newcommand{\gascallback}{\sbrown{\$g_\text{clbk}}}
 \newcommand{\gascancel}{\sbrown{\$g_\text{cncl}}}
 \newcommand{\fee}{\smaroon{\$f}}
-\newcommand{\feecancel}{\smaroon{\$f_\emptyset}}
+\newcommand{\constgasinvokecancel}{\sbrown{\$G_\text{cncl}}}
+\newcommand{\constgasrequest}{\sbrown{\$G_\text{req}}}
+\newcommand{\consthonestfee}{\smaroon{\$F}}
 
 
 %*****************************
@@ -196,6 +198,7 @@
 \input{background}
 \input{architecture}
 \input{protocol}
+\input{enhanced_protocol}
 \input{implementation}
 \input{analysis}
 \input{applications}
@@ -206,7 +209,7 @@
 
 {\footnotesize
   \bibliographystyle{acm}
-  \bibliography{ethereum,sgx,elaine}
+  \bibliography{ethereum,sgx,bitcoin,elaine}
 }
 
 \pagebreak
