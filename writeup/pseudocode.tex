@@ -99,3 +99,43 @@
 \label{tbl:cash-settled-put}
 \end{figure}
 
+
+\begin{figure}[h!]
+\begin{tabularx}{\linewidth}{|r@{\hspace{1ex}}X|}
+  \hline
+
+  \multicolumn{2}{|c|}{\bf {\sf SteamTrade} blockchain contract} \\[1ex]
+
+  \multicolumn{2}{|l|}{\bf Constants} \\
+  %$ID_S$ & := Steam account number of seller \\
+  %$encAPI_S$ & := seller's encrypted API key \\
+  %$List_I$ & := list of items for sale \\
+  %$\smaroon{\$F_\text{price}}$ & := price for listed items \\
+  $T_\text{steam}$ & := \tcs flight info request type \\
+  $\smaroon{\$F_\text{\tc}}$ & := fee payed to \tc for datagram delivery \\[1ex]
+
+  \multicolumn{2}{|l|}{\bf Functions} \\
+  {\bf Init:}   & On recv $(\tcont, ID_S, encAPI_S, List_I, P)$ from $\wallet_\text{seller}$: \\
+                & Save all inputs and $\wallet_\text{seller}$ to storage. \\[1ex]
+
+  {\bf Purchase:} & On recv $(ID_U, T_U, \fee)$ from $\userwallet$: \\
+                & Assert $\fee = P$ \\
+                & $\dgform := [encAPI_S, ID_U, T_U, LIST_I]$ \\
+                & $\dgcallback := {\tt this}.{\bf Pay}$ \\
+                & $\dgid := \tcont.{\bf Request}(\dgform, \dgcallback, \smaroon{\$F_\text{\tc}})$ \\
+                & Store $(\dgid, \userwallet)$ \\[1ex]
+
+  {\bf Pay:}    & On recv $(\dgid, status)$ from $\tcont$: \\
+                & Retrieve and remove stored $(\dgid, \userwallet)$ \\
+                & \quad \sgray{\it //~Abort if not found} \\
+                & If $status > 0$ \\
+                & \quad Send $\smaroon{\$F_\text{price}}$ to $\wallet_\text{seller}$ \\
+                & Else \\
+                & \quad send $\smaroon{\$F_\text{price}}$ to $\userwallet$ \\
+                [0.25em]
+
+  \hline
+\end{tabularx}
+\caption{The {\sf FlightIns} application contract}
+\label{tbl:steamtrade}
+\end{figure}
