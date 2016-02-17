@@ -35,6 +35,7 @@ More formally, for any probabilistic polynomial-time adversary $\algA$,
 
 
 \begin{theorem}[Authenticity]
+\label{thm:authenticity}
 Assume that $\sigsgx$
 and $\Sigma$ are secure signature schemes (recall
 that we follow Shi et al. \elaine{cite} who show
@@ -69,17 +70,19 @@ We formalize this intuition in Theorem~\ref{thm:fair-expenditure}
 
 \begin{theorem}[Fair Expenditure for Honest Requester]
 \label{thm:fair-expenditure}
-For any request $(\dgform, \dgcallback, \fee)$ submitted by an honest user $\reqcont$,
-one of the following holds:
+For any $\dgform$ and $\dgcallback$,
+let $\constgasrequest$ and $\consthonestfee$ be the respective values chosen by an honest requester for $\gasrequest$ and $\fee$
+when submitting the request $(\dgform, \dgcallback, \fee, \gasrequest)$.
+For any such request submitted by an honest user $\reqcont$, one of the following holds:
 \vspace{-0.4em}
 \begin{itemize}
   \setlength{\itemsep}{2pt}
   \setlength{\parskip}{0pt}
   \setlength{\parsep}{0pt}
   \item $\dgcallback$ is invoked with a valid datagram matching the request parameters $\dgform$
-    and the requester spends at most $\gasrequest + \gascancel + \fee$.
+    and the requester spends at most $\constgasrequest + \constgasinvokecancel + \consthonestfee$.
 
-  \item The requester spends at most $\gasrequest + \gascancel + \constgascancel$.
+  \item The requester spends at most $\constgasrequest + \constgasinvokecancel + \constgascancel$.
 \end{itemize}
 \end{theorem}
 
