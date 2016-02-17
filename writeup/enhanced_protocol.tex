@@ -1,16 +1,18 @@
 
 \section{Enhanced Protocol}
-\label{sec:impl}
+\label{sec:enhanced_protocol}
 
-We now present further details on the \tc protocol, primarily how gas and fees are managed, but we also briefly discuss private and custom datagrams and our approach to achieving robustness against SGX host or data source compromise.
+The simplified payment-free protocol in Section~\ref{sec:payment-free-protocol} guarantees authenticity of data for an honest user.
+In Ethereum, however, computation is not free: Recall from that Ethereum employs \emph{gas} to fuel contracts. This means that \tc needs enough gas to deliver datagrams, so users must pay a fee to reimburse costs. If fees are not properly handled, a malicious relay (or malicious user) could prevent delivery of a datagram and/or cost an honest requester money for no gain. We discuss Section~\ref{sec:gas-protocol} how we address this issue throughout \tc's design We also briefly discuss other enhancements to the basic \tc protocol: Private and custom datagrams (Section~\ref{subsec:private_datagrams}) and use of replication / voting to achieving robustness against SGX host or data source compromise (Section~\ref{subsec:enhanced_robustness}).
+
 
 \subsection{Handling Fees in Ethereum}
 \label{sec:gas-protocol}
 
 
-To sustainably operate \tc on Ethereum, and address the concern of attacks on fee management, we employ a novel two-currency resource management system in \tc. This system causes
+To address the above concern of attacks on \tc fee management, we employ and prove the security of a novel two-currency resource-management system. This system causes
 requesters to make gas payments up front as ether. It converts ether to gas so as to prevent a malicious requester from exhausting \tc's resources
-or a malicious \tc from stealing an honest user's money.
+or a malicious \tc from stealing an honest user's money. We now give some preliminaries and then explain our system.
 
 
 \paragraph{Execution model and notation.}
@@ -243,5 +245,13 @@ We now describe how this can be realized by modifying the payment-free protocol 
     and will never invoke {\bf Cancel} with an $\dgid$ that corresponds to a different user's request.
 \end{itemize}
 
+\subsection{Private and custom datagrams}
+\label{subsec:private_datagrams}
+In addition to ordinary datagrams, \tc supports \emph{private datagrams}, which involve requests where $\dgform$ includes ciphertexts under $\pkTC$. Private datagrams can thus enable confidentiality-preserving applications despite the public readability of the blockchain.  \emph{Custom datagrams}, also supported by \tc, allow a contract to specify a particular web-scraping target, potentially involving multiple interactions, and thus greatly expand the range of possible relying contracts for \tc. We give examples of both datagram types in Section~\ref{sec:applications}.
+
+\subsection{Enhanced robustness via replication}
+\label{subsec:enhanced_robustness}
+Our basic security model for \tc assumes the ideal isolation model for SGX described above, as well as client trust in data sources. We nonetheless include hedges in \tc, given various concerns about SGX security~\cite{sgxexplained,7163052}, and the possible fallibility of data sources. Briefly...
+\ari{For Kyle to fill in}
 
 
