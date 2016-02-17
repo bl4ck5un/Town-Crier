@@ -203,7 +203,8 @@ already verifies signatures on transactions from externally owned accounts (i.e.
 
 Very simply, the \encname creates \tcadd with the public key \pkTC. 
 
-To make this idea work fully, the public key $\pkTC$ must be hardcoded into \tcont. A client creating or relying on a contract that uses \tcont is responsible for making sure that this hardcoded $\pkTC$ has an appropriate SGX attestation before interacting with the $\tcont$  blockchain contract.  Let {\sf Verify} denote a verification algorithm for EPID signatures. Fig.~\ref{fig:att_check} gives the protocol for a client to check that \tcont is backed by a valid \encname instance. (The IAS also provides online revocation checks.) \ari{Does {\sf Verify} involve an online check? We should clarify.} 
+To make this idea work fully, the public key $\pkTC$ must be hardcoded into \tcont. A client creating or relying on a contract that uses \tcont is responsible for making sure that this hardcoded $\pkTC$ has an appropriate SGX attestation before interacting with the $\tcont$  blockchain contract.  Let {\sf Verify} denote a verification algorithm for EPID signatures. Fig.~\ref{fig:att_check} gives the protocol for a client to check that \tcont is backed by a valid \encname instance. (We omit modeling here of IAS online revocation checks.)
+
 %This protocol does not include a mechanism for \emph{revocation} of a compromised SGX instance, an issue we discuss later in the paper.
 
 In summary, then, we may assume in our protocol specifications that {\em relying clients have verified an attestation for \encname and thus that datagram responses sent from \tcadd to \tcont are trusted to originate from \engine.} 
@@ -383,5 +384,4 @@ End \\
 \label{fig:relayprotocol}
 \end{figure}
 
-\subsection{Extension: Private Datagrams}
-\elaine{short paragraph here}
+
