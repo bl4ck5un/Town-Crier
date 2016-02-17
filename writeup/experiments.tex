@@ -142,7 +142,33 @@ with decentralized blockchains --- it appears
 more imminent to scale up 
 the blockchain protocols themselves.
 
-\subsection{Gas costs}
+
+\begin{table*}[ht]
+\centering
+\begin{tabular}{lr|r|r}
+\toprule
+& \multicolumn{1}{c|}{\sf CashSettledPut} &
+  \multicolumn{1}{c|}{\sf FlightIns} &
+  \multicolumn{1}{c}{\sf SteamTrade} \\
+%  & gas (cents) & gas (cents) & gas (cents) \\
+\midrule
+Delivery before issuing cancel & ?? & ?? & ?? \\ 
+Cancel arrived after delivery & & & \\ 
+Cancel, no delivery & & & \\ 
+\bottomrule
+\end{tabular}
+\caption{{\bf Callback-independent} portion of the gas expenditure, translated
+to USD.  Here the difference between the gas expenditure across applications
+is mainly caused 
+by the difference in length of input parameters and output datagrams.
+\elaine{ethan: check}
+}
+\label{tab:eval_gas}
+\end{table*}
+
+
+
+\subsection{Gas Costs}
 One ether is currently worth about \$5 and 1 gas costs $5 \cdot 10^{-8}$ ether, meaning 4 million gas is approximately \$1.
 Here we give values for our implementation for the gas variables we defined in Section \ethan{ref gas constant definitions} (all units are in gas).
 In Town Crier, we set $\constgasmin$ to be 35000 gas units (i.e.  \elaine{fill} cents),
@@ -154,6 +180,17 @@ gas (i.e., \elaine{fill} cents)
 fixed cost, 
 plus \num[group-separator={,}]{2500} gas (i.e., \elaine{fill} cents) 
 for every 32 bytes of request parameters.
+The cost for executing the callback-independent portion of {\bf Delivery}, eventually paid
+by the requesting user, is \elaine{blah} gas (i.e., \elaine{fill in} cents).
+The cost for executing {\bf Cancel} is \elaine{fill in} gas (i.e., \elaine{fill} cents) ---
+this includes 
+the gas cost  
+\elaine{fill in notation for honest party's choice of this value}
+as well as the refund paid to Town 
+Crier should delivery happen after cancel
+\elaine{fill in notation}.
+
+
 
 
 \subsection{Resilience against Component Compromise}
