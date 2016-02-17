@@ -1,4 +1,13 @@
 
+\section{Enhanced Protocol}
+\label{sec:impl}
+
+We now present further details on the \tc protocol, primarily how gas and fees are managed, but we also briefly discuss private and custom datagrams and our approach to achieving robustness against SGX host or data source compromise.
+
+\subsection{Handling Fees in Ethereum}
+\label{sec:gas-protocol}
+
+
 To sustainably operate \tc on Ethereum, and address the concern of attacks on fee management, we employ a novel two-currency resource management system in \tc. This system causes
 requesters to make gas payments up front as ether. It converts ether to gas so as to prevent a malicious requester from exhausting \tc's resources
 or a malicious \tc from stealing an honest user's money.
@@ -233,4 +242,6 @@ We now describe how this can be realized by modifying the payment-free protocol 
     The honest requester will never invoke {\bf Cancel} more than once for the same request
     and will never invoke {\bf Cancel} with an $\dgid$ that corresponds to a different user's request.
 \end{itemize}
+
+
 
