@@ -142,6 +142,31 @@ with decentralized blockchains --- it appears
 more imminent to scale up 
 the blockchain protocols themselves.
 
+
+\begin{figure}[h]
+  \resizebox {\columnwidth} {!}{
+\begin{tikzpicture}
+\begin{axis}[
+    every axis/.append style={font=\small},
+	legend pos=north west,
+	xlabel=Number of enclaves on a single machine,
+	ylabel=Throughput (tx/sec),
+    ylabel near ticks,
+]
+\addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=steam,y error=e-steam]{data.csv};
+\addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=flight,y error=e-flight]{data.csv};
+\addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=putop,y error=e-putop]{data.csv};
+
+\legend{{\sf SteamTrade},{\sf FlightIns},{\sf CashSettledPut}}
+\end{axis}
+\end{tikzpicture}
+}
+\caption{Throughput is measured on a single SGX-enabled machine. The x-axis is
+the number of enclaves and the y-axis is the number of transactions processed per
+second.  We ran five rounds of experiments and error bars show the standard
+deviation.}
+\end{figure}
+
 \subsection{Gas costs}
 One ether is currently worth about \$5 and 1 gas costs $5 \cdot 10^{-8}$ ether, meaning 4 million gas is approximately \$1.
 Here we give values for our implementation for the gas variables we defined in Section \ethan{ref gas constant definitions} (all units are in gas).
