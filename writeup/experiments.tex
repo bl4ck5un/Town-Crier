@@ -218,7 +218,7 @@ and the attestation generation takes
 83.4 ms (among which 
 18.5 ms is spent 
 on report generation, 
-and 64.9 ms is spent on quote generation).
+and 64.9 ms on quote generation).
 
 Recall also that since SGX only reports a relative clock
 with respect to some reference point,  
@@ -226,38 +226,46 @@ a user must perform offline clock calibration
 to translate the  relative clock values into absolute ones.
 The clock precision is decided
 by the end-to-end latency for performing 
-this clock 
+this clock calibration. 
+Our experiments show that the latency is \elaine{fill} ms 
+between when a relay sends a clock calibration request
+to the enclave, and when it obtains a response.
+The majority of this \elaine{fill} ms is spent on
+\elaine{blah operation}
+which took \elaine{blah} ms.
+In practice, the clock precision is also affected
+by the wide-area network latency
+which is typically in the \elaine{blah} range.
 
-Recall that the absolute time of the \encname is verified
-by including a signed time stamp in the attestation and letting 
-clients check it it in real time. Therefore the latency
-of attestation generation plus a round-trip time
-define the precision of the absolute clock. 
-We evaluated the cycles consumed in generating an attestation and
-signing a Unix time stamp.
-
-
-\begin{table}[ht]
-\centering
-\begin{tabular}{lr}
-\toprule
-  & time(ms) \\
-\midrule
-Report Generation & $18.46$ \\
-Quote Generation & $64.94$ \\
-Signing the time stamp & $11.50$ \\
-\bottomrule
-\end{tabular}
-\caption{Running time of generating \att}
-\label{tab:eval_att}
-\end{table}
-
-Table \ref{tab:eval_att} summarizes the running time break down of generating an
-attestation along with a signed time stamp.  Note that two steps are involved in
-generating \att: first a report is produced within the \encname; then, an
-attestation, as known as a quote, is produced by QE based on the report passed
-to it. Note that \att only need to be generated once throughout the lifetime of the
-enclave.
-
-
-
+%Recall that the absolute time of the \encname is verified
+%by including a signed time stamp in the attestation and letting 
+%clients check it it in real time. Therefore the latency
+%of attestation generation plus a round-trip time
+%define the precision of the absolute clock. 
+%We evaluated the cycles consumed in generating an attestation and
+%signing a Unix time stamp.
+%
+%\begin{table}[ht]
+%\centering
+%\begin{tabular}{lr}
+%\toprule
+%  & time(ms) \\
+%\midrule
+%Report Generation & $18.46$ \\
+%Quote Generation & $64.94$ \\
+%Signing the time stamp & $11.50$ \\
+%\bottomrule
+%\end{tabular}
+%\caption{Running time of generating \att}
+%\label{tab:eval_att}
+%\end{table}
+%
+%Table \ref{tab:eval_att} summarizes the running time break down of generating an
+%attestation along with a signed time stamp.  Note that two steps are involved in
+%generating \att: first a report is produced within the \encname; then, an
+%attestation, as known as a quote, is produced by QE based on the report passed
+%to it. Note that \att only need to be generated once throughout the lifetime of the
+%enclave.
+%
+%
+%
