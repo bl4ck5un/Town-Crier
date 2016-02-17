@@ -15,26 +15,26 @@
   \multicolumn{2}{|l|}{\bf Constants} \\
   $D_{\rm min}$ & := minimum delay to pay out insurance \\
   $T_\text{flight}$ & := \tcs flight info request type \\
-  $\smaroon{\$F_\text{prem}}$ & := premium to buy insurance \\
-  $\smaroon{\$F_\text{pay}}$ & := payout if flight is canceled or delayed \\
-  $\smaroon{\$F_\text{\tc}}$ & := fee payed to \tc for datagram delivery \\[1ex]
+  $\sblue{\$F_\text{prem}}$ & := premium to buy insurance \\
+  $\sblue{\$F_\text{pay}}$ & := payout if flight is canceled or delayed \\
+  $\sblue{\$F_\text{\tc}}$ & := fee payed to \tc for datagram delivery \\[1ex]
 
   \multicolumn{2}{|l|}{\bf Functions} \\
   {\bf Init:}   & On recv $(\tcont)$: \\
                 & Save address of \tcont \\[1ex]
 
   {\bf Insure:} & On recv $(encFN, \fee)$ from $\userwallet$: \\
-                & Assert $\fee = \smaroon{\$F_\text{prem}}$ \\
+                & Assert $\fee = \sblue{\$F_\text{prem}}$ \\
                 & $\dgform := [T_\text{flight}, encFN]$ \\
                 & $\dgcallback := {\tt this}.{\bf Pay}$ \\
-                & $\dgid := \tcont.{\bf Request}(\dgform, \dgcallback, \smaroon{\$F_\text{\tc}})$ \\
+                & $\dgid := \tcont.{\bf Request}(\dgform, \dgcallback, \sblue{\$F_\text{\tc}})$ \\
                 & Store $(\dgid, \userwallet)$ \\[1ex]
 
   {\bf Pay:}    & On recv $(\dgid, D)$ from $\tcont$: \\
                 & Retrieve and remove stored $(\dgid, \userwallet)$ \\
                 & \quad \sgray{\it //~Abort if not found} \\
                 & If $D \geq D_{\rm min}$ \\
-                & \quad Send $\smaroon{\$F_\text{pay}}$ to $\userwallet$ \\[0.25em]
+                & \quad Send $\sblue{\$F_\text{pay}}$ to $\userwallet$ \\[0.25em]
 
   \hline
 \end{tabularx}
@@ -51,11 +51,11 @@
 
   \multicolumn{2}{|l|}{\bf Constants} \\
   $T_\text{stock}$ & := \tcs stock info request type \\
-  $\smaroon{\$F_\text{\tc}}$ & := fee payed to \tc for datagram delivery \\[1ex]
+  $\sblue{\$F_\text{\tc}}$ & := fee payed to \tc for datagram delivery \\[1ex]
 
   \multicolumn{2}{|l|}{\bf Functions} \\
       {\bf Init:} & On recv $(\tcont, {\sf ticker}, P_S, P_U, M, {\sf expr}, \fee)$ from $\wallet_\text{issuer}$ \\
-                  & Assert $\fee = (P_S - P_U) \cdot M + \smaroon{\$F_\text{\tc}}$ \\
+                  & Assert $\fee = (P_S - P_U) \cdot M + \sblue{\$F_\text{\tc}}$ \\
                   & Save all inputs and $\wallet_\text{issuer}$ to storage. \\[1ex]
 
       {\bf Buy:} & On recv $(X, \fee)$ from $\userwallet$: \\
@@ -67,7 +67,7 @@
                  & Set $\wallet_\text{buyer} = \userwallet$ \\
                  & Save $X$ to storage \\
                  & Send $(P_S - P_U)(M - X)$ to $\wallet_\text{issuer}$ \\[-0.8em]
-                 & \sgray{\it //~Hold $P_S \cdot X + \smaroon{\$F_\text{\tc}}$} \\[1ex]
+                 & \sgray{\it //~Hold $P_S \cdot X + \sblue{\$F_\text{\tc}}$} \\[1ex]
 
       {\bf Put:} & On recv $()$ from $\wallet_\text{buyer}$: \\
                  & \quad and ${\sf timestamp} < {\sf expr}$ \\
@@ -75,7 +75,7 @@
                  & Set {\sf isPut} \\
                  & $\dgform := [T_\text{stock}, {\sf ticker}]$ \\
                  & $\dgcallback := {\tt this}.{\bf Settle}$ \\
-                 & $\tcont.{\bf Request}(\dgform, \dgcallback, \smaroon{\$F_\text{\tc}})$ \\[1ex]
+                 & $\tcont.{\bf Request}(\dgform, \dgcallback, \sblue{\$F_\text{\tc}})$ \\[1ex]
 
    {\bf Settle:} & On recv $(\dgid, P)$ from $\tcont$: \\
                  & If $P \geq P_S$ \\
@@ -110,9 +110,9 @@
   %$ID_S$ & := Steam account number of seller \\
   %$encAPI_S$ & := seller's encrypted API key \\
   %$List_I$ & := list of items for sale \\
-  %$\smaroon{\$F_\text{price}}$ & := price for listed items \\
+  %$\sblue{\$F_\text{price}}$ & := price for listed items \\
   $T_\text{steam}$ & := \tcs flight info request type \\
-  $\smaroon{\$F_\text{\tc}}$ & := fee payed to \tc for datagram delivery \\[1ex]
+  $\sblue{\$F_\text{\tc}}$ & := fee payed to \tc for datagram delivery \\[1ex]
 
   \multicolumn{2}{|l|}{\bf Functions} \\
   {\bf Init:}   & On recv $(\tcont, ID_S, encAPI_S, List_I, P)$ from $\wallet_\text{seller}$: \\
@@ -122,16 +122,16 @@
                 & Assert $\fee = P$ \\
                 & $\dgform := [encAPI_S, ID_U, T_U, LIST_I]$ \\
                 & $\dgcallback := {\tt this}.{\bf Pay}$ \\
-                & $\dgid := \tcont.{\bf Request}(\dgform, \dgcallback, \smaroon{\$F_\text{\tc}})$ \\
+                & $\dgid := \tcont.{\bf Request}(\dgform, \dgcallback, \sblue{\$F_\text{\tc}})$ \\
                 & Store $(\dgid, \userwallet)$ \\[1ex]
 
   {\bf Pay:}    & On recv $(\dgid, status)$ from $\tcont$: \\
                 & Retrieve and remove stored $(\dgid, \userwallet)$ \\
                 & \quad \sgray{\it //~Abort if not found} \\
                 & If $status > 0$ \\
-                & \quad Send $\smaroon{\$F_\text{price}}$ to $\wallet_\text{seller}$ \\
+                & \quad Send $\sblue{\$F_\text{price}}$ to $\wallet_\text{seller}$ \\
                 & Else \\
-                & \quad send $\smaroon{\$F_\text{price}}$ to $\userwallet$ \\
+                & \quad send $\sblue{\$F_\text{price}}$ to $\userwallet$ \\
                 [0.25em]
 
   \hline
