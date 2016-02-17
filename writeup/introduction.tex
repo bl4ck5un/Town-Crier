@@ -85,6 +85,9 @@ and/or multiple, possibly geographically dispersed SGX instances.
 \vspace{2mm}
 \noindent{\em Private and custom datagrams.} To meet the potentially complex confidentiality concerns that can arise in the broad array of smart contracts enabled by \tc, \tc's trusted enclave code is instrumented to ingest confidential user data (encrypted under a \tc public key). It can thereby support {\em private} datagram requests, with encrypted parameters, and {\em custom} datagram requests, which securely access the online resources of requesters (e.g., online accounts) using encrypted credentials. 
 
+\vspace{2mm}
+Additionally, to the best of our knowledge, ours is the first research paper reporting implementation of a substantive system on a real, SGX-enabled host, as opposed to an emulator (e.g.,~\cite{Baumann:2015:SAU:2818727.2799647,7163017}).
+
 %\vspace{-3mm}
 \paragraph{Applications.} Thanks to the above key contributions, we believe that \tc can spur deployment of a rich spectrum of smart contracts that are hard to realize in the existing Ethereum ecosystem. We present three examples that showcase \tc's capabilities and demonstrate its end-to-end use: (1) A financial derivative (cash-settled put option) that consumes stock ticker data; (2) A flight insurance contract that relies on private data requests about flight cancellations; and (3) A contract for sale of virtual goods and online games (via Steam Marketplace) for ether, the Ethereum currency, using custom data requests to access online user accounts. We experimentally measure response times for associated datagram requests ranging from 192-1309 ms, depending on the datagram type. These times are significantly less than an Ethereum block interval, and suggest that a few SGX-enabled hosts can support \tc data feed rates well beyond the global transaction rate of a modern decentralized blockchain.
 
