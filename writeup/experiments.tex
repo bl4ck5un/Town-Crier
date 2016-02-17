@@ -3,7 +3,7 @@
 
 \begin{table*}[ht]
 \centering
-\begin{tabular}{lrr|rr|rr}
+\begin{tabular}{l|rr|rr|rr}
 \toprule
 & \multicolumn{2}{c|}{\sf CashSettledPut} &
   \multicolumn{2}{c|}{\sf FlightIns} &
@@ -135,23 +135,24 @@ deviation.}
 
 \begin{table*}[ht]
 \centering
-\begin{tabular}{lr|r|r}
+\begin{tabular}{l|r|r|r}
 \toprule
 & \multicolumn{1}{c|}{\sf CashSettledPut} &
   \multicolumn{1}{c|}{\sf FlightIns} &
-  \multicolumn{1}{c}{\sf SteamTrade} \\
+  \multicolumn{1}{c}{{\sf SteamTrade}${}^\dagger$} \\
 %  & gas (cents) & gas (cents) & gas (cents) \\
 \midrule
-Delivery before issuing cancel & ?? & ?? & ?? \\ 
-Cancel arrived after delivery & & & \\ 
-Cancel, no delivery & & & \\ 
+Deliver without Cancel & 3.95\textcent & 4.00\textcent & 4.31\textcent \\ 
+Cancel arrived after Deliver & 4.90\textcent & 4.95\textcent & 5.26\textcent \\ 
+Cancel without Deliver & 4.64\textcent & 4.69\textcent & 5.00\textcent \\ 
 \bottomrule
 \end{tabular}
-\caption{{\bf Callback-independent} portion of the gas expenditure, translated
-to USD.  Here the difference between the gas expenditure across applications
-is mainly caused 
-by the difference in length of input parameters and output datagrams.
-\elaine{ethan: check}
+\caption[caption]{{\bf Callback-independent} portion of gas expenditure in USD.
+The difference between applications is due to the differing lengths of the input parameters.
+The first two rows would also have to pay for $\dgcallback$,
+but we do not include that cost as it would exist even if data acquisition were free.
+\\\hspace{\textwidth}
+${}^\dagger$ These numbers are for 1 item. Each additional item costs an additional 0.06\textcent.
 }
 \label{tab:eval_gas}
 \end{table*}
@@ -198,11 +199,10 @@ SGX compromise.
 To support this, we ran three instances of SGX enclaves all scraping
 the same data source.  
 The main change in this scenario is that 
-the gas cost would increase from
-\elaine{fill} cents 
-to \elaine{fill} cents.
-In particular, the increase is just slightly more than 3x 
-because \elaine{Ethan to fill in a very short explanation}.
+the gas cost would increase by a factor of 3 plus an additional 1.95\textcent.
+So {\sf CashSettledPut} would cost 13.8\textcent\ for Deliver without Cancel.
+The extra 1.95\textcent\ is because the client contract must store votes
+until a winner is known and blockchain storage is expensive.
 \end{itemize}
 
 
