@@ -9,17 +9,14 @@ We now present further, system-level details on the \tc contract \tcont and the 
 We implement \tcont with fees as described in Section~\ref{sec:gas-protocol} in Solidity,
 a high-level language with JavaScript-like syntax which compiles to Ethereum Virtual Machine bytecode---the language Ethereum contracts use.
 
-In order to handle the most general type of requests---including encrypted parameters---the \tcont implementation requires two parameter fields.
-The first is a single byte specifying what type of request is being made (e.g. stock price or flight status).
-The second is a byte array of user-specified size.
-This byte array will be parsed and interpreted inside the enclave when it fulfills the request, but is treated as an opaque byte array by \tcont.
-For convenience, we also implicitly include the timestamp of the current block in the parameters.
+In order to handle the most general type of requests---including encrypted parameters---the \tcont implementation requires two parameter fields:
+a single byte specifying the type of request (e.g.~flight status) and a byte array of user-specified size.
+This byte array is parsed and interpreted inside the \encname, but is treated as an opaque byte array by \tcont.
+For convenience, we include the timestamp of the current block as an implicit parameter.
 
-To ensure the request has not been modified by the \medname, \tcont must store the parameters and \tc must pass them back in {\bf Deliver}.
-To reduce the verification costs for large arrays, we instead store and verify $\text{SHA3-256}({\sf typeByte} || {\sf timestamp} || {\sf paramArray})$.
-The relay scrapes the actual parameters and passes them into the enclave.
-When calling {\bf Deliver}, \enclaveprog computes the same hash and passes that back for validation.
-This allows us to continue validating long requests at low cost.
+To guard against the \medname tampering with request parameters, the \tcont protocol includes $\dgform$ as an argument to {\bf Deliver} which validates against stored values.
+To reduce this cost for large arrays, we store and verify $\text{SHA3-256}({\sf typeByte} || {\sf timestamp} || {\sf paramArray})$.
+The \medname scrapes the raw values for the \encname which computes the hash and includes it as an argument to {\bf Deliver}.
 
 
 
