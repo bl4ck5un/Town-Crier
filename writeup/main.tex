@@ -99,10 +99,12 @@
 \definecolor{maroon}{RGB}{178, 34, 34}
 %\definecolor{brown}{RGB}{139, 137, 137}
 \definecolor{gold}{rgb}{0.85, 0.65, 0.13}
+\definecolor{darkblue}{rgb}{0, 0, 0.75}
 
 \newcommand{\smaroon}[1]{{\ensuremath{\tt {\color{maroon} #1}\xspace}}}
 \newcommand{\sgold}[1]{\ensuremath{\tt {\color{gold} #1 \xspace}}}
 \newcommand{\sbrown}[1]{\ensuremath{\tt {\color{brown} #1 \xspace}}}
+\newcommand{\sblue}[1]{\ensuremath{\tt {\color{darkblue} #1 \xspace}}}
 
 \newcommand{\sgray}[1]{{\color{gray} #1}}
 
@@ -173,16 +175,16 @@
 \newcommand{\resumecall}{\texttt{resume}\xspace}
 
 \newcommand{\gas}{\sbrown{\$g}}
-\newcommand{\constgasmin}{\sbrown{\$G_\text{min}}}
-\newcommand{\constgasmax}{\sbrown{\$G_\text{max}}}
-\newcommand{\constgascancel}{\sbrown{\$G_\emptyset}}
+\newcommand{\constgasmin}{\sblue{\$G_\text{min}}}
+\newcommand{\constgasmax}{\sblue{\$G_\text{max}}}
+\newcommand{\constgascancel}{\sblue{\$G_\emptyset}}
 \newcommand{\gasdeliver}{\sbrown{\$g_\text{dvr}}}
 \newcommand{\gasrequest}{\sbrown{\$g_\text{req}}}
 \newcommand{\gascallback}{\sbrown{\$g_\text{clbk}}}
 \newcommand{\gascancel}{\sbrown{\$g_\text{cncl}}}
 \newcommand{\fee}{\smaroon{\$f}}
-\newcommand{\constgasinvokecancel}{\sbrown{\$G_\text{cncl}}}
-\newcommand{\constgasrequest}{\sbrown{\$G_\text{req}}}
+\newcommand{\constgasinvokecancel}{\sblue{\$G_\text{cncl}}}
+\newcommand{\constgasrequest}{\sblue{\$G_\text{req}}}
 \newcommand{\consthonestfee}{\smaroon{\$F}}
 
 \renewcommand{\paragraph}[1]{{\vspace{5pt}\noindent\textbf{#1}}}

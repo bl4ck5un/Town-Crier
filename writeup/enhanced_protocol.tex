@@ -18,7 +18,7 @@ or a malicious \tc from stealing an honest user's money. We now give some prelim
 We take Ethereum's gas model as described in Section~\ref{sec:contracts-and-gas}.
 We use the notation $\gas$ to denote gas and $\fee$ to denote non-gas currency.
 In both cases \$ is a type annotation and the letter denotes the numerical amount.
-For simplicity, our notation assumes that gas and normal currency adopt the same units (allowing us to perform arithmetic without conversion).
+For simplicity, our notation assumes that gas and normal currency adopt the same units (allowing us to avoid explicit conversions), so system constants are values without a unit.
 We use the following identifiers to denote currency and gas amounts.
 %
 \begin{center}
@@ -48,7 +48,7 @@ We use the following identifiers to denote currency and gas amounts.
 \end{tabular}
 \end{center}
 %
-Note that $\constgasmin$, $\constgasmax$, $\constgasinvokecancel$, and $\constgascancel$ are system constants,
+$\constgasmin$, $\constgasmax$, $\constgasinvokecancel$, and $\constgascancel$ are system constants,
 $\fee$ is chosen by the requester (and may be malicious if the requester is dishonest),
 and $\gasdeliver$ is chosen by the \tc~\encname when calling {\bf Deliver}.
 Though $\gasrequest$ and $\gascancel$ are set by the requester, we need not worry about the values.
@@ -133,8 +133,9 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
 
   {\bf Resume:} On recv $(\resumecall, (\dgid, \dgform))$ \\
   \quad [Same as Figure~\ref{fig:engineprotocol} except the last two lines:] \\
-  \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, (\dgid, \dgform, \dgm, \constgasmax))$ \\
-  \quad Output $((\dgid, \dgform, \dgm, \constgasmax), \sigma)$ \\
+  \quad Set $\gasdeliver := \constgasmax$ \\
+  \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, (\dgid, \dgform, \dgm, \gasdeliver))$ \\
+  \quad Output $((\dgid, \dgform, \dgm, \gasdeliver), \sigma)$ \\
 \end{tabular}
 \end{boxedminipage}
 \caption{The \tcs~\encname \engine.}

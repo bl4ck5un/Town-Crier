@@ -166,7 +166,7 @@ The callback-independent portion of {\bf Deliver} costs about \num[group-separat
 We set $\constgasmax = \num[group-separator={,}]{3100000}$ gas (77.5\textcent) as this is approximately Ethereum's maximum {\tt GASLIMIT}.
 The cost for executing {\bf Request} is approximately \num[group-separator={,}]{120000} gas (3\textcent) of fixed cost, 
 plus \num[group-separator={,}]{2500} gas (0.06\textcent) for every 32 bytes of request parameters.
-The cost for executing {\bf Cancel} is \elaine{fill in} gas (\ethan{fill}\textcent)
+The cost for executing {\bf Cancel} is 62500 gas (1.56\textcent)
 including the gas cost $\constgasinvokecancel$ and the refund $\constgascancel$ paid to \tcs should {\bf Deliver} be called after {\bf Cancel}.
 
 
