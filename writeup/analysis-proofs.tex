@@ -86,7 +86,7 @@ and set $\fee$ to be $\constgasmin$ plus the gas cost of executing $\dgcallback$
 
 \paragraph{Request Delivered.}
 If the line marked $(\dagger)$ in Fig.~\ref{tbl:gas-tc-contract} is reached,
-then we are guaranteed thatthat $\dgform = \dgform'$ and $\gasdeliver \geq \fee$.
+then we are guaranteed that $\dgform = \dgform'$ and $\gasdeliver \geq \fee$.
 Because the requester is honest, $\fee - \constgasmin$ is enough gas to execut $\dgcallback$,
 so $\dgcallback$ will be invoked with a datagram that is a valid and matches the request parameters.
 
