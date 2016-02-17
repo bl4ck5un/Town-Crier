@@ -1,10 +1,10 @@
-\vspace{-3mm}
+%\vspace{-3mm}
 \section{Background}
 \label{sec:background}
 
 In this section, we provide basic background respectively on the main technologies \tc incorporates, namely SGX, TLS / HTTPS, and smart contracts.
 
-\vspace{-2mm}
+%\vspace{-2mm}
 \paragraph{\bf SGX.}
 Intel's Software Guard Extensions (SGX)~\cite{sgx,sgxfordummy,mckeen2013sgx,anati2013sgx,hoekstra2013sgx} is a set of new instructions that confer hardware protections on user-level code. SGX enables a process to execute in a protected address space known as an {\em enclave}, which protects the confidentiality and integrity of the process from other software on the same host, including the operating system, and certain forms of hardware attack. 
 
@@ -15,15 +15,13 @@ EPID~\cite{epid}. This choice of primitive is significant in our design of \tcs,
 
 SGX additionally provides a trusted time source via the function \texttt{sgx\_get\_trusted\_time}.~On invoking this function, an enclave obtains a measure of time relative to a reference point indexed by a nonce. A reference point remains stable, but SGX does not provide a source of absolute or wall-clock time, a limitation that we must work around in \tc.
 
-\vspace{-2mm}
+%\vspace{-2mm}
 \paragraph{\bf TLS / HTTPS.}
-
 We assume basic familiarity by readers with TLS and HTTPS (HTTP over TLS). As we explain later, \tc exploits an important feature of HTTPS, namely that it can be partitioned into interoperable layers: An HTTP layer interacting with web servers, a TLS layer handling handshakes and secure communication, and a TCP layer providing reliable data stream. 
 
-\vspace{-2mm}
+%\vspace{-2mm}
 \paragraph{\bf Smart contracts.}
 \label{sec:contracts-and-gas}
-
 While \tc can in principle support any smart-contract system, we focus in this paper on its use in Ethereum, whose use we now explain. For further details, see~\cite{whitepaper,yellowpaper}
 
 A smart contract in Ethereum is represented as what is called a \emph{contract account}, endowed with code, a currency balance, and persistent memory in the form of a key/value store. A contract accepts messages as inputs to any of a number of designated functions. These entry points, determined by the contract creator, represent the API of the contract. Once created, a contract executes autonomously; it persists indefinitely, with even its creator unable to modify its code.\footnote{There is one exception: A special opcode \texttt{suicide} wipes code from a contract account.} Contract code executes in response to receipt of a \emph{message} from another contract or a \emph{transaction} from a non-contract (\emph{externally owned}) account, informally what we call a \emph{wallet}. Thus, contract execution is always initiated by a transaction. Informally, a contract only executes when ``poked,'' and poking progresses through a sequence of entry points until no further message passing occurs (or a shortfall in gas occurs, as explained below). The ``poking'' model aside, as a simple abstraction, a smart contract may be viewed as an {\em autonomous agent} on the blockchain.

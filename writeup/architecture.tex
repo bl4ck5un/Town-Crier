@@ -40,14 +40,14 @@ An architectural schematic of \tc showing its interaction with external entities
 \end{figure}
 
 
-\vspace{-2mm}
+%\vspace{-2mm}
 \paragraph{The \tcontract \tcont.} The \tcontract is a smart contract that acts as the blockchain front end for \tc. It is designed to present a simple API to a relying contract \reqcont for its requests to \tc. Very simply, \tcont accepts datagram requests from a requester \reqcont and returns corresponding datagrams from \tc. Additionally, \tcont manages \tc monetary resources, namely ether and gas.
 
-\vspace{-2mm}
+%\vspace{-2mm}
 \paragraph{The \encname.}
 We refer to an instance of the TC code running in an SGX enclave simply as the \encname and denote the code itself by  \engine. In TC, the \encname ingests and fulfills datagram requests from the blockchain. To obtain the data for inclusion in datagrams, it queries external data sources, specifically HTTPS-enabled internet services. It returns a datagram to a requesting contract \reqcont as a digitally signed blockchain message. Under our basic security model for SGX, network functions aside, the \encname runs in complete isolation from an adversarial OS as well as other process on the host. 
 
-\vspace{-2mm}
+%\vspace{-2mm}
 \paragraph{The \medname \relay.} As an SGX enclave process, the \encname lacks direct network access. Thus the \medname handles bidirectional network traffic on behalf of the \encname. Specifically, the \medname provides network connectivity from the \encname to three different types of entities: 
 
 \begin{enumerate}
@@ -58,9 +58,8 @@ We refer to an instance of the TC code running in an SGX enclave simply as the \
 
 The \medname is an ordinary user-space application. It does not benefit from integrity protection by SGX and thus, unlike the \encname, can be subverted by an adversarial OS on the \tc server, causing network delays or failures. A key design aim of \tc, however, is that \medname should be unable to cause incorrect datagrams to be produced or users to lose fees paid to \tc for datagrams (although they may lose gas used to fuel their requests). As we shall show, in general the \medname~{\em can only mount denial-of-service attacks against \tc}. 
 
-\vspace{-2mm}
+%\vspace{-2mm}
 \paragraph{Security model.}
-
 Here we give a brief overview of our security model for \tc, providing more details in later sections. We assume the following:
 
 \begin{itemize}
