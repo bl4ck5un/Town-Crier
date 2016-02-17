@@ -219,8 +219,35 @@ Crier should delivery happen after cancel
 
 
 \subsection{Resilience against Component Compromise}
+For the {\sf FlightIns} application, 
+we implemented and evaluated two modes of majority voting:
+\begin{enumerate}[leftmargin=3mm]
+\item
+2-out-of-3 majority voting within the enclave which provides robustness
+against data source compromise.
+Specifically, the enclave scraped three different data sources in three parallel threads, 
+namely, \elaine{fill in}.
+Our experiments suggest that  
+the enclave response time is 
+\elaine{fill} ms in this case ({\it c.f.} \elaine{fill} ms for 
+a single data source).
+There is no change in the gas cost in this case.
+\item
+2-out-of-3 majority voting within the requester contract,
+which provides robustness against 
+SGX compromise.
+To support this, we ran three instances of SGX enclaves all scraping
+the same data source.  
+The main change in this scenario is that 
+the gas cost would increase from
+\elaine{fill} cents 
+to \elaine{fill} cents.
+In particular, the increase is just slightly more than 3x 
+because \elaine{Ethan to fill in a very short explanation}.
+\end{enumerate}
 
-\elaine{add some eval results here.}
+
+%\elaine{add some eval results here.}
 
 \subsection{Offline Measurements}
 %We characterize several measurements 
