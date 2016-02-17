@@ -244,11 +244,11 @@ We now describe how this can be realized by modifying the payment-free protocol 
     and will never invoke {\bf Cancel} with an $\dgid$ that corresponds to a different user's request.
 \end{itemize}
 
-\subsection{Private and custom datagrams}
+\subsection{Private and Custom Datagrams}
 \label{subsec:private_datagrams}
 In addition to ordinary datagrams, \tc supports \emph{private datagrams}, which involve requests where $\dgform$ includes ciphertexts under $\pkTC$. Private datagrams can thus enable confidentiality-preserving applications despite the public readability of the blockchain.  \emph{Custom datagrams}, also supported by \tc, allow a contract to specify a particular web-scraping target, potentially involving multiple interactions, and thus greatly expand the range of possible relying contracts for \tc. We give examples of both datagram types in Section~\ref{sec:applications}.
 
-\subsection{Enhanced robustness via replication}
+\subsection{Enhanced Robustness via Replication}
 \label{subsec:enhanced_robustness}
 Our basic security model for \tc assumes the ideal isolation model for SGX described above, as well as client trust in data sources. We nonetheless include hedges in \tc, given various concerns about SGX security~\cite{sgxexplained,7163052}, and the possible fallibility of data sources. Briefly...
 \ari{For Kyle to fill in}
