@@ -53,6 +53,9 @@ Therefore, $\algB$ simply outputs this as a signature forgery.
 
 
 \begin{proof}[Proof of Gas neutrality for Town Crier (sketch)]
+By assumption, $\tcadd$ is seeded with at least $\constgasmax$ money.
+Thus it suffices to prove that, given an honest \medname, $\tcadd$ will have at least as much money after invoking {\bf Deliver} as it did before.
+
 The enclave will never submit a response for the same $\dgid$ more than once.
 {\bf Deliver} only responds to messages from $\tcadd$, and ${\sf isDelivered}[\dgid]$ is only set inside {\bf Deliver},
 so therefore we know that ${\sf isDelivered}[\dgid]$ is not set for this $\dgid$.
@@ -62,7 +65,7 @@ We now consider the case where ${\sf isCanceled}[\dgid]$ is set upon invocation 
 \item {\it ${\sf isCanceled}[\dgid]$ not set:}
 In this case the predicate on line $(1)$ of the protocol returns {\tt false}.
 Because the \medname is honest, $\dgid$ exists and $\dgform = \dgform'$.
-The enclave always provides $\gasdeliver = \constgasmax$ and {\bf Request} ensures that $\fee \leq \constgasmax$.
+The enclave always provides $\gasdeliver = \constgasmax$ (which it has by assumption) and {\bf Request} ensures that $\fee \leq \constgasmax$.
 Thus, coupled with the knowledge that ${\sf isDeliver}[\dgid]$ is not set, all assertions pass and we progress through lines $(3)$ and $(4)$.
 Now we must show that at line $(3)$ $\tcont$ had $\fee$ to send and that the total gas spend to execute {\bf Deliver} does not exceed $\fee$.
 
@@ -109,8 +112,7 @@ It is impossible for $\reqcont$ to lose more money than she gives up in these tr
 
 \begin{itemize}
 \item {\it Request Delivered:}
-If protocol line $(4)$ in Fig.~\ref{tbl:gas-tc-contract} is reached,
-then we are guaranteed that $\dgform = \dgform'$ and $\gasdeliver \geq \consthonestfee$.
+If protocol line $(4)$ is reached, then we are guaranteed that $\dgform = \dgform'$ and $\gasdeliver \geq \consthonestfee$.
 By Theorem~\ref{thm:authenticity}, the datagram must therefore be authentic for $\dgform$.
 Because $\consthonestfee$ is chosen honestly for $\dgcallback$, $\consthonestfee - \constgasmin$ is enough gas to execute $\dgcallback$,
 so $\dgcallback$ will be invoked with a datagram that is a valid and matches the request parameters.
@@ -120,16 +122,21 @@ The requester may have also invoked {\bf Cancel} at most once at the cost of $\c
 While $\reqcont$ may not receive any refund due to {\bf Cancel} aborting, $\reqcont$ will still have spent at most $\constgasrequest + \constgasinvokecancel + \consthonestfee$.
 
 
-\item {\it Request not Delivered;}
-If line $(5)$ is reached, then $\reqcont$ will have spent
-$\constgasrequest + \consthonestfee$ while executing {\bf Request},
-and spent $\constgasinvokecancel$ and retrieved $\consthonestfee - \constgascancel$ while executing {\bf Cancel}.
+\item {\it Request not Delivered:}
+The request not being delivered means that line $(4)$ is never reached.
+This can only happen if {\bf Deliver} is never called with a valid response or if ${\sf isCanceled}[\dgid]$ is set before deliver is called.
+The only way to set ${\sf isCanceled}[\dgid]$ is for $\reqcont$ to invoke {\bf Cancel} with ${\sf isDelivered}[\dgid]$ not set.
+If deliver is not executed, we assume that an honest requester will eventually invoke {\bf Cancel}, so this case will always reach line $(5)$.
+When line $(5)$ is reached, then $\reqcont$ will have spent $\constgasrequest + \consthonestfee$ while executing {\bf Request},
+and spent $\constgasinvokecancel$ in {\bf Cancel} and will attempt to retrieve $\consthonestfee - \constgascancel$.
 
-This is possible because $\tcont$ will always have the funds to send $\reqcont$ $\consthonestfee - \constgascancel$.
+The retrieval will succeed because $\tcont$ will always have the funds to send $\reqcont$ $\consthonestfee - \constgascancel$.
 Since line $(5)$ is reached, it must be the case the ${\sf isDelivered}[\dgid]$ is not set.
 This means that neither lines $(2)$ nor $(3)$ were reached since the line before each sets ${\sf isDelivered}[\dgid]$.
 The lines preceding those two and $(5)$ are the only lines that remove money from the contract.
-Because neither $(2)$ nor $(3)$ has been reached and $\reqcont$ deposited $\consthonestfee > \constgasmin > \constgascancel$ on {\bf Request},
+Line $(5)$ cannot have been reached before because $\reqcont$ is assumed to be honest, so she will not invoke {\bf Cancel} twice for the same request
+and if any other user invokes {\bf Cancel} for this request, the $\reqcont = \reqcont'$ assertion will fail and the invocation will abort before line $(5)$.
+Because none of $(2)$, $(3)$, or $(5)$ has been reached before and $\reqcont$ deposited $\consthonestfee > \constgasmin > \constgascancel$ on {\bf Request},
 it must be the case that $\tcont$ has $\consthonestfee - \constgascancel$ left.
 
 This means the total expenditure in this case will be
