@@ -198,26 +198,15 @@ by the difference in length of input parameters and output datagrams.
 
 
 \subsection{Gas Costs}
-One ether is currently worth about \$5 and 1 gas costs $5 \cdot 10^{-8}$ ether, meaning 4 million gas is approximately \$1.
-Here we give values for our implementation for the gas variables we defined in Section \ethan{ref gas constant definitions} (all units are in gas).
-In Town Crier, we set $\constgasmin$ to be 35000 gas units (i.e.  \elaine{fill} cents),
-and $\constgasmax$ to be 3100000 gas units (i.e., \elaine{fill in} cents --- the latter is limited by 
-Ethereum's inherent {\tt GASLIMIT}.
+Currently 1 gas costs $5 / 10^8$ ether, so at the exchange rate of \$5 for 1 ether, \$1 buys 4 million gas.
+Here we provide costs for the components of our implementation.
 
-The cost for executing {\bf Request} is approximately \num[group-separator={,}]{120000} 
-gas (i.e., \elaine{fill} cents) 
-fixed cost, 
-plus \num[group-separator={,}]{2500} gas (i.e., \elaine{fill} cents) 
-for every 32 bytes of request parameters.
-The cost for executing the callback-independent portion of {\bf Delivery}, eventually paid
-by the requesting user, is \elaine{blah} gas (i.e., \elaine{fill in} cents).
-The cost for executing {\bf Cancel} is \elaine{fill in} gas (i.e., \elaine{fill} cents) ---
-this includes 
-the gas cost  
-\elaine{fill in notation for honest party's choice of this value}
-as well as the refund paid to Town 
-Crier should delivery happen after cancel
-\elaine{fill in notation}.
+The callback-independent portion of {\bf Deliver} costs about \num[group-separator={,}]{35000} gas (0.875\textcent), so this is the value of $\constgasmin$.
+We set $\constgasmax = \num[group-separator={,}]{3100000}$ gas (77.5\textcent) as this is approximately Ethereum's maximum {\tt GASLIMIT}.
+The cost for executing {\bf Request} is approximately \num[group-separator={,}]{120000} gas (3\textcent) of fixed cost, 
+plus \num[group-separator={,}]{2500} gas (0.06\textcent) for every 32 bytes of request parameters.
+The cost for executing {\bf Cancel} is \elaine{fill in} gas (\ethan{fill}\textcent)
+including the gas cost $\constgasinvokecancel$ and the refund $\constgascancel$ paid to \tcs should {\bf Deliver} be called after {\bf Cancel}.
 
 
 
