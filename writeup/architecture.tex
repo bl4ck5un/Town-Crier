@@ -70,9 +70,9 @@ Here we give a brief overview of our security model for \tc, providing more deta
 
 \item {\em The TC Contract.} \tcont is globally visible on the blockchain and its source code is published for clients. Thus we assume that \tcont behaves honestly.
 
-\item {\em Data sources.} We assume that clients trust the data sources from which they obtain \tc datagrams.
+\item {\em Data sources.} We assume that clients trust the data sources from which they obtain \tc datagrams. We also assume that these sources are stable, i.e., yield consistent datagrams, during a requester's specified time interval $T$. (Requests are generally time-invariant, e.g., for a stock price at a particular time.)
 
-\item {\em \encname security.} We make three assumptions about the \encname : (1) The \encname behaves honestly, i.e., \engine, whose source code is published for clients, correctly executes the \tc protocol; (2) For an \encname-generated keypair $(\skTC, \pkTC)$, the private key $\skTC$ is known only to the \encname; and (3) The \encname has an accurate (internal) real-time clock. We explain below how we achieve these properties through use of SGX. 
+\item {\em \encname security.} We make three assumptions: (1) The \encname behaves honestly, i.e., \engine, whose source code is published for clients, correctly executes the \tc protocol; (2) For an \encname-generated keypair $(\skTC, \pkTC)$, the private key $\skTC$ is known only to the \encname; and (3) The \encname has an accurate (internal) real-time clock. We explain below how we use SGX to achieve these properties. 
 
 
 \item {\em Blockchain communication.} Transaction and message sources are authenticable, i.e., a transaction $m$ sent from an account / wallet ${\cal W}_{X}$ (or message $m$ from contract ${\cal C}_{X}$) is identified by the receiving account as originating from $X$. Transactions and messages are integrity protected (as they are digitally signed by the sender), but not confidential. 
