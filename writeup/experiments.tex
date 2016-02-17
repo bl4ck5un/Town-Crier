@@ -36,37 +36,6 @@ report the mean and standard deviation. Proportions are for means.}
 \label{tab:eval_profiling}
 \end{table*}
 
-
-
-%\begin{table*}[ht]
-%\centering
-%\begin{tabular}{lrr|rr|rr}
-%\toprule
-%& \multicolumn{2}{c|}{\sf CashSettledPut} & 
-%  \multicolumn{2}{c|}{\sf FlightIns} &
-%  \multicolumn{2}{c}{\sf SteamTrade} \\ 
-%\midrule
-%& \multicolumn{2}{c|}{\bf Enclave response time}
-%& \multicolumn{2}{c|}{\bf Enclave response time}
-%& \multicolumn{2}{c}{\bf Enclave response time} \\
-%  & time(ms) & \multicolumn{1}{c|}{proportion} & time(ms) & \multicolumn{1}{c|}{proportion} & time(ms) & \multicolumn{1}{c}{proportion}\\
-%%\midrule
-%Context switch & 0.41    & 0.21\%   & 0.44      & 0.08\%    & 0.89    & 0.07\%\\
-%Web scraper         & 181.03  & 94.12\%  & 512.32    & 98.02\%   & 1297.73 & 99.11\%\\
-%Sign                & 10.63   & 5.53\%   & 9.64      & 1.85\%    & 10.45   & 0.80\%\\
-%Serialization       & 0.28    & 0.14\%   & 0.25      & 0.05\%    & 0.32    & 0.02\%\\
-%%\midrule
-%{\bf Total}     & {\bf 192.35}  & {100.00}\%    & {\bf 522.65}  & 100.00\% & 
-%{\bf 1309.39} & 100.00\%\\
-%\bottomrule
-%\end{tabular}
-%\caption{Running time of handling a request \elaine{Fan to 1) add std dev;
-%2)update context switch time to include
-%time switching out too}}
-%\label{tab:eval_profiling}
-%\end{table*}
-%
-
 We evaluated the performance of \tc on a Dell Inspiron 13-7359 laptop equipped
 with an Intel i7-6500U CPU and 8.00GB memory.  This model is chosen 
 because it is one of the few SGX-enabled systems available on the market at the
@@ -97,14 +66,17 @@ over multiple roundtrips to fetch the desired datagram.
 
 \subsection{Transaction Throughput}
 We performed a sequence of experiments running 1 to 20 enclaves 
+concurrently
 on a single SGX-enable laptop
 machine, and investigated the transaction throughput 
 enabled by a single SGX machine. 
-Note that SGX allows at most 20 enclaves on the specific machine model we used.
-Figure \elaine{refer to Fan's new figure} 
+Note that at most 20 \tc enclaves can be launched
+on the specific machine model we used due to EPC memory
+constraint.
+Figure \ref{fig:trpt}
 shows that for the three applications evaluated,
 a single SGX machine can handle
-\elaine{blah to blah} 
+15 to 74
 tx/sec.
 
 We give several meaningful data points of comparison to show
@@ -157,6 +129,7 @@ response time when multiple enclaves are run} on a single machine.
 the number of enclaves and the y-axis is the number of transactions processed per
 second.  We ran five rounds of experiments and error bars show the standard
 deviation.}
+\label{fig:trpt}
 \end{figure}
 
 
