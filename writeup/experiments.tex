@@ -179,14 +179,18 @@ we implemented and evaluated two modes of majority voting:
 \item
 2-out-of-3 majority voting within the enclave which provides robustness
 against data source compromise.
-Specifically, the enclave scraped three different data sources in three parallel threads, 
-namely, \elaine{fill in}.
+Specifically, in our experiments, 
+the enclave scraped current stock prices 
+from three different data sources, 
+namely, Bloomberg, Google Finance and Yahoo Finance.
 Our experiments suggest that  
 the enclave response time is 
-\elaine{fill} ms in this case ({\it c.f.} \elaine{fill} ms, 
-\elaine{fill} ms, and \elaine{fill} ms for 
-each single data source).
+1743 ms in this case ({\it c.f.} ms, 
+1058 ms, 423 ms and 262  ms for 
+each data source).
 There is no change in the gas cost in this case.
+\fan{the numbers are bigger than Yahoo because Google and Bloomberg
+doesn't have a clean API so the whole web page is downloaded.}
 \item
 2-out-of-3 majority voting within the requester contract,
 which provides robustness against 
