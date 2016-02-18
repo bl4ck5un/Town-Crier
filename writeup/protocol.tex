@@ -2,9 +2,9 @@
 
 \section{Basic \tc Protocol}
 \label{sec:protocols}
-We now describe the operation of \tc at the protocol level. The basic protocol is conceptually simple: A user contract \reqcont requests a datagram from the \tcontract \tcont. \tcont forwards the request to \engine and then returns the request to \reqcont. There are many details, however, relating to message contents and protection and the need to connect the off-chain parts of \tc with the blockchain.
+We now describe the operation of \tc at the protocol level. The basic protocol is conceptually simple: a user contract \reqcont requests a datagram from the \tcontract \tcont, \tcont forwards the request to \engine and then returns the response to \reqcont. There are many details, however, relating to message contents and protection and the need to connect the off-chain parts of \tc with the blockchain.
 
-First, we give a brief protocol overview. Then we enumerate the data flows in \tc. Finally, we provide a component-level view of the protocol by specifying the operation of the \tcontract, \medname, and \encname. We present these  as ideal functionalities, inspired by the universal-composability (UC) framework, in order to abstract away implementation details and as a springboard for formal proofs of security. We omit details in this section on how payment is incorporated into \tc, deferring this delicate aspect of the system design to Section~\ref{sec:impl}.
+First we give a brief protocol overview. Then we enumerate the data flows in \tc. Finally, we provide a component-level view of the protocol by specifying the operation of the \tcontract, \medname, and \encname. We present these  as ideal functionalities, inspired by the universal-composability (UC) framework, in order to abstract away implementation details and as a springboard for formal proofs of security. We omit details in this section on how payment is incorporated into \tc, deferring this delicate aspect of the system design to Section~\ref{sec:enhanced_protocol}.
 
 \subsection{Datagram Lifecycle}
 
@@ -29,11 +29,11 @@ The lifecycle of a datagram may be briefly summarized in the following steps:
 
 \subsection{Data Flows}
 
-A datagram request by \reqcont takes the form of a message $m_1 = (\dgform, \dgcallback)$ to \tcont on the blockchain. $\dgform$ specifies the requested datagram, e.g., ${\sf params} := (\weburl, {\sf spec}, T)$, where $\weburl$ is the target data source and {\sf spec} specifies content of a the datagram to be retrieved (e.g., a stock ticker at a particular time), while $T$ specifies the delivery time for the datagram (initiated by scraping of the data source). The parameter $\dgcallback$ in $m_1$ indicates the entry point in \reqcont to which the datagram is to be returned. (In principle, $\dgcallback$ could point to a different contract, but \tc does not yet adopt this generalization.) 
+A datagram request by \reqcont takes the form of a message $m_1 = (\dgform, \dgcallback)$ to \tcont on the blockchain. $\dgform$ specifies the requested datagram, e.g.~${\sf params} := (\weburl, {\sf spec}, T)$, where $\weburl$ is the target data source, {\sf spec} specifies content of a the datagram to be retrieved (e.g., a stock ticker at a particular time), and $T$ specifies the delivery time for the datagram (initiated by scraping of the data source). The parameter $\dgcallback$ in $m_1$ indicates the entry point in \reqcont to which the datagram is to be returned. (In principle, $\dgcallback$ could point to a different contract, but \tc does not yet adopt this generalization.) 
 
-\tcont forwards $m_2 = (\dgid, \dgform)$ to the \encname. It receives in return a return message $m_3 = (\dgid, \dgform, \dgm)$ from the $\tc$ service, where $\dgm$ is the datagram, i.e., contains the data (e.g., the desired stock ticker price). \tcont checks the consistency of $\dgform$ on the incoming and outgoing messages, and if they match forwards $\dgm$ to the entry point \dgcallback in \reqcont in message $m_4$. Finally, \reqcont uses $\dgid$ in $m_4$ to match the returned datagram to its original request.
+\tcont generates a fresh unique $\dgid$ and forwards $m_2 = (\dgid, \dgform)$ to the \encname. It receives in return a return message $m_3 = (\dgid, \dgform, \dgm)$ from the \tc service, where $\dgm$ is the datagram (e.g.~the desired stock ticker price). \tcont checks the consistency of $\dgform$ on the incoming and outgoing messages, and if they match forwards $\dgm$ to the entry point \dgcallback in \reqcont in message $m_4$.
 
-For simplicity here, we assume that $\reqcont$ makes a one-time datagram request. Thus it can trivially match $m_4$ with $m_1$. Our full protocol contains an optimization by which $\tcont$ assigns $\dgid$ to $m_1$ (and sends $\dgid$ to $\reqcont$), creating a consistent, trustworthy identifier for all data flows, and enabling straightforward handling of multiple datagram requests from the same instance of $\reqcont$.
+For simplicity here, we assume that $\reqcont$ makes a one-time datagram request. Thus it can trivially match $m_4$ with $m_1$. Our full protocol contains an optimization by which $\tcont$ returns $\dgid$ to $\reqcont$ after $m_1$ as a consistent, trustworthy identifier for all data flows. This enables straightforward handling of multiple datagram requests from the same instance of $\reqcont$.
 
 Fig.~\ref{fig:dataflow} shows the data flows involved in processing a datagram request. For simplicity, the figure omits the \medname, which is only responsible for data passing.
 
@@ -125,7 +125,7 @@ Digital signatures are needed to authenticate messages, such as $m_3$, entering 
 \subsection{Use of SGX}
 \label{sec:useofsgx}
 
-Let $\enclaveprog$ represent the code for \encname, which we presume is trusted by all system participants. Our protocols in \tc rely on the ability of SGX to attest to execution of an instance of $\enclaveprog$ and bind a public key $\pkTC$ to this instance. Here we briefly explain how we achieve these goals. First, we present a model that abstracts away implementation details in SGX, helping simplify our protocol presentation and later, our security proofs. We then explain how SGX attestation is used to authenticate datagrams served by \tcont, namely through binding of $\pkTC$ to an Ethereum wallet on the blockchain. Finally, we explain how we use the clock in SGX. Our discussion draws on formalism for SGX from~\cite{sgxsok}.
+Let $\enclaveprog$ represent the code for \encname, which we presume is trusted by all system participants. Our protocols in \tc rely on the ability of SGX to attest to execution of an instance of $\enclaveprog$ and bind a public key $\pkTC$ to this instance. Here we briefly explain how we achieve these goals. First, we present a model that abstracts away implementation details in SGX, helping simplify our protocol presentation and later our security proofs. We then explain how SGX attestation is used to authenticate datagrams served by \tcont, namely through binding of $\pkTC$ to an Ethereum wallet on the blockchain. Finally, we explain how we use the clock in SGX. Our discussion draws on formalism for SGX from~\cite{sgxsok}.
 
 
 %\vspace{-3mm}
@@ -140,11 +140,11 @@ as a third party trusted
 for both confidentiality and integrity.
 Specifically, we use a global UC  
 functionality $\fsgx(\sigsgx)[\enclaveprog, \relay]$
-to denote (an instance of) an SGX functionality parametrized
+to denote (an instance of) an SGX functionality parameterized
 by a (group) signature scheme $\sigsgx$.
 Here $\enclaveprog$ denotes the SGX enclave program and \relay the physical
 SGX host (which we assume for simplicity is the same as that for the \tc~\medname).
-Upon initialization, \fsgx runs ${\sf outp} := \enclaveprog.{\bf Initialize}$
+As described in Fig.~\ref{fig:SGX_abstraction}, upon initialization, \fsgx runs ${\sf outp} := \enclaveprog.{\bf Initialize}$
 and attests to the code of $\enclaveprog$ as well as ${\sf outp}$.
 Upon a resume call with ${\sf params}$, \fsgx runs and outputs the result of
 $\enclaveprog.{\bf Resume}({\sf params})$.
@@ -200,7 +200,6 @@ sufficient for implementation of \tc.}
 \paragraph{Binding $\enclaveprog$ to Ethereum wallet \tcadd.}
 Information can only be inserted into the blockchain in Ethereum as a transaction from a wallet. Thus, the only way the \medname can relay messages from the \encname to \tcont is through a wallet \tcadd. Since the \medname may corrupt messages, however, it is critical that they be authenticated by the \encname. Since Ethereum itself 
 already verifies signatures on transactions from externally owned accounts (i.e., users interact with the  Ethereum blockchain through an authenticated channel), \tc uses a trick to {\it piggyback verification of enclave signatures on top of Ethereum's already existing transaction signature verification mechanism}. 
-
 Very simply, the \encname creates \tcadd with the public key \pkTC. 
 
 To make this idea work fully, the public key $\pkTC$ must be hardcoded into \tcont. A client creating or relying on a contract that uses \tcont is responsible for making sure that this hardcoded $\pkTC$ has an appropriate SGX attestation before interacting with the $\tcont$  blockchain contract.  Let {\sf Verify} denote a verification algorithm for EPID signatures. Fig.~\ref{fig:att_check} gives the protocol for a client to check that \tcont is backed by a valid \encname instance. (We omit modeling here of IAS online revocation checks.)
@@ -225,9 +224,8 @@ Assert \tcont is correct and parametrized w/ \pkTC\\
 \sgray{\it //~now okay to rely on \tcont}
 \end{tabular}
 \end{boxedminipage}
-\caption{A client checks an SGX attestation on the enclave's code $\enclaveprog$ and public key $\pkTC$; the client
-checks that $\pkTC$ is hardcoded into \tc blockchain contract \tcont before 
-using \tcont.
+\caption{A client checks an SGX attestation on the enclave's code $\enclaveprog$ and public key $\pkTC$.
+  The client also checks that $\pkTC$ is hardcoded into \tc blockchain contract \tcont before using \tcont.
 } 
 \label{fig:att_check}
 \end{figure}
@@ -235,7 +233,11 @@ using \tcont.
 
 %\vspace{-3mm}
 \paragraph{\bf SGX Clock.}
-As noted above, the trusted clock for SGX provides only relative time with respect to a reference point, not absolute time. Thus, when initialized, the \encname is provided with the current wall-clock time by a trusted source, e.g., the \medname (under a trust-on-first-use model). In the current implementation of \tc, clients may request and verify in real time a fresh timestamp, signed by the \encname under \pkTC, via a web interface in the \medname. Thus, a client can determine the absolute clock time of \encname to within a high degree of accuracy, bounded by the round-trip time of its attestation request plus the attestation verification time---some hundreds of milliseconds in a wide-area network. A high degree of accuracy is potentially useful for some applications but only loose accuracy is not required for most. Ethereum targets a block interval of 12s and the clock serves in \tc primarily to: (1) Schedule connections to data sources and (2) To check TLS certificates for expiration when establishing HTTPS connections. For simplicity, we just assume in our protocol specifications that the \encname clock provides accurate wall-clock time (in the canonical format of seconds since the Unix epoch January 1, 1970 00:00 UTC).
+As noted above, the trusted clock for SGX provides only relative time with respect to a reference point.
+To work around this, the \encname is initialized with the current wall-clock time provided by a trusted source, e.g.~the \medname (under a trust-on-first-use model).
+In the current implementation of \tc, clients may, in real time, request and verify a fresh timestamp---signed by the \encname under \pkTC---via a web interface in the \medname.
+Thus, a client can determine the absolute clock time of \encname to a degree of accuracy bounded by the round-trip time of its attestation request plus the attestation verification time---hundreds of milliseconds in a wide-area network.
+This high degree of accuracy is potentially useful for some applications but only loose accuracy is not required for most. Ethereum targets a block interval of 12 s and the clock serves in \tc primarily to: (1) Schedule connections to data sources and (2) To check TLS certificates for expiration when establishing HTTPS connections. For simplicity, we just assume in our protocol specifications that the \encname clock provides accurate wall-clock time in the canonical format of seconds since the Unix epoch January 1, 1970 00:00 UTC.
 
 We let $\clock()$ denote measurement of the SGX clock from within the enclave, expressed as the current absolute (wall-clock) time. 
 
@@ -243,7 +245,7 @@ We let $\clock()$ denote measurement of the SGX clock from within the enclave, e
 \subsection{A Payment-Free Basic Protocol}
 \label{sec:payment-free-protocol}
 
-For simplicity, we first specify a payment-free version of our basic protocol, i.e., one that does not include gas or fees. Later, in our implementation discussion, we explain how we handle these two resources, and we prove payment-related properties in the paper appendix. For simplicity, we assume a single instance of \engine, although our architecture could scale up to multiple enclave and even server instances. To show messages corresponding to those in Fig.~\ref{fig:dataflow}, we use the label ({\bf msg.}~$m_i$)
+For simplicity, we first specify a payment-free version of our basic protocol, i.e.~one that does not include gas or fees. Later, in our implementation discussion, we explain how we handle these two resources and we prove payment-related properties in the paper appendix. For simplicity, we assume a single instance of \engine, although our architecture could scale up to multiple enclaves and even server instances. To show messages corresponding to those in Fig.~\ref{fig:dataflow}, we use the label $(\msgi{i})$.
 
 %\vspace{-3mm}
 \paragraph{The Requester Contract $\reqcont$.}
@@ -259,42 +261,33 @@ records the request.
 %\tcont
 %now
 %forwards the request to the \tc server, and 
-Our Town Crier Relay $\relay$ will monitor
-requests received by \tcont, and 
-forwards the requests to an SGX enclave.
+Our Town Crier Relay $\relay$ monitors
+requests received by \tcont and 
+forwards them to an SGX enclave.
 When $\tcont$ obtains a valid response
 from $\tcadd$,   
 it 
 sends the resulting datagram $\dgm$ to the entry point \dgcallback 
-specified by the requesting contract \reqcont. As explained above, because the response (msg. $m_2$) comes from $\tcadd$, the blockchain automatically verifies that the response is correctly signed under $\engine$'s key $\pkTC$, and \tcont need not verify the signature explicitly. \tc does, however, have a subtle security requirement. Specifically,  for a given datagram request $\dgid$, \tcont must verify that $\dgform' = \dgform$, where $\dgform'$ is the digitally signed message produced by \engine and $\dgform$ is the locally stored parameters. The check is necessary to prevent \relay from corrupting datagram requests passed by \tcont (which, as a public function, has no means of digitally signing requests). 
+specified by the requesting contract \reqcont. As explained above, because the response $(\msgi{2})$ comes from $\tcadd$, the blockchain automatically verifies that the response is correctly signed under $\engine$'s key $\pkTC$ and \tcont need not verify the signature explicitly. \tc does, however, have a subtle security requirement. Specifically,  for a given datagram request $\dgid$, \tcont must verify that $\dgform' = \dgform$, where $\dgform'$ is in the digitally signed message produced by \engine and $\dgform$ is the locally stored parameters. The check is necessary to prevent \relay from corrupting datagram requests passed by \tcont (which, as a public function, has no means of digitally signing requests). 
 
-\tcont is specified in Fig.~\ref{fig:tc-contract}. Here, Call denotes a call to a contact entry point, while Return denotes a message returned by the blockchain in response to a function call. 
+\tcont is specified in Fig.~\ref{fig:tc-contract}. Here, Call denotes a call to a contact entry point. 
 
 \begin{figure}[!htb]
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
   \hline
 
   \multicolumn{2}{|c|}{{\bf Program for Town Crier blockchain contract \tcont}} \\ [1ex]
-{\bf Initialize:} &  Counter := 0\\
-  {\bf Request:} & On recv $(\dgform, \dgcallback)$ from some $\reqcont$:   
- \\
-%                 & If $(\${\sf fee} < F_{\rm min}$ or $\${\sf fee} > F_{\rm max})$ \\
-%                 & \hspace*{1em} Return $\${\sf fee}$ to $\pkU$ \\
 
-		& \dgid :=  Counter; \ \ Counter := Counter + 1 \\
-%		& Return(\dgid) \\
-                 & Record $(\dgid, \dgform, \dgcallback)$ 
-\quad {\sgray{\it //~{\bf msg.}~$m_1$}} 
+  {\bf Initialize:} &  Counter := 0 \\[1ex]
 
+  {\bf Request:} & On recv $(\dgform, \dgcallback)$ from some $\reqcont$: \\
+                 & \dgid :=  Counter; \ \ Counter := Counter + 1 \\
+                 & Record $(\dgid, \dgform, \dgcallback)$ \hfill \sgray{\it //~\msgi{1}} \\[1ex]
 
-\\[5pt] 
-%		 & Send $(\dgid, \dgform)$ to \relay \\
-%\multicolumn{2}{|c|}{\sgray {\it // above implemented by \relay monitoring the blockchain}}\\[5pt]
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm)$ from $\tcadd$: \\
-		 & Retrieve recorded $(\dgid, \dgform', \dgcallback)$\\
-		 & Assert $\dgform = \dgform'$\\
-                 & Call ${\dgcallback}({\dgm})$ \quad \sgray{\it //~{\bf msg.}~$m_4$}\\
-%                 & Send $\${\sf fee}$ ether to $\Psgx$. \\
+                 & Retrieve recorded $(\dgid, \dgform', \dgcallback)$ \\
+                 & Assert $\dgform = \dgform'$ \\
+                 & Call ${\dgcallback}({\dgm})$ \hfill \sgray{\it //~\msgi{4}} \\
 
   \hline
 \end{tabularx}
@@ -332,7 +325,7 @@ On input \resumecall $({\sf id}, {\sf params})$, \engine contacts the data sourc
 %\quad Call quoting enclave with supp.~data $(\pkTC, T)$
 %\\[5pt]
 
-{\bf Resume:} On recv (\resumecall, $({\sf id}, {\sf params}))$\\
+{\bf Resume:} On recv $(\text{\resumecall}, ({\sf id}, {\sf params}))$\\
 \quad Parse ${\sf params}$ as $(\weburl, \dgspec, T) $:\\
 \quad Assert $\clock() \geq T.{\sf min}$\\
 \quad Contact $\weburl$ via HTTPS, obtaining ${\sf cert}$ \\
@@ -351,35 +344,43 @@ The \tcs~\encname \engine.
 \end{figure}
 
 %\vspace{-3mm}
-\paragraph{The \medname \relay.} As noted in Section~\ref{sec:architecture}, \relay performs distinct three forms of data passing, which we  specify more precisely here. It scrapes the blockchain, monitoring \tcont for new datagram requests $({\sf id}, {\sf params})$. It boots the \engine with an \initcall call and handles incoming requests by invoking \engine with a \resumecall call. Finally, it forwards datagram responses from \engine to the blockchain; recall that it inserts transactions to the blockchain and thus forward responses as \tcadd. The program for \relay is shown in Fig.~\ref{fig:relayprotocol}. Here, the function {\sf AuthSend} inserts a transaction to blockchain (``as $\tcadd$'' means the transaction is signed with $\skTC$).
+\paragraph{The \medname \relay.}
+As noted in Section~\ref{sec:architecture},
+\relay bridges the gap between the \encname and the blockchain in three ways.
+(1) It scrapes the blockchain, monitoring \tcont for new datagram requests $(\dgid, \dgform)$.
+(2) It boots the \engine with an \initcall call and handles incoming requests by invoking \engine with a \resumecall call.
+Finally, (3) it forwards datagram responses from \engine to the blockchain.
+Recall that it inserts transactions to the blockchain and thus forward responses as \tcadd.
+The program for \relay is shown in Fig.~\ref{fig:relayprotocol}.
+Here, the function {\sf AuthSend} inserts a transaction to blockchain (``as $\tcadd$'' means the transaction is already signed with $\skTC$).
 
-\begin{figure}[!h]
-\begin{boxedminipage}{\columnwidth}
-\begin{center}
-{\bf Program for Town Crier \medname $\relay$}
-\end{center}
-\begin{tabular}{l}
-{\bf Initialize}:\\
-Send \initcall to $\fsgx[\enclaveprog, \relay]$\\
-On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$:\\
-\quad Publish $(\pkTC, \sigatt)$\\[5pt]
+\begin{figure}[h!]
+\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}p{1em}@{\hspace{1ex}}X@{\hspace{3pt}}|}
+  \hline
 
+  \multicolumn{2}{|c|}{\bf Program for Town Crier \medname $\relay$} \\[1ex]
 
-{\bf Handle}$({\sf id, params})$: \\
-Parse {\sf params} as $(\_, \_, T)$\\
-Wait until ${\sf clock}() \geq T.{\sf min}$\\
-Send $(\text{\resumecall}, ({\sf id}, {\sf params}))$ to $\fsgx[\enclaveprog, \relay]$ \\
-On recv $(({\sf id}, {\sf params}, {\sf data}), \sigma)$ from $\fsgx[\enclaveprog, \relay]$:\\ 
-\quad  {\sf AuthSend} $({\sf id}, {\sf params}, {\sf data})$ to \tcont as \tcadd \\
-\quad \sgray{\it //send out ~{\bf msg.}~$m_3$}\\[5pt]
-{\bf  Main}: \\
-%{\bf Request}:
-Loop Forever:\\ 
-\quad Wait until \tcont records a request $({\sf id}, {\sf params}, \_)$:  \\  %\sgray{{\it //~{\bf msg.}~$m_2$}}\\
-\quad Fork a process of {\bf Handle}(${\sf id, params}$)\\
-End \\
-\end{tabular}
-\end{boxedminipage}
+  \multicolumn{2}{|l|}{\bf Initialize:} \\
+                    & Send \initcall to $\fsgx[\enclaveprog, \relay]$ \\
+                    & On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$: \\
+                    & \quad Publish $(\pkTC, \sigatt)$ \\[1ex]
+
+  \multicolumn{2}{|l|}{{\bf Handle}$(\dgid, \dgform)$:} \\
+                    & Parse \dgform as $(\_, \_, T)$ \\
+                    & Wait until ${\sf clock}() \geq T.{\sf min}$ \\
+                    & Send $(\text{\resumecall}, (\dgid, \dgform))$ to $\fsgx[\enclaveprog, \relay]$ \\
+                    & On recv $((\dgid, \dgform, \dgm), \sigma)$ from \\ & $\fsgx[\enclaveprog, \relay]$: \\
+                    & \quad  {\sf AuthSend} $(\dgid, \dgform, \dgm)$ to \tcont as \tcadd \\
+                    & \quad \sgray{\it //~send out $\msgi{3}$} \\[1ex]
+
+  \multicolumn{2}{|l|}{\bf Main:} \\
+                    & Loop Forever: \\
+                    & \quad Wait for \tcont to records request $(\dgid, \dgform, \_)$: \\
+                    & \quad Fork a process of {\bf Handle}$(\dgid, \dgform)$ \\
+                    & End \\
+
+  \hline
+\end{tabularx}
 \caption{The Town Crier \medname \relay.}
 \label{fig:relayprotocol}
 \end{figure}
