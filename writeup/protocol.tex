@@ -119,7 +119,7 @@ Fig.~\ref{fig:dataflow} shows the data flows involved in processing a datagram r
 %\end{figure}
 
 
-Digital signatures are needed to authenticate messages, such as $m_3$, entering the blockchain from an external source. We let $(\skTC, \pkTC)$ denote the private / public keypair associated with the \encname for such message authentication. For simplicity, Fig.~\ref{fig:dataflow} assumes that the \encname can send signed messages directly to \tcont. We explain shortly how Ethereum requires a layer of indirection such that \tc sends $m_3$ as a transcation via an Ethereum wallet \tcadd.
+Digital signatures are needed to authenticate messages, such as $m_3$, entering the blockchain from an external source. We let $(\skTC, \pkTC)$ denote the private / public keypair associated with the \encname for such message authentication. For simplicity, Fig.~\ref{fig:dataflow} assumes that the \encname can send signed messages directly to \tcont. We explain shortly how Ethereum requires a layer of indirection such that \tc sends $m_3$ as a transaction via an Ethereum wallet \tcadd.
 
 
 \subsection{Use of SGX}
@@ -351,7 +351,7 @@ The \tcs~\encname \engine.
 \end{figure}
 
 %\vspace{-3mm}
-\paragraph{The \medname \relay.} As noted in Section~\ref{sec:architecture}, \relay performs distinct three forms of data passing, which we  specify more precisely here. It scrapes the blockchain, monitoring \tcont for new datagram requests $({\sf id}, {\sf params})$. It boots the \engine with an \initcall call and handles incoming requests by invoking \engine with a \resumecall call. Finally, it forwards datagram responses from \engine to the blockchain; recall that it inserts transactis to the blockchain and thus forward responses as \tcadd. The program for \relay is shown in Fig.~\ref{fig:relayprotocol}. Here, the function {\sf AuthSend} inserts a transaction to blockchain (``as $\tcadd$'' means the transaction is signed with $\skTC$).
+\paragraph{The \medname \relay.} As noted in Section~\ref{sec:architecture}, \relay performs distinct three forms of data passing, which we  specify more precisely here. It scrapes the blockchain, monitoring \tcont for new datagram requests $({\sf id}, {\sf params})$. It boots the \engine with an \initcall call and handles incoming requests by invoking \engine with a \resumecall call. Finally, it forwards datagram responses from \engine to the blockchain; recall that it inserts transactions to the blockchain and thus forward responses as \tcadd. The program for \relay is shown in Fig.~\ref{fig:relayprotocol}. Here, the function {\sf AuthSend} inserts a transaction to blockchain (``as $\tcadd$'' means the transaction is signed with $\skTC$).
 
 \begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}
