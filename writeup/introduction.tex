@@ -92,61 +92,7 @@ Additionally, to the best of our knowledge, ours is the first research paper rep
 \paragraph{Applications.} Thanks to the above key contributions, we believe that \tc can spur deployment of a rich spectrum of smart contracts that are hard to realize in the existing Ethereum ecosystem. We present three examples that showcase \tc's capabilities and demonstrate its end-to-end use: (1) A financial derivative (cash-settled put option) that consumes stock ticker data; (2) A flight insurance contract that relies on private data requests about flight cancellations; and (3) A contract for sale of virtual goods and online games (via Steam Marketplace) for ether, the Ethereum currency, using custom data requests to access online user accounts. We experimentally measure response times for associated datagram requests ranging from 192-1309 ms, depending on the datagram type. These times are significantly less than an Ethereum block interval, and suggest that a few SGX-enabled hosts can support \tc data feed rates well beyond the global transaction rate of a modern decentralized blockchain.
 
 %\vspace{-2mm}
-\paragraph{\em Organization:} We present basic technical background for \tc (Section~\ref{sec:background}), followed by an architectural description (Section~\ref{sec:architecture}), a basic set of protocols (Section~\ref{sec:protocols}), a discussion of implementation details (Section~\ref{sec:impl}), and formal security analysis (Section~\ref{sec:analysis}). We present three example applications (Section~\ref{sec:applications}) and use these applications as the basis for performance evaluations of \tc (Section~\ref{sec:experiments}).  We present related work (Section~\ref{sec:related}) and conclude (Section~\ref{sec:conclude}) with a brief discussion of future work. The paper appendix includes formalism and future directions omitted from the paper body.
-
-
-
-
-\iffalse
-
-\paragraph{Majority voting.}
-Town Crier effectively minimizes the 
-Trusted Computing Base (TCB) needed to ensure
-the authenticity of the data feed.
-The remaining TCB include the Intel SGX 
-instance employed as well as the source website. 
-To hedge against the risk of a single SGX instance
-or website compromised, Town Crier further supports 
-various modes of majority voting,  
-including voting amongst multiple 
-websites offering the same piece of data (e.g., stock price),  
-as well as voting among multiple SGX instances possibly
-hosted in different geographical locations.
-
-
-
-By operating through a smart-contract front end, \tc can thus furnish a requested datagram $X$ from a particular trusted source, e.g., \texttt{https://www.Y.com}, such that a relying contract $\cont$ can authenticate that $X$ came from $Y$ assuming only that: (1) $\prog$ correctly retrieves and serves data and (2) The \tc server's hardware has not been tampered with. (Of course, there is also a need to trust Intel, which serves as a root of trust for SGX-enabled hosts in general.) Note that trust in $Y$ itself is orthogonal, and \tc can combine data sources according to any desired policy (e.g., majority voting across sources).
-
-While conceptually simple, \tc presents a number of technical challenges. First, there are implementation challenges in securely interfacing enclave code with the blockchain and with data sources. Ethereum lacks native support for and therefore does not permit efficient on-chain verification of the proprietary digital signatures SGX uses to generate attestations on enclave code. Enclave code cannot directly scrape blockchain data and must instead rely on an untrusted process to retrieve correct blockchain data.\footnote{This problem cannot be solved by the obvious mechanism of digitally signing blockchain data: The blockchain is globally readable, and thus cannot store private keys, and running a blockchain client in the enclave would bloat the TCB in the enclave unacceptably.} Additionally, for enclave code to communicate securely with data sources, it must do so over HTTPS, yet enclave code in SGX does not control the host's network stack, which is instead controlled by the (potentially untrusted) OS. A second challenge is in the proofs of security for \tc. These proofs require harmonized formalism for SGX and smart contracts that existing work does not yet provide. Moreover, Ethereum requires expenditure of a currency-derived resource known as \emph{gas} to power contracts; thus proving the availability of \tc---a critical property for relying contracts---requires conventional analysis of data integrity coupled with a proof of sustainable gas expenditure. Finally, the use of \tc raises confidentiality challenges. Since blockchain state is globally readable, na\"{i}ve use of \tc would expose potentially sensitive datagram requests, e.g., an flight-insurance policy would publicly reveal the flight information of policyholders, and would render \tc vulnerable to traffic analysis on served data. Much of our contribution in the design of \tc involves addressing these challenges. 
-
-Beyond serving publicly visible requests for generic data, \tc supports private datagram requests, in which the request is encrypted and custom datagram requests in which the requested data comes from an access-controlled system, such as an individual user's account. Thus \tc can support a rich variety of smart contracts, as shown by our implementation of three example contracts: (1) A financial derivative (cash-settled put option) that consumes stock ticker data; (2) A flight insurance contract that relies on private data requests about flight cancellations; and (3) A contract for the sale of virtual goods and online games (via Steam Marketplace) for ether, Ethereum currency, using custom data requests.
-
-As \tc has minimal trust assumptions and requires no modification to existing data source servers or Ethereum, we believe it offers a compelling, practical approach to bootstrapping a data feed ecosystem for smart contracts. 
- 
-In summary, our contributions are as follows:
-
-\vspace{-1mm}
-\begin{itemize}
-  \setlength{\itemsep}{2pt}
-  \setlength{\parskip}{0pt}
-  \setlength{\parsep}{0pt}
-
-\item \emph{\tcs system:} We present and describe our implementation of \tc, an authenticated data feed system that enables smart contracts to obtain datagrams safely from a target data source, specifically an existing HTTPS-enabled server. In contrast to currently available systems, \tc's assurances do not require trust in (typically fledgling) service operators, only in the underlying commodity trusted hardware, namely Intel SGX. 
-
-\item \emph{Interfacing SGX with smart contracts:} We present solutions to the technical challenges that arise in combining two new technologies with incompatible APIs, e.g., the lack of Ethereum support for SGX attestations and the impracticality of authenticating blockchain data, and thus datagram requests, to \tc's trusted enclave program. 
-
-\item \emph{Formal proofs of \tc system security:} We present unifying formalism for the trusted hardware and smart contracts embodied in \tc and provide proofs of security, including the integrity and source authenticity of datagrams and service availability, which requires a new form of analysis of sustainable gas consumption. 
-
-\item \emph{\tc applications:} We implement three practical smart contract applications that benefit from \tc: a financial derivative, a flight insurance contract, and a contract for exchanging online game currency and cryptocurrency. These applications showcase the rich possibilities and capabilities of \tc, including support for private and custom datagrams. 
-
-\end{itemize}
-
-We additionally report on {\em end-to-end experiments} of \tc, involving execution of relying contracts on the Ethereum blockchain, thus validating the system's deployability. Once Intel stands up its Intel Attestation Service (IAS), which is expected to happen in the near future, we will launch \tc as a public service. 
-
-
-
-
-\fi
+\paragraph{\em Organization:} We present basic technical background for \tc (Section~\ref{sec:background}), followed by an architectural description (Section~\ref{sec:architecture}), a basic set of protocols (Section~\ref{sec:protocols}), the full, enhanced system protocols (Section~\ref{sec:enhanced_protocol}), and a formal security analysis (Section~\ref{sec:analysis}). We present three example applications (Section~\ref{sec:applications}) and use these applications as the basis for performance evaluations of \tc (Section~\ref{sec:experiments}).  After presenting related work (Section~\ref{sec:related}), we conclude the paper (Section~\ref{sec:conclude}). The paper appendix includes implementation details, formal modeling and proofs, and future directions omitted from the paper body.
 
 
 
