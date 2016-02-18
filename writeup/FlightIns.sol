@@ -20,6 +20,8 @@ contract FlightIns {
   }
 
   // A user can purchase insurance through this entry point.
+  // encFN is an encryption of the flight number and date
+  // as well as the time when Town Crier should respond to the request.
   function insure(bytes32[] encFN) public {
     if (msg.value != FEE) return;
 
