@@ -78,15 +78,16 @@ over multiple roundtrips to fetch the desired datagram.
     ylabel=Throughput (tx/sec),
     ylabel near ticks,
     legend cell align=left,
+    legend style={font=\small},
     xmin=0, xmax=21,
-    ymin=0, ymax=80,
+    ymin=0, ymax=75,
 ]
-\addplot [dashed,brown,domain=1:20, samples=20, thick, forget plot]{4.9*x};
-\addplot [dashed,blue,domain=1:20, samples=20, thick, forget plot]{2.00*x};
-\addplot [dashed,red,domain=1:20, samples=20, thick]{1.60*x};
-\addplot [mark=*,red,   thick, error bars/.cd,y dir=both,y explicit] table[x=n,y=steam-mean,y error=steam-std]{data.csv};
-\addplot [mark=*,blue,  thick, error bars/.cd,y dir=both,y explicit] table[x=n,y=flight-mean,y error=flight-std]{data.csv};
-\addplot [mark=*,brown, thick, error bars/.cd,y dir=both,y explicit] table[x=n,y=put-mean,y error=put-std]{data.csv};
+\addplot [dashed,brown,domain=1:20, samples=20, forget plot]{4.9*x};
+\addplot [dashed,blue,domain=1:20, samples=20, forget plot]{2.1*x};
+\addplot [dashed,red,domain=1:20, samples=20, ]{1.60*x};
+\addplot [mark=square*,red,   error bars/.cd,y dir=both,y explicit] table[x=n,y=steam-mean,y error=steam-std]{data.csv};
+\addplot [mark=square*,blue,  error bars/.cd,y dir=both,y explicit] table[x=n,y=flight-mean,y error=flight-std]{data.csv};
+\addplot [mark=square*,brown, error bars/.cd,y dir=both,y explicit] table[x=n,y=put-mean,y error=put-std]{data.csv};
 \legend{{\sf Linear Scaling},{\sf SteamTrade},{\sf FlightIns},{\sf CashSettledPut}}
 \end{axis}
 \end{tikzpicture}
