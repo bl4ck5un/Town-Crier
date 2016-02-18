@@ -1,4 +1,4 @@
-\section{Full-fledged Town Crier}
+\section{Full Town Crier Protocol}
 \label{sec:enhanced_protocol}
 
 The simplified payment-free protocol in Section~\ref{sec:payment-free-protocol} guarantees authenticity of data for an honest user.
@@ -250,10 +250,10 @@ In addition to ordinary datagrams, \tc supports \emph{private datagrams}, which 
 
 \subsection{Enhanced Robustness via Replication}
 \label{subsec:enhanced_robustness}
-Our basic security model for \tc assumes the ideal isolation model for SGX described above, as well as client trust in data sources. We nonetheless include hedges in \tc, given various concerns about SGX security~\cite{sgxexplained,7163052}, and the possible fallibility of data sources. To protect against the compromise of a single SGX instance, contracts may request datagrams from multiple SGX instances and implement majority voting among the responses at the cost of increased gas expenditure for the additional requests and storing the returned datagrams.  Similarly, \tc can hedge against the compromise of a data source by scraping multiple sources for the same data and selecting the majority response.
+Our basic security model for \tc assumes the ideal isolation model for SGX described above, as well as client trust in data sources. Gven various concerns about SGX security~\cite{sgxexplained,7163052}, and the possible fallibility of data sources, however, \tc can support two important forms of hedging. To protect against the compromise of a single SGX instance, contracts may request datagrams from multiple SGX instances and implement majority voting among the responses at the cost of increased gas expenditure for the additional requests and storing the returned datagrams.  Similarly, \tc can hedge against the compromise of a data source by scraping multiple sources for the same data and selecting the majority response. We demonstrate both of these mechanisms in our example flight-insurance application in Section~\ref{subsec:hedging}. (A potential optimization is mentioned in Appendix~\ref{sec:future}.)
 
 
 \subsection{Implementation Details}
-We implemented the full-fledged \tc using Intel SGX and Ethereum. Due to space constraint, 
-we defer the discussion of implementation details and other practical considerations to 
+We implemented a full version of the \tc protocol in a complete, end-to-end system using Intel SGX and Ethereum. Due to space constraints, 
+we defer discussion of implementation details and other practical considerations to 
 Appendix \ref{sec:impl}.
