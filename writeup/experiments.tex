@@ -1,6 +1,36 @@
 \section{Experiments}
 \label{sec:experiments}
 
+\begin{table*}[h]
+\begin{tabular}{l|lllll|lllll|lllll}
+\toprule
+& \multicolumn{5}{c|}{\sf CashSettledPut} &
+  \multicolumn{5}{c|}{\sf FlightIns} &
+  \multicolumn{5}{c}{\sf SteamTrade} \\
+    & \textbf{mean} & \% & $t_{\max}$ & $t_{\min}$ & $\sigma_t$ & \textbf{mean}
+    & \% & $t_{\max}$ & $t_{\min}$ & $\sigma_t$ & \textbf{mean} & \% & $t_{\max}$
+    & $t_{\min}$ & $\sigma_t$\\
+\midrule
+    Ctx. switch & 1.00 &  & 3.12 & 0.25 & 0.31 & 1.23 &  & 2.94 & 0.17 &
+    0.32 & 1.17 &  & 3.25 & 0.36 & 0.35\\
+    Web scraper & 157 &  & 258 & 135 & 18 & 482 &  & 600 & 418 & 31 & 576 &  &
+    765 & 489 & 52\\
+    Sign & 20.2 &  & 26.6 & 18.7 & 1.52 & 20.5 &  & 25.3 & 18.9 & 1.4 & 20.3 &
+    & 24.8 & 18.8 & 1.28\\
+    Serialization & 0.40 &  & 0.84 & 0.24 & 0.08 & 0.38 &  & 0.67 & 0.20 &
+    0.08 & 0.39 &  & 0.65 & 0.24 & 0.09\\
+\midrule
+\midrule
+    \textbf{Total} & 180 &  & 284 & 158 & 18 & 505 &  & 623 & 439
+    & 31 & 599 &  & 787 & 510 & 52 \\
+\bottomrule	
+\end{tabular}
+\caption{Running time of handling a request. We repeated the experiments for 5 times and
+report the mean and standard deviation. Proportions are for means.\fan{complete}}
+\label{tab:eval_profiling}
+\end{table*}
+
+\iffalse
 \begin{table*}[ht]
 \centering
 \begin{tabular}{l|rr|rr|rr}
@@ -35,6 +65,7 @@ Total               & $182.66\pm 12.7$  & 100.00\%
 report the mean and standard deviation. Proportions are for means.}
 \label{tab:eval_profiling}
 \end{table*}
+\fi
 
 We evaluated the performance of \tc on a Dell Inspiron 13-7359 laptop equipped
 with an Intel i7-6500U CPU and 8.00GB memory.  This model is chosen 
@@ -120,15 +151,17 @@ response time when multiple enclaves are run} on a single machine.
 \addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=steam,y error=e-steam]{data.csv};
 \addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=flight,y error=e-flight]{data.csv};
 \addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=putop,y error=e-putop]{data.csv};
-
-\legend{{\sf SteamTrade},{\sf FlightIns},{\sf CashSettledPut}}
+\addplot [dashed, domain=1:20, samples=20, thick, forget plot]{5.80*x};
+\addplot [dashed, domain=1:20, samples=20, thick, forget plot]{2.00*x};
+\addplot [dashed, domain=1:20, samples=20, thick]{1.20*x};
+\legend{{\sf SteamTrade},{\sf FlightIns},{\sf CashSettledPut}, {\sf Linear Scaling}}
 \end{axis}
 \end{tikzpicture}
 }
 \caption{Throughput is measured on a single SGX-enabled machine. The x-axis is
 the number of enclaves and the y-axis is the number of transactions processed per
 second.  We ran five rounds of experiments and error bars show the standard
-deviation.}
+deviation.\fan{complete}}
 \label{fig:trpt}
 \end{figure}
 
