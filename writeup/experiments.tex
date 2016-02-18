@@ -208,18 +208,17 @@ until a winner is known.
 
 \subsection{Offline Measurements}
 Recall that a one-time setup operation is required 
-for an enclave, and involves attestation generation.
-Our experiments show that setting up the \tc~\encname takes
-49.5(7.2) ms,
+for an enclave, and involves attestation generation. We report mean times (std.~dev.~in parentheses) for these experiments, which involved 100 runs.
+Setting up the \tc~\encname takes
+49.5 (7.2) ms,
 and attestation generation takes 
-61.9(10.7) ms:
-7.65(0.97) ms for report generation, 
-and 54.9(10.3) ms for quote generation.
+61.9 (10.7) ms, including
+7.65 (0.97) ms for report generation, 
+and 54.9 (10.3) ms for quote generation.
 
-Recall also that since SGX reports only relative time 
-with respect to some reference point, \tc's absolute clock is calibrated through a wall-clock timestamp furnished externally.
-A user can verify the correctness of the \encname absolute block by requesting a digitally signed timestamp.
-This measurement is, of course, accurate only to within the end-to-end latency for this verification procedure. Our experiments show that the time between \medname transmission of a clock calibration request to the enclave and receipt of a response is
-11.4(1.9) ms, 
-consumed mostly by signing the timestamp: 10.5(1.9) ms. 
+Recall also that since clock() yields only relative time in SGX, \tc's absolute clock is calibrated through an externally furnished wall-clock timestamp.
+A user can verify the correctness of the \encname absolute clock by requesting a digitally signed timestamp.
+This verification procedure is, of course, accurate only to within its end-to-end latency. Our experiments show that the time between \medname transmission of a clock calibration request to the enclave and receipt of a response is
+11.4 (1.9) ms of which 10.5 (1.9) ms is to 
+sign the timestamp.
 To this must be added the wide-area network roundtrip latency, at most typically a few hundred milliseconds. %Note too that the user can measure the the latency of its timestamp verification, and therefore determine the accuracy of its measurement.
