@@ -83,6 +83,15 @@
     <ClCompile Include="Steam2.cpp">
       <Filter>Source Files\scrapers</Filter>
     </ClCompile>
+    <ClCompile Include="Current_bloomberg.cpp">
+      <Filter>Source Files\scrapers</Filter>
+    </ClCompile>
+    <ClCompile Include="Current_Google.cpp">
+      <Filter>Source Files\scrapers</Filter>
+    </ClCompile>
+    <ClCompile Include="Current_Yahoo.cpp">
+      <Filter>Source Files\scrapers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Enclave_private.pem">

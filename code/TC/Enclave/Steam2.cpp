@@ -3,6 +3,7 @@
 #include <string.h>
 #include "Scraper_lib.h"
 #include "dispatcher.h"
+#include <Log.h>
 
 /*
     - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
@@ -229,13 +230,12 @@ int get_steam_transaction(char** item_name_list, int item_list_len, char* other,
     ret = parse_response1(buf, other, item_name_list, item_list_len, key);
     /***** OUTPUT */
     if (ret < 0) {
-        printf("no data/bad request\n");
+        LL_CRITICAL("no data/bad request\n");
         return -1;
     }
     *resp = 1;
     return 0;
 }
-
 
 /*
 int main(int argc, char* argv[]) {

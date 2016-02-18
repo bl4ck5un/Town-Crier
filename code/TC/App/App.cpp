@@ -15,130 +15,83 @@
 #include "Utils.h"
 #include "Constants.h"
 
-#include <sstream>
-#include <string>
-#include <ctime>
+#include <windows.h>
+#include <tchar.h>
+#include <strsafe.h>
+#include <mutex>
+#include <thread>
+
+#include <windows.h>
+#include <tchar.h>
+#include <stdio.h>
+
 
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
 
-#define RPC_TEST
-//#define ECDSA_TEST
-//#define SCRAPER_TEST
-//#define REMOTE_ATT_TEST
-
-//#define ENCLAVE_TEST
-
-
-#define SEALED_NONCE_SIZE 0x250
-
-#ifdef ENCLAVE_TEST
-int main()
-{
-    int ret;
-    sgx_status_t st;
-    if(initialize_enclave() < 0){
-        LL_CRITICAL("Failed to init the enclave");
-        goto blocked_exit;
-    }
-    st = Test_main(global_eid, &ret);
-    if (st != SGX_SUCCESS)
-    {
-        LL_CRITICAL("Failed to launch test");
-        print_error_message(st);
-    }
-    LL_NOTICE("Info: SampleEnclave successfully returned %d", ret);
-    
-blocked_exit:
-    LL_NOTICE("Enter a character before exit ...");
-    getchar();
-    return 0;
-}
-//#ifdef TEST
-//int main()
-//{
-//    int ret, tx_len;
-//    uint8_t tx[2048];
-//    char* tx_str;
-
-//    uint8_t nonce[32];
-
-//    memset(nonce, 0, 32);
-
-//#if defined(_MSC_VER)
-//    if (query_sgx_status() < 0) {
-//        LL_CRITICAL("sgx is not support");
-//        ret = -1; goto exit;
-//    }
-//#endif 
-//    if(initialize_enclave() < 0){
-//        printf("Enter a character before exit ...\n");
-//        getchar();
-//        return -1; 
-//    }
-
-//#ifdef RPC_TEST
-//    if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(NONCE_FILE_NAME) &&
-//        GetLastError() == ERROR_FILE_NOT_FOUND)
-//        { dump_nonce(nonce); }
-//    else
-//        { load_nonce(nonce); }
-
-//    dump_buf("nonce to be used: ", nonce, 32);
-//    get_raw_signed_tx(global_eid, &ret, nonce, 32, tx, &tx_len);
-
-//    if (ret != 0)
-//    {
-//        fprintf(stderr, "get_raw_signed_tx returned %d\n", ret);
-//        goto exit;
-//    }
-//    tx_str = (char*) malloc(tx_len * 2 + 1);
-//    char2hex(tx, tx_len, tx_str);
-//#ifdef VERBOSE
-//    dump_buf("tx body: ", tx, tx_len);
-//    printf("tx_str: %s\n", tx_str);
-//#endif
-//    ret = send_transaction(tx_str);
-//    if (ret != 0)
-//    {
-//        fprintf(stderr, "send_raw_tx returned %d\n", ret);
-//        goto exit;        
-//    }
-//    else
-//    {
-//        dump_buf("new nonce being dumped: ", nonce, 32);
-//        dump_nonce(nonce);
-//    }
-//#endif
- 
-//#if defined(SCRAPER_TEST)
-//    scraper_dispatch(global_eid, &ret);
-//    if (ret != 0) {
-//        LL_CRITICAL("test_yahoo_finance returned %d", ret);
-//        goto exit;
-//    }
-//    LL_NOTICE("test\n");
-//#endif
-
-//#if defined(ECDSA_TEST)
-//    test_ecdsa(global_eid, &ret);
-//    if (ret != 0) {
-//        printf("test_ecdsa returned %d", ret);
-//    }
-//#endif
-
-//#ifdef REMOTE_ATT_TEST
-//    remote_att_init();  
-//#endif // REMOTE_ATT_TEST
-
-//exit:
-//     test_RLP(global_eid, &ret);
-//    printf("Info: SampleEnclave successfully returned.\n");
-//    printf("Enter a character before exit ...\n");
-//    getchar();
-//    return 0;
-//}
+#ifdef E2E_BENCHMARK_THREADING
+#define N_ENCLAVE 20
 #else
+#define N_ENCLAVE 1
+#endif
+#define N_REQUEST 1000
+sgx_enclave_id_t eids[N_ENCLAVE];
+std::mutex locks[N_ENCLAVE];
+
+typedef struct _benchmark_params_t {
+    int id;
+    uint8_t type;
+} benchmark_params_t;
+
+#ifdef E2E_BENCHMARK_THREADING
+VOID CALLBACK handling_thread(
+    PTP_CALLBACK_INSTANCE Instance, PVOID param, PTP_WORK Work){
+    UNREFERENCED_PARAMETER(Instance);
+    UNREFERENCED_PARAMETER(Work);
+    assert(param != NULL);
+    benchmark_params_t* params = (benchmark_params_t*) param;
+    int id = params->id;
+    uint8_t type = params->type;
+#else
+void handling_thread(int id, int type){
+#endif
+    assert(id >= 0 && id <= N_ENCLAVE);
+//    printf("+%d", id);
+    locks[id].lock();
+//    printf("-%d", id);
+    uint8_t nonce[32] = {0};
+//    remote_att_init();
+    int ret = 0;
+    char req[64] = {0};
+    req[0] = 'G';
+    req[1] = 'O';
+    req[2] = 'O';
+    req[3] = 'G';
+    req[4] = 'L';
+    uint8_t raw_tx[TX_BUF_SIZE];
+    int raw_tx_len = sizeof raw_tx;
+    long long unsigned time1 = 0 , time2 = 0;
+#ifdef E2E_BENCHMARK
+    time1 = __rdtsc();
+    LL_CRITICAL("switch in begins: %llu", time1);
+#endif
+    ret = handle_request(eids[id], &ret, nonce, 0xFF, type, 
+        (uint8_t*) req, sizeof req, raw_tx, &raw_tx_len);
+#ifdef E2E_BENCHMARK
+    time2 = __rdtsc();
+    LL_CRITICAL("switch out done: %llu", time2);
+    LL_CRITICAL("handle_request overalll: %llu", time2-time1);
+#endif
+    if (ret != 0)
+    {
+        LL_CRITICAL("handle_request returned %d", ret);
+        locks[id].unlock();
+        return;
+    }
+    locks[id].unlock();
+    return;
+}
+
 int main()
 {
     int ret, tx_len;
@@ -146,6 +99,7 @@ int main()
     char* tx_str;
 
     uint8_t nonce[32] = {0};
+    std::vector<std::thread> threads;
 
     if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(NONCE_FILE_NAME) &&
         GetLastError() == ERROR_FILE_NOT_FOUND)
@@ -153,55 +107,139 @@ int main()
     else
         { load_nonce(nonce); }
 
-//    sqlite3* db;
-//    ret = sqlite3_init(&db);
-//    if (ret)
-//    {
-//        LL_CRITICAL("Error opening SQLite3 database: %s", sqlite3_errmsg(db));
-//        sqlite3_close(db);
-//    }
-//
-//    ret = record_nonce(db, 15);
-//    if (ret)
-//    {
-//        goto exit;
-//    }
-
-//    int nonces;
-//    ret = get_last_nonce(db, &nonces);
-//    if (ret) goto exit;
-//    std::cout << "nonce: " << nonces << std::endl;
-
-
-//    dump_buf("nonce to be used: ", nonce, 32);
-
 #if defined(_MSC_VER)
     if (query_sgx_status() < 0) {
         LL_CRITICAL("sgx is not support");
         ret = -1; goto exit;
     }
 #endif 
-    if(initialize_enclave() < 0){
-        LL_CRITICAL("Enter a character before exit ...\n");
-        ret = -1; goto exit;
+
+    int updated = 0;
+    sgx_launch_token_t token = {0};
+    sgx_status_t st;
+    for (int i = 0; i < N_ENCLAVE; i++)
+    {
+            st = sgx_create_enclave(ENCLAVE_FILENAME, SGX_DEBUG_FLAG, &token, &updated, &eids[i], NULL);
+            if (st != SGX_SUCCESS)
+            {
+                print_error_message(st);
+                LL_CRITICAL("%d: failed to create enclave. Returned %#x", i, st);
+            }
+            LL_NOTICE("%d: enclave %llu created", i, eids[i]);
     }
 
-    // main loop
 #ifdef E2E_BENCHMARK
-    for (int i = 0; i < 1; i++)
+    for (int i = 0; i < 500; i++)
     {
-        printf("====================(%d)====================\n", i);
-        monitor_loop(nonce);
-        printf("\n");
+        handling_thread(0, TYPE_FINANCE_INFO);
+        printf("%%\n");
     }
 #endif
+
+#ifdef E2E_BENCHMARK_THREADING
+    BOOL bRet = FALSE;
+    PTP_WORK work = NULL;
+    PTP_TIMER timer = NULL;
+    PTP_POOL pool = NULL;
+    PTP_WORK_CALLBACK workcallback = handling_thread;
+    TP_CALLBACK_ENVIRON CallBackEnviron;
+    PTP_CLEANUP_GROUP cleanupgroup = NULL;
+    FILETIME FileDueTime;
+    ULARGE_INTEGER ulDueTime;
+    UINT rollback = 0;
+
+    InitializeThreadpoolEnvironment(&CallBackEnviron);
+    pool = CreateThreadpool(NULL);
+    if (NULL == pool) {
+        _tprintf(_T("CreateThreadpool failed. LastError: %u\n"),
+                     GetLastError());
+        goto main_cleanup;
+    }
+
+    rollback = 1; // pool creation succeeded
+    SetThreadpoolThreadMaximum(pool, 20);
+    bRet = SetThreadpoolThreadMinimum(pool, 20);
+    if (FALSE == bRet) {
+        _tprintf(_T("SetThreadpoolThreadMinimum failed. LastError: %u\n"),
+                     GetLastError());
+        goto main_cleanup;
+    }
+
+    cleanupgroup = CreateThreadpoolCleanupGroup();
+    if (NULL == cleanupgroup) {
+        _tprintf(_T("CreateThreadpoolCleanupGroup failed. LastError: %u\n"), 
+                     GetLastError());
+        goto main_cleanup; 
+    }
+
+    rollback = 2;  // Cleanup group creation succeeded
+
+    SetThreadpoolCallbackPool(&CallBackEnviron, pool);
+    SetThreadpoolCallbackCleanupGroup(&CallBackEnviron,
+                                      cleanupgroup,
+                                      NULL);
+
+    int n_enclave[] = {2, 5, 10, 15, 19};
+    long long time1, time2;
+    benchmark_params_t params[N_REQUEST];
+    for (auto n : n_enclave)
+    {
+        time1 = __rdtsc();
+        for (int i = 0; i < N_REQUEST; i++)
+        {
+            params[i].id = i % n;
+            params[i].type = (uint8_t) TYPE_FINANCE_INFO;
+            work = CreateThreadpoolWork(workcallback, &params[i], &CallBackEnviron);
+            if (NULL == work) {
+                _tprintf(_T("CreateThreadpoolWork failed. LastError: %u\n"),
+                     GetLastError());
+                goto main_cleanup;
+            }
+            SubmitThreadpoolWork(work);
+        }
+        
+        CloseThreadpoolCleanupGroupMembers(cleanupgroup, FALSE, NULL);
+        time2 = __rdtsc();
+        LL_CRITICAL("with %d enclaves, %d requests handled in %llu cycles", n, N_REQUEST, time2 - time1); 
+    }
+
+    rollback = 3;  // Creation of work succeeded
+    goto main_cleanup;
+
+main_cleanup:
+    switch (rollback) {
+        case 4:
+        case 3:
+            // Clean up the cleanup group members.
+            CloseThreadpoolCleanupGroupMembers(cleanupgroup,
+                FALSE, NULL);
+        case 2:
+            // Clean up the cleanup group.
+            CloseThreadpoolCleanupGroup(cleanupgroup);
+
+        case 1:
+            // Clean up the pool.
+            CloseThreadpool(pool);
+
+        default:
+            break;
+    }
+
+    goto exit;
+#endif
+
+    for (int i = 0; i < N_ENCLAVE; i++)
+    {
+            st = sgx_destroy_enclave(eids[i]);
+            if (st != SGX_SUCCESS)
+            {
+                print_error_message(st);
+                LL_CRITICAL("failed to close enclave. Returned %#x", st);
+            }
+    } 
 exit:
-    // test_RLP(global_eid, &ret);
-//    sqlite3_close(db);
-    LL_NOTICE("Info: SampleEnclave successfully returned.\n");
-    LL_NOTICE("Enter a character before exit ...\n");
+    LL_CRITICAL("%%Info: all enclave closed successfully.");
+    LL_CRITICAL("%%Enter a character before exit ...");
     getchar();
     return 0;
 }
-#endif
-

@@ -55,7 +55,8 @@ extern const char * log_level_strings [];
 #define LL_LOG( fmt, ... ) LOG( LOG_LVL_LOG, fmt,__VA_ARGS__ )
 #define LL_NOTICE( fmt,... ) LOG( LOG_LVL_NOTICE, fmt, __VA_ARGS__ )
 #define LL_WARNING( fmt, ... ) LOG( LOG_LVL_WARNING, fmt, __VA_ARGS__ )
-#define LL_CRITICAL( fmt, ... ) LOG( LOG_LVL_CRITICAL, fmt, __VA_ARGS__ )
+#define LL_CRITICAL( fmt, ... ) printf(fmt "\n", __VA_ARGS__ )
+//#define LL_CRITICAL( fmt, ... ) LOG( LOG_LVL_CRITICAL, fmt, __VA_ARGS__ )
 #else
 #define LL_DEBUG( fmt, arg... ) LOG( LOG_LVL_DEBUG, fmt, ##arg )
 #define LL_LOG( fmt, arg... ) LOG( LOG_LVL_LOG, fmt,##arg )

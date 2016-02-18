@@ -190,8 +190,10 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
                       uint8_t* resp_data, int resp_len,
                       uint8_t* serialized_tx, int* o_len)
 {
+#ifdef E2E_BENCHMARK
     long long time1, time2;
     rdtsc(&time1);
+#endif
     if (serialized_tx == nullptr || o_len == nullptr) 
         {printf("Error: get_raw_tx gets NULL input\n"); return -1;}
 
@@ -241,9 +243,11 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
 
     // insert function selector
     for (int i = 0; i < 4; i++) {abi_str.insert(abi_str.begin(), func_selector[3 - i]);}
-    
+
+#ifdef E2E_BENCHMARK
     rdtsc(&time2);
     LL_CRITICAL("ABI encoding: %llu", time2-time1);
+#endif
 
     TX tx(TX::MessageCall);
     uint8_t hash[32]; 
@@ -291,15 +295,19 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
     if (ret != 0) { LL_CRITICAL("Error: signing returned %d\n", ret); return ret;}
     else {tx.r.size = 32; tx.s.size = 32;}
 
+#ifdef E2E_BENCHMARK
     rdtsc(&time1);
-    LL_CRITICAL("Sign %llu", time1 - time2);
+    LL_CRITICAL("Sign: %llu", time1 - time2);
+#endif
 
     out.clear();
 
     tx.rlp_list(out, true);
 
+#ifdef E2E_BENCHMARK
     rdtsc(&time2);
-    LL_CRITICAL("RLP %llu", time2 - time1);
+    LL_CRITICAL("RLP: %llu", time2 - time1);
+#endif
 
     if (out.size() > TX_BUF_SIZE) { LL_CRITICAL("Error buffer size (%d) is too small.\n", *o_len); return -1;}
 
