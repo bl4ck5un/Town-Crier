@@ -144,10 +144,10 @@ to denote (an instance of) an SGX functionality parameterized
 by a (group) signature scheme $\sigsgx$.
 Here $\enclaveprog$ denotes the SGX enclave program and \relay the physical
 SGX host (which we assume for simplicity is the same as that for the \tc~\medname).
-As described in Fig.~\ref{fig:SGX_abstraction}, upon initialization, \fsgx runs ${\sf outp} := \enclaveprog.{\bf Initialize}$
+As described in Fig.~\ref{fig:SGX_abstraction}, upon initialization, \fsgx runs ${\sf outp} := \enclaveprog.{\bf Initialize}$()
 and attests to the code of $\enclaveprog$ as well as ${\sf outp}$.
-Upon a resume call with ${\sf params}$, \fsgx runs and outputs the result of
-$\enclaveprog.{\bf Resume}({\sf params})$.
+Upon a resume call with ${(\sf id, params)}$, \fsgx runs and outputs the result of
+$\enclaveprog.{\bf Resume}({\sf id, params})$.
 Further formalism for \fsgx is given in Appendix~\ref{sec:sgxmodel}.
 %Shi et al. \elaine{cite} propose a formal
 %abstraction that captures a subset of the features
@@ -178,15 +178,15 @@ Further formalism for \fsgx is given in Appendix~\ref{sec:sgxmodel}.
 $\enclaveprog$ has entry points {\bf Initialize} and \\ {\bf Resume}\\[5pt]
 \vspace{1mm}
 {\bf Initialize:}\\
-On receive ``initialize'' from $\relay$: \\
+On receive (\initcall) from $\relay$: \\
 \quad Let ${\sf outp} := \enclaveprog.{\bf Initalize}()$  \\
 \quad $\sigatt := \sigsgx.{\sf Sign}(\skM, (\enclaveprog, {\sf outp}))$ \\[-1pt]
 \qquad \qquad \sgray{\it //~models EPID sig.}\\
 \quad Output  $({\sf outp}, \sigatt)$\\[5pt]
 
 {\bf Resume:}\\
-On receive (``resume'', ${\sf params}$) from $\relay$: \\
-\quad Let ${\sf outp} := \enclaveprog.{\bf Resume}({\sf params})$  \\
+On receive (\resumecall, ${\sf id, params}$) from $\relay$: \\
+\quad Let ${\sf outp} := \enclaveprog.{\bf Resume}({\sf id, params})$  \\
 \quad Output ${\sf outp}$ 
 \end{tabular}
 \end{boxedminipage}
@@ -298,9 +298,9 @@ The Town Crier \tcontract \tcont.
 \end{figure}
 
 %\vspace{-3mm}
-\paragraph{The \encname \engine.} When initialized through an \initcall call, \engine ingests the current wall-clock time; by storing this time and setting a clock reference point, it calibrates its absolute clock. It generates an ECDSA keypair $(\pkTC,\skTC)$ (parameterized as in Ethereum), where $\pkTC$ is bound to the \engine instance through insertion into attestations.  
+\paragraph{The \encname \engine.} When initialized through {\bf Initialize}(), \engine ingests the current wall-clock time; by storing this time and setting a clock reference point, it calibrates its absolute clock. It generates an ECDSA keypair $(\pkTC,\skTC)$ (parameterized as in Ethereum), where $\pkTC$ is bound to the \engine instance through insertion into attestations.  
 
-On input \resumecall $({\sf id}, {\sf params})$, \engine contacts the data source specified by {\sf params} via HTTPS and checks that the corresponding certificate {\sf cert} is valid. (We discuss certificate checking in Appendix~\ref{sec:impl}.) Then \engine fetches the requested datagram and returns it to \relay along with $\dgform$ and $\dgid$, all digitally signed with $\skTC$.  Fig.~\ref{fig:engineprotocol} shows the protocol for \engine.
+Upon called through {\bf Resume}$({\sf id}, {\sf params})$, \engine contacts the data source specified by {\sf params} via HTTPS and checks that the corresponding certificate {\sf cert} is valid. (We discuss certificate checking in Appendix~\ref{sec:impl}.) Then \engine fetches the requested datagram and returns it to \relay along with $\dgform$ and $\dgid$, all digitally signed with $\skTC$.  Fig.~\ref{fig:engineprotocol} shows the protocol for \engine.
 
 \begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}
@@ -308,7 +308,7 @@ On input \resumecall $({\sf id}, {\sf params})$, \engine contacts the data sourc
 {\bf Program for \tcs~\encname ($\enclaveprog$)}
 \end{center}
 \begin{tabular}{l} 
-{\bf Initialize}:  On recv (\initcall): \\ %{\it //~called only once upfront}\\
+{\bf Initialize}() \\ %{\it //~called only once upfront}\\
 %\quad Set clock reference point\\
 %\quad Record $T_0$ \elaine{this is never used} \\ 
 %\elaine{i deleted the clock implementation, we can separate abstraction from implementation.}\\
@@ -325,7 +325,7 @@ On input \resumecall $({\sf id}, {\sf params})$, \engine contacts the data sourc
 %\quad Call quoting enclave with supp.~data $(\pkTC, T)$
 %\\[5pt]
 
-{\bf Resume:} On recv $(\text{\resumecall}, ({\sf id}, {\sf params}))$\\
+{\bf Resume}({\sf id}, {\sf params})\\
 \quad Parse ${\sf params}$ as $(\weburl, \dgspec, T) $:\\
 \quad Assert $\clock() \geq T.{\sf min}$\\
 \quad Contact $\weburl$ via HTTPS, obtaining ${\sf cert}$ \\
@@ -348,7 +348,7 @@ The \tcs~\encname \engine.
 As noted in Section~\ref{sec:architecture},
 \relay bridges the gap between the \encname and the blockchain in three ways.
 (1) It scrapes the blockchain, monitoring \tcont for new datagram requests $(\dgid, \dgform)$.
-(2) It boots the \engine with an \initcall call and handles incoming requests by invoking \engine with a \resumecall call.
+(2) It boots the \engine with {\bf Initialize}() and handles incoming requests by invoking \engine.{\bf Resume}$(\dgid, \dgform)$.
 Finally, (3) it forwards datagram responses from \engine to the blockchain.
 Recall that it inserts transactions to the blockchain and thus forward responses as \tcadd.
 The program for \relay is shown in Fig.~\ref{fig:relayprotocol}.
@@ -368,7 +368,7 @@ Here, the function {\sf AuthSend} inserts a transaction to blockchain (``as $\tc
   \multicolumn{2}{|l|}{{\bf Handle}$(\dgid, \dgform)$:} \\
                     & Parse \dgform as $(\_, \_, T)$ \\
                     & Wait until ${\sf clock}() \geq T.{\sf min}$ \\
-                    & Send $(\text{\resumecall}, (\dgid, \dgform))$ to $\fsgx[\enclaveprog, \relay]$ \\
+                    & Send $(\text{\resumecall}, \dgid, \dgform)$ to $\fsgx[\enclaveprog, \relay]$ \\
                     & On recv $((\dgid, \dgform, \dgm), \sigma)$ from \\ & $\fsgx[\enclaveprog, \relay]$: \\
                     & \quad  {\sf AuthSend} $(\dgid, \dgform, \dgm)$ to \tcont as \tcadd \\
                     & \quad \sgray{\it //~send out $\msgi{3}$} \\[1ex]
