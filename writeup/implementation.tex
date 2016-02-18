@@ -33,14 +33,14 @@ user-space application, while a relatively small piece of security-sensitive
 code runs in the isolated environment of the SGX enclave.
 
 The enclave portion of an SGX-enabled application may be viewed as a shared
-library exposing an API in the form of \emph{ecalls} to be invoked by the
+library exposing an API in the form of \emph{ecalls}~\cite{sgxsdk} to be invoked by the
 untrusted application. Invocation of an ecall transfers control to the enclave;
 the enclave code runs until it either terminates and explicitly releases
 control, or some special event (e.g., exception) happens~\cite{sgxmanual}.
 Again, as we assume SGX provides ideal isolation, the untrusted application
 cannot observe or alter the execution of ecalls.
 
-Enclave programs can make \emph{ocalls} to invoke functions defined outside of
+Enclave programs can make \emph{ocalls}~\cite{sgxsdk} to invoke functions defined outside of
 the enclave. An ocall triggers an exit from the enclave; control is returned
 once the ocall completes. As ocalls execute outside the enclave, they must be
 treated by enclave code as untrusted. 
@@ -48,8 +48,6 @@ treated by enclave code as untrusted.
 
 \begin{figure}[h]
     \centering
-%    \includegraphics[width=0.45\textwidth]{figures/impl}
-
 \begin{tikzpicture}
   [box/.style={entity, text width=1.5cm, inner sep=5pt},
    untrusted/.style={fill=red!33},
@@ -138,7 +136,7 @@ low-layer network service, specifically TCP.  This arrangement allows the
 enclave to establish a secure channel with a web server: The enclave itself
 performs the TLS handshake with a target server and performs all cryptographic
 operations internally, while the untrusted process acts as a network interface
-only. We ported a TLS library (mbedTLS) into the SGX environment, as well as
+only. We ported a TLS library (\texttt{mbedTLS}~\cite{mbedtls}) into the SGX environment, as well as
 HTTP code, which we minimized to meet the web-scraping requirements of \tc while
 keeping the TCB small. To verify certificates presented by remote servers, we
 hardcoded a collection of root CA certificates into the enclave code; in the
