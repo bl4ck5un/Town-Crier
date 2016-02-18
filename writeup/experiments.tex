@@ -1,6 +1,4 @@
-\vspace{-1mm}
 \section{Experiments}
-\vspace{-1mm}
 \label{sec:experiments}
 
 \begin{table*}
@@ -52,9 +50,6 @@ time of writing. We
 show that on this single host---not even a server, but a consumer device---our implementation of \tc can easily process
 transactions at the peak global rate of Bitcoin, currently the most heavily loaded decentralized blockchain. 
 %a popular, modern blockchain such as Bitcoin. (Two such hosts could match Bitcoin's peak global transaction rate should it be scaled up through reparametrization.) 
-%%\elaine{todo: modify
-%the previous sentence 
-%after Fan's new experiments are done.}
 
 \vspace{-2mm}
 \subsection{Enclave Response Time}
@@ -65,7 +60,7 @@ and (2) the \medname receiving a response back from the enclave.
 
 Table \ref{tab:eval_profiling} summarizes the total enclave response time as
 well as its breakdown over 500 runs.  For the three applications we
-implemented, the enclave response time ranges from {\bf 183 ms} to {\bf 925 ms}.
+implemented, the enclave response time ranges from {\bf 180 ms} to {\bf 599 ms}.
 The response time is clearly dominated by the web scraper time, i.e., the time
 it takes to fetch the requested information from a website.  Among the three
 applications evaluated, {\sf SteamTrade} has the longest web scraper time, as it interacts with the target website
@@ -73,12 +68,43 @@ over multiple roundtrips to fetch the desired datagram.
 
 
 \subsection{Transaction Throughput}
+\begin{figure}[h]
+  \resizebox {\columnwidth} {!}{
+\begin{tikzpicture}
+\begin{axis}[
+    every axis/.append style={font=\small},
+    legend pos=north west,
+    xlabel=Number of enclaves on a single machine,
+    ylabel=Throughput (tx/sec),
+    ylabel near ticks,
+    legend cell align=left,
+    xmin=0, xmax=21,
+    ymin=0, ymax=80,
+]
+\addplot [dashed,brown,domain=1:20, samples=20, thick, forget plot]{4.9*x};
+\addplot [dashed,blue,domain=1:20, samples=20, thick, forget plot]{2.00*x};
+\addplot [dashed,red,domain=1:20, samples=20, thick]{1.60*x};
+\addplot [mark=*,red,   thick, error bars/.cd,y dir=both,y explicit] table[x=n,y=steam-mean,y error=steam-std]{data.csv};
+\addplot [mark=*,blue,  thick, error bars/.cd,y dir=both,y explicit] table[x=n,y=flight-mean,y error=flight-std]{data.csv};
+\addplot [mark=*,brown, thick, error bars/.cd,y dir=both,y explicit] table[x=n,y=put-mean,y error=put-std]{data.csv};
+\legend{{\sf Linear Scaling},{\sf SteamTrade},{\sf FlightIns},{\sf CashSettledPut}}
+\end{axis}
+\end{tikzpicture}
+}
+\caption{Throughput on a single SGX machine.  The x-axis is the number of
+concurrent enclaves and the y-axis is the number of tx / sec. 
+Dashed lines indicate the ideal scaling for each application, and error bars, the standard deviation.
+We ran five rounds of experiments (each round processing 1000
+transactions in parallel).}
+
+\label{fig:trpt}
+\end{figure}
 We performed a sequence of experiments measuring the transaction throughput while scaling up the number of concurrently running enclaves 
 on our single SGX-enabled host from 1 to 20. 20 \tc enclaves is the maximum possible given the enclave memory constraints on the specific machine model we used.
 Figure \ref{fig:trpt}
 shows that for the three applications evaluated,
 {\bf a single SGX machine can handle
-15 to 74
+15 to 65
 tx/sec}. 
 
 Several significant data points show
@@ -99,37 +125,6 @@ Bitcoin network cannot scale via reparametrization beyond
 Thus, with one or at most a few hosts, \tc can easily meet the data feed demands of  
 even future decentralized blockchains.
 
-\begin{figure}[h]
-  \resizebox {\columnwidth} {!}{
-\begin{tikzpicture}
-\begin{axis}[
-    every axis/.append style={font=\small},
-    legend pos=north west,
-    xlabel=Number of enclaves on a single machine,
-    ylabel=Throughput (tx/sec),
-    ylabel near ticks,
-    legend cell align=left,
-    xmin=0, xmax=21,
-    ymin=0, ymax=94,
-]
-\addplot [dashed, domain=1:15.5, samples=20, thick, forget plot]{5.80*x};
-\addplot [dashed, domain=1:20, samples=20, thick, forget plot]{2.00*x};
-\addplot [dashed, domain=1:20, samples=20, thick]{1.20*x};
-\addplot [mark=*,       red,   thick, error bars/.cd,y dir=both,y explicit] table[x=n,y=steam,y error=e-steam]{data.csv};
-\addplot [mark=square*, blue,  thick, error bars/.cd,y dir=both,y explicit] table[x=n,y=flight,y error=e-flight]{data.csv};
-\addplot [mark=*,       brown, thick, error bars/.cd,y dir=both,y explicit] table[x=n,y=putop,y error=e-putop]{data.csv};
-\legend{{\sf Linear Scaling},{\sf SteamTrade},{\sf FlightIns},{\sf CashSettledPut}}
-\end{axis}
-\end{tikzpicture}
-}
-\caption{Throughput on a single SGX machine.  The x-axis is the number of
-concurrent enclaves and the y-axis is the number of tx / sec. 
-Dashed lines indicate the ideal scaling for each application, and error bars, the standard deviation.
-We ran five rounds of experiments (each round processing 1000
-transactions in parallel).}
-
-\label{fig:trpt}
-\end{figure}
 
 
 \begin{table*}
@@ -156,7 +151,6 @@ ${}^\dagger$ These numbers are for 1 item. Each additional item costs an additio
 \label{tbl:eval_gas}
 \end{table*}
 
-
 \subsection{Gas Costs}
 Currently 1 gas costs $5 \times10^{-8}$ ether, so at the exchange rate of \$5 for 1 ether, \$1 buys 4 million gas.
 Here we provide costs for the components of our implementation.
@@ -176,7 +170,7 @@ including the gas cost $\constgasinvokecancel$ and the refund $\constgascancel$ 
 
 \subsection{Component-Compromise Resilience}
 \label{subsec:hedging}
-For the {\sf FlightIns} application, 
+For the {\sf CashSettledPut} application, 
 we implemented and evaluated two modes of majority voting (as in Section~\ref{subsec:enhanced_robustness}):
 \begin{itemize}[leftmargin=3mm]
   \setlength{\itemsep}{2pt}
@@ -189,15 +183,13 @@ In our experiments
 the enclave performed simple sequential scraping of current stock prices 
 from three different data sources: Bloomberg, Google Finance and Yahoo Finance.
 The enclave response time is roughly
-1743 ms in this case ({\it c.f.} ms, 
-1058 ms, 423 ms and 262 ms for 
+1743(109) ms in this case ({\it c.f.}  
+1058(88), 423(34) and 262(12) ms for 
 each respective data source). Finally, there is no change in gas cost, as voting is done
 inside the SGX enclave.
 In the future, we will investigate parallelization of SGX's thread mechanism, with careful consideration of the security implications.
 
 
-%\fan{the numbers are bigger than Yahoo because Google and Bloomberg
-%doesn't have a clean API so the whole web page is downloaded.}
 \item
 2-out-of-3 majority voting within the requester contract,
 which provides robustness against 
@@ -211,71 +203,22 @@ The extra 1.95\textcent\ is a storage cost: The requester contract must store vo
 until a winner is known.
 \end{itemize}
 
-
-%\elaine{add some eval results here.}
-
 \vspace{-2mm}
+
 \subsection{Offline Measurements}
-%We characterize several measurements 
-%performed during the offline phase, 
-%include the cost for generating and verifying SGX attestations,
-%as well as clock calibration   
-%measurements.
-
-
-%Recall that a user must verify  
-%an SGX enclave's attestation offline to securely establish 
-%the identity $\pkTC$. 
-%Our experiments show that the 
-
 Recall that a one-time setup operation is required 
 for an enclave, and involves attestation generation.
 Our experiments show that setting up the \tc~\encname takes
-70.19 ms, 
+49.5(7.2) ms,
 and attestation generation takes 
-83.4 ms (18.5 ms for report generation, 
-and 64.9 ms for quote generation).
+61.9(10.7) ms:
+7.65(0.97) ms for report generation, 
+and 54.9(10.3) ms for quote generation.
 
 Recall also that since SGX reports only relative time 
 with respect to some reference point, \tc's absolute clock is calibrated through a wall-clock timestamp furnished externally.
 A user can verify the correctness of the \encname absolute block by requesting a digitally signed timestamp.
 This measurement is, of course, accurate only to within the end-to-end latency for this verification procedure. Our experiments show that the time between \medname transmission of a clock calibration request to the enclave and receipt of a response is
-19.0 ms, consumed mostly by digital signing using $\pkTC$ (18.5 ms). To this must be added the wide-area network roundtrip latency, at most typically a few hundred milliseconds. %Note too that the user can measure the the latency of its timestamp verification, and therefore determine the accuracy of its measurement.
-
-
-\vspace{-2mm}
-
-% which is typically in the \elaine{blah} range.
-
-%Recall that the absolute time of the \encname is verified
-%by including a signed time stamp in the attestation and letting 
-%clients check it it in real time. Therefore the latency
-%of attestation generation plus a round-trip time
-%define the precision of the absolute clock. 
-%We evaluated the cycles consumed in generating an attestation and
-%signing a Unix time stamp.
-%
-%\begin{table}[ht]
-%\centering
-%\begin{tabular}{lr}
-%\toprule
-%  & time(ms) \\
-%\midrule
-%Report Generation & $18.46$ \\
-%Quote Generation & $64.94$ \\
-%Signing the time stamp & $11.50$ \\
-%\bottomrule
-%\end{tabular}
-%\caption{Running time of generating \att}
-%\label{tab:eval_att}
-%\end{table}
-%
-%Table \ref{tab:eval_att} summarizes the running time break down of generating an
-%attestation along with a signed time stamp.  Note that two steps are involved in
-%generating \att: first a report is produced within the \encname; then, an
-%attestation, as known as a quote, is produced by QE based on the report passed
-%to it. Note that \att only need to be generated once throughout the lifetime of the
-%enclave.
-%
-%
-%
+11.4(1.9) ms, 
+consumed mostly by signing the timestamp: 10.5(1.9) ms. 
+To this must be added the wide-area network roundtrip latency, at most typically a few hundred milliseconds. %Note too that the user can measure the the latency of its timestamp verification, and therefore determine the accuracy of its measurement.
