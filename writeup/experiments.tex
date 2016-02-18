@@ -204,6 +204,11 @@ plus \num[group-separator={,}]{2500} gas (0.06\textcent) for every 32 bytes of r
 The cost for executing {\bf Cancel} is 62500 gas (1.56\textcent)
 including the gas cost $\constgasinvokecancel$ and the refund $\constgascancel$ paid to \tcs should {\bf Deliver} be called after {\bf Cancel}.
 
+Reflected in each concrete application, Figure \elaine{fill}
+shows that the effective gas cost  
+for the calling Town Crier service (not counting the gas cost for executing
+user-defined callbacks)
+ranges from \elaine{\bf ethan: fill} to \elaine{\bf ethan: fill}.
 
 
 
@@ -224,7 +229,12 @@ the enclave response time is
 1743 ms in this case ({\it c.f.} ms, 
 1058 ms, 423 ms and 262  ms for 
 each data source).
-There is no change in the gas cost in this case.
+At the moment, the three requests 
+are sequential. In the future, we will investigate how to 
+use SGX's thread mechanism to parallelize the requests --- and more importantly
+the security implications of doing so.
+Finally, there is no change in the gas cost when voting is done
+inside the SGX enclave.
 \fan{the numbers are bigger than Yahoo because Google and Bloomberg
 doesn't have a clean API so the whole web page is downloaded.}
 \item
