@@ -131,13 +131,13 @@ response time when multiple enclaves are run} on a single machine.
     ylabel near ticks,
     legend cell align=left,
 ]
-\addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=steam,y error=e-steam]{data.csv};
-\addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=flight,y error=e-flight]{data.csv};
-\addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=putop,y error=e-putop]{data.csv};
 \addplot [dashed, domain=1:20, samples=20, thick, forget plot]{5.80*x};
 \addplot [dashed, domain=1:20, samples=20, thick, forget plot]{2.00*x};
 \addplot [dashed, domain=1:20, samples=20, thick]{1.20*x};
-\legend{{\sf SteamTrade},{\sf FlightIns},{\sf CashSettledPut}, {\sf Linear Scaling}}
+\addplot [mark=*,       red,   thick, error bars/.cd,y dir=both,y explicit] table[x=n,y=steam,y error=e-steam]{data.csv};
+\addplot [mark=square*, blue,  thick, error bars/.cd,y dir=both,y explicit] table[x=n,y=flight,y error=e-flight]{data.csv};
+\addplot [mark=*,       brown, thick, error bars/.cd,y dir=both,y explicit] table[x=n,y=putop,y error=e-putop]{data.csv};
+\legend{{\sf Linear Scaling},{\sf SteamTrade},{\sf FlightIns},{\sf CashSettledPut}}
 \end{axis}
 \end{tikzpicture}
 }
