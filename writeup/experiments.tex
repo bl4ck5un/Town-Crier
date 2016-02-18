@@ -1,7 +1,7 @@
 \section{Experiments}
 \label{sec:experiments}
 
-\begin{table*}[h]
+\begin{table*}
 \resizebox{\linewidth} {!}{
 \begin{tabular}{l|lllll|lllll|lllll}
 \toprule
@@ -125,9 +125,9 @@ response time when multiple enclaves are run} on a single machine.
 \begin{tikzpicture}
 \begin{axis}[
     every axis/.append style={font=\small},
-	legend pos=north west,
-	xlabel=Number of enclaves on a single machine,
-	ylabel=Throughput (tx/sec),
+    legend pos=north west,
+    xlabel=Number of enclaves on a single machine,
+    ylabel=Throughput (tx/sec),
     ylabel near ticks,
     legend cell align=left,
 ]
@@ -152,7 +152,7 @@ transactions in parallel) and error bars show the standard deviation.}
 \end{figure}
 
 
-\begin{table*}[ht]
+\begin{table*}
 \centering
 \begin{tabular}{l|r|r|r}
 \toprule
@@ -173,7 +173,7 @@ but we do not include that cost as it would exist even if data acquisition were 
 \\\hspace{\textwidth}
 ${}^\dagger$ These numbers are for 1 item. Each additional item costs an additional 0.06\textcent.
 }
-\label{tab:eval_gas}
+\label{tbl:eval_gas}
 \end{table*}
 
 
@@ -189,11 +189,8 @@ plus \num[group-separator={,}]{2500} gas (0.06\textcent) for every 32 bytes of r
 The cost for executing {\bf Cancel} is 62500 gas (1.55\textcent)
 including the gas cost $\constgasinvokecancel$ and the refund $\constgascancel$ paid to \tcs should {\bf Deliver} be called after {\bf Cancel}.
 
-Reflected in each concrete application, Figure \elaine{fill}
-shows that the effective gas cost  
-for the calling Town Crier service (not counting the gas cost for executing
-user-defined callbacks)
-ranges from \elaine{\bf ethan: fill} to \elaine{\bf ethan: fill}.
+Table~\ref{tbl:eval_gas} shows that for concrete applications, the effective gas cost
+for calling Town Crier (not including user-defined callbacks) is approximately 4 to 5 cents.
 
 
 
