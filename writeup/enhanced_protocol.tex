@@ -2,7 +2,7 @@
 \label{sec:enhanced_protocol}
 
 The simplified payment-free protocol in Section~\ref{sec:payment-free-protocol} guarantees authenticity of data for an honest user.
-In Ethereum, however, computation is not free: Recall from that Ethereum employs \emph{gas} to fuel contracts. This means that \tc needs enough gas to deliver datagrams, so users must pay a fee to reimburse costs. If fees are not properly handled, a malicious relay (or malicious user) could prevent delivery of a datagram and/or cost an honest requester money for no gain. We discuss Section~\ref{sec:gas-protocol} how we address this issue throughout \tc's design We also briefly discuss other enhancements to the basic \tc protocol: Private and custom datagrams (Section~\ref{subsec:private_datagrams}) and use of replication / voting to achieving robustness against SGX host or data source compromise (Section~\ref{subsec:enhanced_robustness}).
+In Ethereum, however, computation is not free: Recall from that Ethereum employs \emph{gas} to fuel contracts. This means that \tc needs enough gas to deliver datagrams, so users must pay a fee to reimburse costs. If fees are not properly handled, a malicious relay (or malicious user) could prevent delivery of a datagram and/or cost an honest requester money for no gain. We discuss Section~\ref{sec:gas-protocol} how we address this issue throughout \tc's design. We also briefly discuss other enhancements to the basic \tc protocol: Private and custom datagrams (Section~\ref{subsec:private_datagrams}) and use of replication / voting to achieving robustness against SGX host or data-source compromise (Section~\ref{subsec:enhanced_robustness}).
 
 
 \subsection{Handling Fees in Ethereum}
@@ -10,7 +10,7 @@ In Ethereum, however, computation is not free: Recall from that Ethereum employs
 
 
 To address the above concern of attacks on \tc fee management, we employ and prove the security of a novel two-currency resource-management system. This system causes
-requesters to make gas payments up front as ether. It converts ether to gas so as to prevent a malicious requester from exhausting \tc's resources
+requesters to make gas payments up front as ether. It converts this ether to gas so as to prevent a malicious requester from exhausting \tc's resources
 or a malicious \tc from stealing an honest user's money. We now give some preliminaries and then explain our system.
 
 
@@ -37,7 +37,7 @@ We use the following identifiers to denote currency and gas amounts.
   & Gas required for {\bf Deliver} excluding $\dgcallback$ \\
   \hline
   $\constgasmax$
-  & Maximum gas \tc can spent to invoke {\bf Deliver} \\
+  & Maximum gas \tc can spend to invoke {\bf Deliver} \\
   \hline
   $\constgasinvokecancel$
   & Gas needed to invoke {\bf Cancel} \\
@@ -55,7 +55,7 @@ Though $\gasrequest$ and $\gascancel$ are set by the requester, we need not worr
 If they are too small, Ethereum will abort the transaction and there will not be a request or cancellation.
 
 \paragraph{Adversarial cases.}
-During the creation and fulfillment of any request, there are two untrusted parties: the requesting contract / user $\reqcont$ and the \tc~\medname. In the \tc implementation, we thus consider three cases:
+During the creation and fulfillment of any request, there are two untrusted parties: The requester constract / user $\reqcont$ and the \tc~\medname. In the \tc implementation, we thus consider three cases, here giving the desired properties of each:
 
 \begin{itemize}
   \setlength{\itemsep}{2pt}
@@ -71,7 +71,7 @@ During the creation and fulfillment of any request, there are two untrusted part
 
   \item {\it Honest requester and malicious \medname.}
     The requester cannot receive invalid data (which is also assured by the payment-free protocol)
-    and the requester should not have to pay computation that is not executed.
+    and the requester should not have to pay for computation that is not executed.
 \end{itemize}
 We formalize these properties in Section~\ref{sec:analysis} and prove that our protocol provides these guarantees.
 We intentionally ignore the case where both the requester and the \medname are dishonest.
@@ -119,7 +119,7 @@ If the requester is dishonest we need to not protect their request, and if the \
 Town Crier contract \tcont reflecting fees.
 The last argument of each entry point is the {\tt GASLIMIT} provided.
 An honest requester sets $\fee$ to be the gas required to execute {\bf Deliver} including $\dgcallback$.
-Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dgcallback$ ensure that no more than $\fee$ is spent.
+Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dgcallback$ to ensure that no more than $\fee$ is spent.
 }
 \label{tbl:gas-tc-contract}
 \end{figure}
@@ -217,27 +217,27 @@ We now describe how this can be realized by modifying the payment-free protocol 
     We assume that Town Crier deposits at least $\constgasmax$ into the wallet $\tcadd$.
 
   \item {\it \tcs blockchain contract.}
-    Figure \ref{tbl:gas-tc-contract} describes the \tcs blockchain contract reflecting fees.
-    Since $\tcadd$ must invoke {\bf Deliver}, \tc will pays the gas cost.
+    Figure \ref{tbl:gas-tc-contract} specifies the \tcs blockchain contract, with fees.
+    Since $\tcadd$ must invoke {\bf Deliver}, \tc pays the gas cost.
     It sets the {\tt GASLIMIT} $\gasdeliver := \constgasmax$.
-    To ensure that the gas spent will not exceed the reimbursement available ($\fee$),
-    \tcont sets the {\tt GASLIMIT} $\gascallback$ for the sub-call to $\dgcallback$ to the reimbursement remaining: $\fee - \constgasmin$.
+    To ensure that the gas spent does not exceed the reimbursement available ($\fee$),
+    \tcont sets the {\tt GASLIMIT} $\gascallback$ for the sub-call to $\dgcallback$ to the remaining reimbursement: $\fee - \constgasmin$.
 
   \item {\it Town Crier Relay.}
-    The relay behavior does not change with the presence of fees.
+    The \medname behavior does not change with the presence of fees.
     It still monitors the blockchain and whenever the contract \tcont stores a new request $(\dgid, \dgform, \_, \_, \_)$,
     it invokes $\enclaveprog$ with $\resumecall(\dgid, \dgform)$.
 
-  \item {\it Town Crier enclave.}
+  \item {\it Town Crier \encname.}
     We make the following small modification to the fee-free protocol.
     Instead of signing the tuple $(\dgid, \dgform, \dgm)$ at the end of its execution,
     the enclave now signs the tuple $(\dgid, \dgform, \dgm, \gasdeliver)$ where $\gasdeliver = \constgasmax$.
 
   \item {\it Requester.}
     An honest requester follows the protocol in Fig.~\ref{fig:att_check} to verify the SGX attestation.
-    Then she then prepares $\dgform$ and $\dgcallback$, sets $\gasrequest$ to the gas cost of {\bf Request} with $\dgform$,
-    and $\fee$ to $\constgasmin$ plus the cost of executing $\dgcallback$.
-    The she invokes {\bf Request}$(\dgform, \dgcallback, \fee)$ and {\tt GASLIMIT} $\gasrequest$.
+    Then she prepares $\dgform$ and $\dgcallback$, sets $\gasrequest$ to the gas cost of {\bf Request} with $\dgform$,
+    and sets $\fee$ to $\constgasmin$ plus the cost of executing $\dgcallback$.
+Finally, she invokes {\bf Request}$(\dgform, \dgcallback, \fee)$ with {\tt GASLIMIT} $\gasrequest$.
 
     If $\dgcallback$ is not executed, the requester will invoke {\bf Cancel} with argument $\dgid$ and gas limit $\constgasinvokecancel$ to receive a partial refund.
     The honest requester will never invoke {\bf Cancel} more than once for the same request
