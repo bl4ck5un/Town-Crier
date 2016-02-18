@@ -190,6 +190,11 @@
 
 \renewcommand{\paragraph}[1]{{\vspace{5pt}\noindent\textbf{#1}}}
 
+\newtheorem*{rethm}{\retitle}
+\newenvironment{retheorem}[1]{%
+  \def \retitle{Theorem \ref{#1}}%
+  \begin{rethm}%
+}{\end{rethm}}
 
 %*****************************
 

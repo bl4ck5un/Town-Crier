@@ -161,9 +161,9 @@ transactions in parallel) and error bars show the standard deviation.}
   \multicolumn{1}{c}{{\sf SteamTrade}${}^\dagger$} \\
 %  & gas (cents) & gas (cents) & gas (cents) \\
 \midrule
-Deliver without Cancel & 3.95\textcent & 4.00\textcent & 4.31\textcent \\ 
-Cancel arrived after Deliver & 4.90\textcent & 4.95\textcent & 5.26\textcent \\ 
-Cancel without Deliver & 4.64\textcent & 4.69\textcent & 5.00\textcent \\ 
+Deliver without Cancel & 3.95\textcent & 4.00\textcent & 4.30\textcent \\ 
+Cancel arrived after Deliver & 4.90\textcent & 4.95\textcent & 5.25\textcent \\ 
+Cancel without Deliver & 4.65\textcent & 4.70\textcent & 5.00\textcent \\ 
 \bottomrule
 \end{tabular}
 \caption[caption]{{\bf Callback-independent} portion of gas expenditure in USD.
@@ -182,11 +182,11 @@ ${}^\dagger$ These numbers are for 1 item. Each additional item costs an additio
 Currently 1 gas costs $5 / 10^8$ ether, so at the exchange rate of \$5 for 1 ether, \$1 buys 4 million gas.
 Here we provide costs for the components of our implementation.
 
-The callback-independent portion of {\bf Deliver} costs about \num[group-separator={,}]{35000} gas (0.875\textcent), so this is the value of $\constgasmin$.
+The callback-independent portion of {\bf Deliver} costs about \num[group-separator={,}]{35000} gas (0.9\textcent), so this is the value of $\constgasmin$.
 We set $\constgasmax = \num[group-separator={,}]{3100000}$ gas (77.5\textcent) as this is approximately Ethereum's maximum {\tt GASLIMIT}.
 The cost for executing {\bf Request} is approximately \num[group-separator={,}]{120000} gas (3\textcent) of fixed cost, 
 plus \num[group-separator={,}]{2500} gas (0.06\textcent) for every 32 bytes of request parameters.
-The cost for executing {\bf Cancel} is 62500 gas (1.56\textcent)
+The cost for executing {\bf Cancel} is 62500 gas (1.55\textcent)
 including the gas cost $\constgasinvokecancel$ and the refund $\constgascancel$ paid to \tcs should {\bf Deliver} be called after {\bf Cancel}.
 
 Reflected in each concrete application, Figure \elaine{fill}
