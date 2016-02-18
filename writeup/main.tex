@@ -41,6 +41,19 @@
   every path/.style={>=stealth},
 }
 
+\usepackage{listings}
+\lstdefinestyle{Solidity}
+{
+  language=C++,
+  basicstyle={\small\ttfamily},
+  morekeywords={function,contract,constant},
+  emph={address,uint8,uint32,uint,uint64,bytes4,bytes32},
+  keywordstyle={\color{darkgreen}},
+  emphstyle={\color{darkblue}},
+  commentstyle={\color{gray}\slshape},
+  frame=single,
+}
+
 \DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
 
 \newcommand{\kyle}[1]{\textcolor{blue}{[\textsf{Kyle:  #1}]}}
@@ -232,7 +245,7 @@
 \input{sgxmodel}
 \input{analysis-proofs}
 \input{advanced}
-\input{pseudocode}
+%\input{pseudocode}
 
 
 
