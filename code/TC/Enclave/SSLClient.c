@@ -759,12 +759,12 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
             LL_CRITICAL( "mbedtls_ssl_handshake returned -%#x", -ret );
             if( ret == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED )
                 LL_CRITICAL(
-                    "    Unable to verify the server's certificate. "
-                        "Either it is invalid,"
-                    "    or you didn't set ca_file or ca_path "
-                        "to an appropriate value."
-                    "    Alternatively, you may want to use "
-                        "auth_mode=optional for testing purposes." );
+                    "Unable to verify the server's certificate. "
+                    "Either it is invalid,"
+                    "or you didn't set ca_file or ca_path "
+                    "to an appropriate value."
+                    "Alternatively, you may want to use "
+                    "auth_mode=optional for testing purposes." );
             goto exit;
         }
     }
@@ -977,7 +977,9 @@ send_request:
 
             LL_NOTICE( "%d bytes read", len, (char *) output );
             if (opt.debug_level> 0) hexdump("REPONSE:", output, len);
-            if( ret > 0 && output[len-1] == '\n' )
+            // TODO: Add full-fledge HTTP parser here
+            // possibly from libcurl
+            if( ret > 0 && (output[len-1] == '\n' || output[len-1] == '}'))
             {
                 ret = 0;
                 output[len] = 0;

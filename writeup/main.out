@@ -1,0 +1,35 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Background}{}% 2
+\BOOKMARK [1][-]{section.3}{TC Architecture and Security Model}{}% 3
+\BOOKMARK [1][-]{section.4}{Basic TC Protocol}{}% 4
+\BOOKMARK [2][-]{subsection.4.1}{Datagram lifecycle}{section.4}% 5
+\BOOKMARK [2][-]{subsection.4.2}{Data flows}{section.4}% 6
+\BOOKMARK [2][-]{subsection.4.3}{Use of SGX}{section.4}% 7
+\BOOKMARK [2][-]{subsection.4.4}{A payment-free basic protocol}{section.4}% 8
+\BOOKMARK [1][-]{section.5}{Enhanced Protocol}{}% 9
+\BOOKMARK [2][-]{subsection.5.1}{Handling Fees in Ethereum}{section.5}% 10
+\BOOKMARK [2][-]{subsection.5.2}{Private and custom datagrams}{section.5}% 11
+\BOOKMARK [2][-]{subsection.5.3}{Enhanced robustness via replication}{section.5}% 12
+\BOOKMARK [1][-]{section.6}{TC Implementation Details}{}% 13
+\BOOKMARK [2][-]{subsection.6.1}{TC Contract}{section.6}% 14
+\BOOKMARK [2][-]{subsection.6.2}{TC Server}{section.6}% 15
+\BOOKMARK [1][-]{section.7}{Security Analysis}{}% 16
+\BOOKMARK [1][-]{section.8}{Applications: Requesting Contracts}{}% 17
+\BOOKMARK [1][-]{section.9}{Experiments}{}% 18
+\BOOKMARK [2][-]{subsection.9.1}{Enclave Response Time}{section.9}% 19
+\BOOKMARK [2][-]{subsection.9.2}{Transaction Throughput}{section.9}% 20
+\BOOKMARK [2][-]{subsection.9.3}{Gas Costs}{section.9}% 21
+\BOOKMARK [2][-]{subsection.9.4}{Resilience against Component Compromise}{section.9}% 22
+\BOOKMARK [2][-]{subsection.9.5}{Offline Measurements}{section.9}% 23
+\BOOKMARK [1][-]{section.10}{Related Work}{}% 24
+\BOOKMARK [1][-]{section.11}{Conclusion}{}% 25
+\BOOKMARK [1][-]{appendix.A}{Showcase Applications and Code Samples}{}% 26
+\BOOKMARK [1][-]{appendix.B}{More Details on Formal Modeling}{}% 27
+\BOOKMARK [2][-]{subsection.B.1}{SGX Formal Modeling}{appendix.B}% 28
+\BOOKMARK [2][-]{subsection.B.2}{Blockchain Formal Modeling}{appendix.B}% 29
+\BOOKMARK [1][-]{appendix.C}{Proofs of Security Analysis}{}% 30
+\BOOKMARK [1][-]{appendix.D}{Future Work}{}% 31
+\BOOKMARK [2][-]{subsection.D.1}{Expanding TC threat model}{appendix.D}% 32
+\BOOKMARK [2][-]{subsection.D.2}{Expanding TC functionality}{appendix.D}% 33
+\BOOKMARK [1][-]{appendix.E}{Implementation Pseudocode}{}% 34
+\BOOKMARK [2][-]{subsection.E.1}{Application Contracts}{appendix.E}% 35

@@ -2,6 +2,7 @@
 \label{sec:experiments}
 
 \begin{table*}[h]
+\resizebox{\linewidth} {!}{
 \begin{tabular}{l|lllll|lllll|lllll}
 \toprule
 & \multicolumn{5}{c|}{\sf CashSettledPut} &
@@ -11,61 +12,40 @@
     & \% & $t_{\max}$ & $t_{\min}$ & $\sigma_t$ & \textbf{mean} & \% & $t_{\max}$
     & $t_{\min}$ & $\sigma_t$\\
 \midrule
-    Ctx. switch & 1.00 &  & 3.12 & 0.25 & 0.31 & 1.23 &  & 2.94 & 0.17 &
-    0.32 & 1.17 &  & 3.25 & 0.36 & 0.35\\
-    Web scraper & 157 &  & 258 & 135 & 18 & 482 &  & 600 & 418 & 31 & 576 &  &
-    765 & 489 & 52\\
-    Sign & 20.2 &  & 26.6 & 18.7 & 1.52 & 20.5 &  & 25.3 & 18.9 & 1.4 & 20.3 &
-    & 24.8 & 18.8 & 1.28\\
-    Serialization & 0.40 &  & 0.84 & 0.24 & 0.08 & 0.38 &  & 0.67 & 0.20 &
-    0.08 & 0.39 &  & 0.65 & 0.24 & 0.09\\
+    ctx. switch & 1.00 & 0.6 & 3.12 & 0.25 & 0.31 
+                & 1.23 & 0.24 & 2.94 & 0.17 & 0.32 
+                & 1.17 & 0.20 & 3.25 & 0.36 & 0.35\\
+    Web scraper & 157  & 87.2 & 258 & 135 & 18 
+                & 482  & 95.4 & 600 & 418 & 31 
+                & 576  & 96.2 & 765 & 489 & 52\\
+    Sign        & 20.2 & 11.2 & 26.6 & 18.7 & 1.52 
+                & 20.5 & 4.0 & 25.3 & 18.9 & 1.4 
+                & 20.3 & 3.4 & 24.8 & 18.8 & 1.28\\
+    Serialization 
+                & 0.40 & 0.2 & 0.84 & 0.24 & 0.08 
+                & 0.38 & 0.08 & 0.67 & 0.20 & 0.08 
+                & 0.39 & 0.07 & 0.65 & 0.24 & 0.09\\
 \midrule
 \midrule
-    \textbf{Total} & 180 &  & 284 & 158 & 18 & 505 &  & 623 & 439
-    & 31 & 599 &  & 787 & 510 & 52 \\
+    \textbf{Total} 
+                & 180 & 100 & 284 & 158 & 18 
+                & 505 & 100 & 623 & 439 & 31 
+                & 599 & 100 & 787 & 510 & 52 \\
 \bottomrule	
 \end{tabular}
-\caption{Running time of handling a request. We repeated the experiments for 5 times and
-report the mean and standard deviation. Proportions are for means.\fan{complete}}
+}
+\caption{Enclave response time and breakdown. 
+We tested \tc with 500 sequential requests and reported
+the statistics of response time including 
+the average ({\bf mean}), proportion (\%), maximum ($t_{\max}$),
+minimum ($t_{\min}$) and standard deviation ($\sigma_t$).
+All numbers (except for the proportion (\%)) are in miliseconds.
+Note that {\bf Total} is the end-to-end response time as 
+defined in Section \ref{subsec:response time}. The breakdown
+might not sum up to the {\bf total} due to
+some minor unmeasured overhead.}
 \label{tab:eval_profiling}
 \end{table*}
-
-\iffalse
-\begin{table*}[ht]
-\centering
-\begin{tabular}{l|rr|rr|rr}
-\toprule
-& \multicolumn{2}{c|}{\sf CashSettledPut} &
-  \multicolumn{2}{c|}{\sf FlightIns} &
-  \multicolumn{2}{c}{\sf SteamTrade} \\
-  & time(ms) & proportion & time(ms) & proportion  & time(ms) & proportion\\
-\midrule
-Context switch      & $0.68\pm 0.12$    & 0.37\%   
-                    & $0.77\pm 0.07$    & 0.15\%    
-                    & $0.89\pm 0.47$    & 0.10\%\\
-%
-Web scraper         & $172.07\pm 12.41$  & 94.20\%  
-                    & $512.32\pm 44.66$  & 97.96\%   
-                    & $913.73\pm 92.51$  & 98.83\%\\
-%
-Sign                & $9.71\pm 0.55$   & 5.32\%   
-                    & $9.64\pm 0.59$   & 1.84\%    
-                    & $9.65\pm 0.63$   & 1.04\%\\
-%
-Serialization       & $0.20\pm 0.04$    & 0.11\%   
-                    & $0.25\pm 0.09$    & 0.05\%    
-                    & $0.32\pm 0.10$    & 0.03\%\\
-\midrule
-Total               & $182.66\pm 12.7$  & 100.00\%    
-                    & $522.98\pm 44.92$ & 100.00\% 
-                    & $924.59\pm 92.63$ & 100.00\%\\
-\bottomrule
-\end{tabular}
-\caption{Running time of handling a request. We repeated the experiments for 5 times and
-report the mean and standard deviation. Proportions are for means.}
-\label{tab:eval_profiling}
-\end{table*}
-\fi
 
 We evaluated the performance of \tc on a Dell Inspiron 13-7359 laptop equipped
 with an Intel i7-6500U CPU and 8.00GB memory.  This model is chosen 
@@ -79,6 +59,7 @@ after Fan's new experiments are done.}
 
 
 \subsection{Enclave Response Time}
+\label{subsec:response time}
 We measured the enclave response time for handling a request. Here ``enclave response time''
 is defined as the difference between 1) the time 
 the relay decides to send a request to an SGX enclave;
@@ -148,6 +129,7 @@ response time when multiple enclaves are run} on a single machine.
 	xlabel=Number of enclaves on a single machine,
 	ylabel=Throughput (tx/sec),
     ylabel near ticks,
+    legend cell align=left,
 ]
 \addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=steam,y error=e-steam]{data.csv};
 \addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=flight,y error=e-flight]{data.csv};
@@ -159,10 +141,13 @@ response time when multiple enclaves are run} on a single machine.
 \end{axis}
 \end{tikzpicture}
 }
-\caption{Throughput is measured on a single SGX-enabled machine. The x-axis is
-the number of enclaves and the y-axis is the number of transactions processed per
-second.  We ran five rounds of experiments and error bars show the standard
-deviation.\fan{complete}}
+\caption{Throughput on a single SGX machine.  The x-axis is the number of
+concurrent enclaves and the y-axis is the number of transactions processed per
+second. 
+The dashed lines indicate the ideal scaling for each application.
+We ran five rounds of experiments (each round processes 1000
+transactions in parallel) and error bars show the standard deviation.}
+
 \label{fig:trpt}
 \end{figure}
 

@@ -310,7 +310,7 @@
       </EntryPointSymbol>
       <NoEntryPoint>true</NoEntryPoint>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <TreatLinkerWarningAsErrors>true</TreatLinkerWarningAsErrors>
+      <TreatLinkerWarningAsErrors>false</TreatLinkerWarningAsErrors>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
     </Link>
@@ -413,6 +413,9 @@
     <ClCompile Include="..\Common\Debug.c" />
     <ClCompile Include="..\Common\Log.c" />
     <ClCompile Include="ABI.cpp" />
+    <ClCompile Include="Current_bloomberg.cpp" />
+    <ClCompile Include="Current_Google.cpp" />
+    <ClCompile Include="Current_Yahoo.cpp" />
     <ClCompile Include="dispatcher.cpp" />
     <ClCompile Include="EventHandler.cpp" />
     <ClCompile Include="Flight.cpp" />
