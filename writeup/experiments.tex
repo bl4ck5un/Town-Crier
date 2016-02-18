@@ -214,7 +214,7 @@ until a winner is known.
 
 %\elaine{add some eval results here.}
 
-
+\vspace{-2mm}
 \subsection{Offline Measurements}
 %We characterize several measurements 
 %performed during the offline phase, 
@@ -229,32 +229,22 @@ until a winner is known.
 %Our experiments show that the 
 
 Recall that a one-time setup operation is required 
-for the enclave to be established, and an attestation generated. 
-Our measurement suggests that the enclave establishment takes
+for an enclave, and involves attestation generation.
+Our experiments show that setting up the \tc~\encname takes
 70.19 ms, 
-and the attestation generation takes 
-83.4 ms (among which 
-18.5 ms is spent 
-on report generation, 
-and 64.9 ms on quote generation).
+and attestation generation takes 
+83.4 ms (18.5 ms for report generation, 
+and 64.9 ms for quote generation).
 
-Recall also that since SGX only reports a relative clock
-with respect to some reference point,  
-a user must perform offline clock calibration 
-to translate the  relative clock values into absolute ones.
-The clock precision is decided
-by the end-to-end latency for performing 
-this clock calibration. 
-Our experiments show that the latency is 
-19.0 ms 
-between when a relay sends a clock calibration request
-to the enclave, and when it obtains a response.
-The majority of this 19.0 ms is spent on
-signing the timestamp using \pkTC
-which took 
-18.5 ms.
-In practice, the clock precision is also affected
-by the wide-area network latency.
+Recall also that since SGX reports only relative time 
+with respect to some reference point, \tc's absolute clock is calibrated through a wall-clock timestamp furnished externally.
+A user can verify the correctness of the \encname absolute block by requesting a digitally signed timestamp.
+This measurement is, of course, accurate only to within the end-to-end latency for this verification procedure. Our experiments show that the time between \medname transmission of a clock calibration request to the enclave and receipt of a response is
+19.0 ms, consumed mostly by digital signing using $\pkTC$ (18.5 ms). To this must be added the wide-area network roundtrip latency, at most typically a few hundred milliseconds. %Note too that the user can measure the the latency of its timestamp verification, and therefore determine the accuracy of its measurement.
+
+
+\vspace{-2mm}
+
 % which is typically in the \elaine{blah} range.
 
 %Recall that the absolute time of the \encname is verified
