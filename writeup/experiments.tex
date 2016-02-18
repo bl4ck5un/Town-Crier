@@ -231,7 +231,7 @@ until a winner is known.
 Recall that a one-time setup operation is required 
 for the enclave to be established, and an attestation generated. 
 Our measurement suggests that the enclave establishment takes
-\elaine{fill} ms, 
+70.19 ms, 
 and the attestation generation takes 
 83.4 ms (among which 
 18.5 ms is spent 
@@ -245,15 +245,17 @@ to translate the  relative clock values into absolute ones.
 The clock precision is decided
 by the end-to-end latency for performing 
 this clock calibration. 
-Our experiments show that the latency is \elaine{fill} ms 
+Our experiments show that the latency is 
+19.0 ms 
 between when a relay sends a clock calibration request
 to the enclave, and when it obtains a response.
-The majority of this \elaine{fill} ms is spent on
-\elaine{blah operation}
-which took \elaine{blah} ms.
+The majority of this 19.0 ms is spent on
+signing the timestamp using \pkTC
+which took 
+18.5 ms.
 In practice, the clock precision is also affected
-by the wide-area network latency
-which is typically in the \elaine{blah} range.
+by the wide-area network latency.
+% which is typically in the \elaine{blah} range.
 
 %Recall that the absolute time of the \encname is verified
 %by including a signed time stamp in the attestation and letting 
