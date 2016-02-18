@@ -246,7 +246,7 @@ Finally, she invokes {\bf Request}$(\dgform, \dgcallback, \fee)$ with {\tt GASLI
 
 \subsection{Private and Custom Datagrams}
 \label{subsec:private_datagrams}
-In addition to ordinary datagrams, \tc supports \emph{private datagrams}, which involve requests where $\dgform$ includes ciphertexts under $\pkTC$. Private datagrams can thus enable confidentiality-preserving applications despite the public readability of the blockchain.  \emph{Custom datagrams}, also supported by \tc, allow a contract to specify a particular web-scraping target, potentially involving multiple interactions, and thus greatly expand the range of possible relying contracts for \tc. We give examples of both datagram types in Section~\ref{sec:applications}.
+In addition to ordinary datagrams, \tc supports \emph{private datagrams}, which involve requests where $\dgform$ includes ciphertexts under $\pkTC$. Private datagrams can thus enable confidentiality-preserving applications despite the public readability of the blockchain.  \emph{Custom datagrams}, also supported by \tc, allow a contract to specify a particular web-scraping target, potentially involving multiple interactions, and thus greatly expand the range of possible relying contracts for \tc. We do not treat them in our security proofs, but give examples of both datagram types in Section~\ref{sec:applications}.
 
 \subsection{Enhanced Robustness via Replication}
 \label{subsec:enhanced_robustness}
