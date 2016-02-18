@@ -2,7 +2,7 @@
 \label{sec:enhanced_protocol}
 
 The simplified payment-free protocol in Section~\ref{sec:payment-free-protocol} guarantees authenticity of data for an honest user.
-In Ethereum, however, computation is not free: Recall from that Ethereum employs \emph{gas} to fuel contracts. This means that \tc needs enough gas to deliver datagrams, so users must pay a fee to reimburse costs. If fees are not properly handled, a malicious relay (or malicious user) could prevent delivery of a datagram and/or cost an honest requester money for no gain. We discuss Section~\ref{sec:gas-protocol} how we address this issue throughout \tc's design. We also briefly discuss other enhancements to the basic \tc protocol: Private and custom datagrams (Section~\ref{subsec:private_datagrams}) and use of replication / voting to achieving robustness against SGX host or data-source compromise (Section~\ref{subsec:enhanced_robustness}).
+In Ethereum, however, computation is not free; recall from Section~\ref{sec:contracts-and-gas} that Ethereum employs \emph{gas} to fuel contracts. This means that \tc needs enough gas to deliver datagrams, so users must pay a fee to reimburse costs. If fees are not properly handled, a malicious relay (or malicious user) could prevent delivery of a datagram or cost an honest requester money for no gain. We discuss Section~\ref{sec:gas-protocol} how we address this issue throughout \tc's design. We also briefly discuss other enhancements to the basic \tc protocol: private and custom datagrams (Section~\ref{subsec:private_datagrams}) and use of replication / voting to achieving robustness against SGX host or data-source compromise (Section~\ref{subsec:enhanced_robustness}).
 
 
 \subsection{Handling Fees in Ethereum}
@@ -37,13 +37,13 @@ We use the following identifiers to denote currency and gas amounts.
   & Gas required for {\bf Deliver} excluding $\dgcallback$ \\
   \hline
   $\constgasmax$
-  & Maximum gas \tc can spend to invoke {\bf Deliver} \\
+  & Maximum gas \tc can provide to invoke {\bf Deliver} \\
   \hline
   $\constgasinvokecancel$
   & Gas needed to invoke {\bf Cancel} \\
   \hline
   $\constgascancel$
-  & Gas needed for {\bf Deliver} on a cancelled request \\
+  & Gas needed for {\bf Deliver} on a canceled request \\
   \hline
 \end{tabular}
 \end{center}
@@ -55,7 +55,7 @@ Though $\gasrequest$ and $\gascancel$ are set by the requester, we need not worr
 If they are too small, Ethereum will abort the transaction and there will not be a request or cancellation.
 
 \paragraph{Adversarial cases.}
-During the creation and fulfillment of any request, there are two untrusted parties: The requester contract / user $\reqcont$ and the \tc~\medname. In the \tc implementation, we thus consider three cases, here giving the desired properties of each:
+During the creation and fulfillment of any request, there are two untrusted parties: The requester contract / user $\reqcont$ and the \medname. In the \tc implementation, we thus consider three cases, here giving the desired properties of each:
 
 \begin{itemize}
   \setlength{\itemsep}{2pt}
@@ -75,7 +75,7 @@ During the creation and fulfillment of any request, there are two untrusted part
 \end{itemize}
 We formalize these properties in Section~\ref{sec:analysis} and prove that our protocol provides these guarantees.
 We intentionally ignore the case where both the requester and the \medname are dishonest.
-If the requester is dishonest we need to not protect their request, and if the \medname is dishonest we cannot protect the TC system.
+If the requester is dishonest we need to not protect her request, and if the \medname is dishonest we cannot protect the TC system.
 
 
 
@@ -85,6 +85,9 @@ If the requester is dishonest we need to not protect their request, and if the \
   \hline
 
   \multicolumn{2}{|c|}{{\bf \tcs blockchain contract \tcont with fees}} \\[1ex]
+
+  \multicolumn{2}{|@{\hspace{3pt}}l|}{{\bf Initialize:} $\text{Counter} := 0$} \\[1ex]
+
   {\bf Request:} & On recv $({\sf params}, {\sf callback}, \fee, \gasrequest)$ from some $\reqcont$: \\
                  & Assert $\constgasmin \leq \fee \leq \constgasmax$ \\
                  & $\dgid := \text{Counter}$; \ \ $\text{Counter} := \text{Counter} + 1$ \\
@@ -98,7 +101,9 @@ If the requester is dishonest we need to not protect their request, and if the \
                  & \quad Return \\
                  & Retrieve stored $(\dgid, \dgform', \dgcallback, \fee, \_)$ \\
                  & \quad \sgray{\it //~abort if not found} \\
-                 & Assert $\dgform = \dgform'$ and $\fee \leq \gasdeliver$ \\
+                 & Assert $\dgform = \dgform'$ \\
+                 & \quad and $\fee \leq \gasdeliver$ \\
+                 & \quad and ${\sf isDelivered}[\dgid]$ not set \\
                  & Set ${\sf isDelievered}[\dgid]$ \\
    \sgray{$(3)$} & Send $\fee$ to \tcadd \\
                  & Set $\gascallback := \fee - \constgasmin$ \\
@@ -214,10 +219,10 @@ We now describe how this can be realized by modifying the payment-free protocol 
 %  \setlength{\parskip}{0pt}
   \setlength{\parsep}{0pt}
   \item {\it Initialization.}
-    We assume that Town Crier deposits at least $\constgasmax$ into the wallet $\tcadd$.
+    We assume that \tc deposits at least $\constgasmax$ into the wallet $\tcadd$.
 
   \item {\it \tcs blockchain contract.}
-    Figure \ref{tbl:gas-tc-contract} specifies the \tcs blockchain contract, with fees.
+    Figure \ref{tbl:gas-tc-contract} specifies the \tc blockchain contract \tcont, with fees.
     Since $\tcadd$ must invoke {\bf Deliver}, \tc pays the gas cost.
     It sets the {\tt GASLIMIT} $\gasdeliver := \constgasmax$.
     To ensure that the gas spent does not exceed the reimbursement available ($\fee$),
@@ -226,7 +231,7 @@ We now describe how this can be realized by modifying the payment-free protocol 
   \item {\it Town Crier Relay.}
     The \medname behavior does not change with the presence of fees.
     It still monitors the blockchain and whenever the contract \tcont stores a new request $(\dgid, \dgform, \_, \_, \_)$,
-    it invokes $\enclaveprog$ with $\resumecall(\dgid, \dgform)$.
+    it invokes $\enclaveprog.\textbf{Resume}(\dgid, \dgform)$.
 
   \item {\it Town Crier \encname.}
     We make the following small modification to the fee-free protocol.
@@ -246,11 +251,14 @@ Finally, she invokes {\bf Request}$(\dgform, \dgcallback, \fee)$ with {\tt GASLI
 
 \subsection{Private and Custom Datagrams}
 \label{subsec:private_datagrams}
-In addition to ordinary datagrams, \tc supports \emph{private datagrams}, which involve requests where $\dgform$ includes ciphertexts under $\pkTC$. Private datagrams can thus enable confidentiality-preserving applications despite the public readability of the blockchain.  \emph{Custom datagrams}, also supported by \tc, allow a contract to specify a particular web-scraping target, potentially involving multiple interactions, and thus greatly expand the range of possible relying contracts for \tc. We do not treat them in our security proofs, but give examples of both datagram types in Section~\ref{sec:applications}.
+In addition to ordinary datagrams, \tc supports \emph{private datagrams}, which are requests where $\dgform$ includes ciphertexts under $\pkTC$. Private datagrams can thus enable confidentiality-preserving applications despite the public readability of the blockchain.  \emph{Custom datagrams}, also supported by \tc, allow a contract to specify a particular web-scraping target, potentially involving multiple interactions, and thus greatly expand the range of possible relying contracts for \tc. We do not treat them in our security proofs, but give examples of both datagram types in Section~\ref{sec:applications}.
 
 \subsection{Enhanced Robustness via Replication}
 \label{subsec:enhanced_robustness}
-Our basic security model for \tc assumes the ideal isolation model for SGX described above, as well as client trust in data sources. Given various concerns about SGX security~\cite{sgxexplained,7163052}, and the possible fallibility of data sources, however, \tc can support two important forms of hedging. To protect against the compromise of a single SGX instance, contracts may request datagrams from multiple SGX instances and implement majority voting among the responses at the cost of increased gas expenditure for the additional requests and storing the returned datagrams.  Similarly, \tc can hedge against the compromise of a data source by scraping multiple sources for the same data and selecting the majority response. We demonstrate both of these mechanisms in our example financial derivative application in Section~\ref{subsec:hedging}. (A potential optimization is mentioned in Appendix~\ref{sec:future}.)
+Our basic security model for \tc assumes the ideal isolation model for SGX described above as well as client trust in data sources. Given various concerns about SGX security~\cite{sgxexplained,7163052} and the possible fallibility of data sources, we examine two important ways \tc can support hedging.
+To protect against the compromise of a single SGX instance, contracts may request datagrams from multiple SGX instances and implement majority voting among the responses.
+This hedge requires increased gas expenditure for additional requests and storage of returned data.
+Similarly, \tc can hedge against the compromise of a data source by scraping multiple sources for the same data and selecting the majority response. We demonstrate both of these mechanisms in our example financial derivative application in Section~\ref{subsec:hedging}. (A potential optimization is mentioned in Appendix~\ref{sec:future}.)
 
 
 \subsection{Implementation Details}
