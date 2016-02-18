@@ -114,9 +114,9 @@ We give several meaningful data points of comparison to show
 why a single SGX machine suffices to handle the load of
 today's blockchains: 
 Ethereum as of today handles 
-\elaine{fill in} tx/sec on average. 
+$< 1$ tx/sec on average. 
 Bitcoin today handles
-\elaine{fill in} tx/sec, and 
+3 tx/sec, and 
 its maximum throughput (when the full block size is utilized)
 would be roughly 7 tx/sec.
 We know of no measurement study that 
@@ -125,8 +125,9 @@ throughput bound of the Ethereum  peer-to-peer network.
 However, for Bitcoin, it has been shown that without
 redesigning the protocol, 
 Bitcoin cannot scale beyond  
-42 tx/sec \elaine{double check this number} by simple reparametrization of its block size.
-\elaine{cite}
+27 tx/sec~\cite{blockchainscaling}
+%\elaine{double check this number} 
+by simple reparametrization of its block size.
 Therefore, Town Crier will not be a throughput 
 bottleneck when used 
 with decentralized blockchains --- it appears 
