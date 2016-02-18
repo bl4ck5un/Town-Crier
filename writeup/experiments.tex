@@ -106,17 +106,17 @@ on the specific machine model we used due to EPC memory
 constraint.
 Figure \ref{fig:trpt}
 shows that for the three applications evaluated,
-a single SGX machine can handle
+{\bf a single SGX machine can handle
 15 to 74
-tx/sec.
+tx/sec}.
 
 We give several meaningful data points of comparison to show
 why a single SGX machine suffices to handle the load of
 today's blockchains: 
 Ethereum as of today handles 
-\elaine{fill in} tx/sec on average. 
+$< 1$ tx/sec on average. 
 Bitcoin today handles
-\elaine{fill in} tx/sec, and 
+3 tx/sec, and 
 its maximum throughput (when the full block size is utilized)
 would be roughly 7 tx/sec.
 We know of no measurement study that 
@@ -125,8 +125,9 @@ throughput bound of the Ethereum  peer-to-peer network.
 However, for Bitcoin, it has been shown that without
 redesigning the protocol, 
 Bitcoin cannot scale beyond  
-42 tx/sec \elaine{double check this number} by simple reparametrization of its block size.
-\elaine{cite}
+27 tx/sec~\cite{blockchainscaling}
+%\elaine{double check this number} 
+by simple reparametrization of its block size.
 Therefore, Town Crier will not be a throughput 
 bottleneck when used 
 with decentralized blockchains --- it appears 
@@ -203,6 +204,11 @@ plus \num[group-separator={,}]{2500} gas (0.06\textcent) for every 32 bytes of r
 The cost for executing {\bf Cancel} is 62500 gas (1.56\textcent)
 including the gas cost $\constgasinvokecancel$ and the refund $\constgascancel$ paid to \tcs should {\bf Deliver} be called after {\bf Cancel}.
 
+Reflected in each concrete application, Figure \elaine{fill}
+shows that the effective gas cost  
+for the calling Town Crier service (not counting the gas cost for executing
+user-defined callbacks)
+ranges from \elaine{\bf ethan: fill} to \elaine{\bf ethan: fill}.
 
 
 
@@ -223,7 +229,12 @@ the enclave response time is
 1743 ms in this case ({\it c.f.} ms, 
 1058 ms, 423 ms and 262  ms for 
 each data source).
-There is no change in the gas cost in this case.
+At the moment, the three requests 
+are sequential. In the future, we will investigate how to 
+use SGX's thread mechanism to parallelize the requests --- and more importantly
+the security implications of doing so.
+Finally, there is no change in the gas cost when voting is done
+inside the SGX enclave.
 \fan{the numbers are bigger than Yahoo because Google and Bloomberg
 doesn't have a clean API so the whole web page is downloaded.}
 \item
