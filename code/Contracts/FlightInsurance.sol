@@ -1,23 +1,22 @@
 import "TownCrier.sol";
 
-contract FlightInsurance {
+contract FlightIns {
     event Insure(address sender, uint dataLength, bytes32[] data, int72 requestId);
     event PaymentLog(int flag);
     event PaymentInfo(address payee, uint payeeBalance, uint gasRemaining, uint64 requestId, uint delay, uint amount);
     event FlightCancel(address canceller, address requester, bool success);
 
-//    uint constant TC_FEE = (35000 + 4400) * 5 * 10**10;
-    uint constant TC_FEE = (168500 + 20000) * 5 * 10**10;
-    uint constant FEE = 5 * 10**18;
-    uint constant PAYOUT = 10**20;
+    uint constant TC_FEE = (35000 + 20000) * 5 * 10**10;
+    uint constant FEE = 10**18;
+    uint constant PAYOUT = 2 * 10**19;
     uint32 constant PAYOUT_DELAY = 30;
 
     bytes4 constant TC_CALLBACK_FID = 0x3d622256; // bytes4(sha3("pay(uint64,bytes32)"));
 
-    TownCrier TC_CONTRACT;
+    TownCrier public TC_CONTRACT;
     address[2**64] requesters;
 
-    function FlightInsurance(TownCrier tcCont) public {
+    function FlightIns(TownCrier tcCont) public {
         TC_CONTRACT = tcCont;
     }
 

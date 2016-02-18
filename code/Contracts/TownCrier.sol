@@ -16,11 +16,11 @@ contract TownCrier {
 
     address constant SGX_ADDRESS = 0x9d10ea5ad51e1af69cd8d4dcfa60f577818607b2;
 
-    uint constant GAS_PRICE = 5 * 10**10;
-    uint constant MAX_FEE = (3 * 10**6) * GAS_PRICE;
+    uint public constant GAS_PRICE = 5 * 10**10;
+    uint public constant MAX_FEE = (31 * 10**5) * GAS_PRICE;
 
-    uint constant MIN_FEE = 35000 * GAS_PRICE;
-    uint constant CANCELLATION_FEE = 24500 * GAS_PRICE;
+    uint public constant MIN_FEE = 35000 * GAS_PRICE;
+    uint public constant CANCELLATION_FEE = 24500 * GAS_PRICE;
 
     uint constant CANCELLED_FEE_FLAG = 1;
     uint constant DELIVERED_FEE_FLAG = 0;
