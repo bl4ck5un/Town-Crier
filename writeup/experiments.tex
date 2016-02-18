@@ -130,8 +130,10 @@ response time when multiple enclaves are run} on a single machine.
     ylabel=Throughput (tx/sec),
     ylabel near ticks,
     legend cell align=left,
+    xmin=0, xmax=21,
+    ymin=0, ymax=94,
 ]
-\addplot [dashed, domain=1:20, samples=20, thick, forget plot]{5.80*x};
+\addplot [dashed, domain=1:15.5, samples=20, thick, forget plot]{5.80*x};
 \addplot [dashed, domain=1:20, samples=20, thick, forget plot]{2.00*x};
 \addplot [dashed, domain=1:20, samples=20, thick]{1.20*x};
 \addplot [mark=*,       red,   thick, error bars/.cd,y dir=both,y explicit] table[x=n,y=steam,y error=e-steam]{data.csv};
