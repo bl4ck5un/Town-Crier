@@ -1,11 +1,16 @@
 
-\section{Proofs of Security Analysis}
+\section{Proofs of Security}
 \label{sec:analysis-proofs}
 
-This section contains the proofs of the theorems we stated in Section~\ref{sec:analysis}
+This section contains the proofs of the theorems we stated in Section~\ref{sec:analysis}.
 
 
-\begin{proof}[Authenticity (sketch)]
+\begin{retheorem}{thm:authenticity}[Authenticity]
+Assume that $\sigsgx$ and $\Sigma$ are secure signature schemes.
+Then, the full \tc protocol achieves authenticity of data feed under Definition~\ref{defn:auth}.
+\end{retheorem}
+
+\begin{proof}
 We show that if the 
 adversary $\algA$ succeeds in a forgery with non-negligible probability,
 we can construct an adversary $\algB$ that can either
@@ -52,7 +57,15 @@ Therefore, $\algB$ simply outputs this as a signature forgery.
 \end{proof}
 
 
-\begin{proof}[Proof of Gas neutrality for Town Crier (sketch)]
+
+
+
+\begin{retheorem}{thm:tc-gas-neutral}[Gas neutrality for Town Crier]
+If the \tc~\medname is honest,
+Town Crier's wallet $\tcadd$ will have at least $\constgasmax$ remaining after each {\bf Deliver} call.
+\end{retheorem}
+
+\begin{proof}
 By assumption, $\tcadd$ is seeded with at least $\constgasmax$ money.
 Thus it suffices to prove that, given an honest \medname, $\tcadd$ will have at least as much money after invoking {\bf Deliver} as it did before.
 
@@ -104,7 +117,25 @@ there will still be exactly $\constgasmin$ available when this invocation of {\b
 
 
 
-\begin{proof}[Proof of Fair Expenditure for Honest Requester (sketch)]
+
+\begin{retheorem}{thm:fair-expenditure}[Fair Expenditure for Honest Requester]
+For any $\dgform$ and $\dgcallback$,
+let $\constgasrequest$ and $\consthonestfee$ be the respective values chosen by an honest requester for $\gasrequest$ and $\fee$
+when submitting the request $(\dgform, \dgcallback, \fee, \gasrequest)$.
+For any such request submitted by an honest user $\reqcont$, one of the following holds:
+\begin{itemize}
+  \setlength{\itemsep}{2pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+  \item $\dgcallback$ is invoked with a valid datagram matching the request parameters $\dgform$
+    and the requester spends at most $\constgasrequest + \constgasinvokecancel + \consthonestfee$.
+
+  \item The requester spends at most $\constgasrequest + \constgasinvokecancel + \constgascancel$.
+\end{itemize}
+\end{retheorem}
+
+
+\begin{proof}
 $\reqcont$ is honest, so she will spend $\constgasrequest$ to invoke {\bf Request}$(\dgform, \dgcallback, \consthonestfee)$.
 Ethereum does not allow money to change hands without the payer explicitly sending money.
 Therefore we must only examine the explicit function invocations and monetary transfers initiated by $\reqcont$ in connection with the request.

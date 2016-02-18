@@ -1,16 +1,16 @@
-import "TownCrier-vote.sol";
+import "TownCrier.sol";
 
 contract PutOption {
     event Put(bytes32 timestamp, uint gas, bytes32[] data);
     event Pay(uint unitPrice, int amount);
 
-    uint constant TC_FEE = (30000 + (2600 * 2) + 18000) * 5 * 10**10;
+    uint constant TC_FEE = (35000 + 18000) * 5 * 10**10;
 
     bytes4 constant TC_CALLBACK_FID = 0x212e78ad; // bytes4(sha3("settle(uint64,bytes32)"));
 
     address ISSUER;
 
-    TownCrierVote public TC_CONTRACT;
+    TownCrier public TC_CONTRACT;
     bytes32 public TICKER;
     uint public UNIT_PRICE;
     uint public MAX_UNITS;
@@ -23,7 +23,7 @@ contract PutOption {
     bool optionPut;
     bool cancelled;
 
-    function PutOption(TownCrierVote tcContract, bytes32 ticker, uint unitPrice, uint maxUnits, uint strikePrice, uint exprDate) public {
+    function PutOption(TownCrier tcContract, bytes32 ticker, uint unitPrice, uint maxUnits, uint strikePrice, uint exprDate) public {
         if (msg.value < (strikePrice - unitPrice) * maxUnits + TC_FEE) throw;
 
         ISSUER = msg.sender;

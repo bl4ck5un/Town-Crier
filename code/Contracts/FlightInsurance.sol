@@ -1,4 +1,4 @@
-import "TownCrier-vote.sol";
+import "TownCrier.sol";
 
 contract FlightInsurance {
     event Insure(address sender, uint dataLength, bytes32[] data, int72 requestId);
@@ -14,10 +14,10 @@ contract FlightInsurance {
 
     bytes4 constant TC_CALLBACK_FID = 0x3d622256; // bytes4(sha3("pay(uint64,bytes32)"));
 
-    TownCrierVote TC_CONTRACT;
+    TownCrier TC_CONTRACT;
     address[2**64] requesters;
 
-    function FlightInsurance(TownCrierVote tcCont) public {
+    function FlightInsurance(TownCrier tcCont) public {
         TC_CONTRACT = tcCont;
     }
 

@@ -12,8 +12,8 @@ Recall that the user must verify upfront the attestation $\sigatt$ that vouches 
 
 \begin{definition}[Authenticity of Data Feed]
 We say that the \tc protocol satisfies \emph{authenticity of data feed} if,
-for any polynomial-time adversary that can interact arbitrarily with $\fsgx$,
-it cannot persuade an honst verifier to accept $(\pksgx, \sigatt, \dgform:=(\weburl, \pkurl, T), \dgm, \sigma)$
+for any polynomial-time adversary $\algA$ that can interact arbitrarily with $\fsgx$,
+$\algA$ cannot persuade an honest verifier to accept $(\pksgx, \sigatt, \dgform:=(\weburl, \pkurl, T), \dgm, \sigma)$
 where $\dgm$ is not the contents of $\weburl$ with the public key $\pkurl$ at time $T$.
 More formally, for any probabilistic polynomial-time adversary $\algA$,
 \[
@@ -37,15 +37,14 @@ More formally, for any probabilistic polynomial-time adversary $\algA$,
 \begin{theorem}[Authenticity]
 \label{thm:authenticity}
 Assume that $\sigsgx$
-and $\Sigma$ are secure signature schemes (recall
-that we follow Shi et al. \elaine{cite} who show
-how to abstractly  
-model SGX's group signature as a regular signature
-scheme under a manufacturer public key $\pkM$),
+and $\Sigma$ are secure signature schemes.
 %and assume that the cryptographic protocol used to realize the secure channel
 %with $\pkurl$ is secure;
-then, the above 
-protocol achieves authenticity of data feed by Definition~\ref{defn:auth}.
+Then, the full \tc
+protocol achieves authenticity of data feed under Definition~\ref{defn:auth}.\footnote{Recall
+that we
+model SGX's group signature as a regular signature
+scheme under a manufacturer public key $\pkM$ using the model in~\cite{sgxsok}.}
 \end{theorem}
 
 
@@ -74,7 +73,6 @@ For any $\dgform$ and $\dgcallback$,
 let $\constgasrequest$ and $\consthonestfee$ be the respective values chosen by an honest requester for $\gasrequest$ and $\fee$
 when submitting the request $(\dgform, \dgcallback, \fee, \gasrequest)$.
 For any such request submitted by an honest user $\reqcont$, one of the following holds:
-\vspace{-0.4em}
 \begin{itemize}
   \setlength{\itemsep}{2pt}
   \setlength{\parskip}{0pt}
@@ -90,6 +88,4 @@ For any such request submitted by an honest user $\reqcont$, one of the followin
 
 
 
-\paragraph{Other security concerns.} We address concerns about attacks against the basic SGX isolation model embraced in the basic \tc protocol in Section~\ref{subsec:enhanced_robustness}. A threat we do not address in \tc is the risk of traffic analysis by a network adversary or compromised \medname against confidential applications (e.g., with private datagrams), but briefly discuss the issue in Section~\ref{sec:applications}.
-
-
+\paragraph{Other security concerns.} We address concerns about attacks against the basic SGX isolation model embraced in the basic \tc protocol in Section~\ref{subsec:enhanced_robustness}. A threat we do not address in \tc is the risk of traffic analysis by a network adversary or compromised \medname against confidential applications (e.g., with private datagrams), but briefly discuss the issue in Section~\ref{sec:applications}. While \tc assumes the correctness of data sources, if a scraping failure occurs, \tc delivers an empty datagram, enabling relying contracts to fail gracefully.

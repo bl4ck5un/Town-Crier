@@ -11,6 +11,7 @@
 \usepackage{graphicx}
 \usepackage{xspace}
 \usepackage{amsmath,amstext,amssymb,amsfonts,latexsym}
+\usepackage[sort]{cite}
 \usepackage{url,hyperref}
 %\usepackage{setspace}
 \usepackage{siunitx}
@@ -98,10 +99,13 @@
 \definecolor{maroon}{RGB}{178, 34, 34}
 %\definecolor{brown}{RGB}{139, 137, 137}
 \definecolor{gold}{rgb}{0.85, 0.65, 0.13}
+\definecolor{darkgreen}{rgb}{0,0.5,0}
+\definecolor{darkblue}{rgb}{0, 0, 0.5}
 
-\newcommand{\smaroon}[1]{{\ensuremath{\tt {\color{maroon} #1}\xspace}}}
-\newcommand{\sgold}[1]{\ensuremath{\tt {\color{gold} #1 \xspace}}}
-\newcommand{\sbrown}[1]{\ensuremath{\tt {\color{brown} #1 \xspace}}}
+\newcommand{\smaroon}[1]{\ensuremath{\textcolor{maroon}{\tt #1}\xspace}}
+\newcommand{\sgold}[1]{\ensuremath{\textcolor{gold}{\tt #1}\xspace}}
+\newcommand{\sbrown}[1]{\ensuremath{\textcolor{brown}{\tt #1}\xspace}}
+\newcommand{\sblue}[1]{\ensuremath{\textcolor{darkblue}{\tt #1}\xspace}}
 
 \newcommand{\sgray}[1]{{\color{gray} #1}}
 
@@ -172,20 +176,25 @@
 \newcommand{\resumecall}{\texttt{resume}\xspace}
 
 \newcommand{\gas}{\sbrown{\$g}}
-\newcommand{\constgasmin}{\sbrown{\$G_\text{min}}}
-\newcommand{\constgasmax}{\sbrown{\$G_\text{max}}}
-\newcommand{\constgascancel}{\sbrown{\$G_\emptyset}}
+\newcommand{\constgasmin}{\sblue{\$G_\text{min}}}
+\newcommand{\constgasmax}{\sblue{\$G_\text{max}}}
+\newcommand{\constgascancel}{\sblue{\$G_\emptyset}}
 \newcommand{\gasdeliver}{\sbrown{\$g_\text{dvr}}}
 \newcommand{\gasrequest}{\sbrown{\$g_\text{req}}}
 \newcommand{\gascallback}{\sbrown{\$g_\text{clbk}}}
 \newcommand{\gascancel}{\sbrown{\$g_\text{cncl}}}
 \newcommand{\fee}{\smaroon{\$f}}
-\newcommand{\constgasinvokecancel}{\sbrown{\$G_\text{cncl}}}
-\newcommand{\constgasrequest}{\sbrown{\$G_\text{req}}}
-\newcommand{\consthonestfee}{\smaroon{\$F}}
+\newcommand{\constgasinvokecancel}{\sblue{\$G_\text{cncl}}}
+\newcommand{\constgasrequest}{\sblue{\$G_\text{req}}}
+\newcommand{\consthonestfee}{\sblue{\$F}}
 
 \renewcommand{\paragraph}[1]{{\vspace{5pt}\noindent\textbf{#1}}}
 
+\newtheorem*{rethm}{\retitle}
+\newenvironment{retheorem}[1]{%
+  \def \retitle{Theorem \ref{#1}}%
+  \begin{rethm}%
+}{\end{rethm}}
 
 %*****************************
 
@@ -203,7 +212,6 @@
 \input{architecture}
 \input{protocol}
 \input{enhanced_protocol}
-\input{implementation}
 \input{analysis}
 \input{applications}
 \input{experiments}
@@ -219,6 +227,7 @@
 \pagebreak
 \appendix 
 %\input{clock}
+\input{implementation}
 \input{applications-full}
 \input{sgxmodel}
 \input{analysis-proofs}

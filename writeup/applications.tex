@@ -62,9 +62,9 @@ fair trade of virtual items for the Steam~\cite{steam},
 an onling gaming platform that supports thousands of games and maintains its own marketplace, where users can trade, buy, and sell games and other virtual items.  
 We implement a contract for the sale of games and items for ether that showcases \tc's support for {\it custom datagrams} through the use of Steam's access-controlled API.
 In our implementation, 
-the buyer sends ${\sf Enc}_{\pkTC}(\text{account credentials}, {\sf req})$
+the seller sends ${\sf Enc}_{\pkTC}(\text{account credentials}, {\sf req})$
 to $\tcont$,
-such that Town Crier's enclave can log in as the buyer  
+such that Town Crier's enclave can log in as the seller  
 and determine from the web-page whether the virtual item
 has been shipped.
 

@@ -19,6 +19,9 @@ Second, an SGX host could become compromised, prompting revocation of its EPID s
 
 
 \item{\em SLAs.} Were \tc to be deployed as a fee-for-service system, requesters might wish to see Service Level Agreements (SLAs) enforced. A temporary outage on a \tc host or a malicious \medname could cause a delay in datagram delivery, potentially with aftereffects in relying contracts. An SLA could be implemented as an indemnity paid to a contract if a datagram is not delivered within a specified period of time. This feature could itself be implemented, for example, as an entry point in $\tcont$. (Naturally care would be required to ensure that $\tcont$ holds funds sufficient for payout in the case of a general delivery failure.)
+
+\item{\em Hedging against SGX compromise.} We discussed in Section~\ref{subsec:enhanced_robustness} and demonstrated in Section~\ref{subsec:hedging} how \tc can support majority voting across SGX hosts and/or data sources to hedge against failures in either (outside \tc's basic security model) via majority voting. It would be possible to reduce the latency and gas costs of such voting with design enhancements to \tc. Specifically, for the case of SGX voting, we plan to investigate a scheme in which consensus on a datagram value $X$ is reached off-chain among SGX-enable \tc hosts  via Byzantine consensus. These hosts may then use a threshold digital signature scheme to sign the datagram response from ${\cal W}_{TC}$. To ensure that the response is delivered to the blockchain, each participating host can monitor the blockchain and itself transmit the response in the case of an observed delivery failure. This approach will largely eliminate the incremental gas cost of majority voting across SGX instances.
+
 \end{itemize}
 
 \subsection{Expanding \tc functionality}

@@ -18,6 +18,11 @@ To guard against the \medname tampering with request parameters, the \tcont prot
 To reduce this cost for large arrays, we store and verify $\text{SHA3-256}({\sf typeByte} || {\sf timestamp} || {\sf paramArray})$.
 The \medname scrapes the raw values for the \encname which computes the hash and includes it as an argument to {\bf Deliver}.
 
+To allow for improved efficiency in client contracts, our implementation of {\bf Request} returns $\dgid$
+and {\bf Deliver} includes $\dgid$ along with $\dgm$ as arguments to $\dgcallback$.
+This allows client contracts to make multiple requests in parallel and differentiate the responses,
+so it is no longer necessary to create a unique client contract for every request to $\tcont$.
+
 
 
 \subsection{TC Server}

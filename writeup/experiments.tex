@@ -1,59 +1,51 @@
 \section{Experiments}
 \label{sec:experiments}
 
-\begin{table*}[ht]
-\centering
-\begin{tabular}{lrr|rr|rr}
+\begin{table*}[h]
+\resizebox{\linewidth} {!}{
+\begin{tabular}{l|lllll|lllll|lllll}
 \toprule
-& \multicolumn{2}{c|}{\sf CashSettledPut} &
-  \multicolumn{2}{c|}{\sf FlightIns} &
-  \multicolumn{2}{c}{\sf SteamTrade} \\
-  & time(ms) & proportion & time(ms) & proportion  & time(ms) & proportion\\
+& \multicolumn{5}{c|}{\sf CashSettledPut} &
+  \multicolumn{5}{c|}{\sf FlightIns} &
+  \multicolumn{5}{c}{\sf SteamTrade} \\
+    & \textbf{mean} & \% & $t_{\max}$ & $t_{\min}$ & $\sigma_t$ & \textbf{mean}
+    & \% & $t_{\max}$ & $t_{\min}$ & $\sigma_t$ & \textbf{mean} & \% & $t_{\max}$
+    & $t_{\min}$ & $\sigma_t$\\
 \midrule
-Context switch & 0.41    & 0.21\%   & 0.44      & 0.08\%    & 0.89    & 0.07\%\\
-Web scraper         & 181.03  & 94.12\%  & 512.32    & 98.02\%   & 1297.73 & 99.11\%\\
-Sign                & 10.63   & 5.53\%   & 9.64      & 1.85\%    & 10.45   & 0.80\%\\
-Serialization       & 0.28    & 0.14\%   & 0.25      & 0.05\%    & 0.32    & 0.02\%\\
+    ctx. switch & 1.00 & 0.6 & 3.12 & 0.25 & 0.31 
+                & 1.23 & 0.24 & 2.94 & 0.17 & 0.32 
+                & 1.17 & 0.20 & 3.25 & 0.36 & 0.35\\
+    Web scraper & 157  & 87.2 & 258 & 135 & 18 
+                & 482  & 95.4 & 600 & 418 & 31 
+                & 576  & 96.2 & 765 & 489 & 52\\
+    Sign        & 20.2 & 11.2 & 26.6 & 18.7 & 1.52 
+                & 20.5 & 4.0 & 25.3 & 18.9 & 1.4 
+                & 20.3 & 3.4 & 24.8 & 18.8 & 1.28\\
+    Serialization 
+                & 0.40 & 0.2 & 0.84 & 0.24 & 0.08 
+                & 0.38 & 0.08 & 0.67 & 0.20 & 0.08 
+                & 0.39 & 0.07 & 0.65 & 0.24 & 0.09\\
 \midrule
-Total               & 192.35  & 100.00\%    & 522.65    & 100.00\% & 1309.39 & 100.00\%\\
-\bottomrule
+\midrule
+    \textbf{Total} 
+                & 180 & 100 & 284 & 158 & 18 
+                & 505 & 100 & 623 & 439 & 31 
+                & 599 & 100 & 787 & 510 & 52 \\
+\bottomrule	
 \end{tabular}
-\caption{Running time of handling a request \elaine{Fan to 1) add std dev;
-2)update context switch time to include
-time switching out too}}
+}
+\caption{Enclave response time and breakdown. 
+We tested \tc with 500 sequential requests and reported
+the statistics of response time including 
+the average ({\bf mean}), proportion (\%), maximum ($t_{\max}$),
+minimum ($t_{\min}$) and standard deviation ($\sigma_t$).
+All numbers (except for the proportion (\%)) are in miliseconds.
+Note that {\bf Total} is the end-to-end response time as 
+defined in Section \ref{subsec:response time}. The breakdown
+might not sum up to the {\bf total} due to
+some minor unmeasured overhead.}
 \label{tab:eval_profiling}
 \end{table*}
-
-
-
-%\begin{table*}[ht]
-%\centering
-%\begin{tabular}{lrr|rr|rr}
-%\toprule
-%& \multicolumn{2}{c|}{\sf CashSettledPut} & 
-%  \multicolumn{2}{c|}{\sf FlightIns} &
-%  \multicolumn{2}{c}{\sf SteamTrade} \\ 
-%\midrule
-%& \multicolumn{2}{c|}{\bf Enclave response time}
-%& \multicolumn{2}{c|}{\bf Enclave response time}
-%& \multicolumn{2}{c}{\bf Enclave response time} \\
-%  & time(ms) & \multicolumn{1}{c|}{proportion} & time(ms) & \multicolumn{1}{c|}{proportion} & time(ms) & \multicolumn{1}{c}{proportion}\\
-%%\midrule
-%Context switch & 0.41    & 0.21\%   & 0.44      & 0.08\%    & 0.89    & 0.07\%\\
-%Web scraper         & 181.03  & 94.12\%  & 512.32    & 98.02\%   & 1297.73 & 99.11\%\\
-%Sign                & 10.63   & 5.53\%   & 9.64      & 1.85\%    & 10.45   & 0.80\%\\
-%Serialization       & 0.28    & 0.14\%   & 0.25      & 0.05\%    & 0.32    & 0.02\%\\
-%%\midrule
-%{\bf Total}     & {\bf 192.35}  & {100.00}\%    & {\bf 522.65}  & 100.00\% & 
-%{\bf 1309.39} & 100.00\%\\
-%\bottomrule
-%\end{tabular}
-%\caption{Running time of handling a request \elaine{Fan to 1) add std dev;
-%2)update context switch time to include
-%time switching out too}}
-%\label{tab:eval_profiling}
-%\end{table*}
-%
 
 We evaluated the performance of \tc on a Dell Inspiron 13-7359 laptop equipped
 with an Intel i7-6500U CPU and 8.00GB memory.  This model is chosen 
@@ -67,65 +59,45 @@ after Fan's new experiments are done.}
 
 
 \subsection{Enclave Response Time}
-% justify why a laptop is used 
+\label{subsec:response time}
 We measured the enclave response time for handling a request. Here ``enclave response time''
 is defined as the difference between 1) the time 
 the relay decides to send a request to an SGX enclave;
 and 2) the time the relay gets a response back from the SGX enclave. 
 For each application, we repeat the  
 experiment 5 times, and report the mean and the standard deviation.  
-\elaine{change accordingly after Fan puts in the std dev}
 
-%The measurement begins
-%at the point when a request is discovered and ends at the point when the
-%response is sent to delivery. 
-%Propagation latency of the Ethereum network
-%is not measured since it is out of the control of \tc. 
-
-Table \ref{tab:eval_profiling} summarizes the total enclave response
-time as well as its breakdown. 
-The table suggests that for the three applications we implemented
-the enclave response time ranges from {\bf 192 ms}
-to {\bf 1309 ms}.  \elaine{update numbers after Fan updates table}
-The response time 
-is clearly dominated by the web scraper time, i.e., the time it takes to 
-fetch the requested information from a website.
-Among the three applications 
-evaluated, {\sf SteamTrade} has the longest web scraper time, 
-since in the case of {\sf SteamTrade}, the web scraper
-must interact with the website over multiple roundtrips to fetch the desired datagram.
-
-%Web scrapers contribute the most to the
-%total execution time. This portion of running time
-%is application-specific and mainly depends on the
-%amount of fetched data.
-
-%Suggested by Table \ref{tab:eval_profiling}, fetching web pages 
-%over HTTPS is the most expensive operation. This is because: 1)
-%fetching data triggers
-%a lot of context switches 
-%and data transferring between the enclave and untrusted application;
-%2) networking latency is reflected 
+Table \ref{tab:eval_profiling} summarizes the total enclave response time as
+well as its breakdown.  The table suggests that for the three applications we
+implemented the enclave response time ranges from {\bf 183 ms} to {\bf 925 ms}.
+The response time is clearly dominated by the web scraper time, i.e., the time
+it takes to fetch the requested information from a website.  Among the three
+applications evaluated, {\sf SteamTrade} has the longest web scraper time, since
+in the case of {\sf SteamTrade}, the web scraper must interact with the website
+over multiple roundtrips to fetch the desired datagram.
 
 \subsection{Transaction Throughput}
 We performed a sequence of experiments running 1 to 20 enclaves 
+concurrently
 on a single SGX-enable laptop
 machine, and investigated the transaction throughput 
 enabled by a single SGX machine. 
-Note that SGX allows at most 20 enclaves on the specific machine model we used.
-Figure \elaine{refer to Fan's new figure} 
+Note that at most 20 \tc enclaves can be launched
+on the specific machine model we used due to EPC memory
+constraint.
+Figure \ref{fig:trpt}
 shows that for the three applications evaluated,
-a single SGX machine can handle
-\elaine{blah to blah} 
-tx/sec.
+{\bf a single SGX machine can handle
+15 to 74
+tx/sec}.
 
 We give several meaningful data points of comparison to show
 why a single SGX machine suffices to handle the load of
 today's blockchains: 
 Ethereum as of today handles 
-\elaine{fill in} tx/sec on average. 
+$< 1$ tx/sec on average. 
 Bitcoin today handles
-\elaine{fill in} tx/sec, and 
+3 tx/sec, and 
 its maximum throughput (when the full block size is utilized)
 would be roughly 7 tx/sec.
 We know of no measurement study that 
@@ -134,8 +106,9 @@ throughput bound of the Ethereum  peer-to-peer network.
 However, for Bitcoin, it has been shown that without
 redesigning the protocol, 
 Bitcoin cannot scale beyond  
-42 tx/sec \elaine{double check this number} by simple reparametrization of its block size.
-\elaine{cite}
+27 tx/sec~\cite{blockchainscaling}
+%\elaine{double check this number} 
+by simple reparametrization of its block size.
 Therefore, Town Crier will not be a throughput 
 bottleneck when used 
 with decentralized blockchains --- it appears 
@@ -156,41 +129,49 @@ response time when multiple enclaves are run} on a single machine.
 	xlabel=Number of enclaves on a single machine,
 	ylabel=Throughput (tx/sec),
     ylabel near ticks,
+    legend cell align=left,
 ]
 \addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=steam,y error=e-steam]{data.csv};
 \addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=flight,y error=e-flight]{data.csv};
 \addplot+[error bars/.cd,y dir=both,y explicit] table[x=n,y=putop,y error=e-putop]{data.csv};
-
-\legend{{\sf SteamTrade},{\sf FlightIns},{\sf CashSettledPut}}
+\addplot [dashed, domain=1:20, samples=20, thick, forget plot]{5.80*x};
+\addplot [dashed, domain=1:20, samples=20, thick, forget plot]{2.00*x};
+\addplot [dashed, domain=1:20, samples=20, thick]{1.20*x};
+\legend{{\sf SteamTrade},{\sf FlightIns},{\sf CashSettledPut}, {\sf Linear Scaling}}
 \end{axis}
 \end{tikzpicture}
 }
-\caption{Throughput is measured on a single SGX-enabled machine. The x-axis is
-the number of enclaves and the y-axis is the number of transactions processed per
-second.  We ran five rounds of experiments and error bars show the standard
-deviation.}
+\caption{Throughput on a single SGX machine.  The x-axis is the number of
+concurrent enclaves and the y-axis is the number of transactions processed per
+second. 
+The dashed lines indicate the ideal scaling for each application.
+We ran five rounds of experiments (each round processes 1000
+transactions in parallel) and error bars show the standard deviation.}
+
+\label{fig:trpt}
 \end{figure}
 
 
 \begin{table*}[ht]
 \centering
-\begin{tabular}{lr|r|r}
+\begin{tabular}{l|r|r|r}
 \toprule
 & \multicolumn{1}{c|}{\sf CashSettledPut} &
   \multicolumn{1}{c|}{\sf FlightIns} &
-  \multicolumn{1}{c}{\sf SteamTrade} \\
+  \multicolumn{1}{c}{{\sf SteamTrade}${}^\dagger$} \\
 %  & gas (cents) & gas (cents) & gas (cents) \\
 \midrule
-Delivery before issuing cancel & ?? & ?? & ?? \\ 
-Cancel arrived after delivery & & & \\ 
-Cancel, no delivery & & & \\ 
+Deliver without Cancel & 3.95\textcent & 4.00\textcent & 4.30\textcent \\ 
+Cancel arrived after Deliver & 4.90\textcent & 4.95\textcent & 5.25\textcent \\ 
+Cancel without Deliver & 4.65\textcent & 4.70\textcent & 5.00\textcent \\ 
 \bottomrule
 \end{tabular}
-\caption{{\bf Callback-independent} portion of the gas expenditure, translated
-to USD.  Here the difference between the gas expenditure across applications
-is mainly caused 
-by the difference in length of input parameters and output datagrams.
-\elaine{ethan: check}
+\caption[caption]{{\bf Callback-independent} portion of gas expenditure in USD.
+The difference between applications is due to the differing lengths of the input parameters.
+The first two rows would also have to pay for $\dgcallback$,
+but we do not include that cost as it would exist even if data acquisition were free.
+\\\hspace{\textwidth}
+${}^\dagger$ These numbers are for 1 item. Each additional item costs an additional 0.06\textcent.
 }
 \label{tab:eval_gas}
 \end{table*}
@@ -201,31 +182,46 @@ by the difference in length of input parameters and output datagrams.
 Currently 1 gas costs $5 / 10^8$ ether, so at the exchange rate of \$5 for 1 ether, \$1 buys 4 million gas.
 Here we provide costs for the components of our implementation.
 
-The callback-independent portion of {\bf Deliver} costs about \num[group-separator={,}]{35000} gas (0.875\textcent), so this is the value of $\constgasmin$.
+The callback-independent portion of {\bf Deliver} costs about \num[group-separator={,}]{35000} gas (0.9\textcent), so this is the value of $\constgasmin$.
 We set $\constgasmax = \num[group-separator={,}]{3100000}$ gas (77.5\textcent) as this is approximately Ethereum's maximum {\tt GASLIMIT}.
 The cost for executing {\bf Request} is approximately \num[group-separator={,}]{120000} gas (3\textcent) of fixed cost, 
 plus \num[group-separator={,}]{2500} gas (0.06\textcent) for every 32 bytes of request parameters.
-The cost for executing {\bf Cancel} is \elaine{fill in} gas (\ethan{fill}\textcent)
+The cost for executing {\bf Cancel} is 62500 gas (1.55\textcent)
 including the gas cost $\constgasinvokecancel$ and the refund $\constgascancel$ paid to \tcs should {\bf Deliver} be called after {\bf Cancel}.
 
+Reflected in each concrete application, Figure \elaine{fill}
+shows that the effective gas cost  
+for the calling Town Crier service (not counting the gas cost for executing
+user-defined callbacks)
+ranges from \elaine{\bf ethan: fill} to \elaine{\bf ethan: fill}.
 
 
 
 \subsection{Resilience against Component Compromise}
+\label{subsec:hedging}
 For the {\sf FlightIns} application, 
 we implemented and evaluated two modes of majority voting:
 \begin{itemize}[leftmargin=3mm]
 \item
 2-out-of-3 majority voting within the enclave which provides robustness
 against data source compromise.
-Specifically, the enclave scraped three different data sources in three parallel threads, 
-namely, \elaine{fill in}.
+Specifically, in our experiments, 
+the enclave scraped current stock prices 
+from three different data sources, 
+namely, Bloomberg, Google Finance and Yahoo Finance.
 Our experiments suggest that  
 the enclave response time is 
-\elaine{fill} ms in this case ({\it c.f.} \elaine{fill} ms, 
-\elaine{fill} ms, and \elaine{fill} ms for 
-each single data source).
-There is no change in the gas cost in this case.
+1743 ms in this case ({\it c.f.} ms, 
+1058 ms, 423 ms and 262  ms for 
+each data source).
+At the moment, the three requests 
+are sequential. In the future, we will investigate how to 
+use SGX's thread mechanism to parallelize the requests --- and more importantly
+the security implications of doing so.
+Finally, there is no change in the gas cost when voting is done
+inside the SGX enclave.
+\fan{the numbers are bigger than Yahoo because Google and Bloomberg
+doesn't have a clean API so the whole web page is downloaded.}
 \item
 2-out-of-3 majority voting within the requester contract,
 which provides robustness against 
@@ -233,11 +229,10 @@ SGX compromise.
 To support this, we ran three instances of SGX enclaves all scraping
 the same data source.  
 The main change in this scenario is that 
-the gas cost would increase from
-\elaine{fill} cents 
-to \elaine{fill} cents.
-In particular, the increase is just slightly more than 3x 
-because \elaine{Ethan to fill in a very short explanation}.
+the gas cost would increase by a factor of 3 plus an additional 1.95\textcent.
+So {\sf CashSettledPut} would cost 13.8\textcent\ for Deliver without Cancel.
+The extra 1.95\textcent\ is because the client contract must store votes
+until a winner is known and blockchain storage is expensive.
 \end{itemize}
 
 

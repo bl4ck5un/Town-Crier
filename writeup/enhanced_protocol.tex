@@ -1,5 +1,4 @@
-
-\section{Enhanced Protocol}
+\section{Full Town Crier Protocol}
 \label{sec:enhanced_protocol}
 
 The simplified payment-free protocol in Section~\ref{sec:payment-free-protocol} guarantees authenticity of data for an honest user.
@@ -19,7 +18,7 @@ or a malicious \tc from stealing an honest user's money. We now give some prelim
 We take Ethereum's gas model as described in Section~\ref{sec:contracts-and-gas}.
 We use the notation $\gas$ to denote gas and $\fee$ to denote non-gas currency.
 In both cases \$ is a type annotation and the letter denotes the numerical amount.
-For simplicity, our notation assumes that gas and normal currency adopt the same units (allowing us to perform arithmetic without conversion).
+For simplicity, our notation assumes that gas and normal currency adopt the same units (allowing us to avoid explicit conversions), so system constants are values without a unit.
 We use the following identifiers to denote currency and gas amounts.
 %
 \begin{center}
@@ -49,7 +48,7 @@ We use the following identifiers to denote currency and gas amounts.
 \end{tabular}
 \end{center}
 %
-Note that $\constgasmin$, $\constgasmax$, $\constgasinvokecancel$, and $\constgascancel$ are system constants,
+$\constgasmin$, $\constgasmax$, $\constgasinvokecancel$, and $\constgascancel$ are system constants,
 $\fee$ is chosen by the requester (and may be malicious if the requester is dishonest),
 and $\gasdeliver$ is chosen by the \tc~\encname when calling {\bf Deliver}.
 Though $\gasrequest$ and $\gascancel$ are set by the requester, we need not worry about the values.
@@ -72,7 +71,7 @@ During the creation and fulfillment of any request, there are two untrusted part
 
   \item {\it Honest requester and malicious \medname.}
     The requester cannot receive invalid data (which is also assured by the payment-free protocol)
-    and the requester not have to pay computation that is not executed.
+    and the requester should not have to pay computation that is not executed.
 \end{itemize}
 We formalize these properties in Section~\ref{sec:analysis} and prove that our protocol provides these guarantees.
 We intentionally ignore the case where both the requester and the \medname are dishonest.
@@ -134,8 +133,9 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
 
   {\bf Resume:} On recv $(\resumecall, (\dgid, \dgform))$ \\
   \quad [Same as Figure~\ref{fig:engineprotocol} except the last two lines:] \\
-  \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, (\dgid, \dgform, \dgm, \constgasmax))$ \\
-  \quad Output $((\dgid, \dgform, \dgm, \constgasmax), \sigma)$ \\
+  \quad Set $\gasdeliver := \constgasmax$ \\
+  \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, (\dgid, \dgform, \dgm, \gasdeliver))$ \\
+  \quad Output $((\dgid, \dgform, \dgm, \gasdeliver), \sigma)$ \\
 \end{tabular}
 \end{boxedminipage}
 \caption{The \tcs~\encname \engine.}
@@ -244,13 +244,16 @@ We now describe how this can be realized by modifying the payment-free protocol 
     and will never invoke {\bf Cancel} with an $\dgid$ that corresponds to a different user's request.
 \end{itemize}
 
-\subsection{Private and custom datagrams}
+\subsection{Private and Custom Datagrams}
 \label{subsec:private_datagrams}
 In addition to ordinary datagrams, \tc supports \emph{private datagrams}, which involve requests where $\dgform$ includes ciphertexts under $\pkTC$. Private datagrams can thus enable confidentiality-preserving applications despite the public readability of the blockchain.  \emph{Custom datagrams}, also supported by \tc, allow a contract to specify a particular web-scraping target, potentially involving multiple interactions, and thus greatly expand the range of possible relying contracts for \tc. We give examples of both datagram types in Section~\ref{sec:applications}.
 
-\subsection{Enhanced robustness via replication}
+\subsection{Enhanced Robustness via Replication}
 \label{subsec:enhanced_robustness}
-Our basic security model for \tc assumes the ideal isolation model for SGX described above, as well as client trust in data sources. We nonetheless include hedges in \tc, given various concerns about SGX security~\cite{sgxexplained,7163052}, and the possible fallibility of data sources. Briefly...
-\ari{For Kyle to fill in}
+Our basic security model for \tc assumes the ideal isolation model for SGX described above, as well as client trust in data sources. Gven various concerns about SGX security~\cite{sgxexplained,7163052}, and the possible fallibility of data sources, however, \tc can support two important forms of hedging. To protect against the compromise of a single SGX instance, contracts may request datagrams from multiple SGX instances and implement majority voting among the responses at the cost of increased gas expenditure for the additional requests and storing the returned datagrams.  Similarly, \tc can hedge against the compromise of a data source by scraping multiple sources for the same data and selecting the majority response. We demonstrate both of these mechanisms in our example flight-insurance application in Section~\ref{subsec:hedging}. (A potential optimization is mentioned in Appendix~\ref{sec:future}.)
 
 
+\subsection{Implementation Details}
+We implemented a full version of the \tc protocol in a complete, end-to-end system using Intel SGX and Ethereum. Due to space constraints, 
+we defer discussion of implementation details and other practical considerations to 
+Appendix \ref{sec:impl}.

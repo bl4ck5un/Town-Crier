@@ -19,8 +19,9 @@ echo 'personal.unlockAccount(sgxAddr)'
 echo 'sgx'
 
 #echo "source = '$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' TownCrier.sol | paste -sd '' | sed 's/\s\+/ /g')'"
-#echo "source = '$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' TownCrier-vote.sol PutOption.sol FlightInsurance.sol | paste -sd '' | sed 's/\s\+/ /g')'"
-echo "source = '$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' TownCrier-vote.sol FlightInsurance.sol | paste -sd '' | sed 's/\s\+/ /g')'"
+echo "source = '$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' TownCrier.sol PutOption.sol FlightInsurance.sol | paste -sd '' | sed 's/\s\+/ /g')'"
+#echo "source = '$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' TownCrier-vote.sol FlightInsurance.sol | paste -sd '' | sed 's/\s\+/ /g')'"
+#echo "source = '$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' TownCrier.sol PutOptionVote.sol | paste -sd '' | sed 's/\s\+/ /g')'"
 
 #solc --abi --optimize -o compiled/abi *.sol
 #solc --bin --optimize -o compiled/bin *.sol
@@ -30,28 +31,33 @@ echo "source = '$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' TownCrier-vote.sol Fli
 #echo "sv = SigVer.new({from: userAddr, data: svCode, gas: gasCnt}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})"
 
 echo "contracts = eth.compile.solidity(source)"
-echo "TownCrier = eth.contract(contracts.TownCrierVote.info.abiDefinition)"
-echo "FlightInsurance = eth.contract(contracts.FlightInsurance.info.abiDefinition)"
-#echo "PutOption = eth.contract(contracts.PutOption.info.abiDefinition)"
+echo "TownCrier = eth.contract(contracts.TownCrier.info.abiDefinition)"
+#echo "TownCrier = eth.contract(contracts.TownCrierVote.info.abiDefinition)"
+#echo "FlightInsurance = eth.contract(contracts.FlightInsurance.info.abiDefinition)"
+echo "PutOption = eth.contract(contracts.PutOption.info.abiDefinition)"
 
 #echo "tcCode = '$(cat compiled/bin/TownCrier.bin)'"
 #echo "fiCode = '$(cat compiled/bin/FlightInsurance.bin)'"
 #echo "poCode = '$(cat compiled/bin/PutOption.bin)'"
 
-echo "tc = TownCrier.new({from: userAddr, data: contracts.TownCrierVote.code, gas: gasCnt}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})"
+echo "tc = TownCrier.new({from: userAddr, data: contracts.TownCrier.code, gas: gasCnt}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})"
+#echo "tc1 = TownCrier.new({from: userAddr, data: contracts.TownCrier.code, gas: gasCnt}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})"
+#echo "tc2 = TownCrier.new({from: userAddr, data: contracts.TownCrier.code, gas: gasCnt}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})"
+#echo "tc = TownCrier.new({from: userAddr, data: contracts.TownCrierVote.code, gas: gasCnt}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})"
 
 echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
-
-echo "fi = FlightInsurance.new(tc.address, {from: userAddr, data: contracts.FlightInsurance.code, gas: gasCnt, value: Math.pow(10,22)}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})"
-
-#echo "exprDate = (new Date(2016,2,1))"
-##echo "exprDate = new Date((new Date()).getTime() + 5000)"
-#echo "po = PutOption.new(tc.address, 'GOOGL', (50e+19)/2, 50, (700e+19)/2, exprDate.getTime()/1000, {from: userAddr, data: contracts.PutOption.code, gas: gasCnt, value: new BigNumber((700e+19 - 50e+19)*50/2).add(5e+16)}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})"
-
-echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
-
-#echo "po.buy.sendTransaction(20, {from: minerAddr, gas: gasCnt, value: (50e+19)/2 * 20})"
 #echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
+
+#echo "fi = FlightInsurance.new(tc.address, {from: userAddr, data: contracts.FlightInsurance.code, gas: gasCnt, value: Math.pow(10,22)}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})"
+
+echo "exprDate = (new Date(2016,2,1))"
+#echo "exprDate = new Date((new Date()).getTime() + 5000)"
+echo "po = PutOption.new(tc.address, 'GOOGL', (50e+18)/5, 50, (700e+18)/5, exprDate.getTime()/1000, {from: userAddr, data: contracts.PutOption.code, gas: gasCnt, value: 1e22}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})" 
+#echo "po = PutOption.new(tc.address, tc1.address, tc2.address, 'GOOGL', (50e+18)/5, 50, (700e+18)/5, exprDate.getTime()/1000, {from: userAddr, data: contracts.PutOption.code, gas: gasCnt, value: 1e22}, function(e, c) {if (!e && c.address) {console.log(c.address)} else {console.log(e)}})" 
+echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
+
+echo "po.buy.sendTransaction(20, {from: minerAddr, gas: gasCnt, value: (50e+18)/5 * 20})"
+echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
 
 #echo "while (new Date().getTime() < exprDate.getTime() + 1000);"
 #
@@ -64,50 +70,64 @@ echo "var requestInfoF = function(e,r) { if (!e) { console.log('RequestInfo: ' +
 echo "tc.RequestInfo(requestInfoF)"
 #echo "tc.RequestInfo(function(e,r) { if (!e) { console.log('RequestInfo: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
 
-echo "dataAry = Array(1); for (var i = 0; i < dataAry.length; i++) { dataAry[i] = Array(33).join('a'); };"
+#echo "tc1.RequestLog(function(e,r) { console.log('RequestLog: ' + JSON.stringify(r.args)) })"
+#echo "var paramsHash1 = undefined;"
+#echo "var requestInfoF1 = function(e,r) { if (!e) { console.log('RequestInfo: ' + JSON.stringify(r.args)); paramsHash1 = r.args.paramsHash; } else { console.log(e) } }"
+#echo "tc.RequestInfo(requestInfoF1)"
+#
+#echo "tc2.RequestLog(function(e,r) { console.log('RequestLog: ' + JSON.stringify(r.args)) })"
+#echo "var paramsHash2 = undefined;"
+#echo "var requestInfoF2 = function(e,r) { if (!e) { console.log('RequestInfo: ' + JSON.stringify(r.args)); paramsHash2 = r.args.paramsHash; } else { console.log(e) } }"
+#echo "tc.RequestInfo(requestInfoF2)"
+
+#echo "dataAry = Array(1); for (var i = 0; i < dataAry.length; i++) { dataAry[i] = Array(33).join('a'); };"
 #echo "dataAry = 'a'"
-echo "fi.Insure(function(e,r) { if (!e) { console.log('Insure: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
-echo "fi.insure.sendTransaction(dataAry, {from: userAddr, gas: gasCnt, value: 5 * Math.pow(10,18)})"
+#echo "fi.Insure(function(e,r) { if (!e) { console.log('Insure: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
+#echo "fi.insure.sendTransaction(dataAry, {from: userAddr, gas: gasCnt, value: 5 * Math.pow(10,18)})"
 
 #echo 'tc.request.sendTransaction(0, userAddr, "0xdeadbeef", dataAry, {from: userAddr, value: 588e+13, gas: gasCnt})'
 #echo 'tc.request.sendTransaction(0, minerAddr, dataAry, {from: userAddr, value: 1e+17, gas: gasCnt})'
 #echo 'tc.request.sendTransaction(123, minerAddr, ["0x000000000000000000000000000000000000000000000000000000000000000b","0x0000000000000000000000000000000000000000000000000000000000000016","0x0000000000000000000000000000000000000000000000000000000000000021"], {from: userAddr, value: 1e+17, gas: gasCnt})'
 
-#echo "var putTs = undefined;"
-#echo "var putF = function(e,r) { if (!e) { console.log('Put: ' + JSON.stringify(r.args)); putTs = r.args.timestamp; } else { console.log(e) } }"
-#echo "po.Put(putF)"
-##echo "po.Put(function(e,r) { if (!e) { console.log('Put: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
-#echo "po.put.sendTransaction({from: minerAddr, gas: gasCnt})"
+echo "var putTs = undefined;"
+echo "var putF = function(e,r) { if (!e) { console.log('Put: ' + JSON.stringify(r.args)); putTs = r.args.timestamp; } else { console.log(e) } }"
+echo "po.Put(putF)"
+#echo "po.Put(function(e,r) { if (!e) { console.log('Put: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
+echo "po.put.sendTransaction({from: minerAddr, gas: gasCnt})"
 
 echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
 
 #echo "tc.Cancel(function(e,r) { if (!e) { console.log('Cancel: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
-#echo "fi.FlightCancel(function(e,r) { if (!e) { console.log('FlightCancel: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
-#echo "fi.cancel.sendTransaction(1, {from: userAddr, gas: gasCnt})"
-
+##echo "fi.FlightCancel(function(e,r) { if (!e) { console.log('FlightCancel: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
+##echo "fi.cancel.sendTransaction(1, {from: userAddr, gas: gasCnt})"
+#
 #echo "tc.cancel.sendTransaction(1, {from: userAddr, gas: gasCnt})"
-
+#
 #echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
 
-echo "fi.PaymentLog(function(e,r) { if (!e) { console.log('PaymentLog: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
-echo "fi.PaymentInfo(function(e,r) { if (!e) { console.log('PaymentInfo: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
-#echo "po.Pay(function(e,r) { if (!e) { console.log('Pay: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
+#echo "fi.PaymentLog(function(e,r) { if (!e) { console.log('PaymentLog: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
+#echo "fi.PaymentInfo(function(e,r) { if (!e) { console.log('PaymentInfo: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
+echo "po.Pay(function(e,r) { if (!e) { console.log('Pay: ' + JSON.stringify(r.args)) } else { console.log(e) } })"
 
 echo "tc.DeliverLog(function(e,r) { console.log('DeliverLog: ' + JSON.stringify(r.args)) })"
 echo "tc.DeliverInfo(function(e,r) { console.log('DeliverInfo: ' + JSON.stringify(r.args)) })"
+echo "tc1.DeliverLog(function(e,r) { console.log('DeliverLog: ' + JSON.stringify(r.args)) })"
+echo "tc1.DeliverInfo(function(e,r) { console.log('DeliverInfo: ' + JSON.stringify(r.args)) })"
+echo "tc2.DeliverLog(function(e,r) { console.log('DeliverLog: ' + JSON.stringify(r.args)) })"
+echo "tc2.DeliverInfo(function(e,r) { console.log('DeliverInfo: ' + JSON.stringify(r.args)) })"
 ##echo "tc.DeliverSig(function(e,r) { console.log('DeliverSig: ' + JSON.stringify(r.args)) })"
 
 echo "sgxBeforeCash1 = Number(debug.dumpBlock('latest').accounts['9d10ea5ad51e1af69cd8d4dcfa60f577818607b2'].balance.substring(0,12))"
 echo "sgxBeforeCash2 = Number(debug.dumpBlock('latest').accounts['9d10ea5ad51e1af69cd8d4dcfa60f577818607b2'].balance.substring(12))"
 
-echo "tc.deliver.sendTransaction(1, paramsHash, '0x00000000000000000000000000000000000000000000000000000000000000aa', {from: minerAddr, gas: gasCnt, gasPrice: 5e+10})"
+echo "tc.deliver.sendTransaction(1, paramsHash, '0x0000000000000000000000000000000000000000000000068155a43676e00000', {from: sgxAddr, gas: gasCnt, gasPrice: 5e+10})"
 echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
 
-echo "tc.deliver.sendTransaction(1, paramsHash, '0x00000000000000000000000000000000000000000000000000000000000000aa', {from: userAddr, gas: gasCnt, gasPrice: 5e+10})"
-echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
-
-echo "tc.deliver.sendTransaction(1, paramsHash, '0x0000000000000000000000000000000000000000000000000000000000000001', {from: sgxAddr, gas: gasCnt, gasPrice: 5e+10})"
-#echo "tc.deliver.sendTransaction(1, 1, ['GOOGL', putTs], '0x0000000000000000000000000000000000000000000000000000000000000258', {from: sgxAddr, gas: gasCnt, gasPrice: 5e+10})"
+#echo "tc1.deliver.sendTransaction(1, paramsHash1, '0x0000000000000000000000000000000000000000000000068155a43676e00000', {from: sgxAddr gas: gasCnt, gasPrice: 5e+10})"
+#echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
+#
+#echo "tc2.deliver.sendTransaction(1, paramsHash2, '0x0000000000000000000000000000000000000000000000068155a43676e00000', {from: sgxAddr, gas: gasCnt, gasPrice: 5e+10})"
+##echo "tc.deliver.sendTransaction(1, 1, ['GOOGL', putTs], '0x0000000000000000000000000000000000000000000000000000000000000258', {from: sgxAddr, gas: gasCnt, gasPrice: 5e+10})"
 
 echo "miner.start(1); admin.sleepBlocks(1); miner.stop(1);"
 
