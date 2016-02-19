@@ -172,20 +172,19 @@ Further formalism for \fsgx is given in Appendix~\ref{sec:sgxmodel}.
 {\bf $\fsgx[\enclaveprog, \relay]$: abstraction for SGX}
 \end{center}
 \begin{tabular}{l}
-{\bf{\em Hardcoded}}: $\skM$ \\[5pt]
+{\bf{\em Hardcoded}}: $\skM$ \\[3pt]
+{\bf {\em Assume}}:
+{\small $\enclaveprog$ has entry points {\bf Initialize} and {\bf Resume}}\\[3pt] 
 
-{\bf {\em Assume}}: 
-$\enclaveprog$ has entry points {\bf Initialize} and \\ {\bf Resume}\\[5pt]
-\vspace{1mm}
 {\bf Initialize:}\\
 On receive (\initcall) from $\relay$: \\
 \quad Let ${\sf outp} := \enclaveprog.{\bf Initalize}()$  \\
-\quad $\sigatt := \sigsgx.{\sf Sign}(\skM, (\enclaveprog, {\sf outp}))$ \\[-1pt]
-\qquad \qquad \sgray{\it //~models EPID sig.}\\
+\quad \sgray{\it //~models EPID signature.}\\
+\quad $\sigatt := \sigsgx.{\sf Sign}(\skM, (\enclaveprog, {\sf outp}))$\\
 \quad Output  $({\sf outp}, \sigatt)$\\[5pt]
 
 {\bf Resume:}\\
-On receive (\resumecall, ${\sf id, params}$) from $\relay$: \\
+On receive (\resumecall, {\sf id}, {\sf params}) from $\relay$: \\
 \quad Let ${\sf outp} := \enclaveprog.{\bf Resume}({\sf id, params})$  \\
 \quad Output ${\sf outp}$ 
 \end{tabular}
@@ -312,13 +311,11 @@ Upon called through {\bf Resume}$({\sf id}, {\sf params})$, \engine contacts the
 %\quad Set clock reference point\\
 %\quad Record $T_0$ \elaine{this is never used} \\ 
 %\elaine{i deleted the clock implementation, we can separate abstraction from implementation.}\\
+\quad \sgray{\it// Subroutine call from $\fsgx$, which attests to}\\ 
+\quad \sgray{\it// $\enclaveprog$ and $\pkTC$. See Figure~\ref{fig:SGX_abstraction}.} \\
 \quad $(\pkTC, \skTC) := \Sigma.{\sf KeyGen}(1^\lambda)$\\
 %\quad Record $(\pkTC, \skTC)$\\
-\quad Output $\pkTC$   \\
-\sgray{\it/* Subroutine call from $\fsgx$, which attests to}\\ 
-\quad \sgray{\it$\enclaveprog$ and $\pkTC$.} 
- \sgray{See Figure~\ref{fig:SGX_abstraction}.*/}
-\\[3pt]
+\quad Output $\pkTC$   \\[3pt]
 
 %{\bf Attest}:  On recv \attcall: \\ %{\it //~called only once upfront}\\
 %\quad $T := \clock()$\\
