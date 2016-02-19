@@ -57,6 +57,37 @@ Therefore, $\algB$ simply outputs this as a signature forgery.
 \end{proof}
 
 
+\begin{lemma}
+\label{lem:no-money-theft}
+$\tcont$ will never attempt to send money in {\bf Deliver} or {\bf Cancel} that were not deposited with the given $\dgid$.
+\end{lemma}
+
+\begin{proof}
+First we note that there are only three lines on which $\tcont$ sends money: $(2)$, $(3)$, and $(5)$.
+Second, for a request $\dgid$, $\fee$ is deposited.
+Third, because ${\sf isCanceled}[\dgid]$ is only set immediately prior to line $(5)$ and line $(2)$
+is only reachable if ${\sf isCanceled}[\dgid]$ is set, it is impossible to reach line $(2)$ without reaching line $(5)$.
+
+We now consider cases based on which of lines $(3)$ and $(5)$ are reached first (since at least one must be reached to send any money).
+\begin{itemize}
+
+\item {\it Line $(5)$ is reached first.}
+In this case, line $(5)$ sends $\fee - \constgascancel$ and allows $\constgascancel$ to remain.
+Future calls to {\bf Cancel} with this $\dgid$ will fail the ${\sf isCanceled}[\dgid]$ not check assertion, so line $(5)$ can never be reached again with this $\dgid$.
+If $\tcadd$ invokes {\bf Deliver} after this point, the first such invocation will satisfy the predicate on line $(1)$ and proceed to set ${\sf isDelivered}[\dgid]$ and reach line $(2)$.
+Any future entries to {\bf Deliver} with $\dgid$ will fail to satisfy the predicate on line $(1)$ and then fail an assertion and abort prior to line $(3)$.
+Since line $(2)$ sends $\constgascancel$, the total money sent in connection with $\dgid$ is $(\fee - \constgascancel) + \constgascancel = \fee$.
+
+
+\item {\it Line $(3)$ is reached first.}
+In this case, line $(3)$ send the full $\fee$ immediately after setting ${\sf isDelivered}[\dgid]$.
+With ${\sf isDelivered}[\dgid]$ set, any call to {\bf Cancel} with $\dgid$ will fail an assertion prior to line $(5)$
+and any future call to {\bf Deliver} with $\dgid$ will fail to satisfy the predicate on line $(1)$ and also fail an assertion prior to reaching line $(3)$.
+Thus no further money will be distributed in connection with $\dgid$.
+\end{itemize}
+\end{proof}
+
+
 
 
 
@@ -69,7 +100,7 @@ Town Crier's wallet $\tcadd$ will have at least $\constgasmax$ remaining after e
 By assumption, $\tcadd$ is seeded with at least $\constgasmax$ money.
 Thus it suffices to prove that, given an honest \medname, $\tcadd$ will have at least as much money after invoking {\bf Deliver} as it did before.
 
-The enclave will never submit a response for the same $\dgid$ more than once.
+An honest \medname will never ask for a response for the same $\dgid$ more than once.
 {\bf Deliver} only responds to messages from $\tcadd$, and ${\sf isDelivered}[\dgid]$ is only set inside {\bf Deliver},
 so therefore we know that ${\sf isDelivered}[\dgid]$ is not set for this $\dgid$.
 We now consider the case where ${\sf isCanceled}[\dgid]$ is set upon invocation of {\bf Deliver} and the case where it is not.
@@ -83,8 +114,8 @@ Thus, coupled with the knowledge that ${\sf isDeliver}[\dgid]$ is not set, all a
 Now we must show that at line $(3)$ $\tcont$ had $\fee$ to send and that the total gas spend to execute {\bf Deliver} does not exceed $\fee$.
 
 To see that $\tcont$ had sufficient funds, we note that upon entry to {\bf Deliver}, both ${\sf isDelivered}[\dgid]$ and ${\sf isCanceled}[\dgid]$ must have been unset.
-The first because the enclave will not attempt to deliver the same $\dgid$ more than once and ${\sf isDeliver}$ is only set in {\bf Deliver} for the $\dgid$ being delivered.
-The second because, given the first, if ${\sf isCanceled}[\dgid]$ were set, the predicate on line $(1)$ would have returned true, thus sending execution on a path that would not encounter $(4)$.
+The first we showed above.
+The second is because, given the first, if ${\sf isCanceled}[\dgid]$ were set, the predicate on line $(1)$ would have returned true, sending execution on a path that would not encounter $(4)$.
 This means that line $(5)$ was never reached because the preceding line sets ${\sf isCanceled}[\dgid]$.
 Because $(2)$, $(3)$, and $(5)$ are the only lines that remove money from $\tcont$ and $\fee$ was deposited as part of {\bf Request},
 it must be the case that $\fee$ is still in the contract.
@@ -162,6 +193,8 @@ When line $(5)$ is reached, then $\reqcont$ will have spent $\constgasrequest + 
 and spent $\constgasinvokecancel$ in {\bf Cancel} and will attempt to retrieve $\consthonestfee - \constgascancel$.
 
 The retrieval will succeed because $\tcont$ will always have the funds to send $\reqcont$ $\consthonestfee - \constgascancel$.
+To see this, Lemma~\ref{lem:no-money-theft} allows us to consider only {\bf Deliver} and {\bf Cancel} calls associated with $\dgid$.
+
 Since line $(5)$ is reached, it must be the case the ${\sf isDelivered}[\dgid]$ is not set.
 This means that neither lines $(2)$ nor $(3)$ were reached since the line before each sets ${\sf isDelivered}[\dgid]$.
 The lines preceding those two and $(5)$ are the only lines that remove money from the contract.
