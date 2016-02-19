@@ -95,7 +95,7 @@ over multiple roundtrips to fetch the desired datagram.
 \caption{Throughput on a single SGX machine.  The x-axis is the number of
 concurrent enclaves and the y-axis is the number of tx / sec. 
 Dashed lines indicate the ideal scaling for each application, and error bars, the standard deviation.
-We ran 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 20 rounds of experiments (each round processing 1000
+We ran 20 rounds of experiments (each round processing 1000
 transactions in parallel).}
 
 \label{fig:trpt}
@@ -110,7 +110,7 @@ tx/sec}.
 
 Several significant data points show
 how effectively \tc can serve the needs of 
-today's blockchains for \tc: 
+today's blockchains for authenticated data: 
 Ethereum currently handles 
 $< 1$ tx/sec on average. 
 Bitcoin today handles slightly more than
@@ -120,7 +120,7 @@ is roughly 7 tx/sec.
 We know of no measurement study of the
 throughput bound of the Ethereum  peer-to-peer network.
 It has been shown that without
-a protocol design, however, the current 
+a protocol redesign, however, the current 
 Bitcoin network cannot scale via reparametrization beyond  
 27 tx/sec~\cite{blockchainscaling}.
 Thus, with one or at most a few hosts, \tc can easily meet the data feed demands of  
