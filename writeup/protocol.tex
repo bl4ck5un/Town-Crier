@@ -300,7 +300,7 @@ The Town Crier \tcontract \tcont.
 %\vspace{-3mm}
 \paragraph{The \encname \engine.} When initialized through {\bf Initialize}(), \engine ingests the current wall-clock time; by storing this time and setting a clock reference point, it calibrates its absolute clock. It generates an ECDSA keypair $(\pkTC,\skTC)$ (parameterized as in Ethereum), where $\pkTC$ is bound to the \engine instance through insertion into attestations.  
 
-Upon called through {\bf Resume}$({\sf id}, {\sf params})$, \engine contacts the data source specified by {\sf params} via HTTPS and checks that the corresponding certificate {\sf cert} is valid. (We discuss certificate checking in Appendix~\ref{sec:impl}.) Then \engine fetches the requested datagram and returns it to \relay along with $\dgform$ and $\dgid$, all digitally signed with $\skTC$.  Fig.~\ref{fig:engineprotocol} shows the protocol for \engine.
+Upon a call to {\bf Resume}$({\sf id}, {\sf params})$, \engine contacts the data source specified by {\sf params} via HTTPS and checks that the corresponding certificate {\sf cert} is valid. (We discuss certificate checking in Appendix~\ref{sec:impl}.) Then \engine fetches the requested datagram and returns it to \relay along with $\dgform$ and $\dgid$, all digitally signed with $\skTC$.  Fig.~\ref{fig:engineprotocol} shows the protocol for \engine.
 
 \begin{figure}[!h]
 \begin{boxedminipage}{\columnwidth}
@@ -345,12 +345,13 @@ The \tcs~\encname \engine.
 \paragraph{The \medname \relay.}
 As noted in Section~\ref{sec:architecture},
 \relay bridges the gap between the \encname and the blockchain in three ways.
-(1) It scrapes the blockchain, monitoring \tcont for new requests $(\dgid, \dgform)$.
-(2) It boots the \engine with {\bf Initialize}() and handles incoming requests by invoking \engine.{\bf Resume}$(\dgid, \dgform)$.
-Finally, (3) it forwards datagram responses from \engine to the blockchain.
-Recall that it inserts transactions to the blockchain and thus forward responses as \tcadd.
+(1) It scrapes the blockchain and monitors \tcont for new requests $(\dgid, \dgform)$.
+(2) It boots the \encname with \engine.{\bf Initialize}() and calls \engine.{\bf Resume}$(\dgid, \dgform)$ on incoming requests.
+(3) it forwards datagram responses from \engine to the blockchain.
+Recall that it forwards already-signed transacations to the blockchain as \tcadd.
+%Recall that it sends transactions to the blockchain and thus forwards responses as \tcadd.
 The program for \relay is shown in Fig.~\ref{fig:relayprotocol}.
-Here, the function {\sf AuthSend} inserts a transaction to blockchain (``as $\tcadd$'' means the transaction is already signed with $\skTC$).
+The function {\sf AuthSend} inserts a transaction to blockchain (``as $\tcadd$'' means the transaction is already signed with $\skTC$).
 An honest \medname will invoke \engine.{\bf Resume} exactly once with the parameters of each valid request and never otherwise.
 
 \begin{figure}[h!]
