@@ -6,9 +6,6 @@ TEXFLAGS=
 
 TARGET=main.pdf 
 
-light:
-	pdflatex $(TARGET:.pdf=.tex)
-
 all: $(TARGET)
 
 $(TARGET): $(TARGET:.pdf=.tex) *.tex *.bib 
@@ -19,6 +16,10 @@ $(TARGET): $(TARGET:.pdf=.tex) *.tex *.bib
 	bibtex $(basename $<)
 	$(LATEX) $(TEXFLAGS) $<
 	$(LATEX) $(TEXFLAGS) $<
+
+light:
+	pdflatex $(TARGET:.pdf=.tex)
+
 
 clean:
 	rm -f $(TARGET) *.log *.aux *.bbl *.blg 
