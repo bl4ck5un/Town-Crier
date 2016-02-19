@@ -25,14 +25,14 @@ Section~\ref{sec:useofsgx}).
 \paragraph{Modeling choices.}
 For simplicity, the $\fsgx$ model currently does not 
 capture the issue of revocation.
-In this case, as Shi et al. point out, 
+In this case, as Shi et al.~point out, 
 we can model SGX's group signature
 simply as a regular signature scheme $\sigsgx$, whose
 public and secret keys 
 are called ``manufacturer keys'' and denoted $\pkM$ and $\skM$ 
 (i.e., think of always signing 
 with the 0-th key of the group signature scheme).
-We adopt this notational choice from Shi et al.~\cite{sgxsok} %\elaine{cite} 
+We adopt this notational choice from~\cite{sgxsok} %\elaine{cite} 
 for simplicity. Later when 
 we need to take revocation into account,
 it is always possible to replace this signature 
@@ -54,6 +54,7 @@ to denote
 one specific execution context of the global \fsgx
 functionality where the enclave program in question is $\enclaveprog$,
 and the specific SGX instance is attached to a physical machine $\relay$.
+(As the $\medname$ in \tc describes all functionality outside the enclave, we use $\relay$ for convenience also to denote the physical host.)
 This specific context 
 $\fsgx(\sigsgx)[\enclaveprog, \relay]$
 ignores all parties' inputs except those coming from $\relay$.
@@ -66,7 +67,7 @@ $\fsgx$ captures the following features:
 \item
 {\it Initialize.}
 Initialization is run only once.
-Upon initialization, $\fsgx$
+Upon receiving \texttt{init}, $\fsgx$
 runs the initialization part of the enclave program
 denoted ${\sf outp} := \enclaveprog.{\bf Initialize}()$.
 Then, $\fsgx$ 
@@ -77,14 +78,14 @@ The resulting attestation is denoted
 $\sigatt$.
 \item
 {\it Resume.}
-When \ucstring{``resume''} is invoked,
+When \texttt{resume} is received,
 \fsgx 
 calls $\enclaveprog.{\bf Resume}$
 on the input parameters denoted ${\sf params}$.
 $\fsgx$ 
 outputs whatever $\enclaveprog.{\bf Resume}$ outputs.
 \fsgx is stateful, i.e., allowed to carry state
-between \ucstring{``initialize''} and multiple \ucstring{``resume''}
+between \texttt{init} and multiple \texttt{resume}
 invocations.
 \end{itemize}
 
@@ -95,10 +96,9 @@ is speculative,
 since we know of no formal
 proof that Intel's SGX does securely realize this abstraction (or 
 realize any useful formal
-abstraction at all for that matter) --- 
-in fact, available public documentations of SGX
+abstraction at all for that matter)---in fact, available public documentation of SGX
 does not provide sufficient information for making such formal proofs. 
-As such, the formal model by Shi et al. 
+As such, the formal model in~\cite{sgxsok}  
 appears to be the best available tool for us to 
 formally reason about 
 security 
@@ -107,7 +107,7 @@ Shi et al. leave it as an open question to design secure processors
 with clear formal specifications, such that 
 they can be used in the design of larger protocols/systems 
 supporting formal reasoning of security.
-We refer the readers to Shi et al.~\cite{sgxsok} 
+We refer the readers to~\cite{sgxsok} 
 for a more detailed description of the UC modeling of Intel SGX.
 
 
@@ -116,7 +116,7 @@ for a more detailed description of the UC modeling of Intel SGX.
 
 Our protocol notation adopts the formal blockchain
 framework recently proposed by Kosba et al.~\cite{hawk}.
-Besides UC modeling of blockchain-based protocols, 
+In addition to UC modeling of blockchain-based protocols, 
 Kosba et al.~\cite{hawk} also 
 design a modular notational system  
 that is intuitive and factors out tedious but common   
@@ -124,22 +124,19 @@ features inside functionality and protocol wrappers (e.g.,
 modeling of time, pseudonyms, adversarial reordering of messages, 
 a global ledger).
 The advantages of 
-adopting Kosba et al.'s notational system is compelling:
+adopting Kosba et al.'s notational system are these:
 the 
 blockchain contracts and user-side protocols
-in this paper are 
-intuitive to understand on their own; moreover,
+are intuitive on their own and
 they are endowed with precise, formal meaning
-when  we apply the blockchain wrappers defined
-by Kosba et al.
+when  we apply the blockchain wrappers.
 
 \newcommand{\Ttimeout}{\ensuremath{{\sf T}_{\text{timeout}}}\xspace}
 
 \paragraph{Technical subtleties.}
 While Kosba et al.'s formal blockchain model is applicable for the most part,
 we point out a subtle mismatch
-between the formal blockchain model of
-Kosba et al.~\cite{hawk} and
+between their formal blockchain model in~\cite{hawk} and
 the real-world instantiation of blockchains such as 
 Ethereum (and Bitcoin for that matter).
 The design of Town Crier is secure in a slightly modified
@@ -177,7 +174,7 @@ seems to ensure that no {\bf Deliver} will be invoked
 after {\bf Cancel} assuming Town Crier is honest. 
 
 However, we did not adopt this approach due to a technical subtlety
-that arises in this context, namely, the fact that  
+that arises in this context---again, the fact that  
 the Ethereum blockchain does not  
 perfectly match the formal blockchain 
 model specified by Kosba et al~\cite{hawk}.
@@ -193,10 +190,10 @@ for an epoch can censor transactions for this specific epoch, and thus
 effectively this transaction will be deferred to later epochs.
 Further, in case there are more incoming transactions than the block size
 capacity of Ethereum, a backlog of transactions will build up, 
-and similarly in this case there is also no guarantee of 
+and similarly in this case there is also guaranteed
 ordering of backlogged transactions.
 Due to these considerations, we defensively design our Town Crier contract
-such that gas neutrality is attained for Town Crier,
+such that gas neutrality is attained for Town Crier
 even if the {\bf Deliver} transaction arrives after {\bf Cancel}.
 
 %\elaine{in extension, we can support an abstraction
