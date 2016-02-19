@@ -6,6 +6,9 @@ TEXFLAGS=
 
 TARGET=main.pdf 
 
+light:
+	pdflatex $(TARGET:.pdf=.tex)
+
 all: $(TARGET)
 
 $(TARGET): $(TARGET:.pdf=.tex) *.tex *.bib 
