@@ -1,0 +1,34 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [1][-]{section.2}{Background}{}% 2
+\BOOKMARK [1][-]{section.3}{TC Architecture and Security Model}{}% 3
+\BOOKMARK [1][-]{section.4}{Basic TC Protocol}{}% 4
+\BOOKMARK [2][-]{subsection.4.1}{Datagram Lifecycle}{section.4}% 5
+\BOOKMARK [2][-]{subsection.4.2}{Data Flows}{section.4}% 6
+\BOOKMARK [2][-]{subsection.4.3}{Use of SGX}{section.4}% 7
+\BOOKMARK [2][-]{subsection.4.4}{A Payment-Free Basic Protocol}{section.4}% 8
+\BOOKMARK [1][-]{section.5}{Full Town Crier Protocol}{}% 9
+\BOOKMARK [2][-]{subsection.5.1}{Handling Fees in Ethereum}{section.5}% 10
+\BOOKMARK [2][-]{subsection.5.2}{Private and Custom Datagrams}{section.5}% 11
+\BOOKMARK [2][-]{subsection.5.3}{Enhanced Robustness via Replication}{section.5}% 12
+\BOOKMARK [2][-]{subsection.5.4}{Implementation Details}{section.5}% 13
+\BOOKMARK [1][-]{section.6}{Security Analysis}{}% 14
+\BOOKMARK [1][-]{section.7}{Applications: Requesting Contracts}{}% 15
+\BOOKMARK [1][-]{section.8}{Experiments}{}% 16
+\BOOKMARK [2][-]{subsection.8.1}{Enclave Response Time}{section.8}% 17
+\BOOKMARK [2][-]{subsection.8.2}{Transaction Throughput}{section.8}% 18
+\BOOKMARK [2][-]{subsection.8.3}{Gas Costs}{section.8}% 19
+\BOOKMARK [2][-]{subsection.8.4}{Component-Compromise Resilience}{section.8}% 20
+\BOOKMARK [2][-]{subsection.8.5}{Offline Measurements}{section.8}% 21
+\BOOKMARK [1][-]{section.9}{Related Work}{}% 22
+\BOOKMARK [1][-]{section.10}{Conclusion}{}% 23
+\BOOKMARK [1][-]{appendix.A}{TC Implementation Details}{}% 24
+\BOOKMARK [2][-]{subsection.A.1}{TC Contract}{appendix.A}% 25
+\BOOKMARK [2][-]{subsection.A.2}{TC Server}{appendix.A}% 26
+\BOOKMARK [1][-]{appendix.B}{More Details on Formal Modeling}{}% 27
+\BOOKMARK [2][-]{subsection.B.1}{SGX Formal Modeling}{appendix.B}% 28
+\BOOKMARK [2][-]{subsection.B.2}{Blockchain Formal Modeling}{appendix.B}% 29
+\BOOKMARK [1][-]{appendix.C}{Proofs of Security}{}% 30
+\BOOKMARK [1][-]{appendix.D}{Applications and Code Samples}{}% 31
+\BOOKMARK [1][-]{appendix.E}{Future Work}{}% 32
+\BOOKMARK [2][-]{subsection.E.1}{Expanding TC threat model}{appendix.E}% 33
+\BOOKMARK [2][-]{subsection.E.2}{Expanding TC functionality}{appendix.E}% 34
