@@ -19,6 +19,7 @@
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.9}
 \usepackage{textcomp}
+\usepackage{multicol}
 
 % suppress left margin for items
 \usepackage{enumitem}
@@ -95,22 +96,28 @@
 \newtheorem{theorem}{Theorem}
 
 %don't want date printed
-\date{}
+\date{18 February 2016}
 
 %make title bold and 14 pt font (Latex default is non-bold, 16 pt)
 \title{\Large \bf Town Crier: \\ An Authenticated Data Feed for Smart Contracts}
 
 %for single author (just remove % characters)
-%\author{
-%{\rm Your N.\ Here}\\
-%Your Institution
-%\and
-%{\rm Second Name}\\
-%Second Institution
-%\and
-%{\rm Name}\\
-%Name Institution
-%} % end author
+\author{
+{\rm Fan Zhang}\\
+Cornell Univ.
+\and
+{\rm Ethan Cecchetti}\\
+Cornell Univ.
+\and
+{\rm Kyle Croman}\\
+Cornell Univ.
+\and
+{\rm Ari Juels}\\
+Cornell Tech (Jacobs)
+\and
+{\rm Elaine Shi}\\
+Cornell Univ.
+} % end author
 
 
 %**** COLORS *********
@@ -238,7 +245,7 @@
 
 \input{related}
 \input{conclusion}
-\pagebreak
+
 
 {\footnotesize
   \bibliographystyle{acm}
