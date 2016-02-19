@@ -134,9 +134,9 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
 \centering
 {\bf Program for \tcs~\encname $(\enclaveprog)$} \\[1ex]
 \begin{tabular}{l}
-  {\bf Initialize}({\sf void}) [Same as Figure~\ref{fig:engineprotocol}] \\[3pt]
+  {\bf Initialize}~({\sf void}) [Same as Figure~\ref{fig:engineprotocol}] \\[3pt]
 
-  {\bf Resume}$(\dgid, \dgform)$ \\
+  {\bf Resume}~$(\dgid, \dgform)$ \\
   \quad [Same as Figure~\ref{fig:engineprotocol} except the last two lines:] \\
   \quad Set $\gasdeliver := \constgasmax$ \\
   \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, (\dgid, \dgform, \dgm, \gasdeliver))$ \\
