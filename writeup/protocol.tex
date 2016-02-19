@@ -344,12 +344,13 @@ The \tcs~\encname \engine.
 \paragraph{The \medname \relay.}
 As noted in Section~\ref{sec:architecture},
 \relay bridges the gap between the \encname and the blockchain in three ways.
-(1) It scrapes the blockchain, monitoring \tcont for new datagram requests $(\dgid, \dgform)$.
+(1) It scrapes the blockchain, monitoring \tcont for new requests $(\dgid, \dgform)$.
 (2) It boots the \engine with {\bf Initialize}() and handles incoming requests by invoking \engine.{\bf Resume}$(\dgid, \dgform)$.
 Finally, (3) it forwards datagram responses from \engine to the blockchain.
 Recall that it inserts transactions to the blockchain and thus forward responses as \tcadd.
 The program for \relay is shown in Fig.~\ref{fig:relayprotocol}.
 Here, the function {\sf AuthSend} inserts a transaction to blockchain (``as $\tcadd$'' means the transaction is already signed with $\skTC$).
+An honest \medname will invoke \engine.{\bf Resume} exactly once with the parameters of each valid request and never otherwise.
 
 \begin{figure}[h!]
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}p{1em}@{\hspace{1ex}}X@{\hspace{3pt}}|}

@@ -91,7 +91,7 @@ If the requester is dishonest we need to not protect her request, and if the \me
   {\bf Request:} & On recv $({\sf params}, {\sf callback}, \fee, \gasrequest)$ from some $\reqcont$: \\
                  & Assert $\constgasmin \leq \fee \leq \constgasmax$ \\
                  & $\dgid := \text{Counter}$; \ \ $\text{Counter} := \text{Counter} + 1$ \\
-                 & Store $(\dgid, \dgform, \dgcallback, \fee, \reqcont)$ \\[-0.8em]
+                 & Store $(\dgid, \dgform, \dgcallback, \fee, \reqcont)$ \\[-0.9em]
                  & {\it \sgray{//~$\fee$ held by contract}} \\[0.3em]
 
   {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm, \gasdeliver)$ from $\tcadd$: \\
@@ -99,10 +99,9 @@ If the requester is dishonest we need to not protect her request, and if the \me
                  & \quad Set ${\sf isDelivered}[\dgid]$ \\
    \sgray{$(2)$} & \quad Send $\constgascancel$ to $\tcadd$ \\
                  & \quad Return \\
-                 & Retrieve stored $(\dgid, \dgform', \dgcallback, \fee, \_)$ \\
+                 & Retrieve stored $(\dgid, \dgform', \dgcallback, \fee, \_)$ \\[-0.1em]
                  & \quad \sgray{\it //~abort if not found} \\
-                 & Assert $\dgform = \dgform'$ \\
-                 & \quad and $\fee \leq \gasdeliver$ \\
+                 & Assert $\dgform = \dgform'$ and $\fee \leq \gasdeliver$ \\
                  & \quad and ${\sf isDelivered}[\dgid]$ not set \\
                  & Set ${\sf isDelievered}[\dgid]$ \\
    \sgray{$(3)$} & Send $\fee$ to \tcadd \\
@@ -110,10 +109,9 @@ If the requester is dishonest we need to not protect her request, and if the \me
    \sgray{$(4)$} & Call $\dgcallback(\dgm)$ with $\gascallback$ max gas \\[0.3em]
 
   {\bf Cancel:}  & On recv $(\dgid, \gascancel)$ from $\reqcont$: \\
-                 & Retrieve stored $(\dgid, \_, \_, \fee, \reqcont')$ \\
+                 & Retrieve stored $(\dgid, \_, \_, \fee, \reqcont')$ \\[-0.1em]
                  & \quad \sgray{\it //~abort if not found} \\
-                 & Assert $\reqcont = \reqcont'$ \\
-                 & \quad and $\fee \geq \constgascancel$ \\
+                 & Assert $\reqcont = \reqcont'$ and $\fee \geq \constgascancel$ \\
                  & \quad and ${\sf isDelivered}[\dgid]$ not set \\
                  & \quad and ${\sf isCanceled}[\dgid]$ not set \\
                  & Set ${\sf isCanceled}[\dgid]$ \\
