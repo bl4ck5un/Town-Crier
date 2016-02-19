@@ -28,6 +28,7 @@ The lifecycle of a datagram may be briefly summarized in the following steps:
 \noindent We now make this data flow more precise. 
 
 \subsection{Data Flows}
+\label{sec:protocol-data-flows}
 
 A datagram request by \reqcont takes the form of a message $m_1 = (\dgform, \dgcallback)$ to \tcont on the blockchain. $\dgform$ specifies the requested datagram, e.g.~${\sf params} := (\weburl, {\sf spec}, T)$, where $\weburl$ is the target data source, {\sf spec} specifies content of a the datagram to be retrieved (e.g., a stock ticker at a particular time), and $T$ specifies the delivery time for the datagram (initiated by scraping of the data source). The parameter $\dgcallback$ in $m_1$ indicates the entry point in \reqcont to which the datagram is to be returned. (In principle, $\dgcallback$ could point to a different contract, but \tc does not yet adopt this generalization.) 
 

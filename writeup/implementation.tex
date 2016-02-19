@@ -10,16 +10,16 @@ We implement \tcont with fees as described in Section~\ref{sec:gas-protocol} in 
 a high-level language with JavaScript-like syntax which compiles to Ethereum Virtual Machine bytecode---the language Ethereum contracts use.
 
 In order to handle the most general type of requests---including encrypted parameters---the \tcont implementation requires two parameter fields:
-a single byte specifying the type of request (e.g.~flight status) and a byte array of user-specified size.
+an integer specifying the type of request (e.g.~flight status) and a byte array of user-specified size.
 This byte array is parsed and interpreted inside the \encname, but is treated as an opaque byte array by \tcont.
 For convenience, we include the timestamp of the current block as an implicit parameter.
 
 To guard against the \medname tampering with request parameters, the \tcont protocol includes $\dgform$ as an argument to {\bf Deliver} which validates against stored values.
-To reduce this cost for large arrays, we store and verify $\text{SHA3-256}({\sf typeByte} || {\sf timestamp} || {\sf paramArray})$.
+To reduce this cost for large arrays, we store and verify $\text{SHA3-256}({\sf requestType} || {\sf timestamp} || {\sf paramArray})$.
 The \medname scrapes the raw values for the \encname which computes the hash and includes it as an argument to {\bf Deliver}.
 
-To allow for improved efficiency in client contracts, our implementation of {\bf Request} returns $\dgid$
-and {\bf Deliver} includes $\dgid$ along with $\dgm$ as arguments to $\dgcallback$.
+As we mentioned in Section~\ref{sec:protocol-data-flows}, to allow for improved efficiency in client contracts,
+{\bf Request} returns $\dgid$ and {\bf Deliver} includes $\dgid$ along with $\dgm$ as arguments to $\dgcallback$.
 This allows client contracts to make multiple requests in parallel and differentiate the responses,
 so it is no longer necessary to create a unique client contract for every request to $\tcont$.
 
@@ -124,7 +124,7 @@ the \medname and describe their interaction, as summarized in
 Fig.~\ref{fig:tcserver_impl}.
 
 \paragraph{\bf The \encname.} There are three components to the enclave code
-\engine: An HTTPS service, Web Scrapers, which interact with data sources, and a
+\engine: an HTTPS service, Web Scrapers, which interact with data sources, and a
 Request Handler, which services datagram requests. 
 
 \vspace{2mm}
@@ -133,29 +133,31 @@ Request Handler, which services datagram requests.
 access to host network functionality. \tc thus partitions HTTPS into a trusted
 layer, consisting of HTTP and TLS code, and an untrusted layer that provides
 low-layer network service, specifically TCP.  This arrangement allows the
-enclave to establish a secure channel with a web server: The enclave itself
+enclave to establish a secure channel with a web server; the enclave itself
 performs the TLS handshake with a target server and performs all cryptographic
 operations internally, while the untrusted process acts as a network interface
-only. We ported a TLS library (\texttt{mbedTLS}~\cite{mbedtls}) into the SGX environment, as well as
-HTTP code, which we minimized to meet the web-scraping requirements of \tc while
+only. We ported a TLS library (\texttt{mbedTLS}~\cite{mbedtls}) and HTTP code into the SGX environment.
+We minimized the HTTP code to meet the web-scraping requirements of \tc while
 keeping the TCB small. To verify certificates presented by remote servers, we
 hardcoded a collection of root CA certificates into the enclave code; in the
 first version of \tc, the root CAs are identical to those in Chrome. By using its internal, trusted wall-clock time, it is possible to verify that a certificate has not expired. (We briefly discuss revocation in Appendix~\ref{sec:future}.)
 
 \vspace{2mm}
 
-\noindent\emph{Web Scrapers.} We implemented scrapers for our examples in Section~\ref{sec:applications} in an ad hoc manner for our initial implementation of \tc, and defer more principled, robust approaches to future work. 
+\noindent\emph{Web Scrapers.} We implemented scrapers for our examples in Section~\ref{sec:applications} in an ad hoc manner for our initial implementation of \tc.
+We defer more principled, robust approaches to future work. 
 
 \vspace{2mm}
 
-\noindent\emph{Request Handler.} The Request Handler has two jobs: (1) Ingesting
-a datagram request by parsing it in the serialization format specified by
-Ethereum, decrypting it (if it's a private-datagram request), and dispatching
-its parameters to the right scraper; and (2) Returning the response to the
-request by generating an Ethereum transaction containing the requested datagram
-(and parameters), serializing it as a blockchain transaction, and signing it
-using \skTC. We implemented the Ethereum ABI and RLP, which respectively specify
-the serialization of arguments and transactions in Ethereum. 
+\noindent\emph{Request Handler.} The Request Handler has two jobs.
+\begin{enumerate}
+  \setlength{\itemsep}{2pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+  \item It ingests a datagram request in Ethereum's serialization format, parses it, and decrypts it (if it is a private-datagram request).
+  \item It generates an Ethereum transaction containing the requested datagram (and parameter hash), serializes it as a blockchain transaction, signs it using \skTC, and furnishes it to the \medname.
+\end{enumerate}
+We implemented the Ethereum ABI and RLP which, respectively, specify the serialization of arguments and transactions in Ethereum.
 
 \vspace{2mm}
 
@@ -181,7 +183,7 @@ using the Intel Attestation Service (IAS) and then verify the timestamp using $\
 \vspace{2mm}
 
 \noindent\emph{OS services.} The \encname relies on the \medname to access networking and 
-wall-clock time provided by the OS and implemented as ocalls.
+wall-clock time (used for initialization) provided by the OS and implemented as ocalls.
 
 \vspace{2mm}
 
@@ -191,5 +193,5 @@ deliver datagrams. The Blockchain Interface incorporates an
 official Ethereum client, Geth~\cite{geth}. This Geth client can be configured with a JSON RPC server.  
 The \medname  communicates with the blockchain indirectly via RPC calls to this server. For example, to insert a signed transaction, the \medname simply calls
 \texttt{eth\_sendRawTransaction} with the byte array of the serialized
-transaction. We emphasize that as the enclave holds \skTC, transactions are signed within the enclave.
+transaction. We emphasize that, as the enclave holds \skTC, transactions are signed within the enclave.
 

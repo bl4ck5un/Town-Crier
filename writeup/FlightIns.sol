@@ -1,6 +1,6 @@
 // A simple flight insurance contract using Town Crier's private datagram.
 contract FlightIns {
-  uint8  constant TC_REQ_TYPE = 0;
+  uint   constant TC_REQ_TYPE = 0;
   uint   constant TC_FEE      = (35000 + 20000) * 5 * 10**10;
   uint   constant FEE         = 10**18;     //   $5 in wei
   uint   constant PAYOUT      = 2 * 10**19; // $200 in wei
