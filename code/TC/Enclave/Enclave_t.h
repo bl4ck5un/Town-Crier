@@ -20,7 +20,8 @@ extern "C" {
 
 int handle_request(uint8_t* nonce, uint64_t request_id, uint8_t request_type, uint8_t* req, int req_len, uint8_t tx[2048], int* len);
 int Test_main();
-int ecall_create_report(sgx_target_info_t* quote_enc_info, sgx_report_t* report, time_t wall_clock, uint8_t wtc_rsv[65]);
+int ecall_create_report(sgx_target_info_t* quote_enc_info, sgx_report_t* report);
+int ecall_time_calibrate(time_t wall_clock, uint8_t wtc_rsv[65]);
 
 sgx_status_t SGX_CDECL rdtsc(long long* retval);
 sgx_status_t SGX_CDECL ocall_mbedtls_net_connect(int* retval, mbedtls_net_context* ctx, const char* host, const char* port, int proto);

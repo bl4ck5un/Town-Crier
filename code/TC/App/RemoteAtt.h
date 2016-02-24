@@ -6,7 +6,8 @@ extern "C" {
 #endif
 
 
-int remote_att_init (void);
+int remote_att_init (sgx_enclave_id_t eid);
+int time_calibrate(sgx_enclave_id_t eid);
 
 #if defined(__cplusplus)
 }

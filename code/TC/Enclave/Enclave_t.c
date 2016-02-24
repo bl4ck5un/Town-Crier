@@ -45,9 +45,13 @@ typedef struct ms_ecall_create_report_t {
 	int ms_retval;
 	sgx_target_info_t* ms_quote_enc_info;
 	sgx_report_t* ms_report;
+} ms_ecall_create_report_t;
+
+typedef struct ms_ecall_time_calibrate_t {
+	int ms_retval;
 	time_t ms_wall_clock;
 	uint8_t* ms_wtc_rsv;
-} ms_ecall_create_report_t;
+} ms_ecall_time_calibrate_t;
 
 typedef struct ms_rdtsc_t {
 	long long ms_retval;
@@ -221,14 +225,10 @@ static sgx_status_t SGX_CDECL sgx_ecall_create_report(void* pms)
 	sgx_report_t* _tmp_report = ms->ms_report;
 	size_t _len_report = sizeof(*_tmp_report);
 	sgx_report_t* _in_report = NULL;
-	uint8_t* _tmp_wtc_rsv = ms->ms_wtc_rsv;
-	size_t _len_wtc_rsv = 65 * sizeof(*_tmp_wtc_rsv);
-	uint8_t* _in_wtc_rsv = NULL;
 
 	CHECK_REF_POINTER(pms, sizeof(ms_ecall_create_report_t));
 	CHECK_UNIQUE_POINTER(_tmp_quote_enc_info, _len_quote_enc_info);
 	CHECK_UNIQUE_POINTER(_tmp_report, _len_report);
-	CHECK_UNIQUE_POINTER(_tmp_wtc_rsv, _len_wtc_rsv);
 
 	if (_tmp_quote_enc_info != NULL) {
 		_in_quote_enc_info = (sgx_target_info_t*)malloc(_len_quote_enc_info);
@@ -247,6 +247,28 @@ static sgx_status_t SGX_CDECL sgx_ecall_create_report(void* pms)
 
 		memset((void*)_in_report, 0, _len_report);
 	}
+	ms->ms_retval = ecall_create_report(_in_quote_enc_info, _in_report);
+err:
+	if (_in_quote_enc_info) free(_in_quote_enc_info);
+	if (_in_report) {
+		memcpy(_tmp_report, _in_report, _len_report);
+		free(_in_report);
+	}
+
+	return status;
+}
+
+static sgx_status_t SGX_CDECL sgx_ecall_time_calibrate(void* pms)
+{
+	ms_ecall_time_calibrate_t* ms = SGX_CAST(ms_ecall_time_calibrate_t*, pms);
+	sgx_status_t status = SGX_SUCCESS;
+	uint8_t* _tmp_wtc_rsv = ms->ms_wtc_rsv;
+	size_t _len_wtc_rsv = 65 * sizeof(*_tmp_wtc_rsv);
+	uint8_t* _in_wtc_rsv = NULL;
+
+	CHECK_REF_POINTER(pms, sizeof(ms_ecall_time_calibrate_t));
+	CHECK_UNIQUE_POINTER(_tmp_wtc_rsv, _len_wtc_rsv);
+
 	if (_tmp_wtc_rsv != NULL) {
 		if ((_in_wtc_rsv = (uint8_t*)malloc(_len_wtc_rsv)) == NULL) {
 			status = SGX_ERROR_OUT_OF_MEMORY;
@@ -255,13 +277,8 @@ static sgx_status_t SGX_CDECL sgx_ecall_create_report(void* pms)
 
 		memset((void*)_in_wtc_rsv, 0, _len_wtc_rsv);
 	}
-	ms->ms_retval = ecall_create_report(_in_quote_enc_info, _in_report, ms->ms_wall_clock, _in_wtc_rsv);
+	ms->ms_retval = ecall_time_calibrate(ms->ms_wall_clock, _in_wtc_rsv);
 err:
-	if (_in_quote_enc_info) free(_in_quote_enc_info);
-	if (_in_report) {
-		memcpy(_tmp_report, _in_report, _len_report);
-		free(_in_report);
-	}
 	if (_in_wtc_rsv) {
 		memcpy(_tmp_wtc_rsv, _in_wtc_rsv, _len_wtc_rsv);
 		free(_in_wtc_rsv);
@@ -272,33 +289,34 @@ err:
 
 SGX_EXTERNC const struct {
 	size_t nr_ecall;
-	struct {void* call_addr; uint8_t is_priv;} ecall_table[3];
+	struct {void* call_addr; uint8_t is_priv;} ecall_table[4];
 } g_ecall_table = {
-	3,
+	4,
 	{
 		{(void*)(uintptr_t)sgx_handle_request, 0},
 		{(void*)(uintptr_t)sgx_Test_main, 0},
 		{(void*)(uintptr_t)sgx_ecall_create_report, 0},
+		{(void*)(uintptr_t)sgx_ecall_time_calibrate, 0},
 	}
 };
 
 SGX_EXTERNC const struct {
 	size_t nr_ocall;
-	uint8_t entry_table[11][3];
+	uint8_t entry_table[11][4];
 } g_dyn_entry_table = {
 	11,
 	{
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
-		{0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
 	}
 };
 

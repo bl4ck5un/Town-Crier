@@ -30,11 +30,11 @@
 sgx_enclave_id_t global_eid = 0;
 
 #ifdef E2E_BENCHMARK_THREADING
-#define N_ENCLAVE 20
+#define N_ENCLAVE 19
 #else
 #define N_ENCLAVE 1
 #endif
-#define N_REQUEST 1000
+#define N_REQUEST 100
 sgx_enclave_id_t eids[N_ENCLAVE];
 std::mutex locks[N_ENCLAVE];
 
@@ -117,16 +117,59 @@ int main()
     int updated = 0;
     sgx_launch_token_t token = {0};
     sgx_status_t st;
-    for (int i = 0; i < N_ENCLAVE; i++)
+
+
+    st = sgx_create_enclave(ENCLAVE_FILENAME, SGX_DEBUG_FLAG, &token, &updated, &eids[0], NULL);
+    if (st != SGX_SUCCESS)
     {
-            st = sgx_create_enclave(ENCLAVE_FILENAME, SGX_DEBUG_FLAG, &token, &updated, &eids[i], NULL);
-            if (st != SGX_SUCCESS)
-            {
-                print_error_message(st);
-                LL_CRITICAL("%d: failed to create enclave. Returned %#x", i, st);
-            }
-            LL_NOTICE("%d: enclave %llu created", i, eids[i]);
+        print_error_message(st);
+        LL_CRITICAL("Failed to create enclave. Returned %#x", st);
     }
+
+
+#ifdef BENCHMARK
+    long long time1 = 0, time2 = 0;
+#endif
+#ifdef OFFLINE_BENCHMARK
+    for (int j = 0; j < 100; j++)
+    {
+        time1 = __rdtsc();
+        int i = 0;
+        st = sgx_create_enclave(ENCLAVE_FILENAME, SGX_DEBUG_FLAG, &token, &updated, &eids[i], NULL);
+        if (st != SGX_SUCCESS)
+        {
+            print_error_message(st);
+            LL_CRITICAL("%d: failed to create enclave. Returned %#x", i, st);
+        }
+        LL_NOTICE("%d: enclave %llu created", i, eids[i]);
+        time2 = __rdtsc();
+        LL_CRITICAL("setup time: %f", (time2-time1)/FREQ);       
+        st = sgx_destroy_enclave(eids[i]);
+        if (st != SGX_SUCCESS)
+        {
+            print_error_message(st);
+            LL_CRITICAL("%d: failed to create enclave. Returned %#x", i, st);
+        }
+    }
+    goto exit;
+
+#endif
+#ifdef TIME_CALIBRATION_BENCHMARK
+    for (int j = 0; j < 100; j++)
+    {
+        time1 = __rdtsc();
+        remote_att_init(eids[0]);
+        time2 = __rdtsc();
+        LL_CRITICAL("remote_att_init overall: %f", (time2-time1)/FREQ);
+        time_calibrate(eids[0]);
+        time1 = __rdtsc();
+        LL_CRITICAL("time_calibrate overall: %f", (time1-time2)/FREQ);
+    }
+
+    goto exit;
+#endif
+
+
 
 #ifdef E2E_BENCHMARK
     for (int i = 0; i < 500; i++)
@@ -137,6 +180,16 @@ int main()
 #endif
 
 #ifdef E2E_BENCHMARK_THREADING
+    for (int i = 0; i < N_ENCLAVE; i++)
+    {
+            st = sgx_create_enclave(ENCLAVE_FILENAME, SGX_DEBUG_FLAG, &token, &updated, &eids[i], NULL);
+            if (st != SGX_SUCCESS)
+            {
+                print_error_message(st);
+                LL_CRITICAL("%d: failed to create enclave. Returned %#x", i, st);
+            }
+            LL_NOTICE("%d: enclave %llu created", i, eids[i]);
+    }
     BOOL bRet = FALSE;
     PTP_WORK work = NULL;
     PTP_TIMER timer = NULL;
@@ -180,15 +233,21 @@ int main()
                                       NULL);
 
     int n_enclave[] = {2, 5, 10, 15, 19};
-    long long time1, time2;
     benchmark_params_t params[N_REQUEST];
+
+
+    for (int j = 0; j < 20; j++)
+    {
+        
+    LL_CRITICAL("%%%d\n", j);
+
     for (auto n : n_enclave)
     {
         time1 = __rdtsc();
         for (int i = 0; i < N_REQUEST; i++)
         {
             params[i].id = i % n;
-            params[i].type = (uint8_t) TYPE_FINANCE_INFO;
+            params[i].type = (uint8_t) TYPE_FLIGHT_INS;
             work = CreateThreadpoolWork(workcallback, &params[i], &CallBackEnviron);
             if (NULL == work) {
                 _tprintf(_T("CreateThreadpoolWork failed. LastError: %u\n"),
@@ -200,7 +259,11 @@ int main()
         
         CloseThreadpoolCleanupGroupMembers(cleanupgroup, FALSE, NULL);
         time2 = __rdtsc();
-        LL_CRITICAL("with %d enclaves, %d requests handled in %llu cycles", n, N_REQUEST, time2 - time1); 
+        LL_CRITICAL("%d: %llu", n, time2 - time1); 
+    }
+
+    LL_CRITICAL("%%");
+
     }
 
     rollback = 3;  // Creation of work succeeded
@@ -225,9 +288,6 @@ main_cleanup:
             break;
     }
 
-    goto exit;
-#endif
-
     for (int i = 0; i < N_ENCLAVE; i++)
     {
             st = sgx_destroy_enclave(eids[i]);
@@ -237,6 +297,7 @@ main_cleanup:
                 LL_CRITICAL("failed to close enclave. Returned %#x", st);
             }
     } 
+#endif
 exit:
     LL_CRITICAL("%%Info: all enclave closed successfully.");
     LL_CRITICAL("%%Enter a character before exit ...");

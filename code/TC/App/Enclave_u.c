@@ -19,9 +19,13 @@ typedef struct ms_ecall_create_report_t {
 	int ms_retval;
 	sgx_target_info_t* ms_quote_enc_info;
 	sgx_report_t* ms_report;
+} ms_ecall_create_report_t;
+
+typedef struct ms_ecall_time_calibrate_t {
+	int ms_retval;
 	time_t ms_wall_clock;
 	uint8_t* ms_wtc_rsv;
-} ms_ecall_create_report_t;
+} ms_ecall_time_calibrate_t;
 
 typedef struct ms_rdtsc_t {
 	long long ms_retval;
@@ -210,15 +214,24 @@ sgx_status_t Test_main(sgx_enclave_id_t eid, int* retval)
 	return status;
 }
 
-sgx_status_t ecall_create_report(sgx_enclave_id_t eid, int* retval, sgx_target_info_t* quote_enc_info, sgx_report_t* report, time_t wall_clock, uint8_t wtc_rsv[65])
+sgx_status_t ecall_create_report(sgx_enclave_id_t eid, int* retval, sgx_target_info_t* quote_enc_info, sgx_report_t* report)
 {
 	sgx_status_t status;
 	ms_ecall_create_report_t ms;
 	ms.ms_quote_enc_info = quote_enc_info;
 	ms.ms_report = report;
+	status = sgx_ecall(eid, 2, &ocall_table_Enclave, &ms);
+	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
+	return status;
+}
+
+sgx_status_t ecall_time_calibrate(sgx_enclave_id_t eid, int* retval, time_t wall_clock, uint8_t wtc_rsv[65])
+{
+	sgx_status_t status;
+	ms_ecall_time_calibrate_t ms;
 	ms.ms_wall_clock = wall_clock;
 	ms.ms_wtc_rsv = (uint8_t*)wtc_rsv;
-	status = sgx_ecall(eid, 2, &ocall_table_Enclave, &ms);
+	status = sgx_ecall(eid, 3, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
 }

@@ -12,33 +12,42 @@
 #include <Debug.h>
 #include "Utils.h"
 
-//#undef E2E_BENCHMARK
-int remote_att_init ()
+int time_calibrate(sgx_enclave_id_t eid)
 {
+    time_t wtc_time = time(NULL);
+    uint8_t time_sig[65];
+    int ret = 0;
+    sgx_status_t st;
 
+    st = ecall_time_calibrate(eid, &ret, wtc_time, time_sig);
+#ifdef VERBOSE
+    hexdump("Time", time_sig, sizeof time_sig);
+#endif
+    return ret;
+}
+
+int remote_att_init (sgx_enclave_id_t eid)
+{
     sgx_target_info_t quote_enc_info;
     sgx_epid_group_id_t p_gid;
     sgx_report_t report;
     sgx_spid_t spid;
     int ret;
 
-    time_t wtc_time = time(NULL);
-    uint8_t time_rsv[65];
+#ifdef TIME_CALIBRATION_BENCHMARK
     long long time1, time2;
-#ifdef E2E_BENCHMARK
     time1 = __rdtsc();
 #endif
     // get report
     sgx_init_quote( &quote_enc_info, &p_gid);
-    ecall_create_report(global_eid, &ret, &quote_enc_info, &report, wtc_time, time_rsv);
+    ecall_create_report(eid, &ret, &quote_enc_info, &report);
     if (ret != SGX_SUCCESS) {
         printf("ecall_create_report returned %d", ret);
         return -1;
     }
-#ifdef E2E_BENCHMARK
+#ifdef TIME_CALIBRATION_BENCHMARK
     time2 = __rdtsc();
-    LL_CRITICAL("init + sgx_create_report: %llu", time2 - time1);
-    time1 = __rdtsc();
+    LL_CRITICAL("sgx_create_report: %f", (time2-time1)/FREQ);
 #endif
     // get quote
     memset(spid.id, 0x88, sizeof spid.id);
@@ -52,9 +61,9 @@ int remote_att_init ()
         LL_CRITICAL("sgx_get_quote returned %d", ret);
         return -1;
     }
-#ifdef E2E_BENCHMARK
-    time2 = __rdtsc();
-    LL_CRITICAL("sgx_get_quote: %llu", time2 - time1);
+#ifdef TIME_CALIBRATION_BENCHMARK
+    time1 = __rdtsc();
+    LL_CRITICAL("sgx_get_quote: %f", (time1-time2)/FREQ);
 #endif
 
 #ifdef VERBOSE

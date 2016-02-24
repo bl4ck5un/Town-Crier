@@ -11,7 +11,8 @@ enclave {
                    [in, size=req_len] uint8_t* req, int req_len, 
                    [out] uint8_t tx[2048], [in, out] int* len);
         public int Test_main();
-        public int ecall_create_report ([in] sgx_target_info_t* quote_enc_info, [out] sgx_report_t* report, time_t wall_clock, [out] uint8_t wtc_rsv[65]);
+        public int ecall_create_report ([in] sgx_target_info_t* quote_enc_info, [out] sgx_report_t* report);
+        public int ecall_time_calibrate (time_t wall_clock, [out] uint8_t wtc_rsv[65]);
     };
 
     untrusted {

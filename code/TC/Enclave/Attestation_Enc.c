@@ -2,21 +2,28 @@
 #include "sgx_report.h"
 #include "string.h"
 #include "time.h"
-#include <ctime>
 #include "keccak.h"
 #include "ECDSA.h"
 #include "Log.h"
 #include "Enclave_t.h"
 #include "Constants.h"
 
-int ecall_create_report (sgx_target_info_t* quote_enc_info, sgx_report_t* report, time_t wall_clock, uint8_t wtc_rsv[65])
+int ecall_create_report (sgx_target_info_t* quote_enc_info, sgx_report_t* report)
 {
-    long long time_tmp = 0, time_tmp2 = 0;
-    sgx_report_data_t data;
+    sgx_report_data_t data; // user defined data
+    int ret = 0;
+    memset( &data.d, 0x90, sizeof data.d); // put in some garbage
+    ret = sgx_create_report (quote_enc_info, &data, report);
+    return ret;
+}
+
+int ecall_time_calibrate (time_t wall_clock, uint8_t wtc_rsv[65])
+{
     int ret = 0;
     uint8_t wtc_hash[32];
-#ifdef E2E_BENCHMARK
-    rdtsc(&time_tmp);
+#ifdef TIME_CALIBRATION_BENCHMARK
+    long long time1 = 0, time2 = 0;
+    rdtsc(&time1);
 #endif
     ret = keccak((uint8_t*)&wall_clock, sizeof wall_clock, wtc_hash, 32);
     if (ret != 0)
@@ -30,11 +37,9 @@ int ecall_create_report (sgx_target_info_t* quote_enc_info, sgx_report_t* report
         LL_CRITICAL("sign() returned %d", ret);
         return ret;
     }
-#ifdef E2E_BENCHMARK
-    rdtsc(&time_tmp2);
-    LL_CRITICAL("sign: %llu", time_tmp2 - time_tmp);
+#ifdef TIME_CALIBRATION_BENCHMARK
+    rdtsc(&time2);
+    LL_CRITICAL("sign the timestamp: %f", (time2-time1)/FREQ);
 #endif
-    memset( &data.d, 0x90, sizeof data.d);
-    ret = sgx_create_report (quote_enc_info, &data, report);
     return ret;
 }
