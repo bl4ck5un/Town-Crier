@@ -301,12 +301,8 @@ exit:
 
 int main()
 {
-    int ret, tx_len;
-    uint8_t tx[2048];
-    char* tx_str;
-
     uint8_t nonce[32] = {0};
-    std::vector<std::thread> threads;
+    int ret;
 
     if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(NONCE_FILE_NAME) &&
         GetLastError() == ERROR_FILE_NOT_FOUND)
@@ -317,7 +313,8 @@ int main()
 #if defined(_MSC_VER)
     if (query_sgx_status() < 0) {
         LL_CRITICAL("sgx is not support");
-        ret = -1; goto exit;
+        ret = -1; 
+        goto exit;
     }
 #endif 
 
@@ -333,7 +330,8 @@ int main()
     }
     LL_NOTICE("enclave %llu created", global_eid);
 
-    monitor_loop(nonce);
+//    monitor_loop(nonce);
+    demo_test_loop(global_eid, nonce);
 
 exit:
     LL_CRITICAL("%%Info: all enclave closed successfully.");

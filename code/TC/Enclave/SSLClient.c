@@ -555,8 +555,8 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
     if( opt.server_addr == NULL)
         opt.server_addr = opt.server_name;
 
-    LL_NOTICE("Connecting to %s/%s/%s...",
-            opt.transport == MBEDTLS_SSL_TRANSPORT_STREAM ? "tcp" : "udp",
+    LL_NOTICE("connecting to %s:%s:%s...",
+            opt.transport == MBEDTLS_SSL_TRANSPORT_STREAM ? "TCP" : "UDP",
             opt.server_addr, opt.server_port );
 
     if( ( ret = mbedtls_net_connect( &server_fd, opt.server_addr, opt.server_port,
@@ -769,7 +769,7 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
         }
     }
 
-    LL_NOTICE( "Hand shake succeeds: [%s, %s]",
+    LL_LOG( "Hand shake succeeds: [%s, %s]",
             mbedtls_ssl_get_version( &ssl ), mbedtls_ssl_get_ciphersuite( &ssl ) );
 
     if( ( ret = mbedtls_ssl_get_record_expansion( &ssl ) ) >= 0 )
@@ -778,7 +778,7 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
         LL_DEBUG( "Record expansion is [unknown (compression)]" );
 
 #if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
-    LL_NOTICE( "Maximum fragment length is [%u]",
+    LL_LOG( "Maximum fragment length is [%u]",
                     (unsigned int) mbedtls_ssl_get_max_frag_len( &ssl ) );
 #endif
 
@@ -797,7 +797,7 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
 
         if( ( ret = mbedtls_ssl_get_session( &ssl, &saved_session ) ) != 0 )
         {
-            LL_NOTICE("mbedtls_ssl_get_session returned -%#x", -ret );
+            LL_CRITICAL("mbedtls_ssl_get_session returned -%#x", -ret );
             goto exit;
         }
 
@@ -821,7 +821,7 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
         mbedtls_printf( "%s\n", vrfy_buf );
     }
     else
-        LL_NOTICE("X.509 Verifies");
+        LL_LOG("X.509 Verifies");
 
     if( mbedtls_ssl_get_peer_cert( &ssl ) != NULL )
     {
@@ -929,7 +929,8 @@ send_request:
     }
 
     buf[written] = '\0';
-    LL_NOTICE("%d bytes written in %d fragments", written, frags);
+    LL_LOG("%d bytes written in %d fragments", written, frags);
+    LL_LOG("%s", (char*) buf);
 
     if (opt.debug_level > 0) hexdump("Bytes written:", buf, written);
 
@@ -975,7 +976,7 @@ send_request:
 
             len = ret;
 
-            LL_NOTICE( "%d bytes read", len, (char *) output );
+            LL_NOTICE( "get %d bytes ending with %x", len, output[len-1]);
             if (opt.debug_level> 0) hexdump("REPONSE:", output, len);
             // TODO: Add full-fledge HTTP parser here
             // possibly from libcurl
@@ -1076,7 +1077,7 @@ close_notify:
     while( ret == MBEDTLS_ERR_SSL_WANT_WRITE );
     ret = 0;
 
-    LL_NOTICE( "Closed to %s:%s", opt.server_addr, opt.server_port );
+    LL_NOTICE( "closed %s:%s", opt.server_addr, opt.server_port );
 
     /*
      * 9. Reconnect?

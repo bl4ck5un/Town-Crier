@@ -37,7 +37,7 @@ inline uint32_t swap_uint32( uint32_t num )
 
 long g_frequency = 2500000000;
 
-int monitor_loop(uint8_t* nonce)
+int monitor_loop(sgx_enclave_id_t eid, uint8_t* nonce)
 {
 #ifdef E2E_BENCHMARK
     // prepare
@@ -105,27 +105,45 @@ int monitor_loop(uint8_t* nonce)
 
     int ret = 0;
     Json::Value transaction;
-    int retry_n = 0;
+    unsigned retry_n = 0;
     int sleep_sec;
     int filter_id;
     unsigned long highest_block;
 
-    // 2048 is defined in Enclave.edl
-    uint8_t raw_tx[2048] = {0};
+    // TX_BUF_SIZE is defined in Enclave.edl
+    uint8_t raw_tx[TX_BUF_SIZE] = {0};
     int raw_tx_len = 0;
-
-    ret = eth_getfilterlogs(RPC_HOSTNAME, RPC_PORT, 0, transaction);
-
-    if (ret != 0)
-    {
-        LL_CRITICAL("%s returned %d", "eth_getfilterlogs", ret);
-        return -1;
-    }
 
     do
     {
-        highest_block = eth_blockNumber(RPC_HOSTNAME, RPC_PORT);
-        
+        if (retry_n >= 5)
+        {
+            LL_CRITICAL("Exit after %d retries", retry_n);
+            ret = -1;
+            return -1;
+        }
+
+        if (retry_n > 0)
+        {
+            sleep_sec = static_cast<int>(pow(2, retry_n));
+            LL_CRITICAL("retry in %d seconds", sleep_sec);
+            Sleep(sleep_sec * 1000);
+        }
+
+        // how many blocks do we have now?
+        try
+        {
+            highest_block = eth_blockNumber(RPC_HOSTNAME, RPC_PORT);
+            retry_n = 0;
+        }
+        catch (std::exception& ex)
+        {
+            LL_CRITICAL("%s", ex.what());
+            retry_n++;
+            continue;
+        }
+
+        // if we've scanned all of them
         if (next_wanted > highest_block)
         {
             LL_NOTICE("We're too ahead.. Waiting for new blocks...");
@@ -136,24 +154,35 @@ int monitor_loop(uint8_t* nonce)
         // fetch up to the latest block
         while (next_wanted <= highest_block)
         {
-            ret = eth_new_filter(RPC_HOSTNAME, RPC_PORT, &filter_id, next_wanted, next_wanted);
+            // create a new filter for next_wanted
+            try
+            {
+                ret = eth_new_filter(RPC_HOSTNAME, RPC_PORT, &filter_id, next_wanted, next_wanted);
+                retry_n = 0;
+            }
+            catch (std::exception& ex)
+            {
+                LL_CRITICAL("%s", ex.what());
+                retry_n++;
+                continue;
+            }
+
             if (ret)
             {
                 LL_CRITICAL("Error: can't create new filter!");
                 return -1;
             }
+
             LL_NOTICE("Scanning %d", next_wanted);
 
-            if (retry_n >= 5)
-            {
-                LL_CRITICAL("Exit after %d retries", retry_n);
-                ret = -1;
-                return -1;
-            }
             try 
             {
+                // get events of interest
                 ret = eth_getfilterlogs(RPC_HOSTNAME, RPC_PORT, filter_id, transaction);
-                if (ret != 0) goto retry;
+                if (ret != 0) {
+                    retry_n++;
+                    continue;
+                }
 
                 // reset retry counter
                 retry_n = 0;
@@ -175,32 +204,36 @@ int monitor_loop(uint8_t* nonce)
                         // 192- 224     : offset
                         // 224- 256     : reqLen
                         // 256-         : reqData
-                        uint64_t id;
                         uint8_t* start = &data[0];
+                        uint64_t id;
                         uint8_t request_type;
                         uint32_t req_len;
 
                         // get id
                         memcpy(&id,             start + 32 - sizeof uint64_t, sizeof uint64_t);
                         id = swap_uint64(id);
+
                         // get type
                         memcpy(&request_type,   start + 64 - sizeof uint8_t, sizeof uint8_t);
+
                         // get req_len
+                        // note that req_len has the unit of bytes32
                         memcpy(&req_len,        start + 192 - sizeof uint32_t, sizeof uint32_t);
                         req_len = swap_uint32(req_len);
+
                         // get req_data
-                        uint8_t* req_data = (uint8_t*) malloc(req_len);
+                        uint8_t* req_data = static_cast<uint8_t*>(malloc(req_len * 32));
                         memcpy(req_data,       start + 256, req_len * 32);
                         hexdump("title", req_data, req_len * 32);
                         
-                        handle_request(global_eid, &ret, nonce, id, request_type, req_data, req_len * 32, raw_tx, &raw_tx_len);
+                        handle_request(eid, &ret, nonce, id, request_type, req_data, req_len * 32, raw_tx, &raw_tx_len);
 
-                        char* tx_str = (char*) malloc(raw_tx_len * 2 + 1);
+                        char* tx_str = static_cast<char*>( malloc(raw_tx_len * 2 + 1));
                         char2hex(raw_tx, raw_tx_len, tx_str);
-//                    #ifdef VERBOSE
+                    #ifdef VERBOSE
                         dump_buf("tx body: ", raw_tx, raw_tx_len);
                         printf("tx_str: %s\n", tx_str);
-//                    #endif
+                    #endif
                         ret = send_transaction(tx_str);
                         if (ret != 0)
                         {
@@ -217,40 +250,57 @@ int monitor_loop(uint8_t* nonce)
                 }
 
                 next_wanted += 1;
+                retry_n = 0;
                 continue;
             }
-
-            catch (std::invalid_argument& ex)
-            {
-                // returned error
-                LL_CRITICAL("%s", ex.what());
-                goto retry;
-            }
-            catch (std::runtime_error& ex)
-            {
-                // networking error etc.
-                LL_CRITICAL("%s", ex.what());
-                goto retry;
-            }
-
             catch (std::exception& el)
             {
-                // all others
                 LL_CRITICAL("%s", el.what());
-                goto retry;
+                retry_n++;
+                continue;
             }
- retry:
-            sleep_sec = static_cast<int>(pow(2, retry_n));
-            LL_CRITICAL("retry in %d seconds", sleep_sec);
-            Sleep(sleep_sec * 1000);
-            retry_n ++;
-            continue;
-
+            retry_n = 0;
         } // while (next_wanted <= highest_block)
     
     } while (true); // this loop never ends;
-
-
     return ret;
 #endif
+}
+
+
+int demo_test_loop(sgx_enclave_id_t eid, uint8_t* nonce)
+{
+    int ret = 0;
+    // TX_BUF_SIZE is defined in Enclave.edl
+    uint8_t raw_tx[TX_BUF_SIZE] = {0};
+    int raw_tx_len = 0;
+
+    uint64_t id = 0;
+    uint8_t request_type = TYPE_STEAM_EX;
+    uint32_t req_len = 6;
+    size_t req_len_bytes = req_len * 32;
+
+    uint8_t* req_data = static_cast<uint8_t*>(malloc(req_len * 32));
+    memset(req_data, 0xF0, req_len_bytes);
+                        
+    handle_request(eid, &ret, nonce, id, request_type, req_data, req_len * 32, raw_tx, &raw_tx_len);
+
+    char* tx_str = static_cast<char*>( malloc(raw_tx_len * 2 + 1));
+    char2hex(raw_tx, raw_tx_len, tx_str);
+    dump_buf("tx body: ", raw_tx, raw_tx_len);
+    printf("tx_str: %s\n", tx_str);
+//    ret = send_transaction(tx_str);
+    ret = -1;
+    if (ret != 0)
+    {
+        fprintf(stderr, "send_raw_tx returned %d\n", ret);
+        return -1;       
+    }
+    else
+    {
+        dump_buf("new nonce being dumped: ", nonce, 32);
+        // add accounting info
+        dump_nonce(nonce);
+    }
+    return 0;
 }

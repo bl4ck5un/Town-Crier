@@ -221,16 +221,7 @@ unsigned long eth_blockNumber(std::string hostname, unsigned port)
     LL_DEBUG("method: %s", query["method"].asString().c_str());
 
     Json::Value resp;
-    try
-    {
-        rpc_base(hostname, port, query, resp);
-    }
-
-    catch (std::exception& ex)
-    {
-        LL_CRITICAL("%s", ex.what());
-        return -1;
-    }
+    rpc_base(hostname, port, query, resp);
 
     if (resp.isString())
     {

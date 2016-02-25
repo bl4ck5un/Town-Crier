@@ -175,13 +175,12 @@ static sgx_status_t SGX_CDECL sgx_handle_request(void* pms)
 		memset((void*)_in_tx, 0, _len_tx);
 	}
 	if (_tmp_len != NULL) {
-		_in_len = (int*)malloc(_len_len);
-		if (_in_len == NULL) {
+		if ((_in_len = (int*)malloc(_len_len)) == NULL) {
 			status = SGX_ERROR_OUT_OF_MEMORY;
 			goto err;
 		}
 
-		memcpy(_in_len, _tmp_len, _len_len);
+		memset((void*)_in_len, 0, _len_len);
 	}
 	ms->ms_retval = handle_request(_in_nonce, ms->ms_request_id, ms->ms_request_type, _in_req, _tmp_req_len, _in_tx, _in_len);
 err:

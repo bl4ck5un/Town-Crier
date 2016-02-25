@@ -309,7 +309,7 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
     LL_CRITICAL("RLP: %llu", time2 - time1);
 #endif
 
-    if (out.size() > TX_BUF_SIZE) { LL_CRITICAL("Error buffer size (%d) is too small.\n", *o_len); return -1;}
+    if (out.size() > TX_BUF_SIZE) { LL_CRITICAL("Error buffer size (%d) is too small.\n", TX_BUF_SIZE); return -1;}
 
 #ifdef VERBOSE
     hexdump("RLP:", &out[0], out.size());

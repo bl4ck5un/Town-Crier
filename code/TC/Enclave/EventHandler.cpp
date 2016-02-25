@@ -96,9 +96,8 @@ static int flight_insurance_handler()
     return ret;
 }
 
-static int steam_exchange()
+static int steam_exchange(uint8_t* req, int len, int* resp_data)
 {
-
     int ret, rc;
 #ifdef E2E_BENCHMARK
     long long time1, time2;
@@ -115,31 +114,24 @@ static int steam_exchange()
     LL_CRITICAL("get_flight_delay: %llu", time2-time1);
 #endif
 
-    bytes rr;
-    enc_int(rr, rc, sizeof rc);;
-
-    uint8_t req[64];
-    uint8_t raw_tx[1024];
-    int raw_tx_len = sizeof raw_tx;
-    uint8_t nonce[32] = {9};
-
-    ret = get_raw_signed_tx(nonce, 32, 
-        1, 1, 
-        req, sizeof req, 
-        &rr[0], 32, 
-        raw_tx, &raw_tx_len);
-
 #ifdef E2E_BENCHMARK
     rdtsc(&time1);
     LL_CRITICAL("swtich out begins:  %llu", time1);
 #endif
-    return ret;
+
+    *resp_data = ret;
+    return rc;
 }
 
 //request(uint8 type, address cb, bytes4 cb_fid, bytes32[] req)
 int handle_request(uint8_t* nonce, uint64_t request_id, uint8_t request_type, 
                    uint8_t* req, int req_len, uint8_t* raw_tx, int* raw_tx_len)
 {
+    int ret;
+    bytes resp_data;
+    int resp_data_len = 0;
+    // note that length is in byte
+
 //    uint8_t md[32] = {0};
 //    uint8_t in[1 + 32 * 3] = {0};
 //    in[0] = 123;
@@ -151,6 +143,7 @@ int handle_request(uint8_t* nonce, uint64_t request_id, uint8_t request_type,
 //    hexdump("Hash Test", md, 32);
 //    return -1;
 
+
     switch (request_type)
     {
     case TYPE_FINANCE_INFO:
@@ -161,7 +154,25 @@ int handle_request(uint8_t* nonce, uint64_t request_id, uint8_t request_type,
     case TYPE_FLIGHT_INS:
         return flight_insurance_handler();
     case TYPE_STEAM_EX:
-        return steam_exchange();
+        {
+//            format[0] = encAPI[0];
+//            format[1] = encAPI[1];
+//            format[2] = ID_B;
+//            format[3] = T_B;
+//            format[4] = bytes32(LIST_I.length);
+//            format[5] = LIST_I[0];
+
+            int found = 0;
+            if (req_len != 6 * 32)
+            {
+                LL_CRITICAL("req_len %d is not 6*32", req_len);
+                return -1;
+            }
+            steam_exchange(req, req_len, &found);
+            enc_int(resp_data, found, sizeof found);
+            resp_data_len = 32;
+            break;
+        }
     case TYPE_CURRENT_VOTE:
         {
         double r1 = 0, r2 = 0, r3 = 0;
@@ -180,7 +191,6 @@ int handle_request(uint8_t* nonce, uint64_t request_id, uint8_t request_type,
         rdtsc(&time2);
         LL_CRITICAL("GOOGLE: %llu", time2-time1);
 
-        return 0;
         break;
         }
     default :
@@ -188,5 +198,8 @@ int handle_request(uint8_t* nonce, uint64_t request_id, uint8_t request_type,
         return -1;
         break;
     }
+
+    ret = get_raw_signed_tx(nonce, 32, request_id, request_type, req, req_len, &resp_data[0], resp_data_len, raw_tx, raw_tx_len);
+    return ret;
 }
 
