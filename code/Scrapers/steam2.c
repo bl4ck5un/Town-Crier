@@ -219,9 +219,11 @@ int get_steam_transaction(char** item_name_list, int item_list_len, char* other,
     char buf[16385];
     char* query = NULL;
 
+    //unsigned int req_time = time() + time_cutoff;
+    unsigned int req_time = time_cutoff;
 
     /***** CONSTRUCT THE QUERY */
-    ret = construct_query1(key, time_cutoff, &query);
+    ret = construct_query1(key, req_time, &query);
     if (ret < 0)
         return -1;
     /*printf("%s\n", query);*/
