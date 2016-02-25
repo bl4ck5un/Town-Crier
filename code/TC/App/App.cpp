@@ -92,7 +92,7 @@ void handling_thread(int id, int type){
     return;
 }
 
-int main()
+int test_main()
 {
     int ret, tx_len;
     uint8_t tx[2048];
@@ -119,12 +119,6 @@ int main()
     sgx_status_t st;
 
 
-    st = sgx_create_enclave(ENCLAVE_FILENAME, SGX_DEBUG_FLAG, &token, &updated, &eids[0], NULL);
-    if (st != SGX_SUCCESS)
-    {
-        print_error_message(st);
-        LL_CRITICAL("Failed to create enclave. Returned %#x", st);
-    }
 
 
 #ifdef BENCHMARK
@@ -298,6 +292,49 @@ main_cleanup:
             }
     } 
 #endif
+exit:
+    LL_CRITICAL("%%Info: all enclave closed successfully.");
+    LL_CRITICAL("%%Enter a character before exit ...");
+    getchar();
+    return 0;
+}
+
+int main()
+{
+    int ret, tx_len;
+    uint8_t tx[2048];
+    char* tx_str;
+
+    uint8_t nonce[32] = {0};
+    std::vector<std::thread> threads;
+
+    if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(NONCE_FILE_NAME) &&
+        GetLastError() == ERROR_FILE_NOT_FOUND)
+        { dump_nonce(nonce); }
+    else
+        { load_nonce(nonce); }
+
+#if defined(_MSC_VER)
+    if (query_sgx_status() < 0) {
+        LL_CRITICAL("sgx is not support");
+        ret = -1; goto exit;
+    }
+#endif 
+
+    int updated = 0;
+    sgx_launch_token_t token = {0};
+    sgx_status_t st;
+
+    st = sgx_create_enclave(ENCLAVE_FILENAME, SGX_DEBUG_FLAG, &token, &updated, &global_eid, NULL);
+    if (st != SGX_SUCCESS)
+    {
+        print_error_message(st);
+        LL_CRITICAL("failed to create enclave. Returned %#x", st);
+    }
+    LL_NOTICE("enclave %llu created", global_eid);
+
+    monitor_loop(nonce);
+
 exit:
     LL_CRITICAL("%%Info: all enclave closed successfully.");
     LL_CRITICAL("%%Enter a character before exit ...");

@@ -5,8 +5,9 @@
 // at most one of them should be enabled.
 //#define E2E_BENCHMARK
 //#define E2E_BENCHMARK_THREADING
+
 //#define OFFLINE_BENCHMARK
-#define TIME_CALIBRATION_BENCHMARK
+//#define TIME_CALIBRATION_BENCHMARK
 
 #if (defined(TIME_CALIBRATION_BENCHMARK) || defined(OFFLINE_BENCHMARK) || \
     defined(E2E_BENCHMARK_THREADING) || defined(E2E_BENCHMARK))

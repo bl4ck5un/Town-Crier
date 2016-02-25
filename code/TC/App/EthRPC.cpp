@@ -197,8 +197,15 @@ int eth_getfilterlogs(std::string hostname, unsigned port, long filter_id, Json:
     query["method"] = "eth_getFilterLogs";
     query["params"][0] = filter_id_s.str();
 
-    rpc_base(hostname, port, query, result);
-
+    try
+    {
+        rpc_base(hostname, port, query, result);
+    }
+    catch (std::exception& re)
+    {
+        LL_CRITICAL("%s", re.what());
+        return -1;
+    }
     return EXIT_SUCCESS;
 }
 
@@ -214,7 +221,16 @@ unsigned long eth_blockNumber(std::string hostname, unsigned port)
     LL_DEBUG("method: %s", query["method"].asString().c_str());
 
     Json::Value resp;
-    rpc_base(hostname, port, query, resp);
+    try
+    {
+        rpc_base(hostname, port, query, resp);
+    }
+
+    catch (std::exception& ex)
+    {
+        LL_CRITICAL("%s", ex.what());
+        return -1;
+    }
 
     if (resp.isString())
     {

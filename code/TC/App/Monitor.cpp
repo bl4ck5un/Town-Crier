@@ -114,7 +114,13 @@ int monitor_loop(uint8_t* nonce)
     uint8_t raw_tx[2048] = {0};
     int raw_tx_len = 0;
 
-    eth_getfilterlogs(RPC_HOSTNAME, RPC_PORT, 0, transaction);
+    ret = eth_getfilterlogs(RPC_HOSTNAME, RPC_PORT, 0, transaction);
+
+    if (ret != 0)
+    {
+        LL_CRITICAL("%s returned %d", "eth_getfilterlogs", ret);
+        return -1;
+    }
 
     do
     {
