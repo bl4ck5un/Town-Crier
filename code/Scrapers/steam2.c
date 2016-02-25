@@ -7,6 +7,9 @@ char* search(char* buf, char* search_string) {
     int len = strlen(buf);
     int slen = strlen(search_string);
     char* temp = buf;
+    if (slen > len) {
+        return NULL;
+    }
     while(strncmp(temp, search_string, slen) != 0) {
         temp+=1;
         if (temp == buf + len - slen - 1)
@@ -26,7 +29,7 @@ int construct_query1(char* key, unsigned int time, char** buf) {
     snprintf(temp, 11, "%d", time);
 
 
-    strcat(query, "https://api.steampowered.com/IEconService/GetTradeOffers/v0001/?get_sent_offers=1&get_received_offers=0&get_descriptions=0&active_only=1&historical_only=1&key=");
+    strcat(query, "https://api.steampowered.com/IEconService/GetTradeOffers/v0001/?get_sent_offers=0&get_received_offers=1&get_descriptions=0&active_only=1&historical_only=1&key=");
     strcat(query, key);
     strcat(query, "&time_historical_cutoff=");
     strcat(query, temp);
@@ -127,7 +130,21 @@ int parse_response1(char* resp, char* other, char** listB, int lenB, char* key) 
         if (end == NULL) {
            return -1;
         }
-        temp = search(temp, "items_to_receive");
+        temp = search(temp, "trade_offer_state");
+        if (temp == NULL) {
+            return -1;
+        }
+        temp += 20;
+        end2 = search(temp, ",");
+        if (end2 == NULL || end2 > end) {
+            return -1;
+        }
+        if (strncmp(temp, "3", 1) != 0) {
+            index = get_next_trade_with_other(index, other);
+            temp = index;
+            continue;
+        }
+        temp = search(temp, "items_to_give");
         if (temp == NULL) {
             return -1;
         }
@@ -202,9 +219,11 @@ int get_steam_transaction(char** item_name_list, int item_list_len, char* other,
     char buf[16385];
     char* query = NULL;
 
+    //unsigned int req_time = time() + time_cutoff;
+    unsigned int req_time = time_cutoff;
 
     /***** CONSTRUCT THE QUERY */
-    ret = construct_query1(key, time_cutoff, &query);
+    ret = construct_query1(key, req_time, &query);
     if (ret < 0)
         return -1;
     /*printf("%s\n", query);*/
@@ -228,24 +247,15 @@ int get_steam_transaction(char** item_name_list, int item_list_len, char* other,
 
 int main(int argc, char* argv[]) {
     int rc, ret;
+    int time = 1456380265;
     char * listB[1] = {"Portal"};
-    char * test2[2] = {"Dark Ranger's Headdress", "Death Shadow Bow"};
+    if (argc == 2)
+        time = atoi(argv[1]);
     printf("Starting...\n");
     /* needs as input time of request, T_B time for response, key, account # ID_B, list of items L_B, account # ID_S */
     /* I'm not sure how we get time... but so long as we get it somehow...*/
-    rc = get_steam_transaction(listB, 1, "32884794", 1355220300, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
-
-    if (rc == 0 && ret == 1) {
-        printf("Found a trade, %d, %d\n", rc, ret);
-    }
-    printf("%d, %d\n", rc, ret);
-
-    rc = get_steam_transaction(test2, 2, "32884794", 1355220300, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
-    printf("%d, %d\n", rc, ret);
-
-    /* should fail */
-    rc = get_steam_transaction(test2, 1, "32884794", 1355220300, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
-    printf("%d, %d\n", rc, ret);
+    rc = get_steam_transaction(listB, 1, "32884794", time, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
+    printf("rc: %d, ret: %d\n", rc, ret);
 
     return 0;
 }
