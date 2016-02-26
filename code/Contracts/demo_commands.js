@@ -67,4 +67,4 @@ miner.start(1); admin.sleepBlocks(1); miner.stop(1);
 
 var sellerBalanceAfter = Number(debug.dumpBlock('latest').accounts[sellerAddr.substring(2)].balance);
 
-sellerBalanceAfter - sellerBalanceBefore;
+(sellerBalanceAfter - sellerBalanceBefore)*1e-18;
