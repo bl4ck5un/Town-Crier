@@ -150,7 +150,7 @@ int monitor_loop(sgx_enclave_id_t eid)
         // if we've scanned all of them
         if (next_wanted > highest_block)
         {
-            LL_NOTICE("We're too ahead.. Waiting for new blocks...");
+            LL_LOG("waiting for new blocks...");
             Sleep(5000);
             continue;
         }
@@ -177,7 +177,7 @@ int monitor_loop(sgx_enclave_id_t eid)
                 return -1;
             }
 
-            LL_NOTICE("Scanning %d", next_wanted);
+            LL_NOTICE("detected block %d", next_wanted);
 
             try 
             {
@@ -198,7 +198,9 @@ int monitor_loop(sgx_enclave_id_t eid)
                         std::vector<uint8_t> data;
                         const char* data_c = transaction[i]["data"].asCString();
                         fromHex(data_c, data);
+#ifdef VERBOSE
                         hexdump("TX:", &data[0], data.size());
+#endif
                         // RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, uint reqLen, bytes32[] requestData);
                         // 0x00 - 32 bytes : uint64 id
                         // 0x20 - 64 bytes : uint8  requestType
@@ -229,7 +231,12 @@ int monitor_loop(sgx_enclave_id_t eid)
                         // get req_data
                         uint8_t* req_data = static_cast<uint8_t*>(malloc(req_len * 32));
                         memcpy(req_data, start + 0x100, req_len * 32);
+
+                        LL_NOTICE("get request: %llu", id);
+
+#ifdef VERBOSE
                         hexdump("req_data:", req_data, req_len * 32);
+#endif
                         
                         get_last_nonce(db, &nonce);
 
@@ -242,12 +249,12 @@ int monitor_loop(sgx_enclave_id_t eid)
                         }
                         char* tx_str = static_cast<char*>( malloc(raw_tx_len * 2 + 1));
                         char2hex(raw_tx, raw_tx_len, tx_str);
-//                    #ifdef VERBOSE
+#ifdef VERBOSE
                         dump_buf("tx body: ", raw_tx, raw_tx_len);
                         printf("tx_str: %s\n", tx_str);
-//                    #endif
+#endif
 
-                        ret = send_transaction(tx_str);
+                        ret = send_transaction(RPC_HOSTNAME, RPC_PORT, tx_str);
                         if (ret != 0)
                         {
                             fprintf(stderr, "send_raw_tx returned %d\n", ret);
@@ -255,12 +262,13 @@ int monitor_loop(sgx_enclave_id_t eid)
                         }
                         else
                         {
-                            LL_NOTICE("new nonce being dumped: %d", nonce);
-                            record_nonce(db, ++nonce);
+                            LL_LOG("new nonce being dumped: %d", nonce);
+                            nonce++;
+                            record_nonce(db, nonce);
                         }
                     }
                 }
-
+                LL_NOTICE("Done processing block %d", next_wanted);
                 record_scan(db, next_wanted);
                 next_wanted += 1;
                 retry_n = 0;
@@ -268,7 +276,13 @@ int monitor_loop(sgx_enclave_id_t eid)
             }
             catch (std::exception& el)
             {
+                std::string exp(el.what());
                 LL_CRITICAL("%s", el.what());
+                if (exp.find("too low"))
+                {
+                    nonce++;
+                    record_nonce(db, nonce);
+                }
                 retry_n++;
                 continue;
             }

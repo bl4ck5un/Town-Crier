@@ -206,8 +206,11 @@ int get_raw_signed_tx(int nonce, int nonce_len,
     memcpy(in + 1, req_data, req_len);
 
     keccak(in, hash_in_len, param_hash.b, 32);
+
+#ifdef VERBOSE
     hexdump("Hash Input", in, hash_in_len);
     hexdump("Hash Test", param_hash.b, 32);
+#endif
     ABI_Bytes32 c(&param_hash);
 
     bytes32 resp_b32;

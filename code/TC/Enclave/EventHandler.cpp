@@ -98,15 +98,37 @@ static int flight_insurance_handler()
 
 static int steam_exchange(uint8_t* req, int len, int* resp_data)
 {
+    /*
+    format[0] = encAPI[0];
+    format[1] = encAPI[1];
+    format[2] = ID_B;
+    format[3] = T_B;
+    format[4] = bytes32(LIST_I.length);
+    format[5] = LIST_I[0];
+    */
     int ret, rc;
 #ifdef E2E_BENCHMARK
     long long time1, time2;
     rdtsc(&time1);
     LL_CRITICAL("swtich in done:  %llu", time1);
 #endif
+    /* handling input */
+    LL_NOTICE("encAPI: %s", (char*) req);
+    LL_NOTICE("buyer id: %s", (char*) req + 64);
+    
+    uint32_t sleep_time;
+    memcpy(&sleep_time, req + 3 * 32, 4);
+
+    LL_NOTICE("item: %s", (char*)req + 5*32);
+
+    if (sleep_time > 3600)
+        sleep_time = swap_uint32(sleep_time);
+    if (sleep_time > 3600)
+        sleep_time = 59;
+    LL_NOTICE("waiting time: %d", sleep_time);
+
     char * listB[1] = {"Portal"};
-    // TODO: change this 10
-    rc = get_steam_transaction(listB, 1, "32884794", 10, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
+    rc = get_steam_transaction(listB, 1, "32884794", sleep_time, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
     if (rc == 0 && ret == 1) {
         LL_NOTICE("Found a trade, %d, %d", rc, ret);
         *resp_data = ret;
@@ -145,14 +167,6 @@ int handle_request(int nonce, uint64_t request_id, uint8_t request_type,
         return flight_insurance_handler();
     case TYPE_STEAM_EX:
         {
-            /*
-            format[0] = encAPI[0];
-            format[1] = encAPI[1];
-            format[2] = ID_B;
-            format[3] = T_B;
-            format[4] = bytes32(LIST_I.length);
-            format[5] = LIST_I[0];
-            */
 
             int found = 0;
             if (req_len != 6 * 32)
@@ -166,6 +180,7 @@ int handle_request(int nonce, uint64_t request_id, uint8_t request_type,
                 LL_CRITICAL("%s returns %d", "steam_exchange", ret);
                 return -1;
             }
+//            found = 1;
             enc_int(resp_data, found, sizeof found);
             resp_data_len = 32;
             break;

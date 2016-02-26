@@ -20,27 +20,7 @@
             discover_time DATETIME, \
             complete_time DATETIME);" \
 
-int sqlite3_init(sqlite3** db, const char* db_name)
-{
-    int ret;
-    char* error;
-    ret = sqlite3_open(db_name, db);
-    if (ret)
-    {
-        LL_CRITICAL("Error openning SQLITE3 database: %s", sqlite3_errmsg(*db));
-        sqlite3_close(*db);
-        return -1;
-    }
-    ret = sqlite3_exec(*db, CREATE_TABLE, NULL, NULL, &error);
-    if (ret)
-    {
-        LL_CRITICAL("Error executing SQLite3 statement: %s", error);
-        sqlite3_free(error);
-        return -1;
-    }
 
-    return 0;
-}
 
 static int sqlite3_exec_wrapper(sqlite3* db, const char* sql)
 {
@@ -135,4 +115,29 @@ int get_last_scan (sqlite3* db, int* blk)
 
     *blk = atoi(result[1]);
     return 0;  
+}
+
+
+int sqlite3_init(sqlite3** db, const char* db_name)
+{
+    int ret;
+    char* error;
+    ret = sqlite3_open(db_name, db);
+    if (ret)
+    {
+        LL_CRITICAL("Error openning SQLITE3 database: %s", sqlite3_errmsg(*db));
+        sqlite3_close(*db);
+        return -1;
+    }
+    ret = sqlite3_exec(*db, CREATE_TABLE, NULL, NULL, &error);
+    if (ret)
+    {
+        LL_CRITICAL("Error executing SQLite3 statement: %s", error);
+        sqlite3_free(error);
+        return -1;
+    }
+
+    record_nonce(*db, 0);
+    record_scan(*db, 0);
+    return 0;
 }

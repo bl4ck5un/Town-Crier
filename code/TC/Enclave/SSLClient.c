@@ -555,7 +555,7 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
     if( opt.server_addr == NULL)
         opt.server_addr = opt.server_name;
 
-    LL_NOTICE("connecting to %s:%s:%s...",
+    LL_LOG("connecting to %s:%s:%s...",
             opt.transport == MBEDTLS_SSL_TRANSPORT_STREAM ? "TCP" : "UDP",
             opt.server_addr, opt.server_port );
 
@@ -976,7 +976,7 @@ send_request:
 
             len = ret;
 
-            LL_NOTICE( "get %d bytes ending with %x", len, output[len-1]);
+            LL_LOG( "get %d bytes ending with %x", len, output[len-1]);
             if (opt.debug_level> 0) hexdump("REPONSE:", output, len);
             // TODO: Add full-fledge HTTP parser here
             // possibly from libcurl
@@ -1077,7 +1077,7 @@ close_notify:
     while( ret == MBEDTLS_ERR_SSL_WANT_WRITE );
     ret = 0;
 
-    LL_NOTICE( "closed %s:%s", opt.server_addr, opt.server_port );
+    LL_LOG( "closed %s:%s", opt.server_addr, opt.server_port );
 
     /*
      * 9. Reconnect?
