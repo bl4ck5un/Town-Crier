@@ -43,6 +43,8 @@ function purchase(contract, steamId, delay) {
 
 /* =========== The following should be run line-by-line as a demo =========== */
 
+tc = setup_tc();
+
 var tradeContract = createSteamTrade(encryptedApiKey, 'Portal', 1e+18);
 
 //// These are just for testing!
