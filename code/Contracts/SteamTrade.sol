@@ -59,11 +59,11 @@ contract SteamTrade {
         }
 
         if (uint(result) > 0) {
-            owner.send(this.balance);
+            owner.send(P);
             UINT(1);
         }
         else {
-            buyer.send(this.balance);
+            buyer.send(P);
             UINT(0);
         }
     }
