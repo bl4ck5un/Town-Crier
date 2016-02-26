@@ -88,7 +88,8 @@ int send_transaction(std::string hostname, unsigned port, char* raw)
   query["params"][0] = params;
 
   rpc_base(hostname, port, query, resp);
-  std::cout << resp << std::endl;
+
+  LL_CRITICAL("Response recorded in the blockchain. TX=%s", resp.asCString());
 
   return EXIT_SUCCESS;
 }

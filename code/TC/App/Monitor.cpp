@@ -232,7 +232,7 @@ int monitor_loop(sgx_enclave_id_t eid)
                         uint8_t* req_data = static_cast<uint8_t*>(malloc(req_len * 32));
                         memcpy(req_data, start + 0x100, req_len * 32);
 
-                        LL_NOTICE("get request: %llu", id);
+                        LL_NOTICE("get request (id=%llu)", id);
 
 #ifdef VERBOSE
                         hexdump("req_data:", req_data, req_len * 32);
@@ -262,6 +262,7 @@ int monitor_loop(sgx_enclave_id_t eid)
                         }
                         else
                         {
+                            LL_NOTICE("Response sent");
                             LL_LOG("new nonce being dumped: %d", nonce);
                             nonce++;
                             record_nonce(db, nonce);

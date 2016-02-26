@@ -262,7 +262,7 @@ int get_steam_transaction(char** item_name_list, int item_list_len, char* other,
     ret = parse_response1(buf, other, item_name_list, item_list_len, key);
     /***** OUTPUT */
     if (ret < 0) {
-        LL_CRITICAL("no data");
+        LL_CRITICAL("Found no trade");
         *resp = 0;
         return 0;
     }
