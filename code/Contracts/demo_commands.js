@@ -5,13 +5,13 @@ var sgxAddr = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 
 var gasCnt = 3e+6
 
-personal.unlockAccount(minerAddr)
-personal.unlockAccount(sellerAddr)
-personal.unlockAccount(buyerAddr)
-//personal.unlockAccount(sgxAddr)
+personal.unlockAccount(minerAddr, '123123')
+personal.unlockAccount(sellerAddr, '123123')
+personal.unlockAccount(buyerAddr, '123123')
+// personal.unlockAccount(sgxAddr)
 
-var encryptedApiKey = [bytes32, bytes32] // ['aaa', 'aaa']
-var buyerSteamId = <buyer-id> // 'aaa'
+var encryptedApiKey = ['deadbeef', 'deadbeef']
+var buyerSteamId = 'placeholder'
 
 // Make sure you modify the TC contract to have the right SGX aggress.
 // var source = // TODO: Add source code here '$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' TownCrier.sol SteamTrade.sol | paste -sd '' | sed 's/\s\+/ /g')'
@@ -33,8 +33,10 @@ function createSteamTrade(apiKey, item, price) {
 }
 
 function purchase(contract, steamId, delay) {
-  var timeoutSecs = Math.floor((new Date((new Date()).getTime() + (delay * 1000))).getTime() / 1000);
-  contract.purchase.sendTransaction(steamId, timeoutSecs, {from: buyerAddr, value: 1e+18 + (55 * 5e+13), gas: gasCnt})
+  // var timeoutSecs = Math.floor((new Date((new Date()).getTime() + (delay * 1000))).getTime() / 1000);
+  // to simplify, delay is the time for SGX to wait before fetching
+  // delay = 60, typically
+  contract.purchase.sendTransaction(steamId, delay, {from: buyerAddr, value: 1e+18 + (55 * 5e+13), gas: gasCnt})
   miner.start(1); admin.sleepBlocks(1); miner.stop(1);
 }
 
