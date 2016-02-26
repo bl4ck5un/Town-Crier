@@ -11,7 +11,7 @@
 #include <Debug.h>
 #include "Constants.h"
 
-static int stock_ticker_handler(uint8_t* nonce, uint64_t request_id, uint8_t request_type, 
+static int stock_ticker_handler(int nonce, uint64_t request_id, uint8_t request_type, 
                    const uint8_t* req, int req_len, uint8_t* raw_tx, int* raw_tx_len)
 {
     int ret;
@@ -81,7 +81,7 @@ static int flight_insurance_handler()
     uint8_t req[64];
     uint8_t raw_tx[1024];
     int raw_tx_len = sizeof raw_tx;
-    uint8_t nonce[32] = {9};
+    uint8_t nonce = 1;
 
     ret = get_raw_signed_tx(nonce, 32, 
         1, 1, 
@@ -105,7 +105,8 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
     LL_CRITICAL("swtich in done:  %llu", time1);
 #endif
     char * listB[1] = {"Portal"};
-    rc = get_steam_transaction(listB, 1, "32884794", 1, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
+    // TODO: change this 10
+    rc = get_steam_transaction(listB, 1, "32884794", 10, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
     if (rc == 0 && ret == 1) {
         LL_NOTICE("Found a trade, %d, %d", rc, ret);
         *resp_data = ret;
@@ -118,10 +119,12 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
     rdtsc(&time1);
     LL_CRITICAL("swtich out begins:  %llu", time1);
 #endif
+
+    return 0;
 }
 
 //request(uint8 type, address cb, bytes4 cb_fid, bytes32[] req)
-int handle_request(uint8_t* nonce, uint64_t request_id, uint8_t request_type, 
+int handle_request(int nonce, uint64_t request_id, uint8_t request_type, 
                    uint8_t* req, int req_len, uint8_t* raw_tx, int* raw_tx_len)
 {
     int ret;
@@ -129,16 +132,6 @@ int handle_request(uint8_t* nonce, uint64_t request_id, uint8_t request_type,
     int resp_data_len = 0;
     // note that length is in byte
 
-//    uint8_t md[32] = {0};
-//    uint8_t in[1 + 32 * 3] = {0};
-//    in[0] = 123;
-//    in[31 + 1] = 11;
-//    in[63 + 1] = 22;
-//    in[95 + 1] = 33;
-//    keccak(in, sizeof in, md, sizeof md);
-//    hexdump("Hash Input", in, sizeof in);
-//    hexdump("Hash Test", md, 32);
-//    return -1;
 
 
     switch (request_type)
@@ -152,12 +145,14 @@ int handle_request(uint8_t* nonce, uint64_t request_id, uint8_t request_type,
         return flight_insurance_handler();
     case TYPE_STEAM_EX:
         {
-//            format[0] = encAPI[0];
-//            format[1] = encAPI[1];
-//            format[2] = ID_B;
-//            format[3] = T_B;
-//            format[4] = bytes32(LIST_I.length);
-//            format[5] = LIST_I[0];
+            /*
+            format[0] = encAPI[0];
+            format[1] = encAPI[1];
+            format[2] = ID_B;
+            format[3] = T_B;
+            format[4] = bytes32(LIST_I.length);
+            format[5] = LIST_I[0];
+            */
 
             int found = 0;
             if (req_len != 6 * 32)

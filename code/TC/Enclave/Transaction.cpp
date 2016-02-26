@@ -13,6 +13,7 @@
 #include "Commons.h"
 
 #include "Transaction.h"
+#include <Debug.h>
 
 #ifdef VERBOSE
 #include "Debug.h"
@@ -160,31 +161,9 @@ public:
 
 #include "Constants.h"
 
-static int increase_nonce_by_one(uint8_t* nonce)
-{
-    int ret;
-    mbedtls_mpi p;
-    mbedtls_mpi_init(&p);
+#define ABI_STR "deliver(uint64,bytes32,bytes32)"
 
-    if (nonce)
-    {
-#pragma warning (push)
-#pragma warning (disable: 4127)
-        MBEDTLS_MPI_CHK (mbedtls_mpi_read_binary(&p, nonce, 32));
-        MBEDTLS_MPI_CHK (mbedtls_mpi_add_int(&p, &p, 1));
-        MBEDTLS_MPI_CHK (mbedtls_mpi_write_binary(&p, nonce, 32));
-#pragma warning (pop)
-    }
-    else
-    { LL_CRITICAL("nonce is NULL"); return -1; }
-cleanup:
-    mbedtls_mpi_free(&p);
-    return ret;
-}
-
-#define ABI_STR "deliver(uint64,uint8,bytes32[],bytes32)"
-
-int get_raw_signed_tx(uint8_t* nonce, int nonce_len, 
+int get_raw_signed_tx(int nonce, int nonce_len, 
                       uint64_t request_id, uint8_t request_type,
                       const uint8_t* req_data, int req_len,
                       uint8_t* resp_data, int resp_len,
@@ -200,21 +179,36 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
     bytes out;
     int ret;
 
+
+
     assert(nonce_len == 32);
 
     ABI_UInt64 a(request_id);
-    ABI_UInt8 b(request_type);
 
-    vector<ABI_serializable*> request_data;
-    bytes32* r = (bytes32*)malloc(req_len/32 * sizeof bytes32);
-    for (int i = 0; i < req_len / 32; i++)
-    {
-        memcpy(r[i].b, req_data + i*32, 32);
-        request_data.push_back(new ABI_Bytes32(&r[i]));
-        // FIXME MEMORY LEAKAGE
-    }
+//    vector<ABI_serializable*> request_data;
+//    bytes32* r = (bytes32*)malloc(req_len/32 * sizeof bytes32);
+//    for (int i = 0; i < req_len / 32; i++)
+//    {
+//        memcpy(r[i].b, req_data + i*32, 32);
+//        request_data.push_back(new ABI_Bytes32(&r[i]));
+//        // FIXME MEMORY LEAKAGE
+//    }
+//
+//    ABI_T_Array c(request_data);
 
-    ABI_T_Array c(request_data);
+    // calculate the paramHash
+    bytes32 param_hash;
+    size_t hash_in_len = 1 + req_len;
+    uint8_t* in = static_cast<uint8_t*>(malloc(hash_in_len));
+    memset(in, 0, hash_in_len);
+
+    in[0] = request_type;
+    memcpy(in + 1, req_data, req_len);
+
+    keccak(in, hash_in_len, param_hash.b, 32);
+    hexdump("Hash Input", in, hash_in_len);
+    hexdump("Hash Test", param_hash.b, 32);
+    ABI_Bytes32 c(&param_hash);
 
     bytes32 resp_b32;
     assert (resp_len == 32);
@@ -224,7 +218,6 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
 
     vector<ABI_serializable*> args;
     args.push_back(&a);
-    args.push_back(&b);
     args.push_back(&c);
     args.push_back(&d);
     
@@ -252,10 +245,9 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
     TX tx(TX::MessageCall);
     uint8_t hash[32]; 
 
-    if (nonce)
-        memcpy(tx.m_nonce.b, nonce, 32);
-    else
-        memset(tx.m_nonce.b, 0x0, 32);
+    bytes nonce_bytes;
+    enc_int(nonce_bytes, nonce, 4);
+    memcpy(tx.m_nonce.b, &nonce_bytes[0], nonce_bytes.size());
 
     set_byte_length(& tx.m_nonce);
     from32(GASPRICE, &tx.m_gasPrice);
@@ -282,8 +274,6 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
         LL_CRITICAL("%s\n", ex.what()); 
         return -1;
     }
-
-
 
     ret = keccak(&out[0], out.size(), hash, 32);
     if (ret != 0)
@@ -325,5 +315,5 @@ int get_raw_signed_tx(uint8_t* nonce, int nonce_len,
 //    }
 //    free(r);
 
-    return increase_nonce_by_one(nonce);
+    return 0;
 }

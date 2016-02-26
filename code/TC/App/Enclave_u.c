@@ -2,7 +2,7 @@
 
 typedef struct ms_handle_request_t {
 	int ms_retval;
-	uint8_t* ms_nonce;
+	int ms_nonce;
 	uint64_t ms_request_id;
 	uint8_t ms_request_type;
 	uint8_t* ms_req;
@@ -213,7 +213,7 @@ static const struct {
 	}
 };
 
-sgx_status_t handle_request(sgx_enclave_id_t eid, int* retval, uint8_t* nonce, uint64_t request_id, uint8_t request_type, uint8_t* req, int req_len, uint8_t tx[2048], int* len)
+sgx_status_t handle_request(sgx_enclave_id_t eid, int* retval, int nonce, uint64_t request_id, uint8_t request_type, uint8_t* req, int req_len, uint8_t tx[2048], int* len)
 {
 	sgx_status_t status;
 	ms_handle_request_t ms;

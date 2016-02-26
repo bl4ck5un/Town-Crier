@@ -14,6 +14,7 @@
 #include <Constants.h>
 #include "RemoteAtt.h"
 #include "Constants.h"
+#include "Bookkeeping.h"
 
 #define RPC_HOSTNAME    "localhost"
 #define RPC_PORT        8200
@@ -37,7 +38,7 @@ inline uint32_t swap_uint32( uint32_t num )
 
 long g_frequency = 2500000000;
 
-int monitor_loop(sgx_enclave_id_t eid, uint8_t* nonce)
+int monitor_loop(sgx_enclave_id_t eid)
 {
 #ifdef E2E_BENCHMARK
     // prepare
@@ -101,7 +102,9 @@ int monitor_loop(sgx_enclave_id_t eid, uint8_t* nonce)
 //    free(tx_str);
     return ret;
 #else
-    unsigned next_wanted = 1;
+    int next_wanted;
+    get_last_scan(db, &next_wanted);
+    next_wanted++;
 
     int ret = 0;
     Json::Value transaction;
@@ -109,6 +112,7 @@ int monitor_loop(sgx_enclave_id_t eid, uint8_t* nonce)
     int sleep_sec;
     int filter_id;
     unsigned long highest_block;
+    int nonce = 0;
 
     // TX_BUF_SIZE is defined in Enclave.edl
     uint8_t raw_tx[TX_BUF_SIZE] = {0};
@@ -194,16 +198,17 @@ int monitor_loop(sgx_enclave_id_t eid, uint8_t* nonce)
                         std::vector<uint8_t> data;
                         const char* data_c = transaction[i]["data"].asCString();
                         fromHex(data_c, data);
+                        hexdump("TX:", &data[0], data.size());
                         // RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, uint reqLen, bytes32[] requestData);
-                        // 0 - 32 bytes : uint64 id
-                        // 32- 64 bytes : uint8  requestType
-                        // 64- 96 bytes : request
-                        // 96- 128      : free
-                        // 128- 160     : cb
-                        // 160- 192     : reqLen
-                        // 192- 224     : offset
-                        // 224- 256     : reqLen
-                        // 256-         : reqData
+                        // 0x00 - 32 bytes : uint64 id
+                        // 0x20 - 64 bytes : uint8  requestType
+                        // 0x40 - 96 bytes : requester
+                        // 0x60 - 128      : fee
+                        // 0x80 - 160     : cb
+                        // 0xa0 - 192     : hash
+                        // 0xc0 - 224     : offset
+                        // 0xe0- 256     : reqLen
+                        // 0x100-         : reqData
                         uint8_t* start = &data[0];
                         uint64_t id;
                         uint8_t request_type;
@@ -218,14 +223,16 @@ int monitor_loop(sgx_enclave_id_t eid, uint8_t* nonce)
 
                         // get req_len
                         // note that req_len has the unit of bytes32
-                        memcpy(&req_len,        start + 192 - sizeof uint32_t, sizeof uint32_t);
+                        memcpy(&req_len,        start + 0xe0 + 32 - sizeof uint32_t, sizeof uint32_t);
                         req_len = swap_uint32(req_len);
 
                         // get req_data
                         uint8_t* req_data = static_cast<uint8_t*>(malloc(req_len * 32));
-                        memcpy(req_data,       start + 256, req_len * 32);
-                        hexdump("title", req_data, req_len * 32);
+                        memcpy(req_data, start + 0x100, req_len * 32);
+                        hexdump("req_data:", req_data, req_len * 32);
                         
+                        get_last_nonce(db, &nonce);
+
                         handle_request(eid, &ret, nonce, id, request_type, req_data, req_len * 32, raw_tx, &raw_tx_len);
                         if (ret != 0)
                         {
@@ -235,10 +242,11 @@ int monitor_loop(sgx_enclave_id_t eid, uint8_t* nonce)
                         }
                         char* tx_str = static_cast<char*>( malloc(raw_tx_len * 2 + 1));
                         char2hex(raw_tx, raw_tx_len, tx_str);
-                    #ifdef VERBOSE
+//                    #ifdef VERBOSE
                         dump_buf("tx body: ", raw_tx, raw_tx_len);
                         printf("tx_str: %s\n", tx_str);
-                    #endif
+//                    #endif
+
                         ret = send_transaction(tx_str);
                         if (ret != 0)
                         {
@@ -247,13 +255,13 @@ int monitor_loop(sgx_enclave_id_t eid, uint8_t* nonce)
                         }
                         else
                         {
-                            dump_buf("new nonce being dumped: ", nonce, 32);
-                            // add accounting info
-                            dump_nonce(nonce);
+                            LL_NOTICE("new nonce being dumped: %d", nonce);
+                            record_nonce(db, ++nonce);
                         }
                     }
                 }
 
+                record_scan(db, next_wanted);
                 next_wanted += 1;
                 retry_n = 0;
                 continue;
@@ -273,12 +281,14 @@ int monitor_loop(sgx_enclave_id_t eid, uint8_t* nonce)
 }
 
 
-int demo_test_loop(sgx_enclave_id_t eid, uint8_t* nonce)
+int demo_test_loop(sgx_enclave_id_t eid)
 {
     int ret = 0;
     // TX_BUF_SIZE is defined in Enclave.edl
     uint8_t raw_tx[TX_BUF_SIZE] = {0};
     int raw_tx_len = 0;
+
+    int nonce = 6;
 
     uint64_t id = 0;
     uint8_t request_type = TYPE_STEAM_EX;
@@ -308,9 +318,7 @@ int demo_test_loop(sgx_enclave_id_t eid, uint8_t* nonce)
     }
     else
     {
-        dump_buf("new nonce being dumped: ", nonce, 32);
-        // add accounting info
-        dump_nonce(nonce);
+        record_nonce(db, ++nonce);
     }
     return 0;
 }

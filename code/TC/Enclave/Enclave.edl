@@ -6,7 +6,7 @@ enclave {
 
     trusted {
         public int handle_request(
-                   [in, out, size=32] uint8_t* nonce, 
+                   int nonce, 
                    uint64_t request_id, uint8_t request_type, 
                    [in, size=req_len] uint8_t* req, int req_len, 
                    [out] uint8_t tx[2048], [out] int* len);

@@ -28,7 +28,7 @@
 
 typedef struct ms_handle_request_t {
 	int ms_retval;
-	uint8_t* ms_nonce;
+	int ms_nonce;
 	uint64_t ms_request_id;
 	uint8_t ms_request_type;
 	uint8_t* ms_req;
@@ -136,9 +136,6 @@ static sgx_status_t SGX_CDECL sgx_handle_request(void* pms)
 {
 	ms_handle_request_t* ms = SGX_CAST(ms_handle_request_t*, pms);
 	sgx_status_t status = SGX_SUCCESS;
-	uint8_t* _tmp_nonce = ms->ms_nonce;
-	size_t _len_nonce = 32;
-	uint8_t* _in_nonce = NULL;
 	uint8_t* _tmp_req = ms->ms_req;
 	int _tmp_req_len = ms->ms_req_len;
 	size_t _len_req = _tmp_req_len;
@@ -151,20 +148,10 @@ static sgx_status_t SGX_CDECL sgx_handle_request(void* pms)
 	int* _in_len = NULL;
 
 	CHECK_REF_POINTER(pms, sizeof(ms_handle_request_t));
-	CHECK_UNIQUE_POINTER(_tmp_nonce, _len_nonce);
 	CHECK_UNIQUE_POINTER(_tmp_req, _len_req);
 	CHECK_UNIQUE_POINTER(_tmp_tx, _len_tx);
 	CHECK_UNIQUE_POINTER(_tmp_len, _len_len);
 
-	if (_tmp_nonce != NULL) {
-		_in_nonce = (uint8_t*)malloc(_len_nonce);
-		if (_in_nonce == NULL) {
-			status = SGX_ERROR_OUT_OF_MEMORY;
-			goto err;
-		}
-
-		memcpy(_in_nonce, _tmp_nonce, _len_nonce);
-	}
 	if (_tmp_req != NULL) {
 		_in_req = (uint8_t*)malloc(_len_req);
 		if (_in_req == NULL) {
@@ -190,12 +177,8 @@ static sgx_status_t SGX_CDECL sgx_handle_request(void* pms)
 
 		memset((void*)_in_len, 0, _len_len);
 	}
-	ms->ms_retval = handle_request(_in_nonce, ms->ms_request_id, ms->ms_request_type, _in_req, _tmp_req_len, _in_tx, _in_len);
+	ms->ms_retval = handle_request(ms->ms_nonce, ms->ms_request_id, ms->ms_request_type, _in_req, _tmp_req_len, _in_tx, _in_len);
 err:
-	if (_in_nonce) {
-		memcpy(_tmp_nonce, _in_nonce, _len_nonce);
-		free(_in_nonce);
-	}
 	if (_in_req) free(_in_req);
 	if (_in_tx) {
 		memcpy(_tmp_tx, _in_tx, _len_tx);

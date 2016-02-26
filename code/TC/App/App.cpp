@@ -28,6 +28,7 @@
 
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
+sqlite3* db = NULL;
 
 #ifdef E2E_BENCHMARK_THREADING
 #define N_ENCLAVE 19
@@ -59,7 +60,7 @@ void handling_thread(int id, int type){
 //    printf("+%d", id);
     locks[id].lock();
 //    printf("-%d", id);
-    uint8_t nonce[32] = {0};
+    int nonce = 0;
 //    remote_att_init();
     int ret = 0;
     char req[64] = {0};
@@ -301,14 +302,8 @@ exit:
 
 int main()
 {
-    uint8_t nonce[32] = {0};
     int ret;
-
-    if (INVALID_FILE_ATTRIBUTES == GetFileAttributes(NONCE_FILE_NAME) &&
-        GetLastError() == ERROR_FILE_NOT_FOUND)
-        { dump_nonce(nonce); }
-    else
-        { load_nonce(nonce); }
+    sqlite3_init(&db);
 
 #if defined(_MSC_VER)
     if (query_sgx_status() < 0) {
@@ -330,9 +325,7 @@ int main()
     }
     LL_NOTICE("enclave %llu created", global_eid);
 
-//    monitor_loop(nonce);
-//    demo_test_loop(global_eid, nonce);
-    monitor_loop(global_eid, nonce);
+    monitor_loop(global_eid);
 
 exit:
     LL_CRITICAL("%%Info: all enclave closed successfully.");

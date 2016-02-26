@@ -1,5 +1,7 @@
 #include "sqlite3.h"
 
+extern sqlite3* db;
+
 int sqlite3_init(sqlite3** db, const char*dbname="TC.db");
 
 int record_nonce(sqlite3* db, int nonce);

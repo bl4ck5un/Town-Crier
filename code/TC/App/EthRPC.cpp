@@ -167,7 +167,7 @@ int eth_new_filter(std::string hostname, unsigned port, int* id, int from, int t
 
     filter_opt["address"] = "0x08be24cd8dcf73f8fa5db42b855b4370bd5c448b";
 //    filter_opt["topics"] = Json::arrayValue;
-    filter_opt["topics"][0] = "0x28dc24a2a8e41b6447d3e50c69bdf1155bbdc688627f7b29ac10ed2877b4cd33";
+    filter_opt["topics"][0] = "0x8d2b45c22f17e6631529a8fb8f4b17f4f336d01b6db32584ec554476dbbf2af0";
     filter_opt["fromBlock"] = from_s.str();
     filter_opt["toBlock"] = to_s.str();
 
@@ -178,7 +178,6 @@ int eth_new_filter(std::string hostname, unsigned port, int* id, int from, int t
 
     rpc_base(hostname, port, query, result);
 
-    std::cout << result << std::endl;
     *id = std::strtol(result.asCString(), NULL, 16);
     return EXIT_SUCCESS;
 }

@@ -4,6 +4,7 @@
 #include "Enclave_u.h"
 #include "windows.h"
 #include "sys_helper.h"
+#include <Log.h>
 
 std::string current_datetime()
 {
@@ -20,7 +21,13 @@ long long rdtsc()
 
 void ocall_sleep(int milisec)
 {
-    Sleep(milisec);
+    LL_NOTICE("Waiting for %d", milisec/1000);
+    for (int i = 0; i < milisec / 1000; i++)
+    {
+        printf(".");
+        Sleep(1000);
+    }
+    printf("\n");
 }
 
 time_t ocall_time()
