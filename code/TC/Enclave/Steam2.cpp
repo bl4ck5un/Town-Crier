@@ -4,6 +4,7 @@
 #include "Scraper_lib.h"
 #include "dispatcher.h"
 #include <Log.h>
+#include "Enclave_t.h"
 
 /*
     - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
@@ -230,9 +231,15 @@ int get_steam_transaction(char** item_name_list, int item_list_len, char* other,
     char buf[16385];
     char* query = NULL;
 
-    //unsigned int req_time = time() + time_cutoff;
-    //sleep for time_cutoff seconds?? Here or somewhere else?
-    unsigned int req_time = time_cutoff; //for testing only, replace with above...
+    time_t time1, time2;
+    
+    ocall_time(&time1);
+    ocall_sleep(time_cutoff * 1000);
+    ocall_time(&time2);
+
+    LL_NOTICE("%lld seconds passed", time2 - time1);
+
+    unsigned int req_time = time1;
     
     // reference query
     // https://api.steampowered.com/IEconService/GetTradeOffers/v0001/?get_sent_offers=1&get_received_offers=0&get_descriptions=0&active_only=1&historical_only=1&key=7978F8EDEF9695B57E72EC468E5781AD&time_historical_cutoff=1355220300
@@ -245,14 +252,19 @@ int get_steam_transaction(char** item_name_list, int item_list_len, char* other,
     /***** EXECUTE THE QUERY */
     ret = get_page_on_ssl("api.steampowered.com", query, headers, header_size, (unsigned char*)buf, 16384); 
     free(query);
-    if (ret < 0) return -1;
+    if (ret < 0) {
+        LL_CRITICAL("TLS error");
+        *resp = 0;
+        return -1;
+    }
     /*printf("%s\n", buf);*/
     /***** PARSE THE RESPONSE */
     ret = parse_response1(buf, other, item_name_list, item_list_len, key);
     /***** OUTPUT */
     if (ret < 0) {
-        LL_CRITICAL("no data/bad request\n");
-        return -1;
+        LL_CRITICAL("no data");
+        *resp = 0;
+        return 0;
     }
     *resp = 1;
     return 0;

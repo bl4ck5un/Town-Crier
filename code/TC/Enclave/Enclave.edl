@@ -17,5 +17,7 @@ enclave {
 
     untrusted {
         long long rdtsc();
+        void ocall_sleep(int milisec);
+        time_t ocall_time();
     };
 };

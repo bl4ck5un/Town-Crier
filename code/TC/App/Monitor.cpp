@@ -227,7 +227,12 @@ int monitor_loop(sgx_enclave_id_t eid, uint8_t* nonce)
                         hexdump("title", req_data, req_len * 32);
                         
                         handle_request(eid, &ret, nonce, id, request_type, req_data, req_len * 32, raw_tx, &raw_tx_len);
-
+                        if (ret != 0)
+                        {
+                            LL_CRITICAL("%s returned %d", "handle_request", ret);
+                            retry_n++;
+                            continue;
+                        }
                         char* tx_str = static_cast<char*>( malloc(raw_tx_len * 2 + 1));
                         char2hex(raw_tx, raw_tx_len, tx_str);
                     #ifdef VERBOSE
@@ -284,6 +289,11 @@ int demo_test_loop(sgx_enclave_id_t eid, uint8_t* nonce)
     memset(req_data, 0xF0, req_len_bytes);
                         
     handle_request(eid, &ret, nonce, id, request_type, req_data, req_len * 32, raw_tx, &raw_tx_len);
+    if (ret)
+    {
+       LL_CRITICAL("%s returned %d", "handle_request", ret);
+       return -1;
+    }
 
     char* tx_str = static_cast<char*>( malloc(raw_tx_len * 2 + 1));
     char2hex(raw_tx, raw_tx_len, tx_str);

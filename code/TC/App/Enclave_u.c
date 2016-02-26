@@ -31,6 +31,14 @@ typedef struct ms_rdtsc_t {
 	long long ms_retval;
 } ms_rdtsc_t;
 
+typedef struct ms_ocall_sleep_t {
+	int ms_milisec;
+} ms_ocall_sleep_t;
+
+typedef struct ms_ocall_time_t {
+	time_t ms_retval;
+} ms_ocall_time_t;
+
 typedef struct ms_ocall_mbedtls_net_connect_t {
 	int ms_retval;
 	mbedtls_net_context* ms_ctx;
@@ -96,6 +104,20 @@ static sgx_status_t SGX_CDECL Enclave_rdtsc(void* pms)
 {
 	ms_rdtsc_t* ms = SGX_CAST(ms_rdtsc_t*, pms);
 	ms->ms_retval = rdtsc();
+	return SGX_SUCCESS;
+}
+
+static sgx_status_t SGX_CDECL Enclave_ocall_sleep(void* pms)
+{
+	ms_ocall_sleep_t* ms = SGX_CAST(ms_ocall_sleep_t*, pms);
+	ocall_sleep(ms->ms_milisec);
+	return SGX_SUCCESS;
+}
+
+static sgx_status_t SGX_CDECL Enclave_ocall_time(void* pms)
+{
+	ms_ocall_time_t* ms = SGX_CAST(ms_ocall_time_t*, pms);
+	ms->ms_retval = ocall_time();
 	return SGX_SUCCESS;
 }
 
@@ -171,11 +193,13 @@ static sgx_status_t SGX_CDECL Enclave_ocall_print_string(void* pms)
 
 static const struct {
 	size_t nr_ocall;
-	void * func_addr[11];
+	void * func_addr[13];
 } ocall_table_Enclave = {
-	11,
+	13,
 	{
 		(void*)(uintptr_t)Enclave_rdtsc,
+		(void*)(uintptr_t)Enclave_ocall_sleep,
+		(void*)(uintptr_t)Enclave_ocall_time,
 		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_connect,
 		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_bind,
 		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_set_block,

@@ -2,7 +2,7 @@
 #include <string>
 #include <ctime>
 #include "Enclave_u.h"
-
+#include "windows.h"
 #include "sys_helper.h"
 
 std::string current_datetime()
@@ -16,4 +16,14 @@ std::string current_datetime()
 long long rdtsc()
 {
     return __rdtsc();
+}
+
+void ocall_sleep(int milisec)
+{
+    Sleep(milisec);
+}
+
+time_t ocall_time()
+{
+    return time(NULL);
 }

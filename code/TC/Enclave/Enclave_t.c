@@ -57,6 +57,14 @@ typedef struct ms_rdtsc_t {
 	long long ms_retval;
 } ms_rdtsc_t;
 
+typedef struct ms_ocall_sleep_t {
+	int ms_milisec;
+} ms_ocall_sleep_t;
+
+typedef struct ms_ocall_time_t {
+	time_t ms_retval;
+} ms_ocall_time_t;
+
 typedef struct ms_ocall_mbedtls_net_connect_t {
 	int ms_retval;
 	mbedtls_net_context* ms_ctx;
@@ -301,10 +309,12 @@ SGX_EXTERNC const struct {
 
 SGX_EXTERNC const struct {
 	size_t nr_ocall;
-	uint8_t entry_table[11][4];
+	uint8_t entry_table[13][4];
 } g_dyn_entry_table = {
-	11,
+	13,
 	{
+		{0, 0, 0, 0, },
+		{0, 0, 0, 0, },
 		{0, 0, 0, 0, },
 		{0, 0, 0, 0, },
 		{0, 0, 0, 0, },
@@ -328,6 +338,36 @@ sgx_status_t SGX_CDECL rdtsc(long long* retval)
 	OCALLOC(ms, ms_rdtsc_t*, sizeof(*ms));
 
 	status = sgx_ocall(0, ms);
+
+	if (retval) *retval = ms->ms_retval;
+
+	sgx_ocfree();
+	return status;
+}
+
+sgx_status_t SGX_CDECL ocall_sleep(int milisec)
+{
+	sgx_status_t status = SGX_SUCCESS;
+
+	ms_ocall_sleep_t* ms;
+	OCALLOC(ms, ms_ocall_sleep_t*, sizeof(*ms));
+
+	ms->ms_milisec = milisec;
+	status = sgx_ocall(1, ms);
+
+
+	sgx_ocfree();
+	return status;
+}
+
+sgx_status_t SGX_CDECL ocall_time(time_t* retval)
+{
+	sgx_status_t status = SGX_SUCCESS;
+
+	ms_ocall_time_t* ms;
+	OCALLOC(ms, ms_ocall_time_t*, sizeof(*ms));
+
+	status = sgx_ocall(2, ms);
 
 	if (retval) *retval = ms->ms_retval;
 
@@ -376,7 +416,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_connect(int* retval, mbedtls_net_contex
 	}
 	
 	ms->ms_proto = proto;
-	status = sgx_ocall(1, ms);
+	status = sgx_ocall(3, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -426,7 +466,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_bind(int* retval, mbedtls_net_context* 
 	}
 	
 	ms->ms_proto = proto;
-	status = sgx_ocall(2, ms);
+	status = sgx_ocall(4, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -453,7 +493,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_set_block(int* retval, mbedtls_net_cont
 		return SGX_ERROR_INVALID_PARAMETER;
 	}
 	
-	status = sgx_ocall(3, ms);
+	status = sgx_ocall(5, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -480,7 +520,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_set_nonblock(int* retval, mbedtls_net_c
 		return SGX_ERROR_INVALID_PARAMETER;
 	}
 	
-	status = sgx_ocall(4, ms);
+	status = sgx_ocall(6, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -497,7 +537,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_usleep(unsigned long int usec)
 	OCALLOC(ms, ms_ocall_mbedtls_net_usleep_t*, sizeof(*ms));
 
 	ms->ms_usec = usec;
-	status = sgx_ocall(5, ms);
+	status = sgx_ocall(7, ms);
 
 
 	sgx_ocfree();
@@ -534,7 +574,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_recv(int* retval, mbedtls_net_context* 
 	}
 	
 	ms->ms_len = len;
-	status = sgx_ocall(6, ms);
+	status = sgx_ocall(8, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -574,7 +614,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_send(int* retval, mbedtls_net_context* 
 	}
 	
 	ms->ms_len = len;
-	status = sgx_ocall(7, ms);
+	status = sgx_ocall(9, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -614,7 +654,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_recv_timeout(int* retval, mbedtls_net_c
 	
 	ms->ms_len = len;
 	ms->ms_timeout = timeout;
-	status = sgx_ocall(8, ms);
+	status = sgx_ocall(10, ms);
 
 	if (retval) *retval = ms->ms_retval;
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
@@ -642,7 +682,7 @@ sgx_status_t SGX_CDECL ocall_mbedtls_net_free(mbedtls_net_context* ctx)
 		return SGX_ERROR_INVALID_PARAMETER;
 	}
 	
-	status = sgx_ocall(9, ms);
+	status = sgx_ocall(11, ms);
 
 	if (ctx) memcpy((void*)ctx, ms->ms_ctx, _len_ctx);
 
@@ -668,7 +708,7 @@ sgx_status_t SGX_CDECL ocall_print_string(int* retval, const char* str)
 		return SGX_ERROR_INVALID_PARAMETER;
 	}
 	
-	status = sgx_ocall(10, ms);
+	status = sgx_ocall(12, ms);
 
 	if (retval) *retval = ms->ms_retval;
 

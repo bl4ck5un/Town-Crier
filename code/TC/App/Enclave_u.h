@@ -19,6 +19,8 @@ extern "C" {
 #endif
 
 long long SGX_UBRIDGE(SGX_NOCONVENTION, rdtsc, ());
+void SGX_UBRIDGE(SGX_NOCONVENTION, ocall_sleep, (int milisec));
+time_t SGX_UBRIDGE(SGX_NOCONVENTION, ocall_time, ());
 int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_connect, (mbedtls_net_context* ctx, const char* host, const char* port, int proto));
 int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_bind, (mbedtls_net_context* ctx, const char* bind_ip, const char* port, int proto));
 int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_set_block, (mbedtls_net_context* ctx));

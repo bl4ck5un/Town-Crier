@@ -105,22 +105,19 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
     LL_CRITICAL("swtich in done:  %llu", time1);
 #endif
     char * listB[1] = {"Portal"};
-    rc = get_steam_transaction(listB, 1, "32884794", 1355220300, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
+    rc = get_steam_transaction(listB, 1, "32884794", 1, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
     if (rc == 0 && ret == 1) {
         LL_NOTICE("Found a trade, %d, %d", rc, ret);
+        *resp_data = ret;
+        return 0;
     }
+
 #ifdef E2E_BENCHMARK
     rdtsc(&time2);
     LL_CRITICAL("get_flight_delay: %llu", time2-time1);
-#endif
-
-#ifdef E2E_BENCHMARK
     rdtsc(&time1);
     LL_CRITICAL("swtich out begins:  %llu", time1);
 #endif
-
-    *resp_data = ret;
-    return rc;
 }
 
 //request(uint8 type, address cb, bytes4 cb_fid, bytes32[] req)
@@ -168,7 +165,12 @@ int handle_request(uint8_t* nonce, uint64_t request_id, uint8_t request_type,
                 LL_CRITICAL("req_len %d is not 6*32", req_len);
                 return -1;
             }
-            steam_exchange(req, req_len, &found);
+            ret = steam_exchange(req, req_len, &found);
+            if (ret != 0)
+            {
+                LL_CRITICAL("%s returns %d", "steam_exchange", ret);
+                return -1;
+            }
             enc_int(resp_data, found, sizeof found);
             resp_data_len = 32;
             break;

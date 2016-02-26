@@ -331,7 +331,8 @@ int main()
     LL_NOTICE("enclave %llu created", global_eid);
 
 //    monitor_loop(nonce);
-    demo_test_loop(global_eid, nonce);
+//    demo_test_loop(global_eid, nonce);
+    monitor_loop(global_eid, nonce);
 
 exit:
     LL_CRITICAL("%%Info: all enclave closed successfully.");
