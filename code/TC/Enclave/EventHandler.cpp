@@ -113,16 +113,21 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
     LL_CRITICAL("swtich in done:  %llu", time1);
 #endif
     /* handling input */
-    LL_NOTICE("encAPI: %s", (char*) req);
-    LL_NOTICE("buyer id: %s", (char*) req + 64);
+    hexdump("encAPI:", req, 32);
+    LL_NOTICE("buyer id: %s", "32884794");
     
     uint32_t sleep_time;
-    memcpy(&sleep_time, req + 3 * 32, 4);
+    memcpy(&sleep_time, req + 3 * 32, sizeof uint32_t);
 
     LL_NOTICE("item: %s", (char*)req + 5*32);
 
-    if (sleep_time > 3600)
-        sleep_time = swap_uint32(sleep_time);
+    // TODO: reading sleep_time from bytes32 is still not right
+    // e.g. 10 seconds results in A0 00 00 .. 00.
+    // how is int -> bytes32 transformation works?
+    if (sleep_time > 60)
+    {
+        sleep_time = 10;
+    }
     if (sleep_time > 3600)
         sleep_time = 59;
     LL_NOTICE("waiting time: %d", sleep_time);
