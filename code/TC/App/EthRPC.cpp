@@ -98,12 +98,18 @@ int eth_new_filter(std::string hostname, unsigned port, int* id, int from, int t
 {
     /*
     > filter_opt
-{
-  address: "0x08be24cd8dcf73f8fa5db42b855b4370bd5c448b",
-  fromBlock: 1,
-  toBlock: "latest",
-  topics: []
-}
+    {
+        address: "0x08be24cd8dcf73f8fa5db42b855b4370bd5c448b",
+        fromBlock: 1,
+        toBlock: "latest",
+        topics: ["0x8d2b45c22f17e6631529a8fb8f4b17f4f336d01b6db32584ec554476dbbf2af0"]
+    }
+
+    > web3.sha3("RequestInfo(uint64,uint8,address,uint256,address,bytes32,bytes32[])")
+    "8d2b45c22f17e6631529a8fb8f4b17f4f336d01b6db32584ec554476dbbf2af0"
+
+    * note that uint -> uint256 before applying SHA3
+    * see: https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
     */
     Json::Value query;
     Json::Value filter_opt;
@@ -114,7 +120,6 @@ int eth_new_filter(std::string hostname, unsigned port, int* id, int from, int t
     to_s << "0x" << std::hex << to;
 
     filter_opt["address"] = "0x08be24cd8dcf73f8fa5db42b855b4370bd5c448b";
-//    filter_opt["topics"] = Json::arrayValue;
     filter_opt["topics"][0] = "0x8d2b45c22f17e6631529a8fb8f4b17f4f336d01b6db32584ec554476dbbf2af0";
     filter_opt["fromBlock"] = from_s.str();
     filter_opt["toBlock"] = to_s.str();

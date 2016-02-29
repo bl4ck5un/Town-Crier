@@ -150,7 +150,7 @@ int monitor_loop(sgx_enclave_id_t eid)
         // if we've scanned all of them
         if (next_wanted > highest_block)
         {
-            LL_LOG("waiting for new blocks...");
+            LL_NOTICE("waiting for new blocks...");
             Sleep(5000);
             continue;
         }
