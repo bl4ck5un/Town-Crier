@@ -246,3 +246,6 @@ _Pvt_Extensions
 
 *.tar
 *.tar.gz
+
+*.pdf
+*.out
