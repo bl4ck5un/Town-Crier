@@ -1,7 +1,7 @@
 \section{Related Work}
 \label{sec:related}
 
-Virtual Notary~\cite{VN:2013,VN2016} is the first online data attestation service of which we are aware that verifies and digitally signs any of a range of user-requested ``factoids'' (web page contents, stock prices, etc., etc.) potentially suitable for smart contracts. It predates and does not at present interface with Ethereum.
+Virtual Notary~\cite{VN:2013,VN:2016} is the first online data attestation service of which we are aware that verifies and digitally signs any of a range of user-requested ``factoids'' (web page contents, stock prices, etc., etc.) potentially suitable for smart contracts. It predates and does not at present interface with Ethereum.
 
 Several data feeds are deployed today specifically for smart contract systems such as Ethereum. Examples include PriceFeed~\cite{PriceFeed:2016} and Oraclize.it~\cite{Oraclize:2016}. The latter beneficially achieves distributed trust by using a second service called TLSnotary~\cite{TLSnotary}, which digitally signs webpages. As a result, however, unlike \tc, which can flexibly tailor datagrams, Oraclize.it is constrained to delivering data as served in a web session or API call; verbose sources can thus result in superfluous data and inflated gas costs for datagrams. Additionally, this approach cannot support private or custom datagrams. 
 
