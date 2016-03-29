@@ -52,12 +52,11 @@ transactions at the peak global rate of Bitcoin, currently the most heavily load
 %a popular, modern blockchain such as Bitcoin. (Two such hosts could match Bitcoin's peak global transaction rate should it be scaled up through reparametrization.) 
 
 \subsection{TCB Size}
-We first profile the trusted computing based (TCB) size of Town Crier, which
-includes \tc~\encname and \tcontract. \tc~\encname consits of approximately 46.4k
-lines of C/C++ code, most (42.7k lines) of which is the modified mbedTLS~\cite{mbedtls}
-library. The source code of mbedTLS has been widely deployed and tested while the
-remainder of \tc~\encname codebase is small enough to admit formal verification.
-\tcontract has approximately 120 lines of Solidity code.
+The trusted computing base (TCB) of Town Crier includes the~\encname and \tcontract. The~\encname consists of approximately 46.4k
+lines of C/C++ code, the vast majority of which (42.7k lines) is the modified mbedTLS~\cite{mbedtls}
+library. The source code of mbedTLS has been widely deployed and tested, while the
+remainder of the~\encname codebase is small enough to admit formal verification.
+The \tcontract is also compact: It consists of approximately 120 lines of Solidity code.
 
 \subsection{Enclave Response Time}
 \label{subsec:response time}
