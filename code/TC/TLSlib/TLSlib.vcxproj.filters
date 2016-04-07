@@ -443,7 +443,7 @@
     <ClCompile Include="..\mbedtls-2.2.1\library\timing.c">
       <Filter>mbedTLS</Filter>
     </ClCompile>
-    <ClCompile Include="OCall.cpp">
+    <ClCompile Include="OCall.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

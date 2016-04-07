@@ -296,7 +296,9 @@
     <ClCompile Include="..\mbedtls-2.2.1\library\x509_crt.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\x509_csr.c" />
     <ClCompile Include="..\mbedtls-2.2.1\library\xtea.c" />
-    <ClCompile Include="OCall.cpp" />
+    <ClCompile Include="OCall.c">
+      <DeploymentContent>false</DeploymentContent>
+    </ClCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
