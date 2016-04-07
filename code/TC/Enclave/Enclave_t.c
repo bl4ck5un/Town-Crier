@@ -37,10 +37,6 @@ typedef struct ms_handle_request_t {
 	int* ms_len;
 } ms_handle_request_t;
 
-typedef struct ms_Test_main_t {
-	int ms_retval;
-} ms_Test_main_t;
-
 typedef struct ms_ecall_create_report_t {
 	int ms_retval;
 	sgx_target_info_t* ms_quote_enc_info;
@@ -192,19 +188,6 @@ err:
 	return status;
 }
 
-static sgx_status_t SGX_CDECL sgx_Test_main(void* pms)
-{
-	ms_Test_main_t* ms = SGX_CAST(ms_Test_main_t*, pms);
-	sgx_status_t status = SGX_SUCCESS;
-
-	CHECK_REF_POINTER(pms, sizeof(ms_Test_main_t));
-
-	ms->ms_retval = Test_main();
-
-
-	return status;
-}
-
 static sgx_status_t SGX_CDECL sgx_ecall_create_report(void* pms)
 {
 	ms_ecall_create_report_t* ms = SGX_CAST(ms_ecall_create_report_t*, pms);
@@ -279,12 +262,11 @@ err:
 
 SGX_EXTERNC const struct {
 	size_t nr_ecall;
-	struct {void* call_addr; uint8_t is_priv;} ecall_table[4];
+	struct {void* call_addr; uint8_t is_priv;} ecall_table[3];
 } g_ecall_table = {
-	4,
+	3,
 	{
 		{(void*)(uintptr_t)sgx_handle_request, 0},
-		{(void*)(uintptr_t)sgx_Test_main, 0},
 		{(void*)(uintptr_t)sgx_ecall_create_report, 0},
 		{(void*)(uintptr_t)sgx_ecall_time_calibrate, 0},
 	}
@@ -292,23 +274,23 @@ SGX_EXTERNC const struct {
 
 SGX_EXTERNC const struct {
 	size_t nr_ocall;
-	uint8_t entry_table[13][4];
+	uint8_t entry_table[13][3];
 } g_dyn_entry_table = {
 	13,
 	{
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
-		{0, 0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
+		{0, 0, 0, },
 	}
 };
 

@@ -225,17 +225,11 @@
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\net_f.h">
       <Filter>mbedTLS</Filter>
     </ClInclude>
-    <ClInclude Include="Defs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_f.h">
       <Filter>mbedTLS</Filter>
     </ClInclude>
     <ClInclude Include="..\mbedtls-2.2.1\include\mbedtls\timing_v.h">
       <Filter>mbedTLS</Filter>
-    </ClInclude>
-    <ClInclude Include="tstdio.h">
-      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -449,10 +443,7 @@
     <ClCompile Include="..\mbedtls-2.2.1\library\timing.c">
       <Filter>mbedTLS</Filter>
     </ClCompile>
-    <ClCompile Include="entropy_sgx.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tstdio.c">
+    <ClCompile Include="OCall.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

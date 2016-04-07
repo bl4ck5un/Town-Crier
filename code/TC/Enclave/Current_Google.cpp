@@ -14,7 +14,6 @@ static int construct_query(char* symbol, std::string& query) {
 
 
 static double parse_response(char* resp) {
-    int len;
     double ret = 0;
     char * end;
     char * temp = resp;

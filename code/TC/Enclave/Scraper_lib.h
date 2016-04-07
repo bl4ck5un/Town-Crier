@@ -1,5 +1,4 @@
 #include "Enclave.h"
-#include "tstdio.h"
 
 #ifndef SCRAPER_LIB_H
 #define SCRAPER_LIB_H
