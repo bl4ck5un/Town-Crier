@@ -5,7 +5,8 @@
 #include <stdio.h>
 #include <sstream>
 #include <iostream>
-#include "sys_helper.h"
+#include "ocalls.h"
+#include "Bookkeeping.h"
 
 #define CREATE_TABLE \
     "CREATE TABLE IF NOT EXISTS Nonces ( \
@@ -19,6 +20,11 @@
             request_id INT UNIQUE ON CONFLICT REPLACE, \
             discover_time DATETIME, \
             complete_time DATETIME);" \
+
+#define DROP_TABLES \
+    "DROP TABLE IF EXISTS Nonces; \
+     DROP TABLE IF EXISTS Scans; \
+     DROP TABLE IF EXISTS Transactions;"
 
 
 
@@ -140,4 +146,9 @@ int sqlite3_init(sqlite3** db, const char* db_name)
     record_nonce(*db, 0);
     record_scan(*db, 0);
     return 0;
+}
+
+int sqlite3_drop(const char* dbname)
+{
+    return remove(dbname);
 }

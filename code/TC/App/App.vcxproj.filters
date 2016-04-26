@@ -33,9 +33,6 @@
     <ClCompile Include="Enclave_u.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="net_u.c">
-      <Filter>TLSSupport</Filter>
-    </ClCompile>
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_client.cpp">
       <Filter>jsonrpc-cpp</Filter>
     </ClCompile>
@@ -93,11 +90,14 @@
     <ClCompile Include="Bookkeeping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="sys_helper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RemoteAtt.cpp">
       <Filter>RemoteAtt</Filter>
+    </ClCompile>
+    <ClCompile Include="mbedtls_u.c">
+      <Filter>TLSSupport</Filter>
+    </ClCompile>
+    <ClCompile Include="ocalls.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -167,14 +167,14 @@
     <ClInclude Include="Bookkeeping.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="sys_helper.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Constants.h">
       <Filter>Source Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ocalls.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

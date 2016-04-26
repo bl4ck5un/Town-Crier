@@ -7,9 +7,11 @@ enclave {
 
     untrusted {
         // net.h
+        // remember: [in] means going with the call
+        //           [out] means getting out from the call
         int ocall_mbedtls_net_connect([in, out] mbedtls_net_context *ctx, [in,string] const char *host, [in,string] const char *port, int proto );
-        int ocall_mbedtls_net_bind( [in, out] mbedtls_net_context *ctx, [in] const char *bind_ip, [in] const char *port, int proto );
-        // int ocall_mbedtls_net_accept( [in, out] mbedtls_net_context *bind_ctx, [in,out] mbedtls_net_context *client_ctx, [in, size=len] void *client_ip, size_t buf_size, [out] size_t *ip_len );
+        int ocall_mbedtls_net_bind( [out] mbedtls_net_context *ctx, [in,string] const char *bind_ip, [in,string] const char *port, int proto );
+        int ocall_mbedtls_net_accept( [in] mbedtls_net_context *bind_ctx, [out] mbedtls_net_context *client_ctx, [out, size=buf_size] void *client_ip, size_t buf_size, [out] size_t *ip_len );
         int ocall_mbedtls_net_set_block([in,out] mbedtls_net_context *ctx );
         int ocall_mbedtls_net_set_nonblock( [in,out] mbedtls_net_context *ctx );
         void ocall_mbedtls_net_usleep( unsigned long usec );

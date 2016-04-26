@@ -33,8 +33,6 @@
 #include "mbedtls/net_v.h"
 #include "mbedtls/net_f.h"
 
-#include <string.h>
-
 #if (defined(_WIN32) || defined(_WIN32_WCE)) && !defined(EFIX64) && \
     !defined(EFI32)
 
@@ -80,11 +78,6 @@ static int wsa_init_done = 0;
 #else
 #define MSVC_INT_CAST
 #endif
-
-#include <stdlib.h>
-#include <stdio.h>
-
-#include <time.h>
 
 #include <stdint.h>
 
@@ -132,8 +125,16 @@ int mbedtls_net_accept( mbedtls_net_context *bind_ctx,
                         mbedtls_net_context *client_ctx,
                         void *client_ip, size_t buf_size, size_t *ip_len )
 {
-    printf("Not support yet\n");
-    return -123;
+    int ret;
+    /*
+     - bind_ctx: int fd [OUT]
+     - client_ctx: int fd [IN]
+     - client_ip: [IN]
+     - buf_size: sizeof client_ip
+     - ip_len: receiver of ip_len [IN]
+    */
+    ocall_mbedtls_net_accept(&ret, bind_ctx, client_ctx, client_ip, buf_size, ip_len);
+    return ret;
 }
 
 /*

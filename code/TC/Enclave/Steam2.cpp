@@ -239,7 +239,7 @@ int get_steam_transaction(char** item_name_list, int item_list_len, char* other,
 
     LL_NOTICE("%lld seconds passed", time2 - time1);
 
-    unsigned int req_time = time1;
+    unsigned int req_time = (unsigned int) time1;
     
     // reference query
     // https://api.steampowered.com/IEconService/GetTradeOffers/v0001/?get_sent_offers=1&get_received_offers=0&get_descriptions=0&active_only=1&historical_only=1&key=7978F8EDEF9695B57E72EC468E5781AD&time_historical_cutoff=1355220300

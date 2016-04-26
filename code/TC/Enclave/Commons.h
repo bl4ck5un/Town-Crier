@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <vector>
 #include "Log.h"
-#include "stdio.h"
+//#include "stdio.h"
 
 // home-made Big-endian long int
 // NOTE: no leading zeros. Starts with useful bytes.
@@ -65,11 +65,24 @@ inline void fromHex(const char* src, uint8_t* target, unsigned* len)
     if (*len == 1 && *(target - *len) == 0) *len = 0;
 }
 
-inline void toHex(const uint8_t* bytes, int len, char* hex) {
-    int i;
-    for (i = 0; i < len; i++)
-    {
-        hex += snprintf(hex, 2, "%02X", bytes[i]);
-    }
-    *(hex + 1) = '\0';
+//inline void toHex(const uint8_t* bytes, int len, char* hex) {
+//    int i;
+//    for (i = 0; i < len; i++)
+//    {
+//        hex += snprintf(hex, 2, "%02X", bytes[i]);
+//    }
+//    *(hex + 1) = '\0';
+//}
+
+static char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                           '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
+inline std::string toHex(unsigned char *data, int len)
+{
+  std::string s(len * 2, ' ');
+  for (int i = 0; i < len; ++i) {
+    s[2 * i]     = hexmap[(data[i] & 0xF0) >> 4];
+    s[2 * i + 1] = hexmap[data[i] & 0x0F];
+  }
+  return s;
 }
