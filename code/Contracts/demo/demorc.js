@@ -42,9 +42,9 @@ function check_balance(){
     miner.start(1); admin.sleepBlocks(1); miner.stop(1);
     var after = Number(debug.dumpBlock('latest').accounts[sellerAddr.substring(2)].balance);
 
-    console.log('seller balance before: ' + before);
-    console.log('seller balance after: ' + before);
-    console.log('balance delta: ' + (before - after)*1e-18);
+    console.log('seller balance before: ' + before*1e-18 + ' ether');
+    console.log('seller balance after: ' + after*1e-18 + ' ether');
+    console.log('balance delta: ' + (after - before)*1e-18 + ' ether');
 }
 
 /* =========== The following should be run line-by-line as a demo =========== */
