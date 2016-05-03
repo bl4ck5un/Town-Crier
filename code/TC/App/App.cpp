@@ -25,6 +25,8 @@
 #include <tchar.h>
 #include <stdio.h>
 
+#include <iostream>
+
 
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
@@ -303,6 +305,16 @@ exit:
 int main()
 {
     int ret;
+
+    std::cout << "Clean up database? y/[n] ";
+    std::string new_db;
+    std::cin >> new_db;
+    if (new_db == "y")
+    {
+        sqlite3_drop();
+        std::cout << "TC.db cleaned" << std::endl;
+    }
+
     sqlite3_init(&db);
 
 #if defined(_MSC_VER)

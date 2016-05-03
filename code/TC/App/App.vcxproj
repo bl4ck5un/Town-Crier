@@ -305,8 +305,8 @@
     <ClCompile Include="printf.c" />
     <ClCompile Include="RemoteAtt.cpp" />
     <ClCompile Include="EthRPC.cpp" />
-    <ClCompile Include="sys_helper.cpp" />
-    <ClCompile Include="net_u.c" />
+    <ClCompile Include="ocalls.cpp" />
+    <ClCompile Include="mbedtls_u.c" />
     <ClCompile Include="Utils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -333,7 +333,7 @@
     <ClInclude Include="printf.h" />
     <ClInclude Include="RemoteAtt.h" />
     <ClInclude Include="EthRPC.h" />
-    <ClInclude Include="sys_helper.h" />
+    <ClInclude Include="ocalls.h" />
     <ClInclude Include="Utils.h" />
   </ItemGroup>
   <ItemGroup>

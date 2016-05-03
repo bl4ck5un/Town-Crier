@@ -51,6 +51,15 @@ typedef struct ms_ocall_mbedtls_net_bind_t {
 	int ms_proto;
 } ms_ocall_mbedtls_net_bind_t;
 
+typedef struct ms_ocall_mbedtls_net_accept_t {
+	int ms_retval;
+	mbedtls_net_context* ms_bind_ctx;
+	mbedtls_net_context* ms_client_ctx;
+	void* ms_client_ip;
+	size_t ms_buf_size;
+	size_t* ms_ip_len;
+} ms_ocall_mbedtls_net_accept_t;
+
 typedef struct ms_ocall_mbedtls_net_set_block_t {
 	int ms_retval;
 	mbedtls_net_context* ms_ctx;
@@ -131,6 +140,13 @@ static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_bind(void* pms)
 	return SGX_SUCCESS;
 }
 
+static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_accept(void* pms)
+{
+	ms_ocall_mbedtls_net_accept_t* ms = SGX_CAST(ms_ocall_mbedtls_net_accept_t*, pms);
+	ms->ms_retval = ocall_mbedtls_net_accept(ms->ms_bind_ctx, ms->ms_client_ctx, ms->ms_client_ip, ms->ms_buf_size, ms->ms_ip_len);
+	return SGX_SUCCESS;
+}
+
 static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_set_block(void* pms)
 {
 	ms_ocall_mbedtls_net_set_block_t* ms = SGX_CAST(ms_ocall_mbedtls_net_set_block_t*, pms);
@@ -189,15 +205,16 @@ static sgx_status_t SGX_CDECL Enclave_ocall_print_string(void* pms)
 
 static const struct {
 	size_t nr_ocall;
-	void * func_addr[13];
+	void * func_addr[14];
 } ocall_table_Enclave = {
-	13,
+	14,
 	{
 		(void*)(uintptr_t)Enclave_rdtsc,
 		(void*)(uintptr_t)Enclave_ocall_sleep,
 		(void*)(uintptr_t)Enclave_ocall_time,
 		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_connect,
 		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_bind,
+		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_accept,
 		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_set_block,
 		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_set_nonblock,
 		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_usleep,

@@ -107,22 +107,26 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
     format[5] = LIST_I[0];
     */
     int ret, rc;
+    (void) len;
 #ifdef E2E_BENCHMARK
     long long time1, time2;
     rdtsc(&time1);
     LL_CRITICAL("swtich in done:  %llu", time1);
 #endif
     /* handling input */
-    char* buyer_id;
+    std::string buyer_id;  // buyer_id is 32B, each of byte takes two chars. Plus \0
     uint32_t wait_time;
     size_t item_len;
     vector<char*> items;
 
     // 0x00 .. 0x40
     // - encAPI: TODO: insert dec here
-    // 0x40 .. 0x60
-    buyer_id = (char*)(req + 0x40);
-    LL_NOTICE("buyer id: %s", buyer_id);
+    std::string enc_api_key = toHex(req, 0x40);
+    LL_NOTICE("API_key ciphertext: %s", enc_api_key.c_str());
+
+    // 0x40 .. 0x60 buyer_id
+    buyer_id = toHex(req + 0x40, 0x20);
+    LL_NOTICE("buyer id: %s", buyer_id.c_str());
     
     // 0x60 .. 0x80
     // get last 4 bytes
@@ -134,7 +138,7 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
     item_len = swap_uint32(item_len);
 
     // 0xa0 .. 0xc0
-    for (int i = 0; i < item_len; i++)
+    for (size_t i = 0; i < item_len; i++)
     {
         items.push_back((char*) req + 0xa0 + 0x20 * i);
         LL_NOTICE("item: %s", items[i]);
@@ -151,6 +155,9 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
         *resp_data = ret;
         return 0;
     }
+
+//    uncomment to simulate an real trade
+//    *resp_data = 1;
 
 #ifdef E2E_BENCHMARK
     rdtsc(&time2);
