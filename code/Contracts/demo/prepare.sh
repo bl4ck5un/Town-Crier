@@ -15,7 +15,7 @@ var encryptedApiKey = ['deadbeef', 'deadbeef']
 var buyerSteamId = '32884794'
 EOF
 
-# Make sure you modify the TC contract to have the right SGX aggress.
+# Make sure you modify the TC contract to have the right SGX address.
 SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../TownCrier.sol ../SteamTrade.sol | paste -sd '' | sed 's/\s\+/ /g')
 
 cat <<EOF
