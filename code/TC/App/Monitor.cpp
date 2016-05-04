@@ -12,9 +12,10 @@
 #include "RemoteAtt.h"
 #include "Constants.h"
 #include "Bookkeeping.h"
+#include <iomanip>
 
 #define RPC_HOSTNAME    "localhost"
-#define RPC_PORT        8200
+#define RPC_PORT        8545
 
 
 inline uint64_t swap_uint64(uint64_t X) {
@@ -107,7 +108,7 @@ int monitor_loop(sgx_enclave_id_t eid)
     Json::Value transaction;
     unsigned retry_n = 0;
     int sleep_sec;
-    int filter_id;
+    std::string filter_id;
     unsigned long highest_block;
     int nonce = 0;
 
@@ -139,7 +140,7 @@ int monitor_loop(sgx_enclave_id_t eid)
         }
         catch (std::exception& ex)
         {
-            LL_CRITICAL("%s", ex.what());
+            LL_NOTICE("%s", ex.what());
             retry_n++;
             continue;
         }
@@ -158,7 +159,7 @@ int monitor_loop(sgx_enclave_id_t eid)
             // create a new filter for next_wanted
             try
             {
-                ret = eth_new_filter(RPC_HOSTNAME, RPC_PORT, &filter_id, next_wanted, next_wanted);
+                ret = eth_new_filter(RPC_HOSTNAME, RPC_PORT, filter_id, next_wanted, next_wanted);
                 retry_n = 0;
             }
             catch (std::exception& ex)
@@ -280,6 +281,11 @@ int monitor_loop(sgx_enclave_id_t eid)
                 {
                     nonce++;
                     record_nonce(db, nonce);
+                }
+                if (exp.find("invalid sender"))
+                {
+                    dump_buf("TX dump", raw_tx, raw_tx_len);
+                    return -100;
                 }
                 retry_n++;
                 continue;

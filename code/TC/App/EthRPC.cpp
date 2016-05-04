@@ -89,19 +89,20 @@ int send_transaction(std::string hostname, unsigned port, char* raw)
 
   rpc_base(hostname, port, query, resp);
 
-  LL_CRITICAL("Response recorded in the blockchain. TX=%s", resp.asCString());
+  LL_CRITICAL("Response recorded in the blockchain.");
+  LL_CRITICAL("TX: %s", resp.asCString());
 
   return EXIT_SUCCESS;
 }
 
-int eth_new_filter(std::string hostname, unsigned port, int* id, int from, int to)
+int eth_new_filter(std::string hostname, unsigned port, std::string& id, int from, int to)
 {
     /*
     > filter_opt
     {
         address: "0x08be24cd8dcf73f8fa5db42b855b4370bd5c448b",
-        fromBlock: 1,
-        toBlock: "latest",
+        fromBlock: from,
+        toBlock: to,
         topics: ["0x8d2b45c22f17e6631529a8fb8f4b17f4f336d01b6db32584ec554476dbbf2af0"]
     }
 
@@ -129,13 +130,21 @@ int eth_new_filter(std::string hostname, unsigned port, int* id, int from, int t
     query["method"] = "eth_newFilter";
     query["params"][0] = filter_opt;
 
-    rpc_base(hostname, port, query, result);
-
-    *id = std::strtol(result.asCString(), NULL, 16);
+    try
+    {
+        rpc_base(hostname, port, query, result);
+    }
+    catch (std::exception& re)
+    {
+        LL_CRITICAL("%s", re.what());
+        std::cout << result << std::endl;
+        return -1;
+    }
+    id = result.asString();
     return EXIT_SUCCESS;
 }
 
-int eth_getfilterlogs(std::string hostname, unsigned port, long filter_id, Json::Value& result)
+int eth_getfilterlogs(std::string hostname, unsigned port, std::string filter_id, Json::Value& result)
 {
     Json::Value query;
     Json::FastWriter writer;
@@ -147,7 +156,7 @@ int eth_getfilterlogs(std::string hostname, unsigned port, long filter_id, Json:
     query["jsonrpc"] = "2.0";
     query["id"] = 1;
     query["method"] = "eth_getFilterLogs";
-    query["params"][0] = filter_id_s.str();
+    query["params"][0] = filter_id;
 
     try
     {

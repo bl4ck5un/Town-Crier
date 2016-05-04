@@ -342,6 +342,5 @@ int main()
 exit:
     LL_CRITICAL("%%Info: all enclave closed successfully.");
     LL_CRITICAL("%%Enter a character before exit ...");
-    getchar();
-    return 0;
+    system("pause");
 }

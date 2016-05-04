@@ -119,10 +119,14 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
     size_t item_len;
     vector<char*> items;
 
+#ifdef VERBOSE
+    dump_buf("req dump", req, len);
+#endif
+
     // 0x00 .. 0x40
     // - encAPI: TODO: insert dec here
     std::string enc_api_key = toHex(req, 0x40);
-    LL_NOTICE("API_key ciphertext: %s", enc_api_key.c_str());
+    dump_buf("API Key Ciphertext", req, 0x40);
 
     // 0x40 .. 0x60 buyer_id
     buyer_id = toHex(req + 0x40, 0x20);
@@ -149,6 +153,8 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
     LL_NOTICE("waiting time: %d", wait_time);
 
     char * listB[1] = {"Portal"};
+    // XXX: set wait time to 1 for test purpose
+    wait_time = 1;
     rc = get_steam_transaction(listB, 1, "32884794", wait_time, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
     if (rc == 0 && ret == 1) {
         LL_NOTICE("Found a trade, %d, %d", rc, ret);
