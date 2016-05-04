@@ -16,6 +16,7 @@ coinbase=$(geth --datadir=$datadir account list | head -n 1 | sed 's/.*{\([a-z0-
 
 localip=10.0.2.15
 
+geth --datadir=$datadir init genesis.json
 geth --datadir=$datadir \
   --identity="00" \
   --networkid="93819023" \
@@ -25,5 +26,4 @@ geth --datadir=$datadir \
   --rpcaddr=$localip\
   --rpcport=8200\
   --rpccorsdomain='*' \
-  --genesis=genesis.json \
   console 
