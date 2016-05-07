@@ -16,7 +16,7 @@ var encryptedApiKey = [
     '0xf68d2a32cf17b1312c6db3f236a38c94', 
     '0x4c9f92f6ec1e2a20a1413d0ac1b867a3']
 
-var buyerSteamId = '32884794';
+var buyerSteamId = String(32884794);
 EOF
 
 # Make sure you modify the TC contract to have the right SGX address.
@@ -105,12 +105,20 @@ function purchase(contract, steamId, delay) {
 
 function check_balance(){
     var before = Number(eth.getBalance(sellerAddr));
+    var before_b = Number(eth.getBalance(buyerAddr));
+
     miner.start(1); admin.sleepBlocks(1); miner.stop();
+
     var after = Number(eth.getBalance(sellerAddr));
+    var after_b = Number(eth.getBalance(buyerAddr));
 
     console.log('seller balance before: ' + before*1e-18 + ' ether');
     console.log('seller balance after: ' + after*1e-18 + ' ether');
     console.log('balance delta: ' + (after - before)*1e-18 + ' ether');
+
+    console.log('buyer balance before: ' + before_b*1e-18 + ' ether');
+    console.log('buyer balance after: ' + after_b*1e-18 + ' ether');
+    console.log('balance delta: ' + (after_b - before_b)*1e-18 + ' ether');
 }
 
 
