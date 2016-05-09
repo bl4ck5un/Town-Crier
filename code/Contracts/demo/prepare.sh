@@ -101,6 +101,8 @@ function purchase(contract, steamId, delay) {
       gas: gasCnt
   });
   miner.start(1); admin.sleepBlocks(1); miner.stop();
+
+  return "Purchased!"
 }
 
 function check_balance(){
@@ -119,6 +121,8 @@ function check_balance(){
     console.log('buyer balance before: ' + before_b*1e-18 + ' ether');
     console.log('buyer balance after: ' + after_b*1e-18 + ' ether');
     console.log('balance delta: ' + (after_b - before_b)*1e-18 + ' ether');
+
+    return "Success!"
 }
 
 
