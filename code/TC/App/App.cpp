@@ -337,10 +337,13 @@ int main()
     }
     LL_NOTICE("enclave %llu created", global_eid);
 
+//    remote_att_init(global_eid);
+//    goto exit;
+
     monitor_loop(global_eid);
 
 exit:
-    LL_CRITICAL("%%Info: all enclave closed successfully.");
-    LL_CRITICAL("%%Enter a character before exit ...");
+    LL_CRITICAL("Info: all enclave closed successfully.");
+    LL_CRITICAL("Enter a character before exit ...");
     system("pause");
 }

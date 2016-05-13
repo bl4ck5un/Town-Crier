@@ -22,9 +22,6 @@
     <Filter Include="jsonrpc-cpp">
       <UniqueIdentifier>{8fcbbe58-e0c5-4edf-a9eb-d083253303e5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="RemoteAtt">
-      <UniqueIdentifier>{909ff6bf-71e5-4cc4-9b56-a8f2371c2ed3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\helpers">
       <UniqueIdentifier>{eb989e53-a91f-468b-bb7f-f5455427d330}</UniqueIdentifier>
     </Filter>
@@ -90,13 +87,13 @@
     <ClCompile Include="Bookkeeping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RemoteAtt.cpp">
-      <Filter>RemoteAtt</Filter>
-    </ClCompile>
     <ClCompile Include="mbedtls_u.c">
       <Filter>TLSSupport</Filter>
     </ClCompile>
     <ClCompile Include="ocalls.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RemoteAtt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -146,9 +143,6 @@
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\system.h">
       <Filter>jsonrpc-cpp</Filter>
     </ClInclude>
-    <ClInclude Include="RemoteAtt.h">
-      <Filter>RemoteAtt</Filter>
-    </ClInclude>
     <ClInclude Include="EthRPC.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -174,6 +168,9 @@
       <Filter>Source Files\helpers</Filter>
     </ClInclude>
     <ClInclude Include="ocalls.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoteAtt.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

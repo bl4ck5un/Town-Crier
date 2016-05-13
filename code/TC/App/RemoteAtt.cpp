@@ -66,6 +66,8 @@ int remote_att_init (sgx_enclave_id_t eid)
     LL_CRITICAL("sgx_get_quote: %f", (time1-time2)/FREQ);
 #endif
 
+    dump_buf("QUOTE: ", (uint8_t*) quote, quote_size);
+
 #ifdef VERBOSE
     dump_buf("REPORT_MAC: ", report.mac, sizeof report.mac);
     dump_buf("REPORT_DAT: ", report.body.report_data.d, sizeof report.body.report_data.d);

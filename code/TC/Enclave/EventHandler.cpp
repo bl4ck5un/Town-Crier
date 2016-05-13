@@ -154,7 +154,8 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
 
     char * listB[1] = {"Portal"};
     // XXX: set wait time to 1 for test purpose
-    wait_time = 1;
+//    wait_time = 1;
+
     rc = get_steam_transaction(listB, 1, "32884794", wait_time, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
     if (rc == 0 && ret == 1) {
         LL_NOTICE("Found a trade, %d, %d", rc, ret);

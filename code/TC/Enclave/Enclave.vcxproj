@@ -304,7 +304,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tstdcxx.lib;sgx_tcrypto_opt.lib;TLSlib.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\Release;$(SGXSDKInstallPath)bin\$(Platform)\Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\Debug;$(SGXSDKInstallPath)bin\$(Platform)\Release</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
       </EntryPointSymbol>
