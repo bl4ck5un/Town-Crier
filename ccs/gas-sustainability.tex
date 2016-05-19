@@ -37,17 +37,21 @@ if a service is attacking itself, we make no attempt to guarantee availability.
 
 Second, we require that the balance of \tcadd not decrease.
 This requirement appears quite strict.
-In reality we only need require that, after each execution, \tc has enough funds for the next execution.
+In reality we need only require that \tc be able to afford every legal set of executions.
 Because \tc has only one way to spend ether and the amount provided need not depend on the balance of \tcadd,
 this requirement is equivalent to the balance never decreasing.
 
 In a more general case, there may be multiple ways to initiate blockchain computation or multiple wallets.
 Therefore, we simply require that the service not get stuck due to lack of gas.
-This leads us to our more general definition.
+Intuitively we wish to ensure that, if a service is initialized with sufficient gas and behaves honestly,
+then for any sequence of calls, it will be able to pay the gas cost of each call it executes.
 
-\begin{definition}[Gas Sustainability]
-  \label{def:gas-sustainability}
-  We say that a service is \emph{gas sustainable} if, as long as the service executes honestly and is initialized with sufficient funds,
-  it will never be unable to perform an action specified by its protocol due to insufficient gas.
-\end{definition}
+%More formally, we can let a service $S$ be a set of public calls $f_1, \dotsc, f_F$, a set of wallets $w_1, \dotsc w_W$, a set of response contract calls $a_1, \dotsc, a_A$, and a set of algorithms $b_1, \dotsc, b_B$.
+%To use the service, some user $P$ calls some $f_i$ with input $x$.
+
+%\begin{definition}[Gas Sustainability]
+%  \label{def:gas-sustainability}
+%  We say that a service is \emph{gas sustainable} if, as long as the service executes honestly and is initialized with sufficient funds,
+%  it will never be unable to perform an action specified by its protocol due to insufficient gas.
+%\end{definition}
 
