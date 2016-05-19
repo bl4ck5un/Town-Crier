@@ -1,5 +1,5 @@
-\section{Gas Neutrality}
-\label{sec:gas-neutrality}
+\section{Gas Sustainability}
+\label{sec:gas-sustainability}
 
 The simplified payment-free protocol in Section~\ref{sec:payment-free-protocol} guarantees authenticity of data for an honest user.
 In Ethereum, however, computation is not free; recall from Section~\ref{sec:contracts-and-gas} that Ethereum employs \emph{gas} to fuel contracts.
@@ -20,9 +20,9 @@ To ensure the availability of the service, we must guard against such an attack.
 For \tc, there is only one point at which \tc initiates a blockchain transaction: {\bf Deliver}.
 This leads us to the following definition.
 
-\begin{definition}[\tc Gas Neutrality]
-  \label{def:tc-gas-neutrality}
-  We say that \tc is \emph{gas neutral} if, whenever the \medname is honest and \tcadd contains sufficient funds to execute {\bf Deliver},
+\begin{definition}[\tc Gas Sustainability]
+  \label{def:tc-gas-sustainability}
+  We say that \tc is \emph{gas sustainable} if, whenever the \medname is honest and \tcadd contains sufficient funds to execute {\bf Deliver},
   then executing {\bf Deliver} cannot decrease the balance of \tcadd.
 \end{definition}
 
@@ -45,9 +45,9 @@ In a more general case, there may be multiple ways to initiate blockchain comput
 Therefore, we simply require that the service not get stuck due to lack of gas.
 This leads us to our more general definition.
 
-\begin{definition}[Gas Neutrality]
-  \label{def:gas-neutrality}
-  We say that a service is \emph{gas neutral} if, as long as the service executes honestly and is initialized with sufficient funds,
+\begin{definition}[Gas Sustainability]
+  \label{def:gas-sustainability}
+  We say that a service is \emph{gas sustainable} if, as long as the service executes honestly and is initialized with sufficient funds,
   it will never be unable to perform an action specified by its protocol due to insufficient gas.
 \end{definition}
 
