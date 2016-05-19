@@ -2,7 +2,7 @@ import "TownCrier.sol";
 
 contract SteamTrade {
     event UINT(uint u);
-    event Buy(bytes32 buyerId, bytes32 time, bytes32[2] encSellerApi, bytes32 item, int flag);
+    event Buy(bytes32 buyerId, uint32 time, bytes32[2] encSellerApi, bytes32 item, int flag);
 
     address owner;
     TownCrier public TC_CONTRACT;
@@ -24,7 +24,7 @@ contract SteamTrade {
         encAPI[1] = encApiKey1;
     }
 
-    function purchase(bytes32 ID_B, bytes32 T_B) returns (uint) {
+    function purchase(bytes32 ID_B, uint32 T_B) returns (uint) {
         uint i;
         uint j;
         if (msg.value != P + TC_FEE) {
@@ -39,7 +39,7 @@ contract SteamTrade {
         format[0] = encAPI[0];
         format[1] = encAPI[1];
         format[2] = ID_B;
-        format[3] = T_B;
+        format[3] = bytes32(T_B);
         format[4] = bytes32(1);
         format[5] = ITEM;
         uint64 requestId = TC_CONTRACT.request.value(TC_FEE)(2, this, TC_CALLBACK_FID, format);

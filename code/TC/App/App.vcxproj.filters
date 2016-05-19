@@ -22,9 +22,6 @@
     <Filter Include="jsonrpc-cpp">
       <UniqueIdentifier>{8fcbbe58-e0c5-4edf-a9eb-d083253303e5}</UniqueIdentifier>
     </Filter>
-    <Filter Include="RemoteAtt">
-      <UniqueIdentifier>{909ff6bf-71e5-4cc4-9b56-a8f2371c2ed3}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\helpers">
       <UniqueIdentifier>{eb989e53-a91f-468b-bb7f-f5455427d330}</UniqueIdentifier>
     </Filter>
@@ -32,9 +29,6 @@
   <ItemGroup>
     <ClCompile Include="Enclave_u.c">
       <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="net_u.c">
-      <Filter>TLSSupport</Filter>
     </ClCompile>
     <ClCompile Include="..\jsonrpc-cpp-0.5\src\jsonrpc_client.cpp">
       <Filter>jsonrpc-cpp</Filter>
@@ -93,11 +87,14 @@
     <ClCompile Include="Bookkeeping.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="sys_helper.cpp">
+    <ClCompile Include="mbedtls_u.c">
+      <Filter>TLSSupport</Filter>
+    </ClCompile>
+    <ClCompile Include="ocalls.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RemoteAtt.cpp">
-      <Filter>RemoteAtt</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -146,9 +143,6 @@
     <ClInclude Include="..\jsonrpc-cpp-0.5\include\system.h">
       <Filter>jsonrpc-cpp</Filter>
     </ClInclude>
-    <ClInclude Include="RemoteAtt.h">
-      <Filter>RemoteAtt</Filter>
-    </ClInclude>
     <ClInclude Include="EthRPC.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -167,14 +161,17 @@
     <ClInclude Include="Bookkeeping.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="sys_helper.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Common\Constants.h">
       <Filter>Source Files\helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ocalls.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoteAtt.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -2180,6 +2180,7 @@
  * Requires: MBEDTLS_SSL_CACHE_C
  */
 #define MBEDTLS_SSL_CACHE_C
+#undef MBEDTLS_SSL_CACHE_C // undefined for SSLServer.c
 
 /**
  * \def MBEDTLS_SSL_COOKIE_C

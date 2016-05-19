@@ -23,7 +23,7 @@
 #ifndef MBEDTLS_PLATFORM_H
 #define MBEDTLS_PLATFORM_H
 
-#include "../../TLSlib/tstdio.h"
+#include "../../TLSlib/TLSlib.h"
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "config.h"

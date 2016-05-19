@@ -11,10 +11,6 @@ typedef struct ms_handle_request_t {
 	int* ms_len;
 } ms_handle_request_t;
 
-typedef struct ms_Test_main_t {
-	int ms_retval;
-} ms_Test_main_t;
-
 typedef struct ms_ecall_create_report_t {
 	int ms_retval;
 	sgx_target_info_t* ms_quote_enc_info;
@@ -54,6 +50,15 @@ typedef struct ms_ocall_mbedtls_net_bind_t {
 	char* ms_port;
 	int ms_proto;
 } ms_ocall_mbedtls_net_bind_t;
+
+typedef struct ms_ocall_mbedtls_net_accept_t {
+	int ms_retval;
+	mbedtls_net_context* ms_bind_ctx;
+	mbedtls_net_context* ms_client_ctx;
+	void* ms_client_ip;
+	size_t ms_buf_size;
+	size_t* ms_ip_len;
+} ms_ocall_mbedtls_net_accept_t;
 
 typedef struct ms_ocall_mbedtls_net_set_block_t {
 	int ms_retval;
@@ -135,6 +140,13 @@ static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_bind(void* pms)
 	return SGX_SUCCESS;
 }
 
+static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_accept(void* pms)
+{
+	ms_ocall_mbedtls_net_accept_t* ms = SGX_CAST(ms_ocall_mbedtls_net_accept_t*, pms);
+	ms->ms_retval = ocall_mbedtls_net_accept(ms->ms_bind_ctx, ms->ms_client_ctx, ms->ms_client_ip, ms->ms_buf_size, ms->ms_ip_len);
+	return SGX_SUCCESS;
+}
+
 static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_set_block(void* pms)
 {
 	ms_ocall_mbedtls_net_set_block_t* ms = SGX_CAST(ms_ocall_mbedtls_net_set_block_t*, pms);
@@ -193,15 +205,16 @@ static sgx_status_t SGX_CDECL Enclave_ocall_print_string(void* pms)
 
 static const struct {
 	size_t nr_ocall;
-	void * func_addr[13];
+	void * func_addr[14];
 } ocall_table_Enclave = {
-	13,
+	14,
 	{
 		(void*)(uintptr_t)Enclave_rdtsc,
 		(void*)(uintptr_t)Enclave_ocall_sleep,
 		(void*)(uintptr_t)Enclave_ocall_time,
 		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_connect,
 		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_bind,
+		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_accept,
 		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_set_block,
 		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_set_nonblock,
 		(void*)(uintptr_t)Enclave_ocall_mbedtls_net_usleep,
@@ -229,22 +242,13 @@ sgx_status_t handle_request(sgx_enclave_id_t eid, int* retval, int nonce, uint64
 	return status;
 }
 
-sgx_status_t Test_main(sgx_enclave_id_t eid, int* retval)
-{
-	sgx_status_t status;
-	ms_Test_main_t ms;
-	status = sgx_ecall(eid, 1, &ocall_table_Enclave, &ms);
-	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
-	return status;
-}
-
 sgx_status_t ecall_create_report(sgx_enclave_id_t eid, int* retval, sgx_target_info_t* quote_enc_info, sgx_report_t* report)
 {
 	sgx_status_t status;
 	ms_ecall_create_report_t ms;
 	ms.ms_quote_enc_info = quote_enc_info;
 	ms.ms_report = report;
-	status = sgx_ecall(eid, 2, &ocall_table_Enclave, &ms);
+	status = sgx_ecall(eid, 1, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
 }
@@ -255,7 +259,7 @@ sgx_status_t ecall_time_calibrate(sgx_enclave_id_t eid, int* retval, time_t wall
 	ms_ecall_time_calibrate_t ms;
 	ms.ms_wall_clock = wall_clock;
 	ms.ms_wtc_rsv = (uint8_t*)wtc_rsv;
-	status = sgx_ecall(eid, 3, &ocall_table_Enclave, &ms);
+	status = sgx_ecall(eid, 2, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
 }

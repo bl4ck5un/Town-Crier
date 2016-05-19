@@ -23,6 +23,7 @@ void SGX_UBRIDGE(SGX_NOCONVENTION, ocall_sleep, (int milisec));
 time_t SGX_UBRIDGE(SGX_NOCONVENTION, ocall_time, ());
 int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_connect, (mbedtls_net_context* ctx, const char* host, const char* port, int proto));
 int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_bind, (mbedtls_net_context* ctx, const char* bind_ip, const char* port, int proto));
+int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_accept, (mbedtls_net_context* bind_ctx, mbedtls_net_context* client_ctx, void* client_ip, size_t buf_size, size_t* ip_len));
 int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_set_block, (mbedtls_net_context* ctx));
 int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_set_nonblock, (mbedtls_net_context* ctx));
 void SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_usleep, (unsigned long int usec));
@@ -33,7 +34,6 @@ void SGX_UBRIDGE(SGX_NOCONVENTION, ocall_mbedtls_net_free, (mbedtls_net_context*
 int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_print_string, (const char* str));
 
 sgx_status_t handle_request(sgx_enclave_id_t eid, int* retval, int nonce, uint64_t request_id, uint8_t request_type, uint8_t* req, int req_len, uint8_t tx[2048], int* len);
-sgx_status_t Test_main(sgx_enclave_id_t eid, int* retval);
 sgx_status_t ecall_create_report(sgx_enclave_id_t eid, int* retval, sgx_target_info_t* quote_enc_info, sgx_report_t* report);
 sgx_status_t ecall_time_calibrate(sgx_enclave_id_t eid, int* retval, time_t wall_clock, uint8_t wtc_rsv[65]);
 

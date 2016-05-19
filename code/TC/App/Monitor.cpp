@@ -4,20 +4,18 @@
 #include "Log.h"
 #define _WINSOCKAPI_
 #include "windows.h"
-#include <map>
-#include <string>
 #include "jsonrpc.h"
 #include "Enclave_u.h"
 #include "App.h"
-#include <Debug.h>
 #include "Utils.h"
 #include <Constants.h>
 #include "RemoteAtt.h"
 #include "Constants.h"
 #include "Bookkeeping.h"
+#include <iomanip>
 
 #define RPC_HOSTNAME    "localhost"
-#define RPC_PORT        8200
+#define RPC_PORT        8545
 
 
 inline uint64_t swap_uint64(uint64_t X) {
@@ -110,7 +108,7 @@ int monitor_loop(sgx_enclave_id_t eid)
     Json::Value transaction;
     unsigned retry_n = 0;
     int sleep_sec;
-    int filter_id;
+    std::string filter_id;
     unsigned long highest_block;
     int nonce = 0;
 
@@ -142,7 +140,7 @@ int monitor_loop(sgx_enclave_id_t eid)
         }
         catch (std::exception& ex)
         {
-            LL_CRITICAL("%s", ex.what());
+            LL_NOTICE("%s", ex.what());
             retry_n++;
             continue;
         }
@@ -150,7 +148,7 @@ int monitor_loop(sgx_enclave_id_t eid)
         // if we've scanned all of them
         if (next_wanted > highest_block)
         {
-            LL_LOG("waiting for new blocks...");
+            LL_NOTICE("waiting for block No.%d...", next_wanted);
             Sleep(5000);
             continue;
         }
@@ -161,7 +159,7 @@ int monitor_loop(sgx_enclave_id_t eid)
             // create a new filter for next_wanted
             try
             {
-                ret = eth_new_filter(RPC_HOSTNAME, RPC_PORT, &filter_id, next_wanted, next_wanted);
+                ret = eth_new_filter(RPC_HOSTNAME, RPC_PORT, filter_id, next_wanted, next_wanted);
                 retry_n = 0;
             }
             catch (std::exception& ex)
@@ -209,16 +207,16 @@ int monitor_loop(sgx_enclave_id_t eid)
                         // 0x80 - 160     : cb
                         // 0xa0 - 192     : hash
                         // 0xc0 - 224     : offset
-                        // 0xe0- 256     : reqLen
+                        // 0xe0- 256      : reqLen
                         // 0x100-         : reqData
                         uint8_t* start = &data[0];
-                        uint64_t id;
+                        uint64_t request_id;
                         uint8_t request_type;
                         uint32_t req_len;
 
                         // get id
-                        memcpy(&id,             start + 32 - sizeof uint64_t, sizeof uint64_t);
-                        id = swap_uint64(id);
+                        memcpy(&request_id,             start + 32 - sizeof uint64_t, sizeof uint64_t);
+                        request_id = swap_uint64(request_id);
 
                         // get type
                         memcpy(&request_type,   start + 64 - sizeof uint8_t, sizeof uint8_t);
@@ -232,7 +230,7 @@ int monitor_loop(sgx_enclave_id_t eid)
                         uint8_t* req_data = static_cast<uint8_t*>(malloc(req_len * 32));
                         memcpy(req_data, start + 0x100, req_len * 32);
 
-                        LL_NOTICE("get request (id=%llu)", id);
+                        LL_NOTICE("find an request (id=%llu)", request_id);
 
 #ifdef VERBOSE
                         hexdump("req_data:", req_data, req_len * 32);
@@ -240,7 +238,7 @@ int monitor_loop(sgx_enclave_id_t eid)
                         
                         get_last_nonce(db, &nonce);
 
-                        handle_request(eid, &ret, nonce, id, request_type, req_data, req_len * 32, raw_tx, &raw_tx_len);
+                        handle_request(eid, &ret, nonce, request_id, request_type, req_data, req_len * 32, raw_tx, &raw_tx_len);
                         if (ret != 0)
                         {
                             LL_CRITICAL("%s returned %d", "handle_request", ret);
@@ -284,6 +282,11 @@ int monitor_loop(sgx_enclave_id_t eid)
                     nonce++;
                     record_nonce(db, nonce);
                 }
+                if (exp.find("invalid sender"))
+                {
+                    dump_buf("TX dump", raw_tx, raw_tx_len);
+                    return -100;
+                }
                 retry_n++;
                 continue;
             }
@@ -291,7 +294,6 @@ int monitor_loop(sgx_enclave_id_t eid)
         } // while (next_wanted <= highest_block)
     
     } while (true); // this loop never ends;
-    return ret;
 #endif
 }
 

@@ -304,7 +304,7 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tstdcxx.lib;sgx_tcrypto_opt.lib;TLSlib.lib</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\Release;$(SGXSDKInstallPath)bin\$(Platform)\Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\Debug;$(SGXSDKInstallPath)bin\$(Platform)\Release</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
       </EntryPointSymbol>
@@ -419,7 +419,6 @@
     <ClCompile Include="dispatcher.cpp" />
     <ClCompile Include="EventHandler.cpp" />
     <ClCompile Include="Flight.cpp" />
-    <ClCompile Include="Main.cpp" />
     <ClCompile Include="SSLClient.c" />
     <ClCompile Include="ECDAS.c" />
     <ClCompile Include="keccak.c" />
@@ -439,7 +438,6 @@
     <ClInclude Include="Commons.h" />
     <ClInclude Include="dispatcher.h" />
     <ClInclude Include="EventHandler.h" />
-    <ClInclude Include="Main.h" />
     <ClInclude Include="SSLClient.h" />
     <ClInclude Include="ECDSA.h" />
     <ClInclude Include="Enclave.h" />

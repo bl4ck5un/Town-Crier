@@ -30,7 +30,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include "../TLSlib/tstdio.h"
+#include "../TLSlib/TLSlib.h"
 
 #if defined(__cplusplus)
 extern "C" {

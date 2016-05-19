@@ -38,11 +38,6 @@ extern "C" {
 extern sgx_enclave_id_t global_eid;    /* global enclave id */
 
 
-/* test suite */
-int test_connect(void);
-int test_self_test(void);
-int test_rpc(void);
-
 typedef struct _sgx_errlist_t {
     sgx_status_t err;
     const char *msg;

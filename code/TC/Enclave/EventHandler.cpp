@@ -107,38 +107,64 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
     format[5] = LIST_I[0];
     */
     int ret, rc;
+    (void) len;
 #ifdef E2E_BENCHMARK
     long long time1, time2;
     rdtsc(&time1);
     LL_CRITICAL("swtich in done:  %llu", time1);
 #endif
     /* handling input */
-    hexdump("encAPI:", req, 32);
-    LL_NOTICE("buyer id: %s", "32884794");
+    std::string buyer_id;  // buyer_id is 32B, each of byte takes two chars. Plus \0
+    uint32_t wait_time;
+    size_t item_len;
+    vector<char*> items;
+
+#ifdef VERBOSE
+    dump_buf("req dump", req, len);
+#endif
+
+    // 0x00 .. 0x40
+    // - encAPI: TODO: insert dec here
+    std::string enc_api_key = toHex(req, 0x40);
+    dump_buf("API Key Ciphertext", req, 0x40);
+
+    // 0x40 .. 0x60 buyer_id
+    buyer_id = toHex(req + 0x40, 0x20);
+    LL_NOTICE("buyer id: %s", buyer_id.c_str());
     
-    uint32_t sleep_time;
-    memcpy(&sleep_time, req + 3 * 32, sizeof uint32_t);
+    // 0x60 .. 0x80
+    // get last 4 bytes
+    memcpy(&wait_time, req + 0x80 - 4, 4);
+    wait_time = swap_uint32(wait_time);
 
-    LL_NOTICE("item: %s", (char*)req + 5*32);
+    // 0x80 .. 0xa0 - item_len
+    memcpy(&item_len, req + 0xa0 - 4, 4);
+    item_len = swap_uint32(item_len);
 
-    // TODO: reading sleep_time from bytes32 is still not right
-    // e.g. 10 seconds results in A0 00 00 .. 00.
-    // how is int -> bytes32 transformation works?
-    if (sleep_time > 60)
+    // 0xa0 .. 0xc0
+    for (size_t i = 0; i < item_len; i++)
     {
-        sleep_time = 10;
+        items.push_back((char*) req + 0xa0 + 0x20 * i);
+        LL_NOTICE("item: %s", items[i]);
     }
-    if (sleep_time > 3600)
-        sleep_time = 59;
-    LL_NOTICE("waiting time: %d", sleep_time);
+
+    if (wait_time > 3600)
+        wait_time = 59;
+    LL_NOTICE("waiting time: %d", wait_time);
 
     char * listB[1] = {"Portal"};
-    rc = get_steam_transaction(listB, 1, "32884794", sleep_time, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
+    // XXX: set wait time to 1 for test purpose
+//    wait_time = 1;
+
+    rc = get_steam_transaction(listB, 1, "32884794", wait_time, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
     if (rc == 0 && ret == 1) {
         LL_NOTICE("Found a trade, %d, %d", rc, ret);
         *resp_data = ret;
         return 0;
     }
+
+//    uncomment to simulate an real trade
+//    *resp_data = 1;
 
 #ifdef E2E_BENCHMARK
     rdtsc(&time2);
@@ -172,7 +198,6 @@ int handle_request(int nonce, uint64_t request_id, uint8_t request_type,
         return flight_insurance_handler();
     case TYPE_STEAM_EX:
         {
-
             int found = 0;
             if (req_len != 6 * 32)
             {

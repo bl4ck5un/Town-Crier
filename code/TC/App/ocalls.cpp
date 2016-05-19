@@ -3,7 +3,7 @@
 #include <ctime>
 #include "Enclave_u.h"
 #include "windows.h"
-#include "sys_helper.h"
+#include "ocalls.h"
 #include <Log.h>
 
 std::string current_datetime()
