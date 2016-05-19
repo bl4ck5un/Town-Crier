@@ -1,0 +1,53 @@
+\section{Gas Neutrality}
+\label{sec:gas-neutrality}
+
+The simplified payment-free protocol in Section~\ref{sec:payment-free-protocol} guarantees authenticity of data for an honest user.
+In Ethereum, however, computation is not free; recall from Section~\ref{sec:contracts-and-gas} that Ethereum employs \emph{gas} to fuel contracts.
+This means that \tc needs enough gas to deliver datagrams, so users must pay a fee to reimburse costs.
+If fees are not properly handled, a malicious user could prevent delivery of a datagram.
+In fact, this concern is not unique to \tc; any Ethereum-based service must ensure that its fees can be reimbursed.
+
+As we described in Section~\ref{sec:contracts-and-gas}, all gas for the call to a contract is paid by the user who initiates the transaction,
+regardless of what other contracts are called as part of execution.
+Thus for any service which consists only of Ethereum smart contracts, the service inherently cannot be vulnerable to a fee-based attack;
+the client must directly pay all fees for any use (or misuse) of the service.
+However, \tc does not reside entirely on the blockchain;
+The \medname and \encname both reside off the blockchain and must initiate a transaction to respond to a request.
+Because \tc must initiate the transaction, it must pay the gas for the associated computation.
+This opens the potential for an attacker to submit malicious requests and cause \tc to repeatedly pay to ``respond'' to these requests and not receive proper reimbursement.
+To ensure the availability of the service, we must guard against such an attack.
+
+For \tc, there is only one point at which \tc initiates a blockchain transaction: {\bf Deliver}.
+This leads us to the following definition.
+
+\begin{definition}[\tc Gas Neutrality]
+  \label{def:tc-gas-neutrality}
+  We say that \tc is \emph{gas neutral} if, whenever the \medname is honest and \tcadd contains sufficient funds to execute {\bf Deliver},
+  then executing {\bf Deliver} cannot decrease the balance of \tcadd.
+\end{definition}
+
+We note two strange aspects of this definition.
+First, we require the \medname to be honest.
+Upon inspection, this requirement makes sense.
+The \medname controls all network activity into and out of the \encname and can thus trivially mount a DoS attack.
+It makes sense to only require that our behavior prevent one type of DoS attacks while others are not occurring.
+More importantly, the \medname is part of the \tc system, so \tc cannot hope to function properly without an honest \medname.
+We can generalize this clause very simply by restricting to external attacks;
+if a service is attacking itself, we make no attempt to guarantee availability.
+
+Second, we require that the balance of \tcadd not decrease.
+This requirement appears quite strict.
+In reality we only need require that, after each execution, \tc has enough funds for the next execution.
+Because \tc has only one way to spend ether and the amount provided need not depend on the balance of \tcadd,
+this requirement is equivalent to the balance never decreasing.
+
+In a more general case, there may be multiple ways to initiate blockchain computation or multiple wallets.
+Therefore, we simply require that the service not get stuck due to lack of gas.
+This leads us to our more general definition.
+
+\begin{definition}[Gas Neutrality]
+  \label{def:gas-neutrality}
+  We say that a service is \emph{gas neutral} if, as long as the service executes honestly and is initialized with sufficient funds,
+  it will never be unable to perform an action specified by its protocol due to insufficient gas.
+\end{definition}
+
