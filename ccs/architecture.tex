@@ -1,0 +1,96 @@
+ \section{Architecture and Security Model}
+ \label{sec:architecture}
+
+ \tcs includes three main components: The \tcontract (\tcont), the \encname (whose code is denoted by \engine), and the \medname (\relay). The \encname and \medname reside on the \tc server, while the \tcontract  resides on the blockchain. We refer to a smart contract making use of the \tcs service as a {\em requester} or {\em relying} contract, which we denote $\reqcont$, and its (off-chain) owner as a \emph{client} or \emph{user}. A \emph{data source}, or \emph{source} for short, is an online server (running HTTPS) that provides data which \tc draws on to compose datagrams. 
+
+An architectural schematic of \tc showing its interaction with external entities is given in Figure~\ref{fig:overview}.
+
+\begin{figure}[h!]
+\centering
+\begin{tikzpicture}
+  [tc-entity/.style={entity,minimum height=3.5em,text width=4.1em},
+   contract/.style={entity,minimum height=3.5em,text width=6.5em}]
+  \node[contract,trusted] (ctc) {\tcontract\\$\tcont$};
+  \node[contract,fill=white,below=1.5em of ctc] (cu) {User Contract\\$\reqcont$};
+  \node[tc-entity,fill=none,right=2.5em of ctc] (relay) {\medname\\$\relay$};
+  \node[tc-entity,trusted,below=1.5em of relay] (enc) {\encname\\{\small $(\enclaveprog)$}};
+
+  \begin{pgfonlayer}{background}
+    \node[bg-box,
+          blockchain-color,
+          fit=(ctc)(cu),
+          label=above:{\bf Blockchain}] (blockchain) {};
+    \node[bg-box,
+          tc-server-color,
+          fit=(relay)(enc),
+          label=above:{\bf TC Server}] (tc) {};
+  \end{pgfonlayer}
+
+  \node[right=-0.1em of tc,communication,transform canvas={yshift=2.5em}] (https) {\scriptsize \bf HTTPS};
+%  \node[rectangle,draw=black,trusted,right=2.75em of tc,text width=4.5em,minimum height=9.75em,align=center,label=above:{\bf Data Source}] (data) {\tt lots-o-\\data.com};
+  \node[cloud,draw=black!65,trusted,cloud puffs=11,cloud puff arc=100,aspect=0.6,inner xsep=-0.35em,right=3.4em of tc,text width=4.15em,align=center] (data) {\tt lots-o-\\data.com};
+  \node[minimum height=9.5em,minimum width=4em,label=above:{\bf Data Source}] () at (data) {};
+
+  \draw[<->,comm-link] ([xshift=-0.9em,yshift=-0.75em]enc.north) |- ([xshift=-0.75em,yshift=-0.75em]ctc.east);
+  \draw[<->,comm-link] ([yshift=0.75em]ctc.south) -- ([yshift=-0.75em]cu.north);
+  \draw[<->,comm-link] ([xshift=0.9em,yshift=-0.75em]enc.north) |- ([xshift=1.1em,yshift=1.75em]data.west);
+\end{tikzpicture}
+\caption{{\bf Basic Town Crier architecture.} Trusted components are depicted in green.}
+\label{fig:overview}
+\end{figure}
+
+
+%\vspace{-1ex}
+\paragraph{The \tcontract \tcont.} The \tcontract is a smart contract that acts as the blockchain front end for \tc. It is designed to present a simple API to a relying contract \reqcont for its requests to \tc. \tcont accepts datagram requests from \reqcont and returns corresponding datagrams from \tc. Additionally, \tcont manages \tc's monetary resources.
+
+%\vspace{-1ex}
+\paragraph{The \encname.}
+We refer to an instance of the TC code running in an SGX enclave simply as the \encname and denote the code itself by  \engine. In TC, the \encname ingests and fulfills datagram requests from the blockchain. To obtain the data for inclusion in datagrams, it queries external data sources, specifically HTTPS-enabled internet services. It returns a datagram to a requesting contract \reqcont as a digitally signed blockchain message. Under our basic security model for SGX, network functions aside, the \encname runs in complete isolation from an adversarial OS as well as other process on the host. 
+
+%\vspace{-1ex}
+\paragraph{The \medname \relay.} As an SGX enclave process, the \encname lacks direct network access. Thus the \medname handles bidirectional network traffic on behalf of the \encname. Specifically, the \medname provides network connectivity from the \encname to three different types of entities: 
+
+\begin{enumerate}
+\setlength{\itemsep}{2pt}
+\setlength{\parskip}{0pt}
+\setlength{\parsep}{0pt}
+\item {\em The Blockchain (the Ethereum system):}  The \medname scrapes the blockchain in order to monitor the state of the \tcontract  \tcont. In this way, it performs implicit message passing from \tcont to the \encname, as neither component itself has network connectivity. Additionally, the \medname places messages emitted from the \encname (datagrams) on the blockchain.
+\item {\em Clients:} The \medname runs a web server to handle off-chain service requests from clients, specifically, requests for attestations from the \encname. As we soon explain, an attestation provides a unique public key for the \encname instance to the  client and proves that the \encname is executing correct code in an SGX enclave and that its clock is correct in terms of absolute (wall-clock) time. A client that successfully verifies an attestation can then safely create a relying contract \reqcont that uses the \tc.
+\item {\em Data sources:} The \medname relays traffic to and from data sources (HTTPS-enabled websites) queried by the \encname. 
+\end{enumerate}
+
+The \medname is an ordinary user-space application. It does not benefit from integrity protection by SGX and thus, unlike the \encname, can be subverted by an adversarial OS on the \tc server to cause delays or failures. A key design aim of \tc, however, is that \medname should be unable to cause incorrect datagrams to be produced or users to lose fees paid to \tc for datagrams (although they may lose gas used to fuel their requests). As we shall show, in general the \medname~{\em can only mount denial-of-service attacks against \tc}. 
+
+%\vspace{-1ex}
+\paragraph{Security model.}
+Here we give a brief overview of our security model for \tc, providing more details in later sections. We assume the following:
+
+\begin{itemize}
+  \setlength{\itemsep}{2pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+
+\item {\em The TC Contract.} \tcont is globally visible on the blockchain and its source code is published for clients. Thus we assume that \tcont behaves honestly.
+
+\item {\em Data sources.} We assume that clients trust the data sources from which they obtain \tc datagrams. We also assume that these sources are stable, i.e., yield consistent datagrams, during a requester's specified time interval $T$. (Requests are generally time-invariant, e.g., for a stock price at a particular time.)
+
+\item {\em \encname security.} We make three assumptions: (1) The \encname behaves honestly, i.e., \engine, whose source code is published for clients, correctly executes the protocol; (2) For an \encname-generated keypair $(\skTC, \pkTC)$, the private key $\skTC$ is known only to the \encname; and (3) The \encname has an accurate (internal) real-time clock. We explain below how we use SGX to achieve these properties. 
+
+
+\item {\em Blockchain communication.} Transaction and message sources are authenticable, i.e., a transaction $m$ sent from an account / wallet ${\cal W}_{X}$ (or message $m$ from contract ${\cal C}_{X}$) is identified by the receiving account as originating from $X$. Transactions and messages are integrity protected (as they are digitally signed by the sender), but not confidential. 
+
+\item {\em Network communication.} The \medname (and other untrusted components of the \tc server) can tamper with or delay communications to and from the \encname. (As we explain in our SGX security model, the \medname cannot otherwise observe or alter the behavior of the \encname.) Thus the \medname is subsumed by an adversary that controls the network. 
+
+\end{itemize}
+
+
+
+
+
+
+
+
+
+
+
+

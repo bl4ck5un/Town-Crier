@@ -1,0 +1,161 @@
+\section{Applications and Code Samples}
+\label{sec:applicationsfull}
+
+We now elaborate 
+on the applications described 
+in Section~\ref{sec:applications}
+and we show a short 
+Solidity code sample for one of these applications,
+to demonstrate first-hand what a requester  
+contract would look like 
+to call Town Crier's authenticated data feed service.
+
+%We built and implemented several showcase applications.
+%We give a description of these applications in this section,
+%and show experimental results in Section~\ref{sec:experiments}.
+
+\paragraph{Financial derivative ({\sf CashSettledPut}).}
+Financial derivatives are among the most commonly cited smart contract
+applications,
+and exemplify the need for a data feed on financial instruments.
+We implemented an example contract {\sf CashSettledPut} for a {\em cash-settled put option}.
+This is an agreement for one party to buy an asset from the other at an agreed upon price on or before a particular date.
+It is ``cash-settled'' in that the sale is implicit, i.e., no asset changes hands, only cash reflecting the asset's value.
+In our implementation, the issuer of the option specifies a strike price $P_S$, expiration date, unit price $P_U$, and maximum number of units $M$ she is willing to sell.
+A customer may send a request to the contract specifying the number $X$ of option units to be purchased and containing the associated fee ($X \cdot P_U$).
+A customer may then exercise the option by sending another request prior to the expiration date.
+{\sf CashSettledPut} calls \tc to retrieve the closing price $P_C$ of the underlying instrument on the day the option was exercised, and pays the customer $X \cdot (P_S - P_C)$.
+To ensure sufficient funding to pay out, the contract must be endowed with ether value at least $M \cdot P_S$.
+
+In Figure~\ref{fig:cash-settled-put} we describe the protocol for {\sf CashSettledPut}.
+We omit the full source code due to length and complexity.
+
+\begin{figure}[h!]
+\begin{tabularx}{\linewidth}{|r@{\hspace{1ex}}X|}
+  \hline
+
+  \multicolumn{2}{|c|}{\bf {\sf CashSettledPut} blockchain contract} \\[1ex]
+
+  \multicolumn{2}{|l|}{\bf Constants} \\
+  $T_\text{stock}$ & := \tcs stock info request type \\
+  $\sblue{\$F_\text{\tc}}$ & := fee payed to \tc for datagram delivery \\[1ex]
+
+  \multicolumn{2}{|l|}{\bf Functions} \\
+      {\bf Init:} & On recv $(\tcont, {\sf ticker}, P_S, P_U, M, {\sf expr}, \fee)$ from $\wallet_\text{issuer}$ \\
+                  & Assert $\fee = (P_S - P_U) \cdot M + \sblue{\$F_\text{\tc}}$ \\
+                  & Save all inputs and $\wallet_\text{issuer}$ to storage. \\[1ex]
+
+      {\bf Buy:} & On recv $(X, \fee)$ from $\userwallet$: \\
+                 & Assert {\sf isRecovered} not set \\
+                 & \quad and ${\sf timestamp} < {\sf expr}$ \\
+                 & \quad and $\wallet_\text{buyer}$ not set \\
+                 & \quad and $X \leq M$ \\
+                 & \quad and $\fee = (X \cdot P_U)$ \\
+                 & Set $\wallet_\text{buyer} = \userwallet$ \\
+                 & Save $X$ to storage \\
+                 & Send $(P_S - P_U)(M - X)$ to $\wallet_\text{issuer}$ \\[-0.8em]
+                 & \sgray{\it //~Hold $P_S \cdot X + \sblue{\$F_\text{\tc}}$} \\[1ex]
+
+      {\bf Put:} & On recv $()$ from $\wallet_\text{buyer}$: \\
+                 & \quad and ${\sf timestamp} < {\sf expr}$ \\
+                 & \quad and ${\sf isPut}$ not set \\
+                 & Set {\sf isPut} \\
+                 & $\dgform := [T_\text{stock}, {\sf ticker}]$ \\
+                 & $\dgcallback := {\tt this}.{\bf Settle}$ \\
+                 & $\tcont.{\bf Request}(\dgform, \dgcallback, \sblue{\$F_\text{\tc}})$ \\[1ex]
+
+   {\bf Settle:} & On recv $(\dgid, P)$ from $\tcont$: \\
+                 & If $P \geq P_S$ \\
+                 & \quad Send $P_S \cdot X$ to $\wallet_\text{issuer}$ \\
+                 & \quad Return \\
+                 & Send $(P_S - P) X$ to $\wallet_\text{buyer}$ \\
+                 & Send all money in contract to $\wallet_\text{issuer}$ \\[0.25em]
+                 & Send $P \cdot X$ to $\wallet_\text{issuer}$ \\[1ex]
+
+  {\bf Recover:} & On recv $()$ from $\wallet_\text{issuer}$: \\
+                 & \quad and {\sf isPut} not set \\
+                 & \quad and {\sf isRecovered} not set \\
+                 & \quad and $(\wallet_\text{buyer} \text{ not set}$ \\
+                 & \quad \hphantom{and } or ${\sf timestamp} \geq {\sf expr})$ \\
+                 & Set {\sf isRecovered} \\
+                 & Send all money in contract to $\wallet_\text{issuer}$ \\[0.25em]
+
+  \hline
+\end{tabularx}
+\caption{The {\sf CashSettledPut} application contract}
+\label{fig:cash-settled-put}
+\end{figure}
+
+
+
+\paragraph{Flight insurance ({\sf FlightIns}).}
+Flight insurance indemnifies a purchaser should her flight be delayed or canceled.
+We have implemented a simple flight insurance contract called {\sf FlightIns}.
+Our implementation showcases \tc's {\it private-datagram} feature to address an obvious concern:
+customers may not wish to reveal their travel plans publicly on the blockchain. 
+
+An insurer stands up {\sf FlightIns} with a specified policy fee, payout, and lead time $\Delta T$. ($\Delta T$ is set large enough to ensure that a customer can't anticipate flight cancellation or delay due to weather, etc.) To purchase a policy, a customer sends the {\sf FlightIns} a ciphertext  $C$ under the \tc's pubic key $\pkTC$ of the ICAO flight number $FN$ and scheduled time of departure $T_D$ for her flight, along with the policy fee. {\sf FlightIns} sends \tc a private-datagram request containing the current time $T$ and the ciphertext $C$. \tc decrypts $C$ and checks that the lead time meets the policy requirement, i.e., that $T_D - T \geq \Delta T$. \tc then scrapes a flight information data source several hours after $T_D$ to check the flight status, and returns to {\sf FlightIns} predicates on whether the lead time was valid and whether the flight has been delayed or canceled. If both predicates are true, then {\sf FlightIns} returns the payout to the customer. Note that $FN$ is never exposed in the clear.
+
+Despite the use of private datagrams, {\sf FlightIns} as described here still poses a privacy risk, as the {\em timing} of the predicate delivery by \tc leaks information about $T_D$, which may be sensitive information; this, and the fact that the payout is publicly visible, could also indirectly reveal $FN$. {\sf FlightIns} addresses this issue by including in the private datagram request another parameter $t > T_D$ specifying the time at which predicates should be returned. By randomizing $t$ and making $t - T_D$ sufficiently large, {\sf FlightIns} can substantially reduce the leakage of timing information. 
+
+In Figure~\ref{fig:flight-ins-real} we include a full implementation of {\sf FlightIns} in Solidity.
+
+\begin{figure*}[p!]
+  \centering
+  \lstinputlisting[style=Solidity]{FlightIns.sol}
+  \caption{Solidity code for the {\sf FlightIns} application contract.}
+  \label{fig:flight-ins-real}
+\end{figure*}
+
+
+\paragraph{Steam Marketplace ({\sf SteamTrade}).} Steam~\cite{steam} is an online gaming platform that supports thousands of games and maintains its own marketplace, where users can trade, buy, and sell games and other virtual items.  We implement a contract for the sale of games and items for ether that showcases \tc's support for custom datagrams through the use of Steam's access-controlled API.\\
+\indent A user intending to sell items creates a contract {\sf SteamTrade} with her Steam account number $ID_S$, a list $L$ of items for sale, a price $P$, and a ciphertext $C$ under the \tc's public key $\pkTC$ of her Steam API key.  In order to purchase the list of items, a buyer first uses a Steam client to create a trade offer requesting each item in $L$.  The buyer then submits to {\sf SteamTrade} her Steam account number $ID_U$, a length of time $T_U$ indicating how long the seller has to respond to the offer, and an amount of ether equivalent to the price $P$.  {\sf SteamTrade} sends \tc a custom datagram containing the current time $T$, $ID_U$, $T_U$, $L$, and the encrypted API key $C$.  \tc decrypts $C$ to obtain the API key, delays for time $T_U$, then retrieves all trades between the two accounts using the provided API key within that time period.  \tc verifies whether or not a trade exactly matching the items in $L$ successfully occurred between the two accounts and returns the result to {\sf SteamTrade}.  If such a trade occurred, {\sf SteamTrade} sends the buyer's ether to the seller's account.  Otherwise the buyer's ether is refunded.
+
+In Figure~\ref{fig:steamtrade} we describe the protocol for {\sf CashSettledPut}.
+We again omit the full source code due to length and complexity.
+
+\begin{figure}[h!]
+\begin{tabularx}{\linewidth}{|r@{\hspace{1ex}}X|}
+  \hline
+
+  \multicolumn{2}{|c|}{\bf {\sf SteamTrade} blockchain contract} \\[1ex]
+
+  \multicolumn{2}{|l|}{\bf Constants} \\
+  %$ID_S$ & := Steam account number of seller \\
+  %$encAPI_S$ & := seller's encrypted API key \\
+  %$List_I$ & := list of items for sale \\
+  %$\sblue{\$F_\text{price}}$ & := price for listed items \\
+  $T_\text{steam}$ & := \tcs Steam trade request type \\
+  $\sblue{\$F_\text{\tc}}$ & := fee payed to \tc for datagram delivery \\[1ex]
+
+  \multicolumn{2}{|l|}{\bf Functions} \\
+  {\bf Init:}   & On recv $(\tcont, ID_S, encAPI_S, List_I, P)$ from $\wallet_\text{seller}$: \\
+                & Save all inputs and $\wallet_\text{seller}$ to storage. \\[1ex]
+
+  {\bf Buy:} & On recv $(ID_U, T_U, \fee)$ from $\userwallet$: \\
+                & Assert $\fee = P$ \\
+                & $\dgform := [encAPI_S, ID_U, T_U, LIST_I]$ \\
+                & $\dgcallback := {\tt this}.{\bf Pay}$ \\
+                & $\dgid := \tcont.{\bf Request}(\dgform, \dgcallback, \sblue{\$F_\text{\tc}})$ \\
+                & Store $(\dgid, \userwallet)$ \\[1ex]
+
+  {\bf Pay:}    & On recv $(\dgid, status)$ from $\tcont$: \\
+                & Retrieve and remove stored $(\dgid, \userwallet)$ \\
+                & \quad \sgray{\it //~Abort if not found} \\
+                & If $status > 0$ \\
+                & \quad Send $\sblue{\$F_\text{price}}$ to $\wallet_\text{seller}$ \\
+                & Else \\
+                & \quad send $\sblue{\$F_\text{price}}$ to $\userwallet$ \\
+                [0.25em]
+
+  \hline
+\end{tabularx}
+\caption{The {\sf FlightIns} application contract}
+\label{fig:steamtrade}
+\end{figure}
+
+
+%Discuss flight insurance as an example: We'd like to conceal the flight number and date. We might also want to conceal payment, so TC might ingest encrypted addresses and mix them internally.
+
+%Micro-loans too? Linkage to Facebook / Keybase.io
+

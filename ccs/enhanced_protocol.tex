@@ -1,0 +1,265 @@
+\section{Full Town Crier Protocol}
+\label{sec:enhanced_protocol}
+
+The simplified payment-free protocol in Section~\ref{sec:payment-free-protocol} guarantees authenticity of data for an honest user.
+In Ethereum, however, computation is not free; recall from Section~\ref{sec:contracts-and-gas} that Ethereum employs \emph{gas} to fuel contracts. This means that \tc needs enough gas to deliver datagrams, so users must pay a fee to reimburse costs. If fees are not properly handled, a malicious relay (or malicious user) could prevent delivery of a datagram or cost an honest requester money for no gain. We discuss Section~\ref{sec:gas-protocol} how we address this issue throughout \tc's design. We also briefly discuss other enhancements to the basic \tc protocol: private and custom datagrams (Section~\ref{subsec:private_datagrams}) and use of replication / voting to achieving robustness against SGX host or data-source compromise (Section~\ref{subsec:enhanced_robustness}).
+
+
+\subsection{Handling Fees in Ethereum}
+\label{sec:gas-protocol}
+
+
+To address the above concern of attacks on \tc fee management, we employ and prove the security of a novel two-currency resource-management system. This system causes
+requesters to make gas payments up front as ether. It converts this ether to gas so as to prevent a malicious requester from exhausting \tc's resources
+or a malicious \tc from stealing an honest user's money. We now give some preliminaries and then explain our system.
+
+
+\paragraph{Execution model and notation.}
+We take Ethereum's gas model as described in Section~\ref{sec:contracts-and-gas}.
+We use the notation $\gas$ to denote gas and $\fee$ to denote non-gas currency.
+In both cases \$ is a type annotation and the letter denotes the numerical amount.
+For simplicity, our notation assumes that gas and normal currency adopt the same units (allowing us to avoid explicit conversions), so system constants are values without a unit.
+We use the following identifiers to denote currency and gas amounts.
+%
+\begin{center}
+\begin{tabular}{m{0.08\columnwidth}m{0.85\columnwidth}}
+  \hline
+  $\fee$
+  & Currency a requester deposits to refund \tcs's gas expenditure to deliver a datagram \\
+  \hline
+  $\gasrequest$ $\gasdeliver$ $\gascancel$
+  & {\tt GASLIMIT} when invoking {\bf Request}, {\bf Deliver}, or {\bf Cancel}, respectively \\
+  \hline
+  $\gascallback$
+  & {\tt GASLIMIT} for $\dgcallback$ while executing {\bf Deliver}, set to the max value that can be reimbursed \\
+  \hline
+  $\constgasmin$
+  & Gas required for {\bf Deliver} excluding $\dgcallback$ \\
+  \hline
+  $\constgasmax$
+  & Maximum gas \tc can provide to invoke {\bf Deliver} \\
+  \hline
+  $\constgasinvokecancel$
+  & Gas needed to invoke {\bf Cancel} \\
+  \hline
+  $\constgascancel$
+  & Gas needed for {\bf Deliver} on a canceled request \\
+  \hline
+\end{tabular}
+\end{center}
+%
+$\constgasmin$, $\constgasmax$, $\constgasinvokecancel$, and $\constgascancel$ are system constants,
+$\fee$ is chosen by the requester (and may be malicious if the requester is dishonest),
+and $\gasdeliver$ is chosen by the \tc~\encname when calling {\bf Deliver}.
+Though $\gasrequest$ and $\gascancel$ are set by the requester, we need not worry about the values.
+If they are too small, Ethereum will abort the transaction and there will not be a request or cancellation.
+
+\paragraph{Adversarial cases.}
+During the creation and fulfillment of any request, there are two untrusted parties: The requester contract / user $\reqcont$ and the \medname. In the \tc implementation, we thus consider three cases, here giving the desired properties of each:
+
+\begin{itemize}
+  \setlength{\itemsep}{2pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+  \item {\it Honest requester and \medname.}
+    The requester must receive a valid authenticated response from TC.
+
+  \item {\it Malicious requester and honest \medname.}
+    \tc must still be able to respond to requests from other (honest) users.
+    Thus we must prevent a malicious user from interfering directly with other requests (which the payment-free protocol already does)
+    or exhausting the financial resources of TC.
+
+  \item {\it Honest requester and malicious \medname.}
+    The requester cannot receive invalid data (which is also assured by the payment-free protocol)
+    and the requester should not have to pay for computation that is not executed.
+\end{itemize}
+We formalize these properties in Section~\ref{sec:analysis} and prove that our protocol provides these guarantees.
+We intentionally ignore the case where both the requester and the \medname are dishonest.
+If the requester is dishonest we need to not protect her request, and if the \medname is dishonest we cannot protect the TC system.
+
+
+
+
+\begin{figure}[h!]
+\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
+  \hline
+
+  \multicolumn{2}{|c|}{{\bf \tcs blockchain contract \tcont with fees}} \\[1ex]
+
+  \multicolumn{2}{|@{\hspace{3pt}}l|}{{\bf Initialize:} $\text{Counter} := 0$} \\[1ex]
+
+  {\bf Request:} & On recv $({\sf params}, {\sf callback}, \fee, \gasrequest)$ from some $\reqcont$: \\
+                 & Assert $\constgasmin \leq \fee \leq \constgasmax$ \\
+                 & $\dgid := \text{Counter}$; \ \ $\text{Counter} := \text{Counter} + 1$ \\
+                 & Store $(\dgid, \dgform, \dgcallback, \fee, \reqcont)$ \\[-0.9em]
+                 & {\it \sgray{//~$\fee$ held by contract}} \\[0.3em]
+
+  {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm, \gasdeliver)$ from $\tcadd$: \\
+   \sgray{$(1)$} & If ${\sf isCanceled}[\dgid]$ and not ${\sf isDelivered}[\dgid]$ \\
+                 & \quad Set ${\sf isDelivered}[\dgid]$ \\
+   \sgray{$(2)$} & \quad Send $\constgascancel$ to $\tcadd$ \\
+                 & \quad Return \\
+                 & Retrieve stored $(\dgid, \dgform', \dgcallback, \fee, \_)$ \\[-0.1em]
+                 & \quad \sgray{\it //~abort if not found} \\
+                 & Assert $\dgform = \dgform'$ and $\fee \leq \gasdeliver$ \\
+                 & \quad and ${\sf isDelivered}[\dgid]$ not set \\
+                 & Set ${\sf isDelievered}[\dgid]$ \\
+   \sgray{$(3)$} & Send $\fee$ to \tcadd \\
+                 & Set $\gascallback := \fee - \constgasmin$ \\
+   \sgray{$(4)$} & Call $\dgcallback(\dgm)$ with $\gascallback$ max gas \\[0.3em]
+
+  {\bf Cancel:}  & On recv $(\dgid, \gascancel)$ from $\reqcont$: \\
+                 & Retrieve stored $(\dgid, \_, \_, \fee, \reqcont')$ \\[-0.1em]
+                 & \quad \sgray{\it //~abort if not found} \\
+                 & Assert $\reqcont = \reqcont'$ and $\fee \geq \constgascancel$ \\
+                 & \quad and ${\sf isDelivered}[\dgid]$ not set \\
+                 & \quad and ${\sf isCanceled}[\dgid]$ not set \\
+                 & Set ${\sf isCanceled}[\dgid]$ \\
+   \sgray{$(5)$} & Send $(\fee - \constgascancel)$ to $\reqcont$ \sgray{\it //~hold $\constgascancel$} \\
+  \hline
+\end{tabularx}
+\caption{
+Town Crier contract \tcont reflecting fees.
+The last argument of each entry point is the {\tt GASLIMIT} provided.
+An honest requester sets $\fee$ to be the gas required to execute {\bf Deliver} including $\dgcallback$.
+Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dgcallback$ to ensure that no more than $\fee$ is spent.
+}
+\label{tbl:gas-tc-contract}
+\end{figure}
+
+\begin{figure}[h!]
+\begin{boxedminipage}{\columnwidth}
+\centering
+{\bf Program for \tcs~\encname $(\enclaveprog)$} \\[1ex]
+\begin{tabularx}{\linewidth}{l}
+  {\bf Initialize}\,$({\sf void})$ [Same as Figure~\ref{fig:engineprotocol}] \\[3pt]
+
+  {\bf Resume}\,$(\dgid, \dgform)$ \\
+  \quad [Same as Figure~\ref{fig:engineprotocol} except the last two lines:] \\
+  \quad Set $\gasdeliver := \constgasmax$ \\
+  \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, (\dgid, \dgform, \dgm, \gasdeliver))$ \\
+  \quad Output $((\dgid, \dgform, \dgm, \gasdeliver), \sigma)$ \\
+\end{tabularx}
+\end{boxedminipage}
+\caption{The \tcs~\encname \engine.}
+\label{fig:engineprot}
+\end{figure}
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+  [contract/.style={entity,minimum height=3.5em,text width=7.5em},
+   wallet/.style={entity,minimum height=3.5em,text width=5em},
+   blocked-out-label/.style={text=black,blockchain-color,text height=0.6em}]
+  \node[wallet,fill=white] (user) {User $\userwallet$};
+  \node[contract,fill=white,right=6em of user] (cu) {User Contract\\$\reqcont$};
+  \node[wallet,trusted,below=5em of user] (tc-wallet) {$\tcadd$};
+  \node[contract,trusted,right=6em of tc-wallet] (ctc) {TC Contract\\$\tcont$};
+  \node[color=maroon,draw,anchor=south east] (fee) at ([xshift=-0.25em,yshift=0.25em]ctc.south east) {\small $\fee$};
+
+  \draw[color=gold,rounded corners,opacity=0.25,line width=1ex] ([yshift=1.25em]user.east) -| ([xshift=3.25em]cu.south);
+  \path[->,color=gold,line width=1.15ex] (user) edge [transform canvas={yshift=1.25em}] (cu);
+  \path[->,color=gold,line width=1ex] (cu) edge [transform canvas={xshift=3.25em}] (ctc);
+  \path[->,color=maroon,line width=0.4ex] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1.2em] {\small \smash{$(\gasrequest, \fee)$}} ([yshift=-1.5em]ctc.north);
+  \node[anchor=north,xshift=1em,yshift=-0.75em] () at (cu.south) {\small \bf \underline{\smash{Request}}};
+%  \path[->,color=maroon,line width=0.4ex] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1em] {\small \smash{$(\gasrequest, \fee)$}} ([yshift=-1.5em]ctc.north);
+%  \node[anchor=north,xshift=1em,yshift=-0.5em] () at (cu.south) {\small \bf \underline{\smash{Request}}};
+
+  \path[->,color=gold,line width=1ex] (tc-wallet.east) edge [above,transform canvas={yshift=0.4em}] node () {\small $\gasdeliver$} (ctc.west);
+  \draw[color=gold,rounded corners,opacity=0.25,line width=0.3ex] ([yshift=0.4em]tc-wallet.east) -| ([xshift=-3em]ctc.north);
+  \path[->,color=gold,line width=0.3ex] (ctc.north) edge [right,transform canvas={xshift=-3em}] node [yshift=-1.25em] {\small \smash{$\gascallback$}} (cu.south);
+  \path[color=maroon,opacity=0.25,line width=0.4ex] (tc-wallet-|fee.west) edge [transform canvas={yshift=-1.25em}] (tc-wallet.east);
+  \path[->,color=maroon,line width=0.4ex] (ctc.west) edge [transform canvas={yshift=-1.25em}] node [fill=white,xshift=0.4em] {\small $\fee$} ([xshift=-0.8em]tc-wallet.east);
+%  \path[->,color=gold,ultra thick,dashed] (ctc.west) edge [below,transform canvas={yshift=-1em}] node [text=black,xshift=0.4em] {\small $\gasdeliver - \fee$} ([xshift=-0.8em]tc-wallet.east);
+
+  \path[] (tc-wallet.north east) edge [draw=none,above] node [yshift=0.75em] {\small \bf \underline{Deliver}} (ctc.north west);
+
+  \begin{pgfonlayer}{background}
+%    \node[bg-box,
+%          blockchain-color,
+%          inner sep=1.2em,
+%          fit={(ctc)($(user.north west)+(0,0.9em)$)},
+%          label=above:{\bf Blockchain}] () {};
+    \node[bg-box,
+          blockchain-color,
+          fit=(ctc)(cu),
+          label=above:{\bf Contracts}] () {};
+    \node[bg-box,
+          blockchain-color,
+          fit=(tc-wallet)(user),
+          label=above:{\bf Wallets}] () {};
+
+%    \node[inner xsep=0.5em,blockchain-color,rounded corners] (bc-label) at (blockchain.north) {\bf Blockchain};
+%
+%    \node[inner xsep=0.5em,type-box-color,rounded corners,yshift=0.25em] (conts-label) at (conts.north) {\bf Contracts};
+%    \draw[draw=black,dashed,rounded corners] (conts-label.east) -- (conts-label.north east) -- (conts-label.north east-|conts-label.north west) -- (conts-label.west);
+%
+%    \node[inner xsep=0.5em,type-box-color,rounded corners,yshift=0.25em] (wallets-label) at (wallets.north) {\bf Wallets};
+%    \draw[draw=black,dashed,rounded corners] (wallets-label.east) -- (wallets-label.north east) -- (wallets-label.north east-|wallets-label.north west) -- (wallets-label.west);
+  \end{pgfonlayer}
+\end{tikzpicture}
+\caption{{\bf Money Flow for a Delivered Request.}
+Red arrows denote flow of money and brown arrows denote gas limits for functions.
+The thickness of the line indicates the quantity of the resource.
+The $\gascallback$ arrow is thin because the value is limited to $\fee - \constgasmin$.
+}
+\label{fig:money-flow}
+\end{figure}
+
+
+
+\paragraph{Town Crier protocol with fees.}
+Our basic Town Crier system implements a policy where the requester pays for all gas needed and Town Crier effectively pays nothing.
+We now describe how this can be realized by modifying the payment-free protocol described in Section~\ref{sec:payment-free-protocol}.
+
+\begin{itemize}[leftmargin=1.5em]
+  \setlength{\itemsep}{0pt}
+%  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+  \item {\it Initialization.}
+    We assume that \tc deposits at least $\constgasmax$ into the wallet $\tcadd$.
+
+  \item {\it \tcs blockchain contract.}
+    Figure \ref{tbl:gas-tc-contract} specifies the \tc blockchain contract \tcont, with fees.
+    Since $\tcadd$ must invoke {\bf Deliver}, \tc pays the gas cost.
+    It sets the {\tt GASLIMIT} $\gasdeliver := \constgasmax$.
+    To ensure that the gas spent does not exceed the reimbursement available ($\fee$),
+    \tcont sets the {\tt GASLIMIT} $\gascallback$ for the sub-call to $\dgcallback$ to the remaining reimbursement: $\fee - \constgasmin$.
+
+  \item {\it Town Crier Relay.}
+    The \medname behavior does not change with the presence of fees.
+    It still monitors the blockchain and whenever the contract \tcont stores a new request $(\dgid, \dgform, \_, \_, \_)$,
+    it invokes $\enclaveprog.\textbf{Resume}(\dgid, \dgform)$.
+
+  \item {\it Town Crier \encname.}
+    We make the following small modification to the fee-free protocol.
+    Instead of signing the tuple $(\dgid, \dgform, \dgm)$ at the end of its execution,
+    the enclave now signs the tuple $(\dgid, \dgform, \dgm, \gasdeliver)$ where $\gasdeliver = \constgasmax$.
+
+  \item {\it Requester.}
+    An honest requester follows the protocol in Fig.~\ref{fig:att_check} to verify the SGX attestation.
+    Then she prepares $\dgform$ and $\dgcallback$, sets $\gasrequest$ to the gas cost of {\bf Request} with $\dgform$,
+    and sets $\fee$ to $\constgasmin$ plus the cost of executing $\dgcallback$.
+Finally, she invokes {\bf Request}$(\dgform, \dgcallback, \fee)$ with {\tt GASLIMIT} $\gasrequest$.
+
+    If $\dgcallback$ is not executed, the requester will invoke {\bf Cancel} with argument $\dgid$ and gas limit $\constgasinvokecancel$ to receive a partial refund.
+    The honest requester will never invoke {\bf Cancel} more than once for the same request
+    and will never invoke {\bf Cancel} with an $\dgid$ that corresponds to a different user's request.
+\end{itemize}
+
+\subsection{Private and Custom Datagrams}
+\label{subsec:private_datagrams}
+In addition to ordinary datagrams, \tc supports \emph{private datagrams}, which are requests where $\dgform$ includes ciphertexts under $\pkTC$. Private datagrams can thus enable confidentiality-preserving applications despite the public readability of the blockchain.  \emph{Custom datagrams}, also supported by \tc, allow a contract to specify a particular web-scraping target, potentially involving multiple interactions, and thus greatly expand the range of possible relying contracts for \tc. We do not treat them in our security proofs, but give examples of both datagram types in Section~\ref{sec:applications}.
+
+\subsection{Enhanced Robustness via Replication}
+\label{subsec:enhanced_robustness}
+Our basic security model for \tc assumes the ideal isolation model for SGX described above as well as client trust in data sources. Given various concerns about SGX security~\cite{sgxexplained,7163052} and the possible fallibility of data sources, we examine two important ways \tc can support hedging.
+To protect against the compromise of a single SGX instance, contracts may request datagrams from multiple SGX instances and implement majority voting among the responses.
+This hedge requires increased gas expenditure for additional requests and storage of returned data.
+Similarly, \tc can hedge against the compromise of a data source by scraping multiple sources for the same data and selecting the majority response. We demonstrate both of these mechanisms in our example financial derivative application in Section~\ref{subsec:hedging}. (A potential optimization is mentioned in Appendix~\ref{sec:future}.)
+
+
+\subsection{Implementation Details}
+We implemented a full version of the \tc protocol in a complete, end-to-end system using Intel SGX and Ethereum. Due to space constraints, 
+we defer discussion of implementation details and other practical considerations to 
+Appendix \ref{sec:impl}.
