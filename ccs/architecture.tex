@@ -31,7 +31,7 @@ An architectural schematic of \tc showing its interaction with external entities
   \node[cloud,draw=black!65,trusted,cloud puffs=11,cloud puff arc=100,aspect=0.6,inner xsep=-0.35em,right=3.4em of tc,text width=4.15em,align=center] (data) {\tt lots-o-\\data.com};
   \node[minimum height=9.5em,minimum width=4em,label=above:{\bf Data Source}] () at (data) {};
 
-  \draw[<->,comm-link] ([xshift=-0.9em,yshift=-0.75em]enc.north) |- ([xshift=-0.75em,yshift=-0.75em]ctc.east);
+  \draw[<->,comm-link] ([xshift=-0.9em,yshift=-0.75em]enc.north) |- ([xshift=-1em,yshift=-0.75em]ctc.east);
   \draw[<->,comm-link] ([yshift=0.75em]ctc.south) -- ([yshift=-0.75em]cu.north);
   \draw[<->,comm-link] ([xshift=0.9em,yshift=-0.75em]enc.north) |- ([xshift=1.1em,yshift=1.75em]data.west);
 \end{tikzpicture}

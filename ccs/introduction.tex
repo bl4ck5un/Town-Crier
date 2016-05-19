@@ -60,12 +60,12 @@ To obtain the above formal guarantees, we rely on the formal modeling
 of blockchains by Kosba et al.~\cite{hawk} and the formal abstraction for SGX by Shi et al.~\cite{sgxsok}
 
 \vspace{1ex}
-\noindent {\em Definition of gas neutrality.}
-We identify and provide a formal definition of \emph{gas neutrality}, a critical property of Ethereum-based services.
-Gas neutral services are immune to user-driven Denial-of-Service (DoS) attacks relying on Ethereum's fee structure.
+\noindent {\em Definition of gas sustainability.}
+We identify and provide a formal definition of \emph{gas sustainability}, a critical property of Ethereum-based services.
+Gas sustainable services are immune to user-driven Denial-of-Service (DoS) attacks relying on Ethereum's fee structure.
 Our definition reveals a subtle gap between the formal blockchain model of Kosba et al.~\cite{hawk}
 and Ethereum's instantiation that proves important in formal reasoning about \tc's handling of fees.
-Ethereum ensures that services consisting entirely of smart contracts satisfy gas neutrality trivially.
+Ethereum ensures that services consisting entirely of smart contracts satisfy gas sustainability trivially.
 For \tc this requires a proof which we provide.
 
 \vspace{1ex}
