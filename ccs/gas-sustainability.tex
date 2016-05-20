@@ -46,12 +46,17 @@ Therefore, we simply require that the service not get stuck due to lack of gas.
 Intuitively we wish to ensure that, if a service is initialized with sufficient gas and behaves honestly,
 then for any sequence of calls, it will be able to pay the gas cost of each call it executes.
 
-%More formally, we can let a service $S$ be a set of public calls $f_1, \dotsc, f_F$, a set of wallets $w_1, \dotsc w_W$, a set of response contract calls $a_1, \dotsc, a_A$, and a set of algorithms $b_1, \dotsc, b_B$.
-%To use the service, some user $P$ calls some $f_i$ with input $x$.
+More formally, we can let a service $S$ be a set of smart contract functions $f_1, \dotsc, f_n$, a set of wallets $\wallet_1, \dotsc \wallet_m$,
+and a protocol describing which functions will be called by which wallet in response to specific user-initiated calls to functions.
+Let $(f_i(x), P, g)$ denote a call to function $f_i$ with input $x$ made by user $P$ with {\tt GASLIMIT} $g$.
+\ethan{What is a ``protocol'' here? I need to define that more formally.}
 
-%\begin{definition}[Gas Sustainability]
-%  \label{def:gas-sustainability}
-%  We say that a service is \emph{gas sustainable} if, as long as the service executes honestly and is initialized with sufficient funds,
-%  it will never be unable to perform an action specified by its protocol due to insufficient gas.
-%\end{definition}
+\begin{definition}[Gas Sustainability]
+  \label{def:gas-sustainability}
+  We say that a service $\displaystyle S = \left(\{f_i\}_1^F, \{\wallet_i\}_1^W\right)$ and protocol are \emph{gas sustainable}
+  if there exist some $K_1, \dotsc, K_W$ such that the following holds.
+  For all sequences of calls $(f_{i_1}(x_1), P_1, g_1), \dotsc, (f_{i_n}(x_N), P_N, g_N)$ allowable under the protocol with and honest service (and potentially malicious users),
+  if ${\sf balance}(\wallet_i) \geq K_i$ for all $1 \leq i \leq m$ prior to the first call,
+  then for every $j$ such that $P_j = \wallet_k$ for some $k$, $g_j$ is sufficient to fully execute $f_{i_j}(x_j)$ and $\wallet_k$ contains at least $g_j$ ether between execution $j-1$ and execution $j$.
+\end{definition}
 
