@@ -285,27 +285,15 @@ For simplicity, we first specify a payment-free version of our basic protocol, i
 
 %\vspace{-3mm}
 \paragraph{The Requester Contract $\reqcont$.}
-The requester contract $\reqcont$ sends to the \tcontract \tcont
-a request of the form $(\dgform, \dgcallback)$.
-%which \tcont converts into a message $m_1 = (\dgform, \dgcallback)$ as specified below.
+The requester contract $\reqcont$ sends a request of the form $(\dgform, \dgcallback)$ to the \tcontract \tcont.
 
 %\vspace{-3mm}
 \paragraph{The \tcontract \tcont.} 
-The \tcontract, as noted above, accepts a datagram request from \reqcont, 
-assigns a unique ${\sf id}$ to each request, and
-records the request.
-%\tcont
-%now
-%forwards the request to the \tc server, and 
-Our Town Crier Relay $\relay$ monitors
-requests received by \tcont and 
-forwards them to an SGX enclave.
-When $\tcont$ obtains a valid response
-from $\tcadd$,   
-it 
-sends the resulting datagram $\dgm$ to the entry point \dgcallback 
-specified by the requesting contract \reqcont. As explained above, because the response $(\msgi{2})$ comes from $\tcadd$, the blockchain automatically verifies that the response is correctly signed under $\engine$'s key $\pkTC$ and \tcont need not verify the signature explicitly. \tc does, however, have a subtle security requirement. Specifically,  for a given datagram request $\dgid$, \tcont must verify that $\dgform' = \dgform$, where $\dgform'$ is in the digitally signed message produced by \engine and $\dgform$ is the locally stored parameters. The check is necessary to prevent \relay from corrupting datagram requests passed by \tcont (which, as a public function, has no means of digitally signing requests). 
-
+The \tcontract accepts a datagram request from \reqcont, assigns it a unique ${\sf id}$, and records the request.
+Our \tcs\ \medname\ \relay monitors requests received by \tcont and forwards them to an SGX enclave.
+When $\tcont$ obtains a valid response from $\tcadd$, it sends the resulting datagram $\dgm$ to the entry point \dgcallback specified by the requesting contract \reqcont.
+As explained in Section~\ref{sec:shrinking-tcb}, \tcont must check that the response comes from \tcadd and that $\dgform' = \dgform$ to ensure validity.
+The first is sufficient to prove that the response was produced by \engine, while the second ensures that \relay cannot corrupt requests despite \engine not performing explicit validation.
 \tcont is specified in Fig.~\ref{fig:tc-contract}. Here, Call denotes a call to a contact entry point. 
 
 \begin{figure}[!htb]
@@ -383,7 +371,7 @@ As noted in Section~\ref{sec:architecture},
 \relay bridges the gap between the \encname and the blockchain in three ways.
 (1) It scrapes the blockchain and monitors \tcont for new requests $(\dgid, \dgform)$.
 (2) It boots the \encname with \engine.{\bf Initialize}() and calls \engine.{\bf Resume}$(\dgid, \dgform)$ on incoming requests.
-(3) it forwards datagram responses from \engine to the blockchain.
+(3) it forwards datagrams from \engine to the blockchain.
 Recall that it forwards already-signed transacations to the blockchain as \tcadd.
 %Recall that it sends transactions to the blockchain and thus forwards responses as \tcadd.
 The program for \relay is shown in Fig.~\ref{fig:relayprotocol}.
