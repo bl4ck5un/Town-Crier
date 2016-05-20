@@ -136,32 +136,34 @@ even future decentralized blockchains.
   \multicolumn{1}{c}{{\sf SteamTrade}${}^\dagger$} \\
 %  & gas (cents) & gas (cents) & gas (cents) \\
 \midrule
-Deliver without Cancel & 3.95\textcent & 4.00\textcent & 4.30\textcent \\ 
-Cancel arrived after Deliver & 4.90\textcent & 4.95\textcent & 5.25\textcent \\ 
-Cancel without Deliver & 4.65\textcent & 4.70\textcent & 5.00\textcent \\ 
+Deliver without Cancel & 11.85\textcent & 12.00\textcent & 12.90\textcent \\ 
+Cancel arrived after Deliver & 14.70\textcent & 14.85\textcent & 15.75\textcent \\ 
+Cancel without Deliver & 13.95\textcent & 14.10\textcent & 15.00\textcent \\ 
 \bottomrule
 \end{tabular}
-\caption[caption]{{\bf Callback-independent} portion of gas expenditure in USD.
-The difference between applications is due to the differing lengths of the input parameters.
-The first two rows would also have to pay for $\dgcallback$,
-but we do not include that cost as it would exist even if data acquisition were free.
+\caption[caption]{\emph{Callback-independent} portion of gas costs in USD.
+  The applications differ because their input parameters are of different lengths.
+  We omit the cost of \dgcallback in the first two rows since it would necessary even if data acquisition were free.
+%The difference between applications is due to the differing lengths of the input parameters.
+%The first two rows would also have to pay for $\dgcallback$,
+%but we do not include that cost as it would exist even if data acquisition were free.
 \\\hspace{\textwidth}
-${}^\dagger$ These numbers are for 1 item. Each additional item costs an additional 0.06\textcent.
+${}^\dagger$ These numbers are for 1 item. Each additional item costs an additional 0.19\textcent.
 }
 \label{tbl:eval_gas}
 \end{table*}
 
 \subsection{Gas Costs}
-Currently 1 gas costs $5 \times10^{-8}$ ether, so at the exchange rate of \$5 for 1 ether, \$1 buys 4 million gas.
+Currently 1 gas costs $5 \times10^{-8}$ ether, so at the exchange rate of \$15 for 1 ether, \$1 buys 1.3 million gas.
 Here we provide costs for the components of our implementation.
 
-Table~\ref{tbl:eval_gas} shows gas costs for calling \tc in our example applications; these costs are callback-independent to reflect datagram costs only, not application costs. We see an effective gas cost for \tc of roughly 4 to 5 cents.
+Table~\ref{tbl:eval_gas} shows gas costs for calling \tc in our example applications; these costs are callback-independent to reflect datagram costs only, not application costs. We see an effective gas cost for \tc of roughly 10 to 15 cents.
 
-The callback-independent portion of {\bf Deliver} costs about \num[group-separator={,}]{35000} gas (0.9\textcent), so this is the value of $\constgasmin$.
-We set $\constgasmax = \num[group-separator={,}]{3100000}$ gas (77.5\textcent), as this is approximately Ethereum's maximum {\tt GASLIMIT}.
-The cost for executing {\bf Request} is approximately \num[group-separator={,}]{120000} gas (3\textcent) of fixed cost, 
-plus \num[group-separator={,}]{2500} gas (0.06\textcent) for every 32 bytes of request parameters.
-The cost to execute {\bf Cancel} is 62500 gas (1.55\textcent)
+The callback-independent portion of {\bf Deliver} costs about \num[group-separator={,}]{35000} gas (2.6\textcent), so this is the value of $\constgasmin$.
+We set $\constgasmax = \num[group-separator={,}]{3100000}$ gas (\$2.33), as this is approximately Ethereum's maximum {\tt GASLIMIT}.
+The cost for executing {\bf Request} is approximately \num[group-separator={,}]{120000} gas (9\textcent) of fixed cost, 
+plus \num[group-separator={,}]{2500} gas (0.19\textcent) for every 32 bytes of request parameters.
+The cost to execute {\bf Cancel} is 62500 gas (4.7\textcent)
 including the gas cost $\constgasinvokecancel$ and the refund $\constgascancel$ paid to \tc should {\bf Deliver} be called after {\bf Cancel}.
 
 
@@ -197,9 +199,9 @@ SGX compromise.
 We ran three instances of SGX enclaves, all scraping
 the same data source.  
 The main change in this scenario is that 
-the gas cost would increase by a factor of 3 plus an additional 1.95\textcent.
-So {\sf CashSettledPut} would cost 13.8\textcent\ for Deliver without Cancel.
-The extra 1.95\textcent\ is a storage cost: The requester contract must store votes
+the gas cost would increase by a factor of 3 plus an additional 5.85\textcent.
+So {\sf CashSettledPut} would cost 35.6\textcent\ for Deliver without Cancel.
+The extra 5.85\textcent\ is a storage cost: The requester contract must store votes
 until a winner is known.
 \end{itemize}
 
