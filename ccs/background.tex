@@ -11,12 +11,19 @@ Intel's Software Guard Extensions (SGX)~
 is a set of new instructions that confer hardware protections on user-level code. SGX enables process execution in a protected address space known as an {\em enclave}.
 The enclave protects the confidentiality and integrity of the process from certain forms of hardware attack and other software on the same host, including the operating system. 
 
-A enclave process cannot make system calls, but can read and write memory outside the enclave region. Thus isolated execution in SGX may be viewed in terms of an ideal model in which a process is guaranteed to execute correctly and with perfect confidentiality, but relies on a (potentially malicious) operating system for network and file-system access.\footnote{This model is a simplification: SGX is known to expose some internal enclave state to the OS~\cite{sgxexplained}. Our basic security model for \tc assumes ideal isolated execution, but again, \tc can also be distributed across multiple SGX instances as a hedge against compromise.}
+An enclave process cannot make system calls, but can read and write memory outside the enclave region. Thus isolated execution in SGX may be viewed in terms of an ideal model in which a process is guaranteed to execute correctly and with perfect confidentiality, but relies on a (potentially malicious) operating system for network and file-system access.\footnote{This model is a simplification: SGX is known to expose some internal enclave state to the OS~\cite{sgxexplained}. Our basic security model for \tc assumes ideal isolated execution, but again, \tc can also be distributed across multiple SGX instances as a hedge against compromise.}
 
-SGX allows a remote system to verify the software in an enclave and communicate securely with it. When an enclave is created, the CPU produces a hash of its initial state known as a {\em measurement}. The software in the enclave may, at a later time, request a report which includes a measurement and supplementary data provided by the process, such as a public key. The report is digitally signed using a hardware-protected key to produce a proof that the measured software is running in an SGX-protected enclave. This proof, known as a {\em quote}, can be verified by a remote system, while the process-provided public key can be used by the remote system to establish a secure channel with the enclave or verify signed data it emits. We use the generic term {\em attestation} to refer to a quote, and denote it by \att. We assume that a trustworthy measurement of the code for the enclave component of \tc is available to any client that wishes to verify an attestation. SGX signs quotes using a \emph{group signature} scheme called 
-EPID~\cite{epid}. This choice of primitive is significant in our design of \tcs, as EPID is a proprietary signature scheme not supported in Ethereum.
-
-SGX additionally provides a trusted time source via the function \texttt{sgx\_get\_trusted\_time}.~On invoking this function, an enclave obtains a measure of time relative to a reference point indexed by a nonce. A reference point remains stable, but SGX does not provide a source of absolute or wall-clock time, another limitation we must work around in \tc.
+SGX allows a remote system to verify the software in an enclave and communicate securely with it.
+When an enclave is created, the CPU produces a hash of its initial state known as a {\em measurement}.
+The software in the enclave may, at a later time, request a report which includes a measurement and supplementary data provided by the process, such as a public key.
+The report is digitally signed using a hardware-protected key to produce a proof that the measured software is running in an SGX-protected enclave.
+This proof, known as a {\em quote}, can be verified by a remote system, while the process-provided public key can be used by the remote system to establish a secure channel with the enclave or verify signed data it emits.
+We use the generic term {\em attestation} to refer to a quote, and denote it by \att.
+We assume that a trustworthy measurement of the code for the enclave component of \tc is available to any client that wishes to verify an attestation.
+SGX signs quotes using a \emph{group signature} scheme called EPID~\cite{epid}.
+This choice of primitive is significant in our design of \tcs, as EPID is a proprietary signature scheme not supported natively in Ethereum.
+SGX additionally provides a trusted time source via the function \texttt{sgx\_get\_trusted\_time}.~On invoking this function, an enclave obtains a measure of time relative to a reference point indexed by a nonce.
+A reference point remains stable, but SGX does not provide a source of absolute or wall-clock time, another limitation we must work around in \tc.
 
 %\vspace{-1ex}
 \paragraph{\bf TLS / HTTPS.}
@@ -25,7 +32,7 @@ We assume basic familiarity by readers with TLS and HTTPS (HTTP over TLS). As we
 %\vspace{-1ex}
 \paragraph{\bf Smart contracts.}
 \label{sec:contracts-and-gas}
-While \tc can in principle support any smart-contract system, we focus in this paper on its use in Ethereum, whose model we now explain. For further details, see~\cite{whitepaper,yellowpaper}
+While \tc can in principle support any smart-contract system, we focus in this paper on its use in Ethereum, whose model we now explain. For further details, see~\cite{whitepaper,yellowpaper}.
 
 A smart contract in Ethereum is represented as what is called a \emph{contract account}, endowed with code, a currency balance, and persistent memory in the form of a key/value store. A contract accepts messages as inputs to any of a number of designated functions. These entry points, determined by the contract creator, represent the API of the contract. Once created, a contract executes autonomously; it persists indefinitely with even its creator unable to modify its code.\footnote{There is one exception: a special opcode \texttt{suicide} wipes code from a contract account.} Contract code executes in response to receipt of a \emph{message} from another contract or a \emph{transaction} from a non-contract (\emph{externally owned}) account, informally what we call a \emph{wallet}. Thus, contract execution is always initiated by a transaction. Informally, a contract only executes when ``poked,'' and poking progresses through a sequence of entry points until no further message passing occurs (or a shortfall in gas occurs, as explained below). The ``poking'' model aside, as a simple abstraction, a smart contract may be viewed as an {\em autonomous agent} on the blockchain.
 

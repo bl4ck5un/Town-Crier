@@ -210,7 +210,7 @@ To make this idea work fully, the public key $\pkTC$ must be hardcoded into \tco
 
 %This protocol does not include a mechanism for \emph{revocation} of a compromised SGX instance, an issue we discuss later in the paper.
 
-In summary, then, we may assume in our protocol specifications that {\em relying clients have verified an attestation for \encname and thus that datagram responses sent from \tcadd to \tcont are trusted to originate from \engine.} 
+In summary, then, we may assume in our protocol specifications that {\em relying clients have verified an attestation for \encname and thus that datagram responses sent from \tcadd to \tcont are trusted to originate from \engine}, thus eliminating the need to do costly EPID signature verification in \tcont.
 
 
 
