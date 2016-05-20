@@ -15,14 +15,15 @@ By having a trusted component perform the reimbursement, we are also able to gua
 We now give some preliminaries and explain our system.
 
 
-\paragraph{Execution model and notation.}
-We take Ethereum's gas model as described in Section~\ref{sec:contracts-and-gas}.
-We use the notation $\gas$ to denote gas and $\fee$ to denote non-gas currency.
+\paragraph{Notation.}
+%We take Ethereum's gas model as described in Section~\ref{sec:contracts-and-gas}.
+Let $\gas$ denote gas and $\fee$ to denote non-gas currency.
 In both cases \$ is a type annotation and the letter denotes the numerical amount.
-For simplicity, our notation assumes that gas and normal currency adopt the same units (allowing us to avoid explicit conversions), so system constants are values without a unit.
+For simplicity, our we assume that gas and currency adopt the same units (allowing us to avoid explicit conversions).
 We use the following identifiers to denote currency and gas amounts.
 %
 \begin{center}
+\vspace{-1em}
 \begin{tabular}{m{0.08\columnwidth}m{0.85\columnwidth}}
   \hline
   $\fee$
@@ -52,8 +53,7 @@ We use the following identifiers to denote currency and gas amounts.
 $\constgasmin$, $\constgasmax$, $\constgasinvokecancel$, and $\constgascancel$ are system constants,
 $\fee$ is chosen by the requester (and may be malicious if the requester is dishonest),
 and $\gasdeliver$ is chosen by the \tc~\encname when calling {\bf Deliver}.
-Though $\gasrequest$ and $\gascancel$ are set by the requester, we need not worry about the values.
-If they are too small, Ethereum will abort the transaction and there will not be a request or cancellation.
+Though $\gasrequest$ and $\gascancel$ are set by the requester, Ethereum will abort a user-initiated transaction if they are too small, so we need not worry about the values.
 
 %\paragraph{Adversarial cases.}
 %During the creation and fulfillment of any request, there are two untrusted parties: The requester contract / user $\reqcont$ and the \medname. In the \tc implementation, we thus consider three cases, here giving the desired properties of each:
@@ -120,31 +120,31 @@ If they are too small, Ethereum will abort the transaction and there will not be
   \hline
 \end{tabularx}
 \caption{
-Town Crier contract \tcont reflecting fees.
-The last argument of each entry point is the {\tt GASLIMIT} provided.
-An honest requester sets $\fee$ to be the gas required to execute {\bf Deliver} including $\dgcallback$.
-Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dgcallback$ to ensure that no more than $\fee$ is spent.
+\tc contract \tcont reflecting fees.
+The last argument of each function is the {\tt GASLIMIT} provided.
+%An honest requester sets $\fee$ to be the gas required to execute {\bf Deliver} including $\dgcallback$.
+%Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dgcallback$ to ensure that no more than $\fee$ is spent.
 }
 \label{tbl:gas-tc-contract}
 \end{figure}
 
-\begin{figure}[h!]
-\begin{boxedminipage}{\columnwidth}
-\centering
-{\bf Program for \tcs~\encname $(\enclaveprog)$} \\[1ex]
-\begin{tabularx}{\linewidth}{l}
-  {\bf Initialize}\,$({\sf void})$ [Same as Figure~\ref{fig:engineprotocol}] \\[3pt]
-
-  {\bf Resume}\,$(\dgid, \dgform)$ \\
-  \quad [Same as Figure~\ref{fig:engineprotocol} except the last two lines:] \\
-  \quad Set $\gasdeliver := \constgasmax$ \\
-  \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, (\dgid, \dgform, \dgm, \gasdeliver))$ \\
-  \quad Output $((\dgid, \dgform, \dgm, \gasdeliver), \sigma)$ \\
-\end{tabularx}
-\end{boxedminipage}
-\caption{The \tcs~\encname \engine.}
-\label{fig:engineprot}
-\end{figure}
+%\begin{figure}[h!]
+%\begin{boxedminipage}{\columnwidth}
+%\centering
+%{\bf Program for \tcs~\encname $(\enclaveprog)$} \\[1ex]
+%\begin{tabularx}{\linewidth}{l}
+%  {\bf Initialize}\,$({\sf void})$ [Same as Figure~\ref{fig:engineprotocol}] \\[3pt]
+%
+%  {\bf Resume}\,$(\dgid, \dgform)$ \\
+%  \quad [Same as Figure~\ref{fig:engineprotocol} except the last two lines:] \\
+%  \quad Set $\gasdeliver := \constgasmax$ \\
+%  \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, (\dgid, \dgform, \dgm, \gasdeliver))$ \\
+%  \quad Output $((\dgid, \dgform, \dgm, \gasdeliver), \sigma)$ \\
+%\end{tabularx}
+%\end{boxedminipage}
+%\caption{The \tcs~\encname \engine.}
+%\label{fig:engineprot}
+%\end{figure}
 
 \begin{figure}
 \centering
@@ -200,52 +200,50 @@ Town Crier sets $\gasdeliver := \constgasmax$, but lowers the gas limit for $\dg
   \end{pgfonlayer}
 \end{tikzpicture}
 \caption{{\bf Money Flow for a Delivered Request.}
-Red arrows denote flow of money and brown arrows denote gas limits for functions.
-The thickness of the line indicates the quantity of the resource.
-The $\gascallback$ arrow is thin because the value is limited to $\fee - \constgasmin$.
+Red arrows denote flow of money and brown arrows denote gas limits.
+The thickness of lines indicate the quantity of resources.
+The \gascallback arrow is thin because \gascallback is limited to $\fee - \constgasmin$.
 }
 \label{fig:money-flow}
 \end{figure}
 
 
 
-\paragraph{Town Crier protocol with fees.}
-Our basic Town Crier system implements a policy where the requester pays for all gas needed and Town Crier effectively pays nothing.
-We now describe how this can be realized by modifying the payment-free protocol described in Section~\ref{sec:payment-free-protocol}.
+\paragraph{\tcs protocol with fees.}
+Our basic \tc system implements a policy where the requester pays for all gas needed and \tc effectively pays nothing.
+We now modify the payment-free protocol from Section~\ref{sec:payment-free-protocol} to realize this.
 
 \begin{itemize}[leftmargin=1.5em]
   \setlength{\itemsep}{0pt}
 %  \setlength{\parskip}{0pt}
   \setlength{\parsep}{0pt}
   \item {\it Initialization.}
-    We assume that \tc deposits at least $\constgasmax$ into the wallet $\tcadd$.
+    \tc deposits at least $\constgasmax$ into the $\tcadd$.
 
   \item {\it \tcs blockchain contract.}
-    Figure \ref{tbl:gas-tc-contract} specifies the \tc blockchain contract \tcont, with fees.
-    Since $\tcadd$ must invoke {\bf Deliver}, \tc pays the gas cost.
-    It sets the {\tt GASLIMIT} $\gasdeliver := \constgasmax$.
-    To ensure that the gas spent does not exceed the reimbursement available ($\fee$),
-    \tcont sets the {\tt GASLIMIT} $\gascallback$ for the sub-call to $\dgcallback$ to the remaining reimbursement: $\fee - \constgasmin$.
+    Fig.~\ref{tbl:gas-tc-contract} specifies the \tc blockchain contract \tcont with fees.
+    Since \tcadd must invoke {\bf Deliver}, \tc pays the gas cost.
+    It sets the $\gasdeliver := \constgasmax$.
+    To ensure that all gas spent can be reimbursed,
+    \tcont sets the $\gascallback := \fee - \constgasmin$ for the sub-call to $\dgcallback$.
 
-  \item {\it Town Crier Relay.}
+  \item {\it \tcs\ \medname.}
     The \medname behavior does not change with the presence of fees.
-    It still monitors the blockchain and whenever the contract \tcont stores a new request $(\dgid, \dgform, \_, \_, \_)$,
-    it invokes $\enclaveprog.\textbf{Resume}(\dgid, \dgform)$.
 
-  \item {\it Town Crier \encname.}
+  \item {\it \tcs\ \encname.}
     We make the following small modification to the fee-free protocol.
-    Instead of signing the tuple $(\dgid, \dgform, \dgm)$ at the end of its execution,
-    the enclave now signs the tuple $(\dgid, \dgform, \dgm, \gasdeliver)$ where $\gasdeliver = \constgasmax$.
+    At the end of its execution, the \encname now signs the tuple $(\dgid, \dgform, \dgm, \gasdeliver)$ where $\gasdeliver := \constgasmax$.
+%    Instead of signing the tuple $(\dgid, \dgform, \dgm)$ at the end of its execution,
+%    the enclave now signs the tuple $(\dgid, \dgform, \dgm, \gasdeliver)$ where $\gasdeliver = \constgasmax$.
 
   \item {\it Requester.}
     An honest requester follows the protocol in Fig.~\ref{fig:att_check} to verify the SGX attestation.
     Then she prepares $\dgform$ and $\dgcallback$, sets $\gasrequest$ to the gas cost of {\bf Request} with $\dgform$,
-    and sets $\fee$ to $\constgasmin$ plus the cost of executing $\dgcallback$.
-Finally, she invokes {\bf Request}$(\dgform, \dgcallback, \fee)$ with {\tt GASLIMIT} $\gasrequest$.
+    sets $\fee$ to $\constgasmin$ plus the cost of executing $\dgcallback$,
+    and invokes ${\bf Request}(\dgform, \dgcallback, \fee)$ with {\tt GASLIMIT} $\gasrequest$.
 
-    If $\dgcallback$ is not executed, the requester will invoke {\bf Cancel} with argument $\dgid$ and gas limit $\constgasinvokecancel$ to receive a partial refund.
-    The honest requester will never invoke {\bf Cancel} more than once for the same request
-    and will never invoke {\bf Cancel} with an $\dgid$ that corresponds to a different user's request.
+    If \dgcallback is not executed, she can invoke ${\bf Cancel}(\dgid)$ with {\tt GASLIMIT} $\constgasinvokecancel$ to receive a partial refund.
+    An honest requester will invoke {\bf Cancel} at most once for each of her requests and never for any other user's request.
 \end{itemize}
 
 \subsection{Private and Custom Datagrams}
