@@ -61,12 +61,11 @@ of blockchains by Kosba et al.~\cite{hawk} and the formal abstraction for SGX by
 
 \vspace{1ex}
 \noindent {\em Definition of gas sustainability.}
-We identify and provide a formal definition of \emph{gas sustainability}, a critical property of Ethereum-based services.
+We identify and define \emph{gas sustainability}, a critical property of Ethereum-based services.
 Gas sustainable services are immune to user-driven Denial-of-Service (DoS) attacks relying on Ethereum's fee structure.
 Our definition reveals a subtle gap between the formal blockchain model of Kosba et al.~\cite{hawk}
-and Ethereum's instantiation that proves important in formal reasoning about \tc's handling of fees.
-Ethereum ensures that services consisting entirely of smart contracts satisfy gas sustainability trivially.
-For \tc this requires a proof which we provide.
+and Ethereum's instantiation that proves important in formal reasoning about fees.
+While services consisting entirely of Ethereum smart contracts are trivially gas sustainable, \tc requires a proof which we provide.
 
 \vspace{1ex}
 \noindent {\em Minimized Trusted Computing Base (TCB) across multiple components.}
