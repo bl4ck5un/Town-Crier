@@ -1,6 +1,6 @@
 \documentclass{sig-alternate}
 
-%\usepackage{acmcopyright}
+\usepackage{acmcopyright}
 \usepackage{epsfig,endnotes}
 \let\proof\relax
 \let\endproof\relax
@@ -215,13 +215,9 @@
 \newcommand {\reqcont} {\ensuremath{\cont_U}\xspace}
 \newcommand {\tcont} {\ensuremath{\cont_{TC}}\xspace}
 \newcommand {\tcadd} {\ensuremath{\wallet_{TC}}\xspace}
-%\newcommand {\pTC} {\ensuremath{\wallet_{TC}}\xspace}
 \newcommand {\sgxadd} {\ensuremath{\wallet_{SGX}}\xspace}
 \newcommand{\pkTC}{\ensuremath{{\sf pk}_{TC}}\xspace}
-%\newcommand{\pkTC}{\ensuremath{{{\cal P}_{TC}.{\sf pk}}}\xspace}
-%\newcommand{\skTC}{\ensuremath{{{\cal P}_{TC}.{\sf sk}}}\xspace}
 \newcommand{\skTC}{\ensuremath{{\sf sk}_{TC}}\xspace}
-%\newcommand{\skTC}{\ensuremath{{\sf sk}_{\textrm{TC}}}\xspace}
 \newcommand{\userwallet}{\ensuremath{\wallet_U}\xspace}
 \newcommand{\specialwallet}{\ensuremath{\wallet^*}\xspace}
 
@@ -232,7 +228,6 @@
 \newcommand {\dg} {{\sf d}\xspace}
 \newcommand {\dgret} {{\sf ans}\xspace}
 \newcommand {\dgm} {{\sf data}\xspace}
-\newcommand {\dgi} {{\sf d_{\mbox{$i$}}}\xspace}
 \newcommand {\dgid} {{\sf id}\xspace}
 \newcommand {\dgcallback} {{\sf callback}\xspace}
 
@@ -243,16 +238,11 @@
 \newcommand{\sk}{\ensuremath{{\sf sk}}}
 \newcommand{\pkM}{\ensuremath{{\sf pk}_{\mathrm{sgx}}}}
 \newcommand{\skM}{\ensuremath{{\sf sk}_{\mathrm{sgx}}}}
-\newcommand{\pkU}{\ensuremath{{\sf pk}_{\mathcal{U}}}}
-\newcommand{\pU}{\ensuremath{{\mathcal{P}}_{\mathcal{U}}}}
-%\newcommand{\pksgx}{\ensuremath{{\mathcal{P}}_{\text{TC}}.{\sf pk}}}
 \newcommand{\pksgx}{\ensuremath{{\sf pk}_{\textrm{TC}}}\xspace}
 \newcommand{\sksgx}{\ensuremath{{\sf sk}_{\textrm{TC}}}\xspace}
 \newcommand{\pkurl}{\ensuremath{{\sf pk}_{\textrm{url}}}\xspace}
-\newcommand{\rl}{\ensuremath{{\sf RL}}}
 \newcommand{\relay}{\ensuremath{\mathcal{R}}\xspace}
 \newcommand{\engine}{\ensuremath{\enclaveprog}\xspace}
-%\newcommand{\digest}{\ensuremath{{\sf digest}}}
 \newcommand{\enclaveprog}{\ensuremath{{\sf prog}_{\textrm{encl}}}\xspace}
 \newcommand{\prog}{\ensuremath{{\sf prog}}\xspace}
 \newcommand{\sigatt}{\ensuremath{{\sigma_{\textrm{att}}}}\xspace}
