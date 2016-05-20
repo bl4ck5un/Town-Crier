@@ -1,17 +1,18 @@
 \section{Full Town Crier Protocol}
 \label{sec:enhanced_protocol}
 
-The simplified payment-free protocol in Section~\ref{sec:payment-free-protocol} guarantees authenticity of data for an honest user.
-In Ethereum, however, computation is not free; recall from Section~\ref{sec:contracts-and-gas} that Ethereum employs \emph{gas} to fuel contracts. This means that \tc needs enough gas to deliver datagrams, so users must pay a fee to reimburse costs. If fees are not properly handled, a malicious relay (or malicious user) could prevent delivery of a datagram or cost an honest requester money for no gain. We discuss Section~\ref{sec:gas-protocol} how we address this issue throughout \tc's design. We also briefly discuss other enhancements to the basic \tc protocol: private and custom datagrams (Section~\ref{subsec:private_datagrams}) and use of replication / voting to achieving robustness against SGX host or data-source compromise (Section~\ref{subsec:enhanced_robustness}).
+As we discussed in Section~\ref{sec:gas-sustainability}, \tc must properly handle fees to avoid DoS attacks.
+We discuss in Section~\ref{sec:gas-protocol} how we ensure that \tc is gas sustainable as well as protect user funds from a malicious \tc.
+We also briefly discuss other enhancements to the basic \tc protocol: private and custom datagrams (Section~\ref{subsec:private_datagrams}) and use of replication / voting to achieving robustness against SGX host or data-source compromise (Section~\ref{subsec:enhanced_robustness}).
 
 
 \subsection{Handling Fees in Ethereum}
 \label{sec:gas-protocol}
 
-
-To address the above concern of attacks on \tc fee management, we employ and prove the security of a novel two-currency resource-management system. This system causes
-requesters to make gas payments up front as ether. It converts this ether to gas so as to prevent a malicious requester from exhausting \tc's resources
-or a malicious \tc from stealing an honest user's money. We now give some preliminaries and then explain our system.
+To ensure gas sustainability, we require that requesters make gas payments up front as ether.
+\tcont then reimburses the gas costs of \tc.
+By having a trusted component perform the reimbursement, we are also able to guarantee that a malicious \tc cannot steal an honest user's money without delivering valid data.
+We now give some preliminaries and explain our system.
 
 
 \paragraph{Execution model and notation.}
@@ -54,28 +55,28 @@ and $\gasdeliver$ is chosen by the \tc~\encname when calling {\bf Deliver}.
 Though $\gasrequest$ and $\gascancel$ are set by the requester, we need not worry about the values.
 If they are too small, Ethereum will abort the transaction and there will not be a request or cancellation.
 
-\paragraph{Adversarial cases.}
-During the creation and fulfillment of any request, there are two untrusted parties: The requester contract / user $\reqcont$ and the \medname. In the \tc implementation, we thus consider three cases, here giving the desired properties of each:
-
-\begin{itemize}
-  \setlength{\itemsep}{2pt}
-  \setlength{\parskip}{0pt}
-  \setlength{\parsep}{0pt}
-  \item {\it Honest requester and \medname.}
-    The requester must receive a valid authenticated response from TC.
-
-  \item {\it Malicious requester and honest \medname.}
-    \tc must still be able to respond to requests from other (honest) users.
-    Thus we must prevent a malicious user from interfering directly with other requests (which the payment-free protocol already does)
-    or exhausting the financial resources of TC.
-
-  \item {\it Honest requester and malicious \medname.}
-    The requester cannot receive invalid data (which is also assured by the payment-free protocol)
-    and the requester should not have to pay for computation that is not executed.
-\end{itemize}
-We formalize these properties in Section~\ref{sec:analysis} and prove that our protocol provides these guarantees.
-We intentionally ignore the case where both the requester and the \medname are dishonest.
-If the requester is dishonest we need to not protect her request, and if the \medname is dishonest we cannot protect the TC system.
+%\paragraph{Adversarial cases.}
+%During the creation and fulfillment of any request, there are two untrusted parties: The requester contract / user $\reqcont$ and the \medname. In the \tc implementation, we thus consider three cases, here giving the desired properties of each:
+%
+%\begin{itemize}
+%  \setlength{\itemsep}{2pt}
+%  \setlength{\parskip}{0pt}
+%  \setlength{\parsep}{0pt}
+%  \item {\it Honest requester and \medname.}
+%    The requester must receive a valid authenticated response from TC.
+%
+%  \item {\it Malicious requester and honest \medname.}
+%    \tc must still be able to respond to requests from other (honest) users.
+%    Thus we must prevent a malicious user from interfering directly with other requests (which the payment-free protocol already does)
+%    or exhausting the financial resources of TC.
+%
+%  \item {\it Honest requester and malicious \medname.}
+%    The requester cannot receive invalid data (which is also assured by the payment-free protocol)
+%    and the requester should not have to pay for computation that is not executed.
+%\end{itemize}
+%We formalize these properties in Section~\ref{sec:analysis} and prove that our protocol provides these guarantees.
+%We intentionally ignore the case where both the requester and the \medname are dishonest.
+%If the requester is dishonest we need to not protect her request, and if the \medname is dishonest we cannot protect the TC system.
 
 
 
