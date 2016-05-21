@@ -1,5 +1,69 @@
-\section{Shrinking the TCB}
-\label{sec:shrinking-tcb}
+\section{TCB Hybirdization}
+\label{sec:tcb-hybridization}
+
+\begin{figure}[ht]
+\begin{boxedminipage}{\columnwidth}
+\begin{center}
+  {\bf $\textsf{prog}_{\textsf{Off}}$: abstraction for Off-Chain TCB}
+\end{center}
+\vspace{-2mm}
+\begin{tabular}{ll}
+  {\bf Initialize:} & $(\pk, \sk) := \Sigma.{\sf KeyGen}(1^\lambda)$\\
+                    & Output $\pk$  \\
+  {\bf Resume:} & On receive (\textsf{req}): \\
+                & {\color{red} Assert $\mathcal{O}_\textsf{auth}$(\textsf{req}) }\\
+                & \textsf{resp} := $f(\textsf{req})$ \\
+                & $\sigma := \Sigma.{\sf Sign}({\sk}, (\textsf{req}, {\sf resp}))$\\
+                & Output $(({\sf req}, {\sf resp}), \sigma)$ \\
+\end{tabular}
+
+\begin{center}
+  {\bf $\mathcal{F}_{\textsf{On}}$: abstraction for On-Chain TCB}
+\end{center}
+\vspace{-2mm}
+\begin{tabular}{ll}
+  {\bf Request:} & On recv $(\textsf{req})$ from some $\reqcont$: \\
+                 & Send $(\textsf{req})$  to $\fsgx[\textsf{prog}_{\textsf{Off}}, \relay]$\\
+
+  {\bf Deliver:} & On recv $((\textsf{req}', \textsf{resp}), \sigma)$ from \fsgx: \\
+                 & {\color{red} $\Sigma$.Verify($((\textsf{req}', \textsf{resp}), \sigma)$) }\\
+                 & // \sgray{can use $\textsf{resp}$ from now on}
+\end{tabular}
+\end{boxedminipage}
+\caption{Hybrid TCB} 
+\label{fig:tcb-hybridization}
+\end{figure}
+
+In a system involving an off-chain trusted execution environment such as SGX
+interacting with a smart contract, its TCB is a hybridization of two
+heterogeneous functionalities with distinct properties.  The SGX part, or the
+off-chain part of the TCB, is computationally powerful and can be executed
+privately. On the other hand, the on-chain part (i.e. the smart contract) is
+relatively slow and costly to perform any computation. Moreover, since the
+execution of smart contracts is transparent, it is impossible to sign or
+authenticate messages from within a smart contract.  Assuming the security of
+trusted hardware and smart contracts, the integrity of both parts is guaranteed.
+The challenge, however, is to establish secure communication channels between them
+and keep the TCB minimal. 
+
+Fig. \ref{fig:tcb-hybridization} depicts the
+ideal functionalities of off-chain and on-chain TCB that we need to realize.
+In Fig. \ref{fig:tcb-hybridization}, we model the authentication of on-chain
+messages by an oracle $\mathcal{O}_\textsf{auth}$, which takes in a message
+and returns a boolean indicating whether the input is indeed present on the
+blockchain. 
+Since the blockchain we are working with is self-authenticated using Merkle
+tree~\fan{ref}, in theory we can to realize $\mathcal{O}_\textsf{auth}$
+by including a Ethereum client in the TCB. But doing so blows the TCB size up 
+significantly \fan{fill in concrete LoC}.
+Similarly, in the other direction a smart contract can
+authenticate the messages coming from an SGX platform by checking the
+signatures signed by $\textsf{prog}_\textsf{Off}$. However implementing
+signature verification in smart contract is error-prone and 
+computationally expensive. Verifying ECDSA signatures
+is supported in Solidity \fan{ref} but still costs extra gas.
+
+\fan{I stopped here.}
 
 As described in Section~\ref{sec:architecture}, \tc has two trusted components: the \encname and \tcont.
 These components must communicate with each other, but can only do so over insecure channels (through the \medname).
