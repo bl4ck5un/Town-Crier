@@ -30,7 +30,9 @@
                  & // \sgray{can use $\textsf{resp}$ from now on}
 \end{tabular}
 \end{boxedminipage}
-\caption{Hybrid TCB} 
+\caption{Systems like \tc have a hybrid TCB. Authentication between two parts can incur large
+TCB size if implemented naively. We proposed tricks to eliminate the expensive parts (
+highlighted in red).}
 \label{fig:tcb-hybridization}
 \end{figure}
 
@@ -38,33 +40,34 @@ In a system involving an off-chain trusted execution environment such as SGX
 interacting with a smart contract, its TCB is a hybridization of two
 heterogeneous functionalities with distinct properties.  The SGX part, or the
 off-chain part of the TCB, is computationally powerful and can be executed
-privately. On the other hand, the on-chain part (i.e. the smart contract) is
-relatively slow and costly to perform any computation. Moreover, since the
-execution of smart contracts is transparent, it is impossible to sign or
-authenticate messages from within a smart contract.  Assuming the security of
-trusted hardware and smart contracts, the integrity of both parts is guaranteed.
-The challenge, however, is to establish secure communication channels between them
-and keep the TCB minimal. 
+privately. On the other hand, the computation in the on-chain part (i.e. the
+smart contract) is relatively slow and costly but verifiable. Moreover,
+since the execution of smart contracts is transparent, it is impossible to sign
+or computing MAC from within a smart contract. Both parts enjoy the integrity guarantee,
+but all interaction must go through an untrusted intermediary. 
+The challenge, therefore, is to establish secure communication channels between
+them and keep the TCB minimal. 
 
 Fig. \ref{fig:tcb-hybridization} depicts the
 ideal functionalities of off-chain and on-chain TCB that we need to realize.
 In Fig. \ref{fig:tcb-hybridization}, we model the authentication of on-chain
 messages by an oracle $\mathcal{O}_\textsf{auth}$, which takes in a message
-and returns a boolean indicating whether the input is indeed present on the
-blockchain. 
+and returns a boolean indicating whether the input is valid.
 Since the blockchain we are working with is self-authenticated using Merkle
-tree~\fan{ref}, in theory we can to realize $\mathcal{O}_\textsf{auth}$
+tree~\fan{ref}, in theory we can realize $\mathcal{O}_\textsf{auth}$
 by including a Ethereum client in the TCB. But doing so blows the TCB size up 
 significantly \fan{fill in concrete LoC}.
 Similarly, in the other direction a smart contract can
 authenticate the messages coming from an SGX platform by checking the
-signatures signed by $\textsf{prog}_\textsf{Off}$. However implementing
-signature verification in smart contract is error-prone and 
+signatures. But implementing
+signature verification in a smart contract is error-prone and 
 computationally expensive. Verifying ECDSA signatures
 is supported in Solidity \fan{ref} but still costs extra gas.
+Therefore we applied two tricks here to eliminate both $\mathcal{O}_\textsf{auth}$
+and signature verification from the TCB.
 
-\fan{I stopped here.}
 
+\iffalse
 As described in Section~\ref{sec:architecture}, \tc has two trusted components: the \encname and \tcont.
 These components must communicate with each other, but can only do so over insecure channels (through the \medname).
 Moreover, these components comprise very different properties.
@@ -75,9 +78,17 @@ The simplest way to ensure authentic communication between the components is to 
 \tcont receives signed messages from the \encname and verifies the signatures,
 and the \encname receives raw blocks and verifies that they are well-formed.
 Unfortunately, both of these verification mechanisms require a large amount of computation and complex code.
+\fi
+
+\paragraph{Eliminating explicit signature verification}
 
 We describe above how we bind the \encname to an Ethereum wallet, which removes the need to do explicit signature verification in \tcont (which would be extremely expensive).
-In order to reduce the cost of this verification inside the \encname, we leverage the fact that all messages from the \encname to \tcont are responses to existing requests.
+\fan{To be filled. Plan to borrow some text from the section (4.3).}
+
+\paragraph{Eliminating $\mathcal{O}_\textsf{auth}$}
+
+\fan{Below is Ethan's text. Plan to make it not TC-specific.}
+In order to reduce the cost of calling $\mathcal{O}_\textsf{auth}$ inside the \encname, we leverage the fact that all messages from the \encname to \tcont are responses to existing requests.
 Instead of verifying the request parameters in the \encname, we can verify in \tcont that the \encname is responding to the correct request.
 For each request, \tcont stores the parameters of that request and the \encname includes the parameters it used to fulfill a request in its response.
 This allows \tcont to check that the parameters match and simply reject the response if they do not.
