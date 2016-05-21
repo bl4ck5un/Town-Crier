@@ -1,6 +1,43 @@
 \section{Gas Sustainability}
 \label{sec:gas-sustainability}
 
+% (Ethan:) I'm working on rewriting and formalizing things. This is scratch space for now.
+%          I'm going to replace what's there after I get this through,
+%          but since I'm editing things on 3 different computers right now, I want to get something partial committed.
+%
+%Recall from Section~\ref{sec:contracts-and-gas} that computation in Ethereum is not free; it employs \emph{gas} to fuel contracts.
+%For a call to a contract, that cost is paid by the user who initiates the transaction, regardless of what other contracts are called as part of execution.
+%This means that any service which initiates calls to Ethereum contracts must spend money to execute those calls.
+%Without careful design, such services run the risk of malicious users draining financial resources by provoking blockchain transactions for which the service will not be reimbursed.
+%In turn, this would lead to the service being unable to serve legitimate requests.
+%It is therefore important the Ethereum-based services ensure that they will always be reimbursed for blockchain computation they initiate.
+%
+%We note that the principle we define here is not Ethereum specific.
+%Any blockchain-based smart contract system must require fees to reimburse miners for performing and verifying computation.
+%If, like in Ethereum, all fees are paid by the user who initiates the computation, then this concern still applies.
+%
+%To ensure that a service is not vulnerable to such attacks, we define a notion of \emph{gas sustainability}.
+%Any service which is gas sustainable will always recoup any expended transaction fees.
+%First we must define what a service consists of in this context.
+%For simplicity, we will assume smart contracts operate on the Ethereum blockchain, but we emphasize that this is not inherent.
+%Notationally, we let $(f(x), W, g)$ denote the wallet $W$ calling the contract function $f$ with input $x$ and supplying $g$ as the {\sf GASLIMIT}.
+%
+%\begin{definition}[Blockchain Service]
+%A \emph{blockchain service} is a set of smart contract functions $f_1, \dotsc, f_n$,
+%a set of wallets $\wallet_1, \dotsc, \wallet_m$,
+%and a predicate $p$ on sequences of requests with the following properties.
+%\begin{enumerate}
+%  \item If ${\cal S} = \{(f_{i_1}(x_1), W_1, g_1), \dotsc, (f_{i_N}(x_N), W_N, g_N)\}$ with $W_j \neq \wallet_k$ for any $k$,
+%    then there exists a (possibly empty) ${\cal S}' = \{(f_{j_1}(y_1), \wallet_{k_1}, h_1), \dotsc, (f_{j_M}(y_M), \wallet_{k_M}, h_M)\}$
+%    such that $p({\cal S} \| {\cal S}') = {\sf true}$.
+%  \item If ${\cal S}_1$ and ${\cal S}_2$ are sequences such that $p({\cal S}_1)$ and $p({\cal S}_2)$, then $p({\cal S}_1 \| {\cal S}_2)$.
+%\end{enumerate}
+%\end{definition}
+
+
+
+
+
 The simplified payment-free protocol in Section~\ref{sec:payment-free-protocol} guarantees authenticity of data for an honest user.
 In Ethereum, however, computation is not free; recall from Section~\ref{sec:contracts-and-gas} that Ethereum employs \emph{gas} to fuel contracts.
 This means that \tc needs enough gas to deliver datagrams, so users must pay a fee to reimburse costs.
@@ -53,8 +90,8 @@ Let $(f_i(x), P, g)$ denote a call to function $f_i$ with input $x$ made by user
 
 \begin{definition}[Gas Sustainability]
   \label{def:gas-sustainability}
-  We say that a service $\displaystyle S = \left(\{f_i\}_1^F, \{\wallet_i\}_1^W\right)$ and protocol are \emph{gas sustainable}
-  if there exist some $K_1, \dotsc, K_W$ such that the following holds.
+  We say that a service $\displaystyle S = \left(\{f_i\}_1^n, \{\wallet_i\}_1^m\right)$ and protocol are \emph{gas sustainable}
+  if there exist some $K_1, \dotsc, K_m$ such that the following holds.
   For all sequences of calls $(f_{i_1}(x_1), P_1, g_1), \dotsc, (f_{i_n}(x_N), P_N, g_N)$ allowable under the protocol with and honest service (and potentially malicious users),
   if ${\sf balance}(\wallet_i) \geq K_i$ for all $1 \leq i \leq m$ prior to the first call,
   then for every $j$ such that $P_j = \wallet_k$ for some $k$, $g_j$ is sufficient to fully execute $f_{i_j}(x_j)$ and $\wallet_k$ contains at least $g_j$ ether between execution $j-1$ and execution $j$.
