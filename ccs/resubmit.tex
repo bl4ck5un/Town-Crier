@@ -256,18 +256,18 @@
 \newcommand{\attcall}{\texttt{attest}\xspace}
 \newcommand{\resumecall}{\texttt{resume}\xspace}
 
-\newcommand{\gas}{\sbrown{\$g}}
-\newcommand{\constgasmin}{\sblue{\$G_\text{min}}}
-\newcommand{\constgasmax}{\sblue{\$G_\text{max}}}
-\newcommand{\constgascancel}{\sblue{\$G_\emptyset}}
-\newcommand{\gasdeliver}{\sbrown{\$g_\text{dvr}}}
-\newcommand{\gasrequest}{\sbrown{\$g_\text{req}}}
-\newcommand{\gascallback}{\sbrown{\$g_\text{clbk}}}
-\newcommand{\gascancel}{\sbrown{\$g_\text{cncl}}}
-\newcommand{\fee}{\smaroon{\$f}}
-\newcommand{\constgasinvokecancel}{\sblue{\$G_\text{cncl}}}
-\newcommand{\constgasrequest}{\sblue{\$G_\text{req}}}
-\newcommand{\consthonestfee}{\sblue{\$F}}
+\newcommand{\gas}{\sbrown{\$g}\xspace}
+\newcommand{\constgasmin}{\sblue{\$G_\text{min}}\xspace}
+\newcommand{\constgasmax}{\sblue{\$G_\text{max}}\xspace}
+\newcommand{\constgascancel}{\sblue{\$G_\emptyset}\xspace}
+\newcommand{\gasdeliver}{\sbrown{\$g_\text{dvr}}\xspace}
+\newcommand{\gasrequest}{\sbrown{\$g_\text{req}}\xspace}
+\newcommand{\gascallback}{\sbrown{\$g_\text{clbk}}\xspace}
+\newcommand{\gascancel}{\sbrown{\$g_\text{cncl}}\xspace}
+\newcommand{\fee}{\smaroon{\$f}\xspace}
+\newcommand{\constgasinvokecancel}{\sblue{\$G_\text{cncl}}\xspace}
+\newcommand{\constgasrequest}{\sblue{\$G_\text{req}}\xspace}
+\newcommand{\consthonestfee}{\sblue{\$F}\xspace}
 
 \newcommand{\msgi}[1]{\ensuremath{\textbf{msg}.m_{#1}}}
 
@@ -290,7 +290,8 @@
 \input{protocol}
 \input{shrinking}
 \input{gas-sustainability}
-\input{enhanced_protocol}
+%\input{enhanced_protocol}
+\input{protocol-new}
 \input{analysis}
 \input{applications}
 \input{experiments}

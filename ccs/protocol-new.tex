@@ -1,0 +1,219 @@
+
+\section{Town Crier Protocol}
+\label{sec:protocol}
+
+We now present some preliminaries followed by the \tc protocol.
+For simplicity, we assume a single instance of \engine, although our architecture could scale up to multiple enclaves and even server instances.
+
+To ensure gas sustainability, we require that requesters make gas payments up front as ether.
+\tcont then reimburses the gas costs of \tc.
+By having a trusted component perform the reimbursement, we are also able to guarantee that a malicious \tc cannot steal an honest user's money without delivering valid data.
+
+\paragraph{Notation.}
+We use $(\msgi{i})$ to label messages corresponding to those in Fig.~\ref{fig:dataflow}.
+For payment, let $\gas$ denote gas and $\fee$ to denote non-gas currency.
+In both cases \$ is a type annotation and the letter denotes the numerical amount.
+For simplicity, we assume that gas and currency adopt the same units (allowing us to avoid explicit conversions).
+We use the following identifiers to denote currency and gas amounts.
+%
+\begin{center}
+\vspace{-1em}
+\begin{tabular}{m{0.08\columnwidth}m{0.85\columnwidth}}
+  \hline
+  $\fee$
+  & Currency a requester deposits to refund \tcs's gas expenditure to deliver a datagram \\
+  \hline
+  $\gasrequest$ $\gasdeliver$ $\gascancel$
+  & {\tt GASLIMIT} when invoking {\bf Request}, {\bf Deliver}, or {\bf Cancel}, respectively \\
+  \hline
+  $\gascallback$
+  & {\tt GASLIMIT} for $\dgcallback$ while executing {\bf Deliver}, set to the max value that can be reimbursed \\
+  \hline
+  $\constgasmin$
+  & Gas required for {\bf Deliver} excluding $\dgcallback$ \\
+  \hline
+  $\constgasmax$
+  & Maximum gas \tc can provide to invoke {\bf Deliver} \\
+  \hline
+  $\constgasinvokecancel$
+  & Gas needed to invoke {\bf Cancel} \\
+  \hline
+  $\constgascancel$
+  & Gas needed for {\bf Deliver} on a canceled request \\
+  \hline
+\end{tabular}
+\end{center}
+%
+$\constgasmin$, $\constgasmax$, $\constgasinvokecancel$, and $\constgascancel$ are system constants,
+$\fee$ is chosen by the requester (and may be malicious if the requester is dishonest),
+and $\gasdeliver$ is chosen by the \tc~\encname when calling {\bf Deliver}.
+Though $\gasrequest$ and $\gascancel$ are set by the requester, Ethereum will abort a user-initiated transaction if they are too small, so we need not worry about the values.
+
+\paragraph{Initialization.}
+\tc deposits at least $\constgasmax$ into the $\tcadd$.
+
+\paragraph{The \tcontract \tcont.}
+The \tcontract accepts a datagram request with fee \fee from \reqcont, assigns it a unique \dgid, and records it.
+The \tcs\ \medname\ \relay monitors requests and forwards them to the \encname.
+As we discussed in Section~\ref{sec:shrinking-tcb}, upon receipt of a response from \tcadd, \tcont verifies that $\dgform' = \dgform$ to ensure validity.
+If the request is valid, \tcont forwards the resulting datagram \dgm by calling the \dgcallback specified in the initial request.
+To ensure that all gas spent can be reimbursed, \tcont sets $\gascallback := \fee = \constgasmin$ for this sub-call.
+\tcont is specified fully in Fig.~\ref{fig:tc-contract}. Here, Call denotes a call to a contact entry point. 
+
+\begin{figure}[h!]
+\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
+  \hline
+
+  \multicolumn{2}{|c|}{{\bf \tcs blockchain contract \tcont with fees}} \\[1ex]
+
+  \multicolumn{2}{|@{\hspace{3pt}}l|}{{\bf Initialize:} $\text{Counter} := 0$} \\[1ex]
+
+  {\bf Request:} & On recv $({\sf params}, {\sf callback}, \fee, \gasrequest)$ from some $\reqcont$: \\
+                 & Assert $\constgasmin \leq \fee \leq \constgasmax$ \\
+                 & $\dgid := \text{Counter}$; \ \ $\text{Counter} := \text{Counter} + 1$ \\
+                 & Store $(\dgid, \dgform, \dgcallback, \fee, \reqcont)$ \hfill \sgray{\it //\;\msgi{1}} \\[-0.9em]
+                 & {\it \sgray{//~$\fee$ held by contract}} \\[0.3em]
+
+  {\bf Deliver:} & On recv $(\dgid, \dgform, \dgm, \gasdeliver)$ from $\tcadd$: \\
+   \sgray{$(1)$} & If ${\sf isCanceled}[\dgid]$ and not ${\sf isDelivered}[\dgid]$ \\
+                 & \quad Set ${\sf isDelivered}[\dgid]$ \\
+   \sgray{$(2)$} & \quad Send $\constgascancel$ to $\tcadd$ \\
+                 & \quad Return \\
+                 & Retrieve stored $(\dgid, \dgform', \dgcallback, \fee, \_)$ \\[-0.1em]
+                 & \quad \sgray{\it //~abort if not found} \\
+                 & Assert $\dgform = \dgform'$ and $\fee \leq \gasdeliver$ \\
+                 & \quad and ${\sf isDelivered}[\dgid]$ not set \\
+                 & Set ${\sf isDelievered}[\dgid]$ \\
+   \sgray{$(3)$} & Send $\fee$ to \tcadd \\
+                 & Set $\gascallback := \fee - \constgasmin$ \\
+   \sgray{$(4)$} & Call $\dgcallback(\dgm)$ with gas $\gascallback$ \hfill \sgray{\it //\;\msgi{4}} \\[0.3em]
+
+  {\bf Cancel:}  & On recv $(\dgid, \gascancel)$ from $\reqcont$: \\
+                 & Retrieve stored $(\dgid, \_, \_, \fee, \reqcont')$ \\[-0.1em]
+                 & \quad \sgray{\it //~abort if not found} \\
+                 & Assert $\reqcont = \reqcont'$ and $\fee \geq \constgascancel$ \\
+                 & \quad and ${\sf isDelivered}[\dgid]$ not set \\
+                 & \quad and ${\sf isCanceled}[\dgid]$ not set \\
+                 & Set ${\sf isCanceled}[\dgid]$ \\
+   \sgray{$(5)$} & Send $(\fee - \constgascancel)$ to $\reqcont$ \sgray{\it //~hold $\constgascancel$} \\
+  \hline
+\end{tabularx}
+\caption{
+\tc contract \tcont reflecting fees.
+The last argument of each function is the {\tt GASLIMIT} provided.
+}
+\label{fig:tc-contract}
+\end{figure}
+
+\paragraph{The \medname \relay.}
+As noted in Section~\ref{sec:architecture},
+\relay bridges the gap between the \encname and the blockchain in three ways.
+\begin{enumerate}[leftmargin=1.5em]
+  \setlength{\itemsep}{0pt}
+  \setlength{\parskip}{0pt}
+  \setlength{\parsep}{0pt}
+  \item It scrapes the blockchain and monitors \tcont for new requests $(\dgid, \dgform)$.
+  \item It boots the \encname with $\engine.{\bf Initialize}()$ and calls $\engine.{\bf Resume}(\dgid, \dgform)$ on incoming requests.
+  \item It forwards datagrams from \engine to the blockchain.
+\end{enumerate}
+Recall that it forwards already-signed transacations to the blockchain as \tcadd.
+The program for \relay is shown in Fig.~\ref{fig:relayprotocol}.
+The function {\sf AuthSend} inserts a transaction to blockchain (``as $\tcadd$'' means the transaction is already signed with $\skTC$).
+An honest \medname will invoke \engine.{\bf Resume} exactly once with the parameters of each valid request and never otherwise.
+
+\begin{figure}[h!]
+\begin{tabularx}{\linewidth}{|@{\hspace{3pt}}p{1em}@{\hspace{1ex}}X@{\hspace{3pt}}|}
+  \hline
+
+  \multicolumn{2}{|c|}{\bf Program for Town Crier \medname $\relay$} \\[1ex]
+
+  \multicolumn{2}{|l|}{\bf Initialize:} \\
+                    & Send \initcall to $\fsgx[\enclaveprog, \relay]$ \\
+                    & On recv $(\pkTC, \sigatt)$ from $\fsgx[\enclaveprog, \relay]$: \\
+                    & \quad Publish $(\pkTC, \sigatt)$ \\[1ex]
+
+  \multicolumn{2}{|l|}{{\bf Handle}$(\dgid, \dgform)$:} \\
+                    & Parse \dgform as $(\_, \_, T)$ \\
+                    & Wait until ${\sf clock}() \geq T.{\sf min}$ \\
+                    & Send $(\text{\resumecall}, \dgid, \dgform)$ to $\fsgx[\enclaveprog, \relay]$ \\
+                    & On recv $((\dgid, \dgform, \dgm), \sigma)$ from \\ & $\fsgx[\enclaveprog, \relay]$: \\
+                    & \quad  {\sf AuthSend} $(\dgid, \dgform, \dgm)$ to \tcont as \tcadd \\
+                    & \qquad \sgray{\it //\;\msgi{3}} \\[1ex]
+
+  \multicolumn{2}{|l|}{\bf Main:} \\
+                    & Loop Forever: \\
+                    & \quad Wait for \tcont to records request $(\dgid, \dgform, \_, \_, \_)$: \\
+                    & \quad Fork a process of {\bf Handle}$(\dgid, \dgform)$ \\
+                    & End \\
+
+  \hline
+\end{tabularx}
+\caption{The Town Crier \medname \relay.}
+\label{fig:relayprotocol}
+\end{figure}
+
+\paragraph{The \encname \engine.}
+When initialized through {\bf Initialize}(), \engine ingests the current wall-clock time;
+by storing this time and setting a clock reference point, it calibrates its absolute clock.
+It generates an ECDSA keypair $(\pkTC,\skTC)$ (parameterized as in Ethereum), where $\pkTC$ is bound to the \engine instance through insertion into attestations.
+
+Upon a call to {\bf Resume}$({\sf id}, {\sf params})$, \engine contacts the data source specified by {\sf params} via HTTPS and checks that the corresponding certificate {\sf cert} is valid.
+(We discuss certificate checking in Appendix~\ref{sec:impl}.)
+Then \engine fetches the requested datagram and returns it to \relay along with \dgform and \dgid, all digitally signed with \skTC and a {\tt GASLIMIT} $\gasdeliver := \constgasmax$.
+Fig.~\ref{fig:engineprotocol} shows the protocol for \engine.
+
+\begin{figure}[!h]
+\begin{boxedminipage}{\columnwidth}
+\begin{center}
+{\bf Program for \tcs~\encname ($\enclaveprog$)} \\[-0.5em]
+\end{center}
+\begin{tabular}{l}
+  {\bf Initialize}\,$({\sf void})$ \\ %{\it //~called only once upfront}\\
+    \quad \sgray{\it// Subroutine call from $\fsgx$, which attests to}\\ 
+    \quad \sgray{\it// $\enclaveprog$ and $\pkTC$. See Figure~\ref{fig:SGX_abstraction}.} \\
+    \quad $(\pkTC, \skTC) := \Sigma.{\sf KeyGen}(1^\lambda)$\\
+    \quad Output $\pkTC$ \\[3pt]
+
+  {\bf Resume}\,$(\dgid, \dgform)$\\
+    \quad Parse ${\sf params}$ as $(\weburl, \dgspec, T) $:\\
+    \quad Assert $\clock() \geq T.{\sf min}$\\
+    \quad Contact $\weburl$ via HTTPS, obtaining ${\sf cert}$ \\
+    \quad Verify {\sf cert} is valid for time $\clock()$\\
+    \quad Obtain webpage $w$ from $\weburl$ \\
+    \quad Assert $\clock() \leq T.{\sf max}$\\
+    \quad Parse $w$ to extract \dgm with specification \dgspec \\
+    \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, ({\sf id}, {\sf params}, {\sf data}))$\\
+    \quad $\gasdeliver := \constgasmax$ \\
+    \quad Output $(({\sf id}, {\sf params}, {\sf data}, \gasdeliver), \sigma)$
+\end{tabular}
+\end{boxedminipage}
+\caption{The \tcs\ \encname \engine.}
+\label{fig:engineprotocol}
+\end{figure}
+
+\paragraph{The Requester Contract $\reqcont$.}
+An honest request first follows the protocol in Fig.~\ref{fig:att_check} to verify the SGX attestation.
+Then she prepares $\dgform$ and $\dgcallback$, sets $\gasrequest$ to the cost of {\bf Request} with $\dgform$,
+sets $\fee$ to $\constgasmin$ plus the cost of executing $\dgcallback$,
+and invokes ${\bf Request}(\dgform, \dgcallback, \fee)$ with {\tt GASLIMIT} $\gasrequest$.
+
+If \dgcallback is not executed, she can invoke ${\bf Cancel}(\dgid)$ with {\tt GASLIMIT} $\constgasinvokecancel$ to receive a partial refund.
+An honest requester will invoke {\bf Cancel} at most once for each of her requests and never for any other user's request.
+
+\subsection{Private and Custom Datagrams}
+\label{subsec:private_datagrams}
+In addition to ordinary datagrams, \tc supports \emph{private datagrams}, which are requests where $\dgform$ includes ciphertexts under $\pkTC$. Private datagrams can thus enable confidentiality-preserving applications despite the public readability of the blockchain.  \emph{Custom datagrams}, also supported by \tc, allow a contract to specify a particular web-scraping target, potentially involving multiple interactions, and thus greatly expand the range of possible relying contracts for \tc. We do not treat them in our security proofs, but give examples of both datagram types in Section~\ref{sec:applications}.
+
+\subsection{Enhanced Robustness via Replication}
+\label{subsec:enhanced_robustness}
+Our basic security model for \tc assumes the ideal isolation model for SGX described above as well as client trust in data sources. Given various concerns about SGX security~\cite{sgxexplained,7163052} and the possible fallibility of data sources, we examine two important ways \tc can support hedging.
+To protect against the compromise of a single SGX instance, contracts may request datagrams from multiple SGX instances and implement majority voting among the responses.
+This hedge requires increased gas expenditure for additional requests and storage of returned data.
+Similarly, \tc can hedge against the compromise of a data source by scraping multiple sources for the same data and selecting the majority response. We demonstrate both of these mechanisms in our example financial derivative application in Section~\ref{subsec:hedging}. (A potential optimization is mentioned in Appendix~\ref{sec:future}.)
+
+
+\subsection{Implementation Details}
+We implemented a full version of the \tc protocol in a complete, end-to-end system using Intel SGX and Ethereum. Due to space constraints, 
+we defer discussion of implementation details and other practical considerations to 
+Appendix \ref{sec:impl}.
+
