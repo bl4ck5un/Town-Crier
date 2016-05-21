@@ -1,0 +1,33 @@
+\section{Shrinking the TCB}
+\label{sec:shrinking-tcb}
+
+As described in Section~\ref{sec:architecture}, \tc has two trusted components: the \encname and \tcont.
+These components must communicate with each other, but can only do so over insecure channels (through the \medname).
+Moreover, these components comprise very different properties.
+\tcont resides on the blockchain where users can interact directly with \tc and all computation is verifiable, expensive, and transparent.
+The \encname provides a private and less expensive environment, but all interaction (user or otherwise) must go through an untrusted intermediary.
+
+The simplest way to ensure authentic communication between the components is to have both perform verification;
+\tcont receives signed messages from the \encname and verifies the signatures,
+and the \encname receives raw blocks and verifies that they are well-formed.
+Unfortunately, both of these verification mechanisms require a large amount of computation and complex code.
+
+We describe above how we bind the \encname to an Ethereum wallet, which removes the need to do explicit signature verification in \tcont (which would be extremely expensive).
+In order to reduce the cost of this verification inside the \encname, we leverage the fact that all messages from the \encname to \tcont are responses to existing requests.
+Instead of verifying the request parameters in the \encname, we can verify in \tcont that the \encname is responding to the correct request.
+For each request, \tcont stores the parameters of that request and the \encname includes the parameters it used to fulfill a request in its response.
+This allows \tcont to check that the parameters match and simply reject the response if they do not.
+Because storing parameters and checking equality are extremely simple, this removes a complex verification step from the TCB.
+
+While this may appear to open some attack (e.g., the \medname can send bogus requests and the \encname will attempt to respond),
+all of these attacks amount to DoS attacks from the network or the \medname---attacks to which we were already susceptible.
+
+We note that this technique is actually quite general.
+Given any system with two trusted components communicating over an insecure channel, if one component only response to requests from the other,
+the requesting component can store parameters and the responding component can include them in a response.
+This allows the responding component to omit integrity verification on its incoming requests without compromising the integrity of the system as a whole.
+
+
+
+
+
