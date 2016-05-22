@@ -5,6 +5,7 @@
 \newcommand{\tcboff}{\ensuremath{\textsf{prog}_{\textsf{Off}}}\xspace}
 \newcommand{\tcbon}{\ensuremath{\mathcal{F}_{\textsf{On}}}\xspace}
 \newcommand{\oauth}{\ensuremath{\mathcal{O}_{\textsf{Auth}}}\xspace}
+\newcommand{\pkoff}{\ensuremath{\textsf{pk}_{\textsf{Off}}}\xspace}
 
 \begin{figure}[ht]
 \begin{boxedminipage}{\columnwidth}
@@ -67,20 +68,23 @@ Fig. \ref{fig:tcb-hybridization} depicts the
 ideal functionalities of off-chain and on-chain TCB that we need to realize.
 In Fig. \ref{fig:tcb-hybridization}, we model the authentication of on-chain
 messages by an oracle \oauth, which takes in a message
-and returns a boolean indicating whether the input is valid.
-Since the blockchain we are working with is self-authenticated using Merkle
-tree~\fan{ref}, in theory we can realize \oauth
+and returns a boolean indicating whether the input is a valid 
+transaction on the blockchain.
+Since Ethereum blockchain is self-authenticated using Merkle
+tree~\cite{ethereum}, in theory we can realize \oauth
 by including a Ethereum client in the TCB. But doing so blows the TCB size up 
-significantly \fan{fill in concrete LoC}.
-Similarly, in the other direction a smart contract can
-authenticate the messages coming from an SGX platform by checking the
-signatures. But implementing
+significantly (the core of Ethereum implements contains about 50k lines of C/C++ code).
+Similarly, in the opposite direction a smart contract can
+authenticate messages coming from an SGX by checking 
+attestations. But implementing
 signature verification in a smart contract is error-prone and 
-computationally expensive. Verifying ECDSA signatures
-is supported in Solidity \fan{ref} but still costs extra gas.
-Therefore we applied two tricks here to eliminate both \oauth
-and explicit signature verification from the TCB.
-
+computationally expensive. Verification of ECDSA signatures
+happens to be supported in Ethereum via a precompiled contract~\cite{ethereum}
+but still costs extra gas.
+Therefore we proposed two techniques that eliminate both \oauth
+and explicit signature verification from the TCB. These techniques 
+are quite general and can be applied to any system involving
+such a hybrid TCB.
 
 \iffalse
 As described in Section~\ref{sec:architecture}, \tc has two trusted components: the \encname and \tcont.
@@ -118,11 +122,11 @@ already susceptible.
 \paragraph{Eliminating explicit signature verification
 by binding \tcboff to an Ethereum wallet \tcadd}
 
-Unlike in off-chain TCB, computation in on-chain TCB is so slow and expensive, which
+Unlike in off-chain TCB, computation in on-chain TCB is so slow and expensive that 
 essentially eliminates the possibility of implementing any digital signature
 verification (e.g. Intel's EPID) as part of the smart contract.
 Although ECDSA signature verification happens to be supported in Ethereum via
-precompiled contracts \fan{ref to YP}, but it still costs extra gas.
+precompiled contracts~\cite{ethereum}, but it still costs extra gas.
 We'll describe below how we can bind the identity of \tcboff 
 to an Ethereum wallet, which removes
 the need to do any form of explicit signature verification in \tcbon.
@@ -135,21 +139,21 @@ signatures on transactions from externally owned accounts (i.e., users interact
 with the Ethereum blockchain through an authenticated channel), we can 
 piggyback verification of \tcboff signatures on top of Ethereum's
 already existing transaction signature verification mechanism.  Very simply,
-the \tcboff creates \tcadd with the fresh public key \pk known only to 
-\tcboff itself. 
+the \tcboff creates \tcadd with a fresh public key \pkoff whose
+secret key is known only to \tcboff itself. 
 
-To make this idea work fully, the public key $\pk$ must be hardcoded into
+To make this idea work fully, the public key $\pkoff$ must be hardcoded into
 \tcbon. A client creating or relying on a contract that uses \tcbon is
-responsible for making sure that this hardcoded $\pk$ has an appropriate SGX
+responsible for making sure that this hardcoded $\pkoff$ has an appropriate SGX
 attestation before interacting with the $\tcbon$.  Let {\sf
 Verify} denote a verification algorithm for EPID signatures.
 Fig.~\ref{fig:att_check} gives the protocol for a client to check that \tcbon is
 backed by a valid \tcboff instance. (We omit modeling here of IAS online
 revocation checks.)
 
-In summary, then, we may assume in our protocol specifications that {\em relying
+In summary, then, we may assume in our protocol specifications that relying
 clients have verified an attestation for \tcboff and thus that datagram
-responses sent from \tcadd to \tcbon are trusted to originate from \tcboff},
+responses sent from \tcadd to \tcbon are trusted to originate from \tcboff,
 thus eliminating the need to do costly EPID signature verification in \tcbon.
 
 We note that this technique is actually quite general.  Given any system with
@@ -166,16 +170,16 @@ requests without compromising the integrity of the system as a whole.
 \end{center}
 \vspace{-1ex}
 \begin{tabular}{l}
-{\bf {\em Inputs}}: $\pkM$, $\pkTC$, $\enclaveprog$, $\sigatt$ \\[5pt]
+{\bf {\em Inputs}}: $\pkM$, $\pkoff$, $\tcboff$, $\sigatt$ \\[5pt]
 {\bf Verify:} \\
-Assert $\enclaveprog$ is the expected enclave code\\
-Assert $\sigsgx.{\sf Verify}(\pkM, \sigatt, (\enclaveprog, \pkTC))$ \\
-Assert \tcont is correct and parametrized w/ \pkTC\\
-\sgray{\it //~now okay to rely on \tcont}
+Assert $\pkoff$ is the expected enclave code\\
+Assert $\sigsgx.{\sf Verify}(\pkM, \sigatt, (\tcboff, \pkoff))$ \\
+Assert \tcbon is correct and parametrized w/ \pkoff\\
+\sgray{\it //~now okay to rely on \tcbon}
 \end{tabular}
 \end{boxedminipage}
-\caption{A client checks an SGX attestation on the enclave's code $\enclaveprog$ and public key $\pkTC$.
-  The client also checks that $\pkTC$ is hardcoded into \tc blockchain contract \tcont before using \tcont.
-} 
+\caption{A client checks an SGX attestation on the enclave's code $\tcboff$
+and public key $\pkoff$.  The client also checks that $\pkoff$ is hardcoded into
+blockchain contract \tcbon before using \tcbon.  } 
 \label{fig:att_check}
 \end{figure}
