@@ -880,7 +880,7 @@
     \vskip 1.5em               % Vertical space after author.
    \end{center}}
  \dimen0=\ht\@acmtitlebox
- \advance\dimen0 by -12.75pc\relax % Increased space for title box -- KBT
+ \advance\dimen0 by -9.75pc\relax % Increased space for title box -- KBT
  \unvbox\@acmtitlebox
  \ifdim\dimen0<0.0pt\relax\vskip-\dimen0\fi}
 \fi
