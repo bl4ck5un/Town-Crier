@@ -33,8 +33,8 @@ The need for gas sustainability (with $K > 0$, as required by \tc) informs our p
 \label{sec:tcb-hybridization}
 
 %% some macros used within this doc
-\newcommand{\tcboff}{\ensuremath{\mathcal{A}_{\textsf{Off}}}\xspace}
-\newcommand{\tcbon}{\ensuremath{\mathcal{A}_{\textsf{On}}}\xspace}
+\newcommand{\tcboff}{\ensuremath{\mathcal{C}_{\textsf{Off}}}\xspace}
+\newcommand{\tcbon}{\ensuremath{\mathcal{C}_{\textsf{On}}}\xspace}
 \newcommand{\oauth}{\ensuremath{\mathcal{O}_{\textsf{Auth}}}\xspace}
 \newcommand{\pkoff}{\ensuremath{\textsf{pk}_{\textsf{Off}}}\xspace}
 
@@ -94,7 +94,7 @@ An SGX enclave is computationally powerful and executes privately, but all exter
 %The challenge, therefore, is to establish secure communication channels between
 %them and keep the TCB minimal. 
 
-We define abstractions for both TCB components in Fig.~\ref{fig:tcb-hybridization}. To distinguish these abstractions from formal ideal functionalities, we denote them by $\mathcal{A}$, rather than $\mathcal{F}$.
+We define abstractions for both TCB components in Fig.~\ref{fig:tcb-hybridization}. To distinguish these abstractions from formal ideal functionalities, we denote them by $\mathcal{C}$ (for component), rather than $\mathcal{F}$.
 We model the authentication of on-chain messages by an oracle \oauth, which treturns true if an input is a valid blockchain transaction.
 Since Ethereum blocks are self-authenticated using Merkle trees \cite{whitepaper,yellowpaper},
 in principle we can realize \oauth by including an Ethereum client in the TCB.
