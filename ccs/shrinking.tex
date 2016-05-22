@@ -12,37 +12,37 @@
 \begin{center}
   {\bf \tcboff: abstraction for off-chain TCB}
 \end{center}
-\vspace{-2mm}
+\vspace{-1ex}
 \begin{tabular}{l}
   {\bf Initialize}(\textsf{void}):  \\
     \quad $(\pk, \sk) := \Sigma.{\sf KeyGen}(1^\lambda)$\\
-    \quad Output $\pk$  \\[2mm]
-  {\bf Resume}(\textsf{req}): \\
+    \quad Output $\pk$  \\[1ex]
 
-  \quad {\color{red} Assert \oauth (\textsf{req}) }\\
-  \quad \textsf{resp} := $f(\textsf{req})$ \\
-  \quad $\sigma := \Sigma.{\sf Sign}({\sk}, (\textsf{req}, {\sf resp}))$\\
-  \quad Output $(({\sf req}, {\sf resp}), \sigma)$ \\
+  {\bf Resume}(\textsf{req}): \\
+    \quad {\color{red} Assert $\oauth ({\sf req})$}\\
+    \quad \textsf{resp} := $f(\textsf{req})$ \\
+    \quad $\sigma := \Sigma.{\sf Sign}({\sk}, (\textsf{req}, {\sf resp}))$\\
+    \quad Output $(({\sf req}, {\sf resp}), \sigma)$ \\
 \end{tabular}
 
 \begin{center}
   {\bf \tcbon: abstraction for on-chain TCB}
 \end{center}
-\vspace{-2mm}
+\vspace{-1ex}
 \begin{tabular}{l}
   {\bf Request:} \\ 
-  On recv $(\textsf{req})$ from some $\reqcont$: \\
-  \quad Send $(\textsf{req})$  to $\fsgx[\textsf{prog}_{\textsf{Off}}, \relay]$\\[2mm]
+    On recv $(\textsf{req})$ from some $\reqcont$: \\
+    \quad Send $(\textsf{req})$  to $\fsgx[\textsf{prog}_{\textsf{Off}}, \relay]$\\[1ex]
 
   {\bf Deliver:} \\
-  On recv $((\textsf{req}', \textsf{resp}), \sigma)$ from \fsgx: \\
-  \quad {\color{red} $\Sigma$.Verify($((\textsf{req}', \textsf{resp}), \sigma)$) }\\
-  \quad // \sgray{can use $\textsf{resp}$ from now on}
+    On recv $((\textsf{req}', \textsf{resp}), \sigma)$ from \fsgx: \\
+    \quad {\color{red} $\Sigma.{\sf Verify}((\textsf{req}', \textsf{resp}), \sigma)$} \\
+    \quad \sgray{//~can now use {\sf resp} as trusted}
 \end{tabular}
 \end{boxedminipage}
-\caption{Systems like \tc have a hybrid TCB. Authentication between two parts
-can incur large TCB size if implemented naively. We proposed tricks to eliminate
-the expensive parts (highlighted in red).}
+\caption{Systems like \tc have a hybrid TCB. Authentication between two components
+can greatly increase TCB complexity of implemented naively.
+We propose techniques to eliminate the most expensive operations (highlighted in red).}
 \label{fig:tcb-hybridization}
 \end{figure}
 
@@ -50,7 +50,7 @@ In a system involving a smart contract interacting with an off-chain trusted com
 the TCB is a hybridization of two components with distinct properties.
 Computation in the smart contract is slow, costly, and completely transparent, meaning it cannot rely on secrets.
 An SGX is computationally powerful and executes privately, but all external interaction, notably including communication with the contract, must go through an untrusted intermediary.
-This presents a challenge to establishing secure communication between the components while minimizing the TCB to allow for easier correctness analysis.
+This presents a challenge to establishing secure communication between the components while minimizing the code in the TCB.
 
 %In a system involving an off-chain trusted execution environment such as SGX
 %interacting with a smart contract, its TCB is a hybridization of two
@@ -64,104 +64,76 @@ This presents a challenge to establishing secure communication between the compo
 %The challenge, therefore, is to establish secure communication channels between
 %them and keep the TCB minimal. 
 
-Fig. \ref{fig:tcb-hybridization} depicts the
-ideal functionalities of off-chain and on-chain TCB that we need to realize.
-In Fig. \ref{fig:tcb-hybridization}, we model the authentication of on-chain
-messages by an oracle \oauth, which takes in a message
-and returns a boolean indicating whether the input is a valid 
-transaction on the blockchain.
-Since Ethereum blockchain is self-authenticated using Merkle
-tree~\cite{ethereum}, in theory we can realize \oauth
-by including a Ethereum client in the TCB. But doing so blows the TCB size up 
-significantly (the core of Ethereum implements contains about 50k lines of C/C++ code).
-Similarly, in the opposite direction a smart contract can
-authenticate messages coming from an SGX by checking 
-attestations. But implementing
-signature verification in a smart contract is error-prone and 
-computationally expensive. Verification of ECDSA signatures
-happens to be supported in Ethereum via a precompiled contract~\cite{ethereum}
-but still costs extra gas.
-Therefore we proposed two techniques that eliminate both \oauth
-and explicit signature verification from the TCB. These techniques 
-are quite general and can be applied to any system involving
-such a hybrid TCB.
+We begin by defining ideal functionalities of both TCB components, shown in Fig.~\ref{fig:tcb-hybridization}.
+We model the authentication of on-chain messages by an oracle \oauth, which takes a message and returns true if the input is a valid blockchain transaction.
+Since Ethereum blocks are self-authenticated using Merkle trees \cite{whitepaper,yellowpaper},
+in principle we can realize \oauth by including an Ethereum client in the TCB.
+However, doing so drastically increases the code footprint, as the core Ethereum implementation is about 50k lines of C++.
+Similarly, a smart contract could authenticate messages from an SGX by checking attestations.
+But implementing this verification in a smart contract would be error-prone and computationally (and thus financially) expensive.
 
-\iffalse
-As described in Section~\ref{sec:architecture}, \tc has two trusted components: the \encname and \tcont.
-These components must communicate with each other, but can only do so over insecure channels (through the \medname).
-Moreover, these components comprise very different properties.
-\tcont resides on the blockchain where users can interact directly with \tc and all computation is verifiable, expensive, and transparent.
-The \encname provides a private and less expensive environment, but all interaction (user or otherwise) must go through an untrusted intermediary.
+Instead we propose two general techniques to avoid these calls.
+The first applies to any hybrid system where one TCB component is a blockchain contract.
+The second applies to any hybrid system where the TCB components communicate only to make and respond to requests.
 
-The simplest way to ensure authentic communication between the components is to have both perform verification;
-\tcont receives signed messages from the \encname and verifies the signatures,
-and the \encname receives raw blocks and verifies that they are well-formed.
-Unfortunately, both of these verification mechanisms require a large amount of computation and complex code.
-\fi
-
-
-\paragraph{Eliminating \oauth}
-
-In order to reduce
-the cost of calling \oauth inside the \tcboff, we leverage
-the fact that all messages from the \tcboff to \tcbon  are responses to existing
-requests.  Instead of verifying the request parameters in the \tcboff, we can
-verify in \tcbon that the \tcboff is responding to the correct request.  For
-each request, \tcbon stores the parameters of that request and the \tcboff
-includes the parameters it used to fulfill a request in its response.  This
-allows \tcbon to check that the parameters match and simply reject the response
-if they do not.  Because storing parameters and checking equality are extremely
-simple, this removes a complex verification step from the TCB.
-
-While this may appear to open some attack (e.g., the \medname can send bogus
-requests and the \tcboff will attempt to respond), all of these attacks amount
-to DoS attacks from the network or the \medname---attacks to which we were
-already susceptible.
+%Fig. \ref{fig:tcb-hybridization} depicts the
+%ideal functionalities of off-chain and on-chain TCB that we need to realize.
+%In Fig. \ref{fig:tcb-hybridization}, we model the authentication of on-chain
+%messages by an oracle \oauth, which takes in a message
+%and returns a boolean indicating whether the input is a valid 
+%transaction on the blockchain.
+%Since Ethereum blockchain is self-authenticated using Merkle
+%tree~\cite{yellowpaper}, in theory we can realize \oauth
+%by including a Ethereum client in the TCB. But doing so blows the TCB size up 
+%significantly (the core of Ethereum implements contains about 50k lines of C/C++ code).
+%Similarly, in the opposite direction a smart contract can
+%authenticate messages coming from an SGX by checking 
+%attestations. But implementing
+%signature verification in a smart contract is error-prone and 
+%computationally expensive. Verification of ECDSA signatures
+%happens to be supported in Ethereum via a precompiled contract~\cite{yellowpaper}
+%but still costs extra gas.
+%Therefore we proposed two techniques that eliminate both \oauth
+%and explicit signature verification from the TCB. These techniques 
+%are quite general and can be applied to any system involving
+%such a hybrid TCB.
+%
+%\iffalse
+%As described in Section~\ref{sec:architecture}, \tc has two trusted components: the \encname and \tcont.
+%These components must communicate with each other, but can only do so over insecure channels (through the \medname).
+%Moreover, these components comprise very different properties.
+%\tcont resides on the blockchain where users can interact directly with \tc and all computation is verifiable, expensive, and transparent.
+%The \encname provides a private and less expensive environment, but all interaction (user or otherwise) must go through an untrusted intermediary.
+%
+%The simplest way to ensure authentic communication between the components is to have both perform verification;
+%\tcont receives signed messages from the \encname and verifies the signatures,
+%and the \encname receives raw blocks and verifies that they are well-formed.
+%Unfortunately, both of these verification mechanisms require a large amount of computation and complex code.
+%\fi
 
 
-\paragraph{Eliminating explicit signature verification
-by binding \tcboff to an Ethereum wallet \tcadd}
+\paragraph{Binding \tcboff to \tcadd.}
+Due to the speed and cost of computation in the on-chain TCB, we wish to avoid implementing signature verification (e.g. Intel's EPID).
+There does exist a precompiled Ethereum contract to verify ECDSA signatures \cite{yellowpaper}, but the operation requires a high gas cost.
+Instead, we describe here how to bind the identity of \tcboff to an Ethereum wallet, which allows \tcbon to simply check the message sender,
+which is already verified as part of Ethereum's transaction protocol.
 
-Unlike in off-chain TCB, computation in on-chain TCB is so slow and expensive that 
-essentially eliminates the possibility of implementing any digital signature
-verification (e.g. Intel's EPID) as part of the smart contract.
-Although ECDSA signature verification happens to be supported in Ethereum via
-precompiled contracts~\cite{ethereum}, but it still costs extra gas.
-We'll describe below how we can bind the identity of \tcboff 
-to an Ethereum wallet, which removes
-the need to do any form of explicit signature verification in \tcbon.
+The key observation is that information can only be inserted into the Ethereum blockchain as transactions from a wallet.
+thus, the only way the \medname can relay messages from \tcboff to \tcbon is through a wallet \tcadd.
+Since Ethereum itself already verifies signatures on transactions (i.e., users interact with Ethereum through an authenticated channel),
+we can piggyback verification of \tcboff signatures on top of the existing transaction signature verification mechanism.
+Simply put, the \tcboff creates \tcadd with a fresh public key \pkoff whose secret is known only to \tcboff.
 
-The key observation is that information can only be inserted into the blockchain
-in Ethereum as a transaction from a wallet.  Thus, the only way the \medname can
-relay messages from the \tcboff to \tcbon is through a wallet \tcadd.  
-Since Ethereum itself already verifies
-signatures on transactions from externally owned accounts (i.e., users interact
-with the Ethereum blockchain through an authenticated channel), we can 
-piggyback verification of \tcboff signatures on top of Ethereum's
-already existing transaction signature verification mechanism.  Very simply,
-the \tcboff creates \tcadd with a fresh public key \pkoff whose
-secret key is known only to \tcboff itself. 
-
-To make this idea work fully, the public key $\pkoff$ must be hardcoded into
-\tcbon. A client creating or relying on a contract that uses \tcbon is
-responsible for making sure that this hardcoded $\pkoff$ has an appropriate SGX
-attestation before interacting with the $\tcbon$.  Let {\sf
-Verify} denote a verification algorithm for EPID signatures.
-Fig.~\ref{fig:att_check} gives the protocol for a client to check that \tcbon is
-backed by a valid \tcboff instance. (We omit modeling here of IAS online
-revocation checks.)
+To make this idea work fully, the public key \pkoff must be hardcoded into \tcbon.
+A client creating or relying on a contract that uses \tcbon is responsible for ensuring that this hardcoded \pkoff has an appropriate SGX attestation before interacting with \tcbon.
+Let {\sf Verify} denote a verification algorithm for EPID signatures.
+Fig.~\ref{fig:att_check} gives the protocol for a client to check that \tcbon is backed by a valid \tcboff instance.
+(We omit the modeling here of IAS online revocation checks.)
 
 In summary, then, we may assume in our protocol specifications that relying
 clients have verified an attestation for \tcboff and thus that datagram
-responses sent from \tcadd to \tcbon are trusted to originate from \tcboff,
-thus eliminating the need to do costly EPID signature verification in \tcbon.
-
-We note that this technique is actually quite general.  Given any system with
-two trusted components communicating over an insecure channel, if one component
-only response to requests from the other, the requesting component can store
-parameters and the responding component can include them in a response.  This
-allows the responding component to omit integrity verification on its incoming
-requests without compromising the integrity of the system as a whole.
+responses sent from \tcadd to \tcbon are trusted to originate from \tcboff.
+This eliminates the need to do costly EPID signature verification in \tcbon.
 
 \begin{figure}[htb!]
 \begin{boxedminipage}{\columnwidth}
@@ -180,6 +152,28 @@ Assert \tcbon is correct and parametrized w/ \pkoff\\
 \end{boxedminipage}
 \caption{A client checks an SGX attestation on the enclave's code $\tcboff$
 and public key $\pkoff$.  The client also checks that $\pkoff$ is hardcoded into
-blockchain contract \tcbon before using \tcbon.  } 
+blockchain contract \tcbon before using \tcbon.} 
 \label{fig:att_check}
 \end{figure}
+
+
+\paragraph{Eliminating \oauth.}
+In order to eliminate the need to call \oauth inside of \tcboff, we leverage the fact that all messages from \tcboff to \tcbon are responses to existing requests.
+Instead of verifying the request parameters in \tcboff, we can verify in \tcbon that \tcboff responded to the correct request.
+For each request, \tcbon stores the parameters of that request.
+In each response, \tcboff includes the parameters it used to fulfil the request.
+This allows \tcbon to check that the parameters in the response match the stored parameters
+and simply reject the response if they do not.
+Storing parameters and checking equality are extremely simple operations, so this far simpler than calling \oauth inside \tcboff.
+
+While this may appear to open new attacks (e.g., the \medname can send bogus requests and the \tcboff will attempt to respond),
+as we prove in Section~\ref{sec:analysis}, all such attacks amount to DoS attacks from the network or the \medname---attacks to which hybrid TCB systems are inherently susceptible.
+
+We note that this technique is actually quite general.  Given any system with
+two trusted components communicating over an insecure channel, if one component
+only response to requests from the other, the requesting component can store
+parameters and the responding component can include them in a response.  This
+allows the responding component to omit integrity verification on its incoming
+requests without compromising the integrity of the system as a whole.
+\ethan{Do we need this paragraph anymore?}
+
