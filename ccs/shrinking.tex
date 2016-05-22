@@ -36,17 +36,23 @@ highlighted in red).}
 \label{fig:tcb-hybridization}
 \end{figure}
 
-In a system involving an off-chain trusted execution environment such as SGX
-interacting with a smart contract, its TCB is a hybridization of two
-heterogeneous functionalities with distinct properties.  The SGX part, or the
-off-chain part of the TCB, is computationally powerful and can be executed
-privately. On the other hand, the computation in the on-chain part (i.e. the
-smart contract) is relatively slow and costly but verifiable. Moreover,
-since the execution of smart contracts is transparent, it is impossible to sign
-or computing MAC from within a smart contract. Both parts enjoy the integrity guarantee,
-but all interaction must go through an untrusted intermediary. 
-The challenge, therefore, is to establish secure communication channels between
-them and keep the TCB minimal. 
+In a system involving a smart contract interacting with an off-chain trusted computing environment (e.g. an SGX),
+the TCB is a hybridization of two components with distinct properties.
+Computation in the smart contract is slow, costly, and completely transparent, meaning it cannot rely on secrets.
+An SGX is computationally powerful and executes privately, but all external interaction, notably including communication with the contract, must go through an untrusted intermediary.
+This presents a challenge to establishing secure communication between the components while minimizing the TCB to allow for easier correctness analysis.
+
+%In a system involving an off-chain trusted execution environment such as SGX
+%interacting with a smart contract, its TCB is a hybridization of two
+%heterogeneous functionalities with distinct properties.  The SGX part, or the
+%off-chain part of the TCB, is computationally powerful and can be executed
+%privately. On the other hand, the computation in the on-chain part (i.e. the
+%smart contract) is relatively slow and costly but verifiable. Moreover,
+%since the execution of smart contracts is transparent, it is impossible to sign
+%or computing MAC from within a smart contract. Both parts enjoy the integrity guarantee,
+%but all interaction must go through an untrusted intermediary. 
+%The challenge, therefore, is to establish secure communication channels between
+%them and keep the TCB minimal. 
 
 Fig. \ref{fig:tcb-hybridization} depicts the
 ideal functionalities of off-chain and on-chain TCB that we need to realize.

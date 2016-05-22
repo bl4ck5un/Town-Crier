@@ -10,7 +10,7 @@ To ensure gas sustainability, we require that requesters make gas payments up fr
 By having a trusted component perform the reimbursement, we are also able to guarantee that a malicious \tc cannot steal an honest user's money without delivering valid data.
 
 \paragraph{Notation.}
-We use $(\msgi{i})$ to label messages corresponding to those in Fig.~\ref{fig:dataflow}.
+We use \msgi{i} to label messages corresponding to those in Fig.~\ref{fig:dataflow}.
 For payment, let $\gas$ denote gas and $\fee$ to denote non-gas currency.
 In both cases \$ is a type annotation and the letter denotes the numerical amount.
 For simplicity, we assume that gas and currency adopt the same units (allowing us to avoid explicit conversions).
@@ -136,8 +136,8 @@ An honest \medname will invoke \engine.{\bf Resume} exactly once with the parame
                     & Parse \dgform as $(\_, \_, T)$ \\
                     & Wait until ${\sf clock}() \geq T.{\sf min}$ \\
                     & Send $(\text{\resumecall}, \dgid, \dgform)$ to $\fsgx[\enclaveprog, \relay]$ \\
-                    & On recv $((\dgid, \dgform, \dgm), \sigma)$ from \\ & $\fsgx[\enclaveprog, \relay]$: \\
-                    & \quad  {\sf AuthSend} $(\dgid, \dgform, \dgm)$ to \tcont as \tcadd \\
+                    & On recv $((\dgid, \dgform, \dgm, \gasdeliver), \sigma)$ from \\ & $\fsgx[\enclaveprog, \relay]$: \\
+                    & \quad  {\sf AuthSend} $(\dgid, \dgform, \dgm, \gasdeliver)$ to \tcont as \tcadd \\
                     & \qquad \sgray{\it //\;\msgi{3}} \\[1ex]
 
   \multicolumn{2}{|l|}{\bf Main:} \\
