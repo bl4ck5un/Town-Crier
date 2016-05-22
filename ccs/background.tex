@@ -44,11 +44,11 @@ Transactions include a parameter (\texttt{GASLIMIT}) specifying a bound on the a
 When a function calls another function, it may optionally specify a lower \texttt{GASLIMIT} for the child call which expends gas from the same pool as the parent.
 Should a function fail to complete due to a gas shortfall,
 it is aborted and any state changes induced by the partial computation are rolled back to their pre-call state;
-previous computations on the call path, though, are retained.
+previous computations on the call path, though, are retained and gas is still spent.
 
 Along with a \texttt{GASLIMIT}, a transaction specifies a \texttt{GASPRICE}, the maximum amount in ether that the transaction is willing to pay per unit of gas. The transaction thus succeeds only if the initiating account has a balance of \texttt{GASLIMIT} $\times$ \texttt{GASPRICE} ether and \texttt{GASPRICE} is high enough to be accepted by the system (miner). 
 
-As we show in our discussion of gas neutrality, the management of gas is critical to the availability of \tc (and other Ethereum-based services) in the face of malicious users.
+As we show in Section~\ref{sec:gas-sustainability}, the management of gas is critical to the availability of \tc (and other Ethereum-based services) in the face of malicious users.
 
 Finally, we note that transactions in Ethereum are digitally signed for a wallet using ECDSA on the curve Secp256k1 and the hash function SHA3-256.
 

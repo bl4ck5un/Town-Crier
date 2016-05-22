@@ -55,16 +55,17 @@ scheme under a manufacturer public key $\pkM$ using the model in~\cite{sgxsok}.}
 
 
 \paragraph{Fee Safety.}
-Our protocol in Section~\ref{sec:gas-protocol} ensures that an honest \tcs will not run out of money
+Our protocol in Section~\ref{sec:protocol} ensures that an honest \tcs will not run out of money
 and that an honest requester will not pay excessive fees.
 
-\begin{theorem}[\tcs is Gas Sustainable]
+\begin{theorem}[Gas Sustainability]
 \label{thm:tc-gas-sustainable}
-\tc is gas sustainable when the initial value of \tcadd is at least \constgasmax.
+\tcs is \emph{\constgasmax-gas sustainable}.
 \end{theorem}
 
-The proof of Theorem~\ref{thm:tc-gas-sustainable} follows from examining when and how money can flow in Fig~\ref{tbl:gas-tc-contract}.
-We perform this analysis carefully in Appendix~\ref{sec:analysis-proofs}.
+The proof of Theorem~\ref{thm:tc-gas-sustainable} follows from noting that an honest \tc will only call {\bf Deliver}
+and examining when and how money can flow in Fig~\ref{fig:tc-contract}.
+We provide this proof in Appendix~\ref{sec:analysis-proofs}.
 
 An honest user should only have to pay for computation that is executed honestly on her behalf.
 If a valid datagram is delivered, this is a constant value plus the cost of executing \dgcallback.
