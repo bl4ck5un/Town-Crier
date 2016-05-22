@@ -1,46 +1,40 @@
-\section{Technical Challenges}
+\section{Two Key Security Properties}
 
-
+Before presenting the \tc protocol in detail,  we now discuss two key security properties informing its design: gas sustainability and TCB minimization within the hybridized TCB model that \tc introduces. While we introduce them in this work, as we shall explain, they are of broad and general applicability.
 
 \subsection{Gas Sustainability}
 \label{sec:gas-sustainability}
 
 %Recall from Section~\ref{sec:contracts-and-gas} that computation in Ethereum is not free; it employs \emph{gas} to fuel contracts.
 %For a call to a contract, that cost is paid by the user who initiates the transaction, regardless of what other contracts are called as part of execution.
-As described above, Ethereum's fee model requires that gas be paid by the user who initiates a transaction, regardless of what other contracts are called as part of execution.
-This means that a service which initiates calls to Ethereum contracts must spend money to execute those calls.
-Without careful design, such services run the risk of malicious users (or protocol bugs) draining financial resources by provoking blockchain calls for which the service's fees will not be reimbursed.
-In turn, this would lead to the service being unable to serve legitimate requests.
-It is therefore critical for liveness of Ethereum-based services that they always be reimbursed for blockchain computation they initiate.
+As explained above, Ethereum's fee model requires that gas be paid by the user who initiates a transaction, including all gas resulting from dependent calls. 
+This means that a service that initiates calls to Ethereum contracts must spend money to execute those calls.
+Without careful design, such services run the risk of malicious users (or protocol bugs) draining financial resources by triggering blockchain calls for which the service's fees will not be reimbursed, resulting in financial depletion of the service and an application-layer denial-of-service attack.
+It is thus critical for the availability of Ethereum-based services that they always be reimbursed for blockchain computation they initiate.
 
-We note that the principle we define here is not Ethereum specific.
-Any blockchain-based smart contract system must require fees to reimburse miners for performing and verifying computation.
-If, like in Ethereum, all fees are paid by the user who initiates the computation, then this concern still applies.
-To ensure that a service is not vulnerable to such attacks, we define \emph{gas sustainability}, a new condition necessary for liveness of blockchain contract-based services.
+To ensure that a service is not vulnerable to such attacks, we define \emph{gas sustainability}, a new condition necessary for the liveness of blockchain contract-based services. Gas sustainability is a basic requirement for any self-perpetuating Ethereum service. It can also generalize beyond Ethereum: Any decentralized blockchain-based smart contract system must require fees of some kind to reimburse miners for performing and verifying computation. 
 
 Let \bal{\wallet} denote the balance of an Ethereum wallet \wallet.
 
 \begin{definition}[$K$-Gas Sustainability]
   \label{def:gas-sustainability}
   A service with wallet \wallet and blockchain functions $f_1, \dotsc, f_n$ is \emph{$K$-gas sustainable} if the following holds.
-  When the service behaves honestly and $\bal{\wallet} \geq K$ before any $f_i$s are executed,
+If $\bal{\wallet} \geq K$ prior to execution of any $f_i$ and the service behaves honestly,
   then after each execution of an $f_i$ initiated by \wallet, $\bal{\wallet} \geq K$.
 \end{definition}
 
-Recall that Ethereum requires that a user have enough Ether to pay for gas expenditures.
-If insufficient gas is provided, while the transaction aborts, the gas is still spent.
-While Ethereum does inherently guarantee 0-gas sustainability, if a transaction is submitted by a wallet with insufficient funds, the wallet's balance will reduce to 0.
+Recall that a call made in Ethereum with insufficient gas will abort, but spend all provided gas. While Ethereum trivially guarantees 0-gas sustainability, if a transaction is submitted by a wallet with insufficient funds, the wallet's balance will drop to 0.
 Therefore, to be $K$-gas sustainable for $K > 0$, each blockchain call made by the service must reimburse gas expenditures.
-Moreover, the service must be able to afford the gas for each call since otherwise such reimbursement will be reverted with the rest of the transaction.
+Moreover, the service must have sufficient gas for each call. Otherwise such reimbursement will be reverted with the rest of the transaction.
 
-We show in Section~\ref{sec:protocol} how we design \tc to be gas sustainable and prove that fact in Section~\ref{sec:analysis}.
+The need for gas sustainability (with $K > 0$, as required by \tc) informs our protocol design in Section~\ref{sec:protocol}. We prove that \tc achieves this property in Section~\ref{sec:analysis}.
 
-\subsection{TCB Hybridization}
+\subsection{TCB Hybridization Model and TCB Minimization}
 \label{sec:tcb-hybridization}
 
 %% some macros used within this doc
-\newcommand{\tcboff}{\ensuremath{\textsf{prog}_{\textsf{Off}}}\xspace}
-\newcommand{\tcbon}{\ensuremath{\mathcal{F}_{\textsf{On}}}\xspace}
+\newcommand{\tcboff}{\ensuremath{\mathcal{A}_{\textsf{Off}}}\xspace}
+\newcommand{\tcbon}{\ensuremath{\mathcal{A}_{\textsf{On}}}\xspace}
 \newcommand{\oauth}{\ensuremath{\mathcal{O}_{\textsf{Auth}}}\xspace}
 \newcommand{\pkoff}{\ensuremath{\textsf{pk}_{\textsf{Off}}}\xspace}
 
@@ -83,11 +77,10 @@ We propose techniques to eliminate the most expensive operations (highlighted in
 \label{fig:tcb-hybridization}
 \end{figure}
 
-In a system involving a smart contract interacting with an off-chain trusted computing environment (e.g. an SGX),
+In a system involving a smart contract interacting with an off-chain trusted computing environment (e.g. SGX),
 the TCB is a hybridization of two components with distinct properties.
 Computation in the smart contract is slow, costly, and completely transparent, meaning it cannot rely on secrets.
-An SGX is computationally powerful and executes privately, but all external interaction, notably including communication with the contract, must go through an untrusted intermediary.
-This presents a challenge to establishing secure communication between the components while minimizing the code in the TCB.
+An SGX enclave is computationally powerful and executes privately, but all external interaction, notably including communication with the contract, must go through an untrusted intermediary. While this hybridized TCB is powerful and generally useful well beyond \tc, it presents a challenge: establishing secure communication between the components while minimizing the code in the TCB.
 
 %In a system involving an off-chain trusted execution environment such as SGX
 %interacting with a smart contract, its TCB is a hybridization of two
@@ -101,7 +94,7 @@ This presents a challenge to establishing secure communication between the compo
 %The challenge, therefore, is to establish secure communication channels between
 %them and keep the TCB minimal. 
 
-We begin by defining ideal functionalities of both TCB components, shown in Fig.~\ref{fig:tcb-hybridization}.
+We begin by defining abstractions for both TCB components, shown in Fig.~\ref{fig:tcb-hybridization}. To distinguish these abstractions from formal ideal functionalities, we denote them by $\mathcal{A}$, rather than $\mathcal{F}$.
 We model the authentication of on-chain messages by an oracle \oauth, which takes a message and returns true if the input is a valid blockchain transaction.
 Since Ethereum blocks are self-authenticated using Merkle trees \cite{whitepaper,yellowpaper},
 in principle we can realize \oauth by including an Ethereum client in the TCB.
@@ -109,7 +102,7 @@ However, doing so drastically increases the code footprint, as the core Ethereum
 Similarly, a smart contract could authenticate messages from an SGX by checking attestations.
 But implementing this verification in a smart contract would be error-prone and computationally (and thus financially) expensive.
 
-Instead we propose two general techniques to avoid these calls.
+Instead we propose two general techniques to avoid these calls and thereby minimize code size in the TCB.
 The first applies to any hybrid system where one TCB component is a blockchain contract.
 The second applies to any hybrid system where the TCB components communicate only to make and respond to requests.
 
@@ -203,14 +196,14 @@ This allows \tcbon to check that the parameters in the response match the stored
 and simply reject the response if they do not.
 Storing parameters and checking equality are extremely simple operations, so this far simpler than calling \oauth inside \tcboff.
 
-While this may appear to open new attacks (e.g., the \medname can send bogus requests and the \tcboff will attempt to respond),
-as we prove in Section~\ref{sec:analysis}, all such attacks amount to DoS attacks from the network or the \medname---attacks to which hybrid TCB systems are inherently susceptible.
+This may appear to open new attacks (e.g., the \medname can send bogus requests and the \tcboff will attempt to respond).
+As we prove in Section~\ref{sec:analysis}, however, all such attacks reduce to DoS attacks from the network or the \medname---attacks to which hybrid TCB systems are inherently susceptible and which we do not aim to protect against in \tc.
 
-We note that this technique is actually quite general.  Given any system with
-two trusted components communicating over an insecure channel, if one component
-only response to requests from the other, the requesting component can store
-parameters and the responding component can include them in a response.  This
-allows the responding component to omit integrity verification on its incoming
-requests without compromising the integrity of the system as a whole.
-\ethan{Do we need this paragraph anymore?}
+%We note that this technique is actually quite general.  Given any system with
+%two trusted components communicating over an insecure channel, if one component
+%only response to requests from the other, the requesting component can store
+%parameters and the responding component can include them in a response.  This
+%allows the responding component to omit integrity verification on its incoming
+%requests without compromising the integrity of the system as a whole.
+%\ethan{Do we need this paragraph anymore?}
 
