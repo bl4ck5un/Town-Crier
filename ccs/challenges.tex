@@ -94,11 +94,11 @@ An SGX enclave is computationally powerful and executes privately, but all exter
 %The challenge, therefore, is to establish secure communication channels between
 %them and keep the TCB minimal. 
 
-We begin by defining abstractions for both TCB components, shown in Fig.~\ref{fig:tcb-hybridization}. To distinguish these abstractions from formal ideal functionalities, we denote them by $\mathcal{A}$, rather than $\mathcal{F}$.
-We model the authentication of on-chain messages by an oracle \oauth, which takes a message and returns true if the input is a valid blockchain transaction.
+We define abstractions for both TCB components in Fig.~\ref{fig:tcb-hybridization}. To distinguish these abstractions from formal ideal functionalities, we denote them by $\mathcal{A}$, rather than $\mathcal{F}$.
+We model the authentication of on-chain messages by an oracle \oauth, which treturns true if an input is a valid blockchain transaction.
 Since Ethereum blocks are self-authenticated using Merkle trees \cite{whitepaper,yellowpaper},
 in principle we can realize \oauth by including an Ethereum client in the TCB.
-However, doing so drastically increases the code footprint, as the core Ethereum implementation is about 50k lines of C++.
+Doing so drastically increases the code footprint, however, as the core Ethereum implementation is about 50k lines of C++.
 Similarly, a smart contract could authenticate messages from an SGX by checking attestations.
 But implementing this verification in a smart contract would be error-prone and computationally (and thus financially) expensive.
 
@@ -188,15 +188,15 @@ blockchain contract \tcbon before using \tcbon.}
 
 
 \paragraph{Eliminating \oauth.}
-In order to eliminate the need to call \oauth inside of \tcboff, we leverage the fact that all messages from \tcboff to \tcbon are responses to existing requests.
-Instead of verifying the request parameters in \tcboff, we can verify in \tcbon that \tcboff responded to the correct request.
+To eliminate the need to call \oauth from \tcboff, we leverage the fact that all messages from \tcboff to \tcbon are responses to existing requests.
+Instead of verifying request parameters in \tcboff, we can verify in \tcbon that \tcboff responded to the correct request.
 For each request, \tcbon stores the parameters of that request.
-In each response, \tcboff includes the parameters it used to fulfil the request.
-This allows \tcbon to check that the parameters in the response match the stored parameters
-and simply reject the response if they do not.
-Storing parameters and checking equality are extremely simple operations, so this far simpler than calling \oauth inside \tcboff.
+In each response, \tcboff includes the parameters it used to fulfill the request.
+\tcbon can then check that the parameters in a response match the stored parameters and, if not,
+and simply reject.
+Storing parameters and checking equality are simple operations, so this vastly simpler than calling \oauth inside \tcboff.
 
-This may appear to open new attacks (e.g., the \medname can send bogus requests and the \tcboff will attempt to respond).
+This approach may appear to open new attacks (e.g., the \medname can send bogus requests to which the \tcboff respond).
 As we prove in Section~\ref{sec:analysis}, however, all such attacks reduce to DoS attacks from the network or the \medname---attacks to which hybrid TCB systems are inherently susceptible and which we do not aim to protect against in \tc.
 
 %We note that this technique is actually quite general.  Given any system with
