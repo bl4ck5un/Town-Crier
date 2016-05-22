@@ -1,20 +1,20 @@
 \section{Introduction}
 
 Smart contracts are computer programs that autonomously execute the terms of a contract.
-For decades they have been envisioned as a way to use logical specification to render legal agreements more precise, pervasive, and efficiently executable.
+For decades they have been envisioned as a way to render legal agreements more precise, pervasive, and efficiently executable.
 Szabo, who popularized the term ``smart contact'' in a seminal 1994 essay~\cite{szabosmartcontract94}, gave as an example a smart contract that enforces car loan payments. If the owner of the car fails to make a timely payment, a smart contract could programmatically revoke physical access and return control of the car to the bank. %The contract could additionally be programmed to do so only at a time that is safe for the the owner, e.g., while the car is parked.
 
-Cryptocurrencies such as Bitcoin~\cite{bitcoin} have provided key technical provisions for decentralized smart contracts: direct control of money by programs and fair, automated execution of computations through the decentralized consensus mechanisms underlying  blockchains. 
-The recently launched Ethereum supports Turing-complete code and thus fully expressive, self-enforcing smart contracts, a big step toward the vision of researchers and proponents.  
+Cryptocurrencies such as Bitcoin~\cite{bitcoin} provide key technical underpinnings for smart contracts: direct control of money by programs and fair, automated execution of computations through the decentralized consensus mechanisms underlying  blockchains. 
+The recently launched Ethereum supports Turing-complete code and thus fully expressive, self-enforcing, decentralized smart contracts, a big step toward the vision of researchers and proponents.  
 
 As Szabo's example shows, however, the most compelling applications of smart contracts require not just blockchain code, but access to data about real-world state and events. Similarly, financial contracts and derivatives, key applications for Ethereum~\cite{yellowpaper,whitepaper}, rely on data about financial markets such as equity prices. %Applications such as insurance policies are only realizable with data about weather, flights, delivery of goods, and so forth. 
 
-\emph{Data feeds}---contracts on the blockchain that serve data requests by other contracts~\cite{whitepaper,yellowpaper}---are intended to meet this need. A few data feeds exist for Ethereum today, but provide no assurance of trustworthy data beyond the reputation of their operators (who are typically individuals or small entities), even if their data originates with trustworthy sources. Of course, there exist reputable websites that serve data for non-blockchain applications and use HTTPS, enabling source authentication of served data. Smart contracts, though, lack network access and thus cannot directly access such data. The lack of a substantive ecosystem of trustworthy data feeds thus remains an oft-cited, critical obstacle to the evolution of in Ethereum and smart contracts 
+\emph{Data feeds} (also known as ``oracles'') aim to meet this need. Very simply, data feeds are contracts on the blockchain that serve data requests by other contracts~\cite{whitepaper,yellowpaper}. A few data feeds exist for Ethereum today that in principle obtain data from trustworthy websites, but they currently provide no assurance of correctly relaying such data beyond the reputation of their operators (typically individuals or small entities). Of course, many non-blockchain users and applications already rely on reputable websites to serve data, with HTTPS for source authentication. Smart contracts, though, lack network access and therefore cannot use HTTPS, as it does not digitally sign data for out-of-band verification. The lack of a substantive ecosystem of trustworthy data feeds is thus frequently cited as critical obstacle to the evolution of Ethereum and decentralized smart contracts 
 in general~\cite{commblockstream}.
 
-\paragraph{\bf Town Crier.} We introduce a system called \emph{Town Crier} (\tc) that provides an \emph{authenticated data feed} (ADF) for smart contracts. \tc acts as a high-trust bridge between existing HTTPS-enabled data websites and the Ethereum blockchain. It retrieves website data and serves it to relying contracts on the blockchain as concise, contract-consumable pieces of data (e.g., stock quotes) called \emph{datagrams}. \tc makes use of Software Guard Extensions (SGX),  Intel's recently released trusted hardware capability. It executes its core functionality as a trusted piece of code in an SGX \emph{enclave}, which protects against malicious processes and the OS and can \emph{attest} (prove) to a remote client that the client is interacting with a legitimate, SGX-backed instance of the \tc code. 
+\paragraph{\bf Town Crier.} We introduce a system called \emph{Town Crier} (\tc) that addresses this impediment by providing an \emph{authenticated data feed} (ADF) for smart contracts. \tc acts as a high-trust bridge between existing HTTPS-enabled data websites and the Ethereum blockchain. It retrieves website data and serves it to relying contracts on the blockchain as concise, contract-consumable pieces of data (e.g., stock quotes) called \emph{datagrams}. \tc makes use of a novel combination of Software Guard Extensions (SGX),  Intel's recently released trusted hardware capability, with a smart-contract front end. It executes its core data-retrieval functionality as a trusted piece of code in an SGX \emph{enclave}, which protects against malicious processes and the OS and can \emph{attest} (prove) to a remote client that the client is interacting with a legitimate, SGX-backed instance of the \tc code. 
 
-Through a smart-contract front end, \tcs responds to requests by contracts on the blockchain with attestations of the following form:
+The smart-contract front end of \tcs responds to requests by contracts on the blockchain with attestations of the following form:
 
 \begin{itemize}[leftmargin=3mm]
 \item[]
@@ -23,78 +23,48 @@ served by an HTTPS-enabled website $Y$
 during a specified time frame $T$.''}
 \end{itemize}
 
-A relying contract can be assured of the correctness of $X$ in such a datagram if it trusts the security of SGX, the (published) \tc code, and the validity of source data in the specified interval of time.
+A relying contract can verify the correctness of $X$ in such a datagram assuming trust only in the security of SGX, the (published) \tc code, and the validity of source data in the specified interval of time. 
 
-\paragraph{Contributions of \tc.}
-We highlight several important contributions in our design of \tc:
+Another critical barrier to smart contract adoption is the lack of {\em confidentiality} in today's ecosystems: All blockchain state is publicly visible, and existing data feeds publicly expose requests. \tc provides confidentiality by supporting {\em private} datagram requests, in which the parameters $\dgform$ are encrypted under a \tc public key for ingestion in \tc's SGX enclave and are therefore concealed on the blockchain. \tc also supports {\em custom} datagram requests, which securely access the online resources of requesters (e.g., online accounts) by ingesting encrypted user credentials, permitting \tc to securely access access-controlled data sources.
 
-\vspace{1ex}
-\noindent{\em Fully functional \tc implementation, with pending open source and launch.}
-We designed and implemented \tcs as a complete, end-to-end system that offers formal security guarantees
-at the cryptographic protocol level. Aiming beyond an advance in academic research, we plan to launch \tcs
-as an open-source, production service atop Ethereum in the near future. Our launch of \tc awaits only availability of the Intel Attestation Service (IAS), which is expected to occur soon. In its initial form, \tcs is a free service for smart contract users, requiring users only to defray the (small) cost of invoking \tc on the Ethereum blockchain. 
+We designed and implemented \tc as a complete, highly scalable, end-to-end system that offers formal security guarantees at the cryptographic protocol level. \tc runs on real, SGX-enabled host, as opposed to an emulator (e.g.~\cite{haven,VC3}). We plan to launch a version of \tc as an open-source, production service atop Ethereum in the near future, pending the near-future availability of the Intel Attestation Service (IAS), which is needed for use of SGX attestations. 
 
-\vspace{1ex}
-\noindent{\em Formal security analysis.}
-Formal security is vitally important to a data feed.
-Smart contracts execute in an adversarial environment where parties can reap financial gains by subverting the contracts or the services on which they rely.
-Legal recourse is often impractical precisely because of several benefits smart contracts provide;
-they enable micro-services without costly legal setup and enforcement and allow contracts between arbitrary pseudonymous parties.
-We thus adopt a rigorous, principled approach to the design of \tcs by formally defining and ensuring:
+%In its initial form, \tcs will serve basic datagram requests to smart contract users essentially for free, requiring users only to defray the (small) cost of invoking \tc on the Ethereum blockchain. 
 
+\paragraph{Technical challenges.} Smart contracts execute in an adversarial environment where parties can reap financial gains by subverting the contracts or services on which they rely. Formal security is thus vitally important to a data feed. We adopt a rigorous approach to the design of \tcs by modeling all of its components in the Universal Composibility (UC) framework, building on~\cite{hawk,sgxsok} to achieve an interesting formal model that spans a blockchain and trusted hardware. We formally define and prove that \tc achieves the basic property of datagram {\em authenticity}---informally, that \tc faithfully relays current data from a target website. We additionally prove {\em fair expenditure} for an honest requester, informally that the fee paid by a \tc client (calling smart contract) is at most a small amount reflecting the operating costs of the \tc service, even if the \tc host and other blockchain entities are malicious.
+
+Another contribution of our work is introducing a general smart contract property called {\em gas sustainability}.
+Because of the high resource costs of decentralized code execution and risk of application-layer denial-of-service (DoS) attacks, Ethereum includes an accounting resource called {\em gas} to pay for execution costs.  Informally, gas sustainability means that an Ethereum service never runs of out of gas, a fundamental availability property. We give a formal definition of gas sustainability applicable to any Ethereum service, and prove that \tc satisfies it.
+
+% offering a model for proving the property in other Ethereum services and one that may be extensible to other decentralized smart contract systems. 
+
+We believe that the combination of blockchains with SGX introduced in our work will prove to be a powerful, general way to achieve confidentiality in smart contract systems and network them with off-chain systems. This new architectural paradigm, however, introduces a hybridized trusted computing base (TCB) that spans components with different trust models.
+%The blockchain guarantees execution integrity, but no confidentiality, while SGX ensures confidentiality and integrity for code in an enclave, but lacks an authenticated channel to the blockchain. 
+We introduce techniques for using such a hybridized TCB securely while keeping its code size small. In \tc, we show how to avoid constructing an authenticated channel from the blockchain to the enclave---which would entail bloating the enclave with an Ethereum client---by authenticating enclave outputs on the blockchain. We also show how to minimize on-chain signature-verification code. These techniques are general: They apply to any use of a hybridized TCB such as we consider here.
+
+Other interesting, smaller challenges arise in the design of \tc. One is deployment of TLS in an enclave, which lacks networking capabilities, and therefore requires a partitioning of a TLS client between the enclave and untrusted host environment. Another is hedging in \tc against the risk of compromise of a website or single SGX instance, which we accomplish by supporting various modes of majority voting: among multiple websites offering the same piece of data (e.g., stock price), or among multiple, possibly geographically dispersed, SGX instances.
+
+\paragraph{Applications and performance.} 
+%Today, smart contracts in Ethereum tend to be blockchain-bound, with little or no use of external data~\cite{}. 
+We believe that \tc can spur deployment of a rich spectrum of smart contracts that are hard to realize in the existing Ethereum ecosystem. We explore three examples that demonstrate \tc's capabilities: (1) A financial derivative (cash-settled put option) that consumes stock ticker data; (2) A flight insurance contract that relies on private data requests about flight cancellations; and (3) A contract for sale of virtual goods and online games (via Steam Marketplace) for ether, the Ethereum currency, using custom data requests to access online user accounts. 
+
+Our experiments with the above three example applications show that \tc is highly scalable. Running on a single SGX host, \tc achieves throughputs of 15-65 tx/sec. Moreover, \tc is easily parallelized to an arbitrary number of hosts, as separate \tc hosts can serve requests with no interdependency. (For comparison, Ethereum handles less than 1/tx today and recent work~\cite{} suggests that Bitcoin can scale to no more 27 tx/sec with reparametrization.) For these same applications, experimental response times for datagram requests range from 192-1309 ms---significantly less than an Ethereum block interval (12 seconds on average). These results suggest that a few SGX-enabled hosts can support \tc data feed rates well beyond the global transaction rate of a modern decentralized blockchain.
+
+\paragraph{\bf Contributions.}
+In summary, our contributions are as follows:
 \begin{itemize}[leftmargin=5mm]
 \item
   \setlength{\itemsep}{2pt}
   \setlength{\parskip}{0pt}
   \setlength{\parsep}{0pt}
-{\it Authenticity}: A datagram $X$ returned
-to a requesting contract is guaranteed
-to truly reflect the data served by specified website $Y$ in time interval $T$ with the requester's specified parameters $\dgform$.
-\item
-{\it Fair expenditure (bounded requester loss).}
-Even when all other users, contracts, and \tc itself act maliciously,
-an honest requester will never pay more than a tiny amount beyond what is required for valid computation executed for that request---whether or not a datagram is delivered.
+We introduce and report on an end-to-end implementation of \tcs, an authenticated data feed system that addresses critical barriers to the adoption of decentralized smart contracts. \tc combines a smart-contract front end in Ethereum and an SGX-based trusted hardware back end to: (1) Serve authenticated data to smart contracts without a need to trust the \tc service operator and (2) Support {\em private} and {\em custom} data requests, enabling requests with encrypted parameters and secure use of access-controlled, off-chain data sources. 
+\item We formally analyze the security of \tc within the Universal Composibility (UC) framework, defining functionalities to represent both on-chain and off-chain components. We formally define and prove the basic properties of datagram {\em authenticity} and {\em fair expenditure} as well as {\em gas sustainability}, a fundamental availability property for any Ethereum service. 
+\item We introduce in \tc a hybridized TCB spanning blockchain elements and an SGX enclave, a powerful new paradigm of trustworthy system composition. We present generic techniques that help shrink the TCB code size within this model. 
+\item We explore three \tc applications that demonstrate \tc's ability to support a rich range of services well beyond those in Ethereum today. We report on the end-to-end performance of these applications, showing that \tc can easily meet the latency and throughput requirements of modern decentralized blockchains. We will launch a version of \tc as an open-source service upon the availability of the Intel Attestation Service (IAS).
+
 \end{itemize}
 
-To obtain the above formal guarantees, we rely on the formal modeling
-of blockchains by Kosba et al.~\cite{hawk} and the formal abstraction for SGX by Shi et al.~\cite{sgxsok}
-
-\vspace{1ex}
-\noindent {\em Definition of gas sustainability.}
-We identify and define \emph{gas sustainability}, a critical property of Ethereum-based services.
-Gas sustainable services are immune to user-driven Denial-of-Service (DoS) attacks relying on Ethereum's fee structure.
-Our definition reveals a subtle gap between the formal blockchain model of Kosba et al.~\cite{hawk}
-and Ethereum's instantiation that proves important in formal reasoning about fees.
-While services consisting entirely of Ethereum smart contracts are trivially gas sustainable, \tc requires a proof which we provide.
-
-\vspace{1ex}
-\noindent {\em Minimized Trusted Computing Base (TCB) across multiple components.}
-Minimizing the size of the TCB reduces the likelihood of bugs and makes it easier for third parties to verify the code.
-We demonstrate how to reduce the TCB when handling request-response pairs across two trusted components which can only communicate through untrusted channels---%
-in the case of \tc, the Ethereum blockchain and an SGX enclave.
-\tc thus offers basic security model in which a user need only trust SGX itself and a designated data source (website).
-
-As an additional feature, \tc can hedge against the risk of compromise of a website or single SGX instance
-by supporting various modes of majority voting:
-among multiple websites offering the same piece of data (e.g., stock price),
-or among multiple, possibly geographically dispersed, SGX instances.
-
-\vspace{1ex}
-\noindent{\em Private and custom datagrams.}
-To meet the potentially complex confidentiality concerns that can arise in the broad array of smart contracts enabled by \tc,
-\tc's trusted enclave code is instrumented to ingest confidential user data (encrypted under a \tc public key).
-It can thereby support {\em private} datagram requests, with encrypted parameters, and {\em custom} datagram requests,
-which securely access the online resources of requesters (e.g., online accounts) using encrypted credentials.
-
-\vspace{1ex}
-Additionally, to the best of our knowledge, ours is the first research paper reporting implementation of a substantive system on a real, SGX-enabled host, as opposed to an emulator (e.g.~\cite{haven,VC3}).
-
-\paragraph{Applications.} Thanks to the above key contributions, we believe that \tc can spur deployment of a rich spectrum of smart contracts that are hard to realize in the existing Ethereum ecosystem. We present three examples that showcase \tc's capabilities and demonstrate its end-to-end use: (1) A financial derivative (cash-settled put option) that consumes stock ticker data; (2) A flight insurance contract that relies on private data requests about flight cancellations; and (3) A contract for sale of virtual goods and online games (via Steam Marketplace) for ether, the Ethereum currency, using custom data requests to access online user accounts. We experimentally measure response times for associated datagram requests ranging from 192-1309 ms, depending on the datagram type. These times are significantly less than an Ethereum block interval, and suggest that a few SGX-enabled hosts can support \tc data feed rates well beyond the global transaction rate of a modern decentralized blockchain.
-
 \paragraph{\em Organization:} We present basic technical background for \tc (Section~\ref{sec:background}), followed by an architectural description (Section~\ref{sec:architecture}), a basic set of protocols (Section~\ref{sec:protocols}), the full, enhanced system protocols (Section~\ref{sec:enhanced_protocol}), and a formal security analysis (Section~\ref{sec:analysis}). We then present three example applications (Section~\ref{sec:applications}) which we use as the basis for performance evaluations of \tc (Section~\ref{sec:experiments}).  After presenting related work (Section~\ref{sec:related}), we conclude the paper (Section~\ref{sec:conclude}). The paper appendix includes implementation details, formal modeling and proofs, and future directions omitted from the paper body.
-
-
-
 
 
 
