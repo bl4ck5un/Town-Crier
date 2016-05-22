@@ -1,8 +1,9 @@
 \section{Gas Sustainability}
 \label{sec:gas-sustainability}
 
-Recall from Section~\ref{sec:contracts-and-gas} that computation in Ethereum is not free; it employs \emph{gas} to fuel contracts.
-For a call to a contract, that cost is paid by the user who initiates the transaction, regardless of what other contracts are called as part of execution.
+%Recall from Section~\ref{sec:contracts-and-gas} that computation in Ethereum is not free; it employs \emph{gas} to fuel contracts.
+%For a call to a contract, that cost is paid by the user who initiates the transaction, regardless of what other contracts are called as part of execution.
+As described above, Ethereum's gas model requires that gas be paid by the user who initiates a transaction, regardless of what other contracts are called as part of execution.
 This means that any service which initiates calls to Ethereum contracts must spend money to execute those calls.
 Without careful design, such services run the risk of a malicious user (or protocol bug) draining financial resources by provoking blockchain transactions for which the service will not be reimbursed.
 In turn, this would lead to the service being unable to serve legitimate requests.
