@@ -3,9 +3,9 @@
 
 %Recall from Section~\ref{sec:contracts-and-gas} that computation in Ethereum is not free; it employs \emph{gas} to fuel contracts.
 %For a call to a contract, that cost is paid by the user who initiates the transaction, regardless of what other contracts are called as part of execution.
-As described above, Ethereum's gas model requires that gas be paid by the user who initiates a transaction, regardless of what other contracts are called as part of execution.
-This means that any service which initiates calls to Ethereum contracts must spend money to execute those calls.
-Without careful design, such services run the risk of a malicious user (or protocol bug) draining financial resources by provoking blockchain transactions for which the service will not be reimbursed.
+As described above, Ethereum's fee model requires that gas be paid by the user who initiates a transaction, regardless of what other contracts are called as part of execution.
+This means that a service which initiates calls to Ethereum contracts must spend money to execute those calls.
+Without careful design, such services run the risk of malicious users (or protocol bugs) draining financial resources by provoking blockchain calls for which the service's fees will not be reimbursed.
 In turn, this would lead to the service being unable to serve legitimate requests.
 It is therefore critical for liveness of Ethereum-based services that they always be reimbursed for blockchain computation they initiate.
 
@@ -18,16 +18,16 @@ Let \bal{\wallet} denote the balance of an Ethereum wallet \wallet.
 
 \begin{definition}[$K$-Gas Sustainability]
   \label{def:gas-sustainability}
-  A service with wallet \wallet and blockchain functions $f_1, \dotsc, f_n$ is \emph{$K$-gas sustainable} for $K > 0$ if,
-  when $\bal{\wallet} \geq K$ before any $f_i$s are executed and the service behaves honestly,
-  then after each execution of any $f_i$ initiated by \wallet, $\bal{\wallet} \geq K$.
+  A service with wallet \wallet and blockchain functions $f_1, \dotsc, f_n$ is \emph{$K$-gas sustainable} if the following holds.
+  When the service behaves honestly and $\bal{\wallet} \geq K$ before any $f_i$s are executed,
+  then after each execution of an $f_i$ initiated by \wallet, $\bal{\wallet} \geq K$.
 \end{definition}
 
-As mentioned in Section~\ref{sec:contracts-and-gas}, Ethereum requires that a user have enough ether to pay for gas expenditures.
+Recall that Ethereum requires that a user have enough Ether to pay for gas expenditures.
 If insufficient gas is provided, while the transaction aborts, the gas is still spent.
-This means that Ethereum only guarantees that $\bal{\wallet} \geq 0$ and if a transaction is submitted by a wallet with insufficient funds, the balance will reduce to 0.
-Because the above definition requires $K > 0$, this guarantees not only that each blockchain call reimburses the service,
-but also that the service can afford the gas for each call it makes since otherwise the reimbursement would be reverted with the rest of the transaction.
+While Ethereum does inherently guarantee 0-gas sustainability, if a transaction is submitted by a wallet with insufficient funds, the wallet's balance will reduce to 0.
+Therefore, to be $K$-gas sustainable for $K > 0$, each blockchain call made by the service must reimburse gas expenditures.
+Moreover, the service must be able to afford the gas for each call since otherwise such reimbursement will be reverted with the rest of the transaction.
 
 We show in Section~\ref{sec:protocol} how we design \tc to be gas sustainable and prove that fact in Section~\ref{sec:analysis}.
 
