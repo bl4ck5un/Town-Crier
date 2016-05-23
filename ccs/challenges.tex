@@ -97,7 +97,7 @@ Instead, we describe here how to bind the identity of \tcboff to an Ethereum wal
 which is already verified as part of Ethereum's transaction protocol.
 
 The key observation is that information can only be inserted into the Ethereum blockchain as transactions from a wallet.
-thus, the only way the \medname can relay messages from \tcboff to \tcbon is through a wallet \tcadd.
+Thus, the only way the \medname can relay messages from \tcboff to \tcbon is through a wallet \tcadd.
 Since Ethereum itself already verifies signatures on transactions (i.e., users interact with Ethereum through an authenticated channel),
 we can piggyback verification of \tcboff signatures on top of the existing transaction signature verification mechanism.
 Simply put, the \tcboff creates \tcadd with a fresh public key \pkoff whose secret is known only to \tcboff.
@@ -112,6 +112,9 @@ In summary, then, we may assume in our protocol specifications that relying
 clients have verified an attestation for \tcboff and thus that datagram
 responses sent from \tcadd to \tcbon are trusted to originate from \tcboff.
 This eliminates the need to do costly EPID signature verification in \tcbon.
+
+SGX can seal \pkoff into non-volatile storage while protecting integrity and confidentiality \cite{sgxmanual, anati2013innovative},
+allowing us to maintain the same binding through server restarts.
 
 \begin{figure}[htb!]
 \begin{boxedminipage}{\columnwidth}
