@@ -56,14 +56,12 @@ The need for gas sustainability (with $K > 0$, as required by \tc) informs our p
 \end{center}
 \vspace{-1ex}
 \begin{tabular}{l}
-  {\bf Request:} \\ 
-    On recv $(\textsf{req})$ from some $\reqcont$: \\
-    \quad Send $(\textsf{req})$  to $\fsgx[\textsf{prog}_{\textsf{Off}}, \relay]$\\[1ex]
+  {\bf Request}(\textsf{req}): \\ 
+  \quad Send $(\textsf{req})$  to \tcboff \\[1ex]
 
-  {\bf Deliver:} \\
-    On recv $((\textsf{req}', \textsf{resp}), \sigma)$ from \fsgx: \\
-    \quad {\color{red} $\Sigma.{\sf Verify}((\textsf{req}', \textsf{resp}), \sigma)$} \\
-    \quad \sgray{//~can now use {\sf resp} as trusted}
+  {\bf Deliver}(\textsf{req}, \textsf{resp}, $\sigma$): \\
+  \quad {\color{red} $\Sigma.{\sf Verify}((\textsf{req}, \textsf{resp}), \sigma)$} \\
+  \quad \sgray{//~can now use {\sf resp} as trusted}
 \end{tabular}
 \end{boxedminipage}
 \caption{Systems like \tc have a hybrid TCB. Authentication between two components
