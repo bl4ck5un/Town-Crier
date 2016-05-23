@@ -60,7 +60,7 @@ If the request is valid, \tcont forwards the resulting datagram \dgm by calling 
 To ensure that all gas spent can be reimbursed, \tcont sets $\gascallback := \fee = \constgasmin$ for this sub-call.
 \tcont is specified fully in Fig.~\ref{fig:tc-contract}. Here, Call denotes a call to a contact entry point. 
 
-\begin{figure}[h!]
+\begin{figure}[ht!]
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}r@{\hspace{1ex}}X@{\hspace{3pt}}|}
   \hline
 
@@ -121,7 +121,7 @@ The program for \relay is shown in Fig.~\ref{fig:relayprotocol}.
 The function {\sf AuthSend} inserts a transaction to blockchain (``as $\tcadd$'' means the transaction is already signed with $\skTC$).
 An honest \medname will invoke \engine.{\bf Resume} exactly once with the parameters of each valid request and never otherwise.
 
-\begin{figure}[h!]
+\begin{figure}[ht!]
 \begin{tabularx}{\linewidth}{|@{\hspace{3pt}}p{1em}@{\hspace{1ex}}X@{\hspace{3pt}}|}
   \hline
 
@@ -162,7 +162,7 @@ Upon a call to {\bf Resume}$({\sf id}, {\sf params})$, \engine contacts the data
 Then \engine fetches the requested datagram and returns it to \relay along with \dgform and \dgid, all digitally signed with \skTC and a {\tt GASLIMIT} $\gasdeliver := \constgasmax$.
 Fig.~\ref{fig:engineprotocol} shows the protocol for \engine.
 
-\begin{figure}[!h]
+\begin{figure}[!ht]
 \begin{boxedminipage}{\columnwidth}
 \begin{center}
 {\bf Program for \tcs~\encname ($\enclaveprog$)} \\[-0.5em]
@@ -199,6 +199,67 @@ and invokes ${\bf Request}(\dgform, \dgcallback, \fee)$ with {\tt GASLIMIT} $\ga
 
 If \dgcallback is not executed, she can invoke ${\bf Cancel}(\dgid)$ with {\tt GASLIMIT} $\constgasinvokecancel$ to receive a partial refund.
 An honest requester will invoke {\bf Cancel} at most once for each of her requests and never for any other user's request.
+
+\begin{figure}
+\centering
+\begin{tikzpicture}
+  [contract/.style={entity,minimum height=3.5em,text width=7.5em},
+   wallet/.style={entity,minimum height=3.5em,text width=5em},
+   blocked-out-label/.style={text=black,blockchain-color,text height=0.6em}]
+  \node[wallet,fill=white] (user) {User $\userwallet$};
+  \node[contract,fill=white,right=6em of user] (cu) {User Contract\\$\reqcont$};
+  \node[wallet,trusted,below=5em of user] (tc-wallet) {$\tcadd$};
+  \node[contract,trusted,right=6em of tc-wallet] (ctc) {TC Contract\\$\tcont$};
+  \node[color=maroon,draw,anchor=south east] (fee) at ([xshift=-0.25em,yshift=0.25em]ctc.south east) {\small $\fee$};
+
+  \draw[color=gold,rounded corners,opacity=0.25,line width=1ex] ([yshift=1.25em]user.east) -| ([xshift=3.25em]cu.south);
+  \path[->,color=gold,line width=1.15ex] (user) edge [transform canvas={yshift=1.25em}] (cu);
+  \path[->,color=gold,line width=1ex] (cu) edge [transform canvas={xshift=3.25em}] (ctc);
+  \path[->,color=maroon,line width=0.4ex] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1.2em] {\small \smash{$(\gasrequest, \fee)$}} ([yshift=-1.5em]ctc.north);
+  \node[anchor=north,xshift=1em,yshift=-0.75em] () at (cu.south) {\small \bf \underline{\smash{Request}}};
+%  \path[->,color=maroon,line width=0.4ex] (cu.south) edge [left,transform canvas={xshift=3.25em}] node [blocked-out-label,xshift=1em,yshift=1em] {\small \smash{$(\gasrequest, \fee)$}} ([yshift=-1.5em]ctc.north);
+%  \node[anchor=north,xshift=1em,yshift=-0.5em] () at (cu.south) {\small \bf \underline{\smash{Request}}};
+
+  \path[->,color=gold,line width=1ex] (tc-wallet.east) edge [above,transform canvas={yshift=0.4em}] node () {\small $\gasdeliver$} (ctc.west);
+  \draw[color=gold,rounded corners,opacity=0.25,line width=0.3ex] ([yshift=0.4em]tc-wallet.east) -| ([xshift=-3em]ctc.north);
+  \path[->,color=gold,line width=0.3ex] (ctc.north) edge [right,transform canvas={xshift=-3em}] node [yshift=-1.25em] {\small \smash{$\gascallback$}} (cu.south);
+  \path[color=maroon,opacity=0.25,line width=0.4ex] (tc-wallet-|fee.west) edge [transform canvas={yshift=-1.25em}] (tc-wallet.east);
+  \path[->,color=maroon,line width=0.4ex] (ctc.west) edge [transform canvas={yshift=-1.25em}] node [fill=white,xshift=0.4em] {\small $\fee$} ([xshift=-0.8em]tc-wallet.east);
+%  \path[->,color=gold,ultra thick,dashed] (ctc.west) edge [below,transform canvas={yshift=-1em}] node [text=black,xshift=0.4em] {\small $\gasdeliver - \fee$} ([xshift=-0.8em]tc-wallet.east);
+
+  \path[] (tc-wallet.north east) edge [draw=none,above] node [yshift=0.75em] {\small \bf \underline{Deliver}} (ctc.north west);
+
+  \begin{pgfonlayer}{background}
+%    \node[bg-box,
+%          blockchain-color,
+%          inner sep=1.2em,
+%          fit={(ctc)($(user.north west)+(0,0.9em)$)},
+%          label=above:{\bf Blockchain}] () {};
+    \node[bg-box,
+          blockchain-color,
+          fit=(ctc)(cu),
+          label=above:{\bf Contracts}] () {};
+    \node[bg-box,
+          blockchain-color,
+          fit=(tc-wallet)(user),
+          label=above:{\bf Wallets}] () {};
+
+%    \node[inner xsep=0.5em,blockchain-color,rounded corners] (bc-label) at (blockchain.north) {\bf Blockchain};
+%
+%    \node[inner xsep=0.5em,type-box-color,rounded corners,yshift=0.25em] (conts-label) at (conts.north) {\bf Contracts};
+%    \draw[draw=black,dashed,rounded corners] (conts-label.east) -- (conts-label.north east) -- (conts-label.north east-|conts-label.north west) -- (conts-label.west);
+%
+%    \node[inner xsep=0.5em,type-box-color,rounded corners,yshift=0.25em] (wallets-label) at (wallets.north) {\bf Wallets};
+%    \draw[draw=black,dashed,rounded corners] (wallets-label.east) -- (wallets-label.north east) -- (wallets-label.north east-|wallets-label.north west) -- (wallets-label.west);
+  \end{pgfonlayer}
+\end{tikzpicture}
+\caption{{\bf Money Flow for a Delivered Request.}
+Red arrows denote flow of money and brown arrows denote gas limits.
+The thickness of lines indicate the quantity of resources.
+The \gascallback arrow is thin because \gascallback is limited to $\fee - \constgasmin$.
+}
+\label{fig:money-flow}
+\end{figure}
 
 \subsection{Private and Custom Datagrams}
 \label{subsec:private_datagrams}

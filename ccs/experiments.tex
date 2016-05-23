@@ -31,7 +31,7 @@
                 & 180 & 100 & 284 & 158 & 18 
                 & 505 & 100 & 623 & 439 & 31 
                 & 599 & 100 & 787 & 510 & 52 \\
-\bottomrule	
+\bottomrule
 \end{tabular}
 }
 \caption{Enclave response time $t$, with profiling breakdown. All times are in {\bf milliseconds}.
@@ -134,39 +134,33 @@ even future decentralized blockchains.
 
 
 
-\begin{table*}
-\centering
-\begin{tabular}{l|r|r|r}
-\toprule
-& \multicolumn{1}{c|}{\sf CashSettledPut} &
-  \multicolumn{1}{c|}{\sf FlightIns} &
-  \multicolumn{1}{c}{{\sf SteamTrade}${}^\dagger$} \\
-%  & gas (cents) & gas (cents) & gas (cents) \\
-\midrule
-Deliver without Cancel & 11.85\textcent & 12.00\textcent & 12.90\textcent \\ 
-Cancel arrived after Deliver & 14.70\textcent & 14.85\textcent & 15.75\textcent \\ 
-Cancel without Deliver & 13.95\textcent & 14.10\textcent & 15.00\textcent \\ 
-\bottomrule
-\end{tabular}
-\caption[caption]{\emph{Callback-independent} portion of gas costs in USD.
-  The applications differ because their input parameters are of different lengths.
-  We omit the cost of \dgcallback in the first two rows since it would necessary even if data acquisition were free.
-%The difference between applications is due to the differing lengths of the input parameters.
-%The first two rows would also have to pay for $\dgcallback$,
-%but we do not include that cost as it would exist even if data acquisition were free.
-\\\hspace{\textwidth}
-${}^\dagger$ These numbers are for 1 item. Each additional item costs an additional 0.19\textcent.
-}
-\label{tbl:eval_gas}
-\end{table*}
+%\begin{table*}
+%\centering
+%\begin{tabular}{l|r|r|r}
+%\toprule
+%& \multicolumn{1}{c|}{\sf CashSettledPut} &
+%  \multicolumn{1}{c|}{\sf FlightIns} &
+%  \multicolumn{1}{c}{{\sf SteamTrade}${}^\dagger$} \\
+%\midrule
+%Deliver without Cancel & 11.85\textcent & 12.00\textcent & 12.90\textcent \\ 
+%Cancel arrived after Deliver & 14.70\textcent & 14.85\textcent & 15.75\textcent \\ 
+%Cancel without Deliver & 13.95\textcent & 14.10\textcent & 15.00\textcent \\ 
+%\bottomrule
+%\end{tabular}
+%\caption[caption]{\emph{Callback-independent} portion of gas costs in USD.
+%  The applications differ because their input parameters are of different lengths.
+%  We omit the cost of \dgcallback in the first two rows since it would necessary even if data acquisition were free.
+%\\\hspace{\textwidth}
+%${}^\dagger$ These numbers are for 1 item. Each additional item costs an additional 0.19\textcent.
+%}
+%\label{tbl:eval_gas}
+%\end{table*}
 
 \paragraph{Gas Costs.}
 Currently 1 gas costs $5 \times10^{-8}$ Ether, so at the exchange rate of \$15 for 1 Ether, \$1 buys 1.3 million gas.
 Here we provide costs for our implementation components.
 
-%The callback-independent cost of calling \tc (i.e., the cost of the datagram, not the application) for our example applications ranges from 12 to 16 cents.
-%The variation results from different parameter lengths and whether {\bf Cancel} is called.
-Table~\ref{tbl:eval_gas} shows gas costs for calling \tc in our example applications; these costs are callback-independent to reflect datagram costs only, not application costs. We see an effective gas cost for \tc of roughly 10 to 15 cents.
+%Table~\ref{tbl:eval_gas} shows gas costs for calling \tc in our example applications; these costs are callback-independent to reflect datagram costs only, not application costs. We see an effective gas cost for \tc of roughly 10 to 15 cents.
 
 The callback-independent portion of {\bf Deliver} costs about \num[group-separator={,}]{35000} gas (2.6\textcent), so this is the value of $\constgasmin$.
 We set $\constgasmax = \num[group-separator={,}]{3100000}$ gas (\$2.33), as this is approximately Ethereum's maximum {\tt GASLIMIT}.
@@ -174,6 +168,10 @@ The cost for executing {\bf Request} is approximately \num[group-separator={,}]{
 plus \num[group-separator={,}]{2500} gas (0.19\textcent) for every 32 bytes of request parameters.
 The cost to execute {\bf Cancel} is 62500 gas (4.7\textcent)
 including the gas cost $\constgasinvokecancel$ and the refund $\constgascancel$ paid to \tc should {\bf Deliver} be called after {\bf Cancel}.
+
+The total callback-independent cost of acquiring a datagram from \tc (i.e., the cost of the datagram, not the application)
+ranges from 11.9\textcent\ ({\sf CashSettledPut}) to 12.9\textcent\ ({\sf SteamTrade})\footnote{This cost is for 1 item. Each additional item costs an additional 0.19\textcent.}.
+The variation results from differing parameter lengths.
 
 
 
