@@ -59,7 +59,7 @@ The \tcontract accepts a datagram request with fee \fee from \reqcont, assigns i
 The \tcs\ \medname\ \relay monitors requests and forwards them to the \encname.
 As we discussed in Section~\ref{sec:tcb-hybridization}, upon receipt of a response from \tcadd, \tcont verifies that $\dgform' = \dgform$ to ensure validity.
 If the request is valid, \tcont forwards the resulting datagram \dgm by calling the \dgcallback specified in the initial request.
-To ensure that all gas spent can be reimbursed, \tcont sets $\gascallback := \fee = \constgasmin$ for this sub-call.
+To ensure that all gas spent can be reimbursed, \tcont sets $\gascallback := \fee - \constgasmin$ for this sub-call.
 \tcont is specified fully in Fig.~\ref{fig:tc-contract}. Here, Call denotes a call to a contact entry point. 
 
 \begin{figure}[ht!]
