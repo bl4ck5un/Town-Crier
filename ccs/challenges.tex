@@ -1,12 +1,10 @@
 \section{Two Key Security Properties}
 
-Before presenting the \tc protocol in detail, we discuss two key security properties informing its design: gas sustainability and TCB minimization in the hybridized TCB model that \tc introduces. While we introduce them in this work, as we shall explain, they are of broad and general applicability.
+Before presenting the \tc protocol details, we discuss two key security properties informing its design: gas sustainability and TCB minimization in \tc's hybridized TCB model. While we introduce them in this work, as we shall explain, they are of broad and general applicability.
 
 \subsection{Gas Sustainability}
 \label{sec:gas-sustainability}
 
-%Recall from Section~\ref{sec:contracts-and-gas} that computation in Ethereum is not free; it employs \emph{gas} to fuel contracts.
-%For a call to a contract, that cost is paid by the user who initiates the transaction, regardless of what other contracts are called as part of execution.
 As explained above, Ethereum's fee model requires that gas be paid by the user who initiates a transaction, including all gas resulting from dependent calls. 
 This means that a service that initiates calls to Ethereum contracts must spend money to execute those calls.
 Without careful design, such services run the risk of malicious users (or protocol bugs) draining financial resources by triggering blockchain calls for which the service's fees will not be reimbursed, resulting in financial depletion of the service and an application-layer denial-of-service attack.
@@ -68,7 +66,6 @@ The need for gas sustainability (with $K > 0$, as required by \tc) informs our p
 can greatly increase TCB complexity of implemented naively.
 We propose techniques to eliminate the most expensive operations (highlighted in red).}
 \label{fig:tcb-hybridization}
-\vspace{-1.5em}
 \end{figure}
 
 In a system involving a smart contract interacting with an off-chain trusted computing environment (e.g. SGX),
@@ -108,9 +105,7 @@ Let {\sf Verify} denote a verification algorithm for EPID signatures.
 Fig.~\ref{fig:att_check} gives the protocol for a client to check that \tcbon is backed by a valid \tcboff instance.
 (We omit the modeling here of IAS online revocation checks.)
 
-In summary, then, we may assume in our protocol specifications that relying
-clients have verified an attestation for \tcboff and thus that datagram
-responses sent from \tcadd to \tcbon are trusted to originate from \tcboff.
+In summary, by assuming that relying clients have verified an attestation of \tcboff, we can assume that datagrams sent from \tcadd are trusted to originate from \tcboff.
 This eliminates the need to do costly EPID signature verification in \tcbon.
 
 SGX can seal \pkoff into non-volatile storage while protecting integrity and confidentiality \cite{sgxmanual, anati2013innovative},

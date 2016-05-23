@@ -2,7 +2,7 @@
 \label{sec:protocols}
 We now outline the protocol of \tc at a high level.
 The basic structure is conceptually simple:
-a user contract \reqcont requests a datagram from the \tcontract \tcont, \tcont forwards the request to \engine and then returns the response to \reqcont.
+a user contract \reqcont requests a datagram from the \tcontract \tcont, \tcont forwards the request to the \encname and then returns the response to \reqcont.
 There are many details, however, relating to message contents and protection and the need to connect the off-chain parts of \tc with the blockchain.
 
 First we give a brief overview of the protocol structure.
@@ -33,9 +33,14 @@ The lifecycle of a datagram may be briefly summarized in the following steps:
 \subsection{Data Flows}
 \label{sec:protocol-data-flows}
 
-A datagram request by \reqcont takes the form of a message $m_1 = (\dgform, \dgcallback)$ to \tcont on the blockchain. $\dgform$ specifies the requested datagram, e.g., ${\sf params} := (\weburl, {\sf spec}, T)$, where $\weburl$ is the target data source, {\sf spec} specifies content of a the datagram to be retrieved (e.g., a stock ticker at a particular time), and $T$ specifies the delivery time for the datagram (initiated by scraping of the data source). The parameter $\dgcallback$ in $m_1$ indicates the entry point in \reqcont to which the datagram is to be returned. (In principle, $\dgcallback$ could point to a different contract, but \tc does not yet adopt this generalization.) 
+A datagram request by \reqcont takes the form of a message $m_1 = (\dgform, \dgcallback)$ to \tcont on the blockchain.
+$\dgform$ specifies the requested datagram, e.g., ${\sf params} := (\weburl, {\sf spec}, T)$, where $\weburl$ is the target data source, {\sf spec} specifies content of a the datagram to be retrieved (e.g., a stock ticker at a particular time), and $T$ specifies the delivery time for the datagram (initiated by scraping of the data source).
+The parameter $\dgcallback$ in $m_1$ indicates the entry point to which the datagram is to be returned.
+While \dgcallback need not be in \reqcont, we assume it is for simplicity.
 
-\tcont generates a fresh unique $\dgid$ and forwards $m_2 = (\dgid, \dgform)$ to the \encname. It receives in return a return message $m_3 = (\dgid, \dgform, \dgm)$ from the \tc service, where $\dgm$ is the datagram (e.g., the desired stock ticker price). \tcont checks the consistency of $\dgform$ on the incoming and outgoing messages, and if they match forwards $\dgm$ to the entry point \dgcallback in \reqcont in message $m_4$.
+\tcont generates a fresh unique $\dgid$ and forwards $m_2 = (\dgid, \dgform)$ to the \encname.
+In response it receives $m_3 = (\dgid, \dgform, \dgm)$ from the \tc service, where $\dgm$ is the datagram (e.g., the desired stock ticker price).
+\tcont checks the consistency of $\dgform$ on the request and response and, if they match, forwards $\dgm$ to the \dgcallback entry point in message $m_4$.
 
 For simplicity here, we assume that $\reqcont$ makes a one-time datagram request. Thus it can trivially match $m_4$ with $m_1$. Our full protocol contains an optimization by which $\tcont$ returns $\dgid$ to $\reqcont$ after $m_1$ as a consistent, trustworthy identifier for all data flows. This enables straightforward handling of multiple datagram requests from the same instance of $\reqcont$.
 
@@ -123,13 +128,19 @@ Fig.~\ref{fig:dataflow} shows the data flows involved in processing a datagram r
 %\end{figure}
 
 
-Digital signatures are needed to authenticate messages, such as $m_3$, entering the blockchain from an external source. We let $(\skTC, \pkTC)$ denote the private / public keypair associated with the \encname for such message authentication. For simplicity, Fig.~\ref{fig:dataflow} assumes that the \encname can send signed messages directly to \tcont. We explain shortly how Ethereum requires a layer of indirection such that \tc sends $m_3$ as a transaction via an Ethereum wallet \tcadd.
+Digital signatures are needed to authenticate messages, such as $m_3$, entering the blockchain from an external source. We let $(\skTC, \pkTC)$ denote the private / public keypair associated with the \encname for such message authentication.
+For simplicity, Fig.~\ref{fig:dataflow} assumes that the \encname can send signed messages directly to \tcont.
+We explain later how \tc uses a layer of indirection to sends $m_3$ as a transaction via an Ethereum wallet \tcadd.
 
 
 \subsection{Use of SGX}
 \label{sec:useofsgx}
 
-Let $\enclaveprog$ represent the code for \encname, which we presume is trusted by all system participants. Our protocols in \tc rely on the ability of SGX to attest to execution of an instance of $\enclaveprog$ and bind a public key $\pkTC$ to this instance. Here we briefly explain how we achieve these goals. First, we present a model that abstracts away implementation details in SGX, helping simplify our protocol presentation and later our security proofs. We then, in Section~\ref{sec:tcb-hybridization}, explain how SGX attestation is used to authenticate datagrams served by \tcont by binding $\pkTC$ to an Ethereum wallet on the blockchain. Finally, we explain how we use the clock in SGX. Our discussion draws on formalism for SGX from~\cite{sgxsok}.
+Let $\enclaveprog$ represent the code for \encname, which we presume is trusted by all system participants.
+Our protocols in \tc rely on the ability of SGX to attest to execution of an instance of $\enclaveprog$.
+To achieve this goal, we first present a model that abstracts away the details of SGX, helping to simplify our protocol presentation and security proofs.
+We also explain how we use the clock in SGX.
+Our discussion draws on formalism for SGX from Shi et al.~\cite{sgxsok}.
 
 
 %\vspace{-3mm}
@@ -147,7 +158,7 @@ functionality $\fsgx(\sigsgx)[\enclaveprog, \relay]$
 to denote (an instance of) an SGX functionality parameterized
 by a (group) signature scheme $\sigsgx$.
 Here $\enclaveprog$ denotes the SGX enclave program and \relay the physical
-SGX host (which we assume for simplicity is the same as that for the \tc~\medname).
+SGX host (which we assume for simplicity is the same as that of the \tc\ \medname).
 As described in Fig.~\ref{fig:SGX_abstraction}, upon initialization, \fsgx runs ${\sf outp} := \enclaveprog.{\bf Initialize}$()
 and attests to the code of $\enclaveprog$ as well as ${\sf outp}$.
 Upon a resume call with ${(\sf id, params)}$, \fsgx runs and outputs the result of
@@ -248,10 +259,13 @@ Assert \tcont is correct and parametrized w/ \pkTC\\
 %\vspace{-3mm}
 \paragraph{\bf SGX Clock.}
 As noted above, the trusted clock for SGX provides only relative time with respect to a reference point.
-To work around this, the \encname is initialized with the current wall-clock time provided by a trusted source, e.g., the \medname (under a trust-on-first-use model).
+To work around this, the \encname is initialized with the current wall-clock time provided by a trusted source (e.g., the \medname under a trust-on-first-use model).
 In the current implementation of \tc, clients may, in real time, request and verify a fresh timestamp---signed by the \encname under \pkTC---via a web interface in the \medname.
 Thus, a client can determine the absolute clock time of the \encname to within the round-trip time of its attestation request plus the attestation verification time---hundreds of milliseconds in a wide-area network.
-This high degree of accuracy is potentially useful for some applications but only loose accuracy is required for most. Ethereum targets a block interval of 12 s and the clock serves in \tc primarily to: (1) Schedule connections to data sources and (2) To check TLS certificates for expiration when establishing HTTPS connections. For simplicity, we assume in our protocol specifications that the \encname clock provides accurate wall-clock time in the canonical format of seconds since the Unix epoch January 1, 1970 00:00 UTC. Note that the trusted clock for SGX, backed by Intel Manageability Engine~\cite{sgxsdk-userguide}, is resilient to power outage~\cite{ruan_platform_2014}. 
+This high degree of accuracy is potentially useful for some applications but only loose accuracy is required for most.
+Ethereum targets a block interval of 12s and the clock serves in \tc primarily to: (1) Schedule connections to data sources and (2) To check TLS certificates for expiration when establishing HTTPS connections.
+For simplicity, we assume in our protocol specifications that the \encname clock provides accurate wall-clock time in the canonical format of seconds since the Unix epoch January 1, 1970 00:00 UTC.
+Note that the trusted clock for SGX, backed by Intel Manageability Engine~\cite{sgxsdk-userguide}, is resilient to power outages and reboots~\cite{ruan_platform_2014}. 
 
 We let $\clock()$ denote measurement of the SGX clock from within the enclave, expressed as the current absolute (wall-clock) time. 
 

@@ -14,10 +14,10 @@ We use \msgi{i} to label messages corresponding to those in Fig.~\ref{fig:datafl
 For payment, let $\gas$ denote gas and $\fee$ to denote non-gas currency.
 In both cases \$ is a type annotation and the letter denotes the numerical amount.
 For simplicity, we assume that gas and currency adopt the same units (allowing us to avoid explicit conversions).
-We use the following identifiers to denote currency and gas amounts.
-%
-\begin{center}
-\vspace{-1em}
+We use the identifiers in Table~\ref{tbl:gas-ids} to denote currency and gas amounts.
+
+\begin{table}[ht!]
+\centering
 \begin{tabular}{m{0.08\columnwidth}m{0.85\columnwidth}}
   \hline
   $\fee$
@@ -42,12 +42,14 @@ We use the following identifiers to denote currency and gas amounts.
   & Gas needed for {\bf Deliver} on a canceled request \\
   \hline
 \end{tabular}
-\end{center}
-%
+\caption{Identifiers for currency and gas amounts.}
+\label{tbl:gas-ids}
+\end{table}
+
 $\constgasmin$, $\constgasmax$, $\constgasinvokecancel$, and $\constgascancel$ are system constants,
 $\fee$ is chosen by the requester (and may be malicious if the requester is dishonest),
-and $\gasdeliver$ is chosen by the \tc~\encname when calling {\bf Deliver}.
-Though $\gasrequest$ and $\gascancel$ are set by the requester, Ethereum will abort a user-initiated transaction if they are too small, so we need not worry about the values.
+and $\gasdeliver$ is chosen by the \tc\ \encname when calling {\bf Deliver}.
+Though $\gasrequest$ and $\gascancel$ are set by the requester, a user-initiated transaction will abort if they are too small, so we need not worry about the values.
 
 \paragraph{Initialization.}
 \tc deposits at least $\constgasmax$ into the $\tcadd$.
