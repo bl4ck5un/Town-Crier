@@ -59,7 +59,7 @@ Therefore, $\algB$ simply outputs this as a signature forgery.
 
 \begin{lemma}
 \label{lem:no-money-theft}
-$\tcont$ will never attempt to send money in {\bf Deliver} or {\bf Cancel} that were not deposited with the given $\dgid$.
+$\tcont$ will never attempt to send money in {\bf Deliver} or {\bf Cancel} that was not deposited with the given $\dgid$.
 \end{lemma}
 
 \begin{proof}
@@ -91,8 +91,8 @@ Thus no further money will be distributed in connection with $\dgid$.
 
 
 
-\begin{retheorem}{thm:tc-gas-sustainable}[\tcs is Gas Sustainable]
-\tc is gas sustainable when the initial value of \tcadd is at least \constgasmax.
+\begin{retheorem}{thm:tc-gas-sustainable}[Gas Sustainability]
+\tcs is \emph{\constgasmax-gas sustainable}.
 \end{retheorem}
 
 \begin{proof}
@@ -166,7 +166,7 @@ For any such request submitted by an honest user $\reqcont$, one of the followin
 
 
 \begin{proof}
-$\reqcont$ is honest, so she will spend $\constgasrequest$ to invoke {\bf Request}$(\dgform, \dgcallback, \consthonestfee)$.
+$\reqcont$ is honest, so she will first spend $\constgasrequest$ to invoke ${\bf Request}(\dgform, \dgcallback, \consthonestfee)$.
 Ethereum does not allow money to change hands without the payer explicitly sending money.
 Therefore we must only examine the explicit function invocations and monetary transfers initiated by $\reqcont$ in connection with the request.
 It is impossible for $\reqcont$ to lose more money than she gives up in these transactions even if \tc is malicious.

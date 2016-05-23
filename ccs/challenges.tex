@@ -1,6 +1,6 @@
 \section{Two Key Security Properties}
 
-Before presenting the \tc protocol in detail,  we now discuss two key security properties informing its design: gas sustainability and TCB minimization within the hybridized TCB model that \tc introduces. While we introduce them in this work, as we shall explain, they are of broad and general applicability.
+Before presenting the \tc protocol in detail, we discuss two key security properties informing its design: gas sustainability and TCB minimization in the hybridized TCB model that \tc introduces. While we introduce them in this work, as we shall explain, they are of broad and general applicability.
 
 \subsection{Gas Sustainability}
 \label{sec:gas-sustainability}
@@ -29,14 +29,9 @@ Moreover, the service must have sufficient gas for each call. Otherwise such rei
 
 The need for gas sustainability (with $K > 0$, as required by \tc) informs our protocol design in Section~\ref{sec:protocol}. We prove that \tc achieves this property in Section~\ref{sec:analysis}.
 
-\subsection{TCB Hybridization Model and TCB Minimization}
+\subsection{TCB Hybridization Minimization}
 \label{sec:tcb-hybridization}
 
-%% some macros used within this doc
-\newcommand{\tcboff}{\ensuremath{\mathcal{C}_{\textsf{Off}}}\xspace}
-\newcommand{\tcbon}{\ensuremath{\mathcal{C}_{\textsf{On}}}\xspace}
-\newcommand{\oauth}{\ensuremath{\mathcal{O}_{\textsf{Auth}}}\xspace}
-\newcommand{\pkoff}{\ensuremath{\textsf{pk}_{\textsf{Off}}}\xspace}
 
 \begin{figure}[ht]
 \begin{boxedminipage}{\columnwidth}
@@ -75,6 +70,7 @@ The need for gas sustainability (with $K > 0$, as required by \tc) informs our p
 can greatly increase TCB complexity of implemented naively.
 We propose techniques to eliminate the most expensive operations (highlighted in red).}
 \label{fig:tcb-hybridization}
+\vspace{-1.5em}
 \end{figure}
 
 In a system involving a smart contract interacting with an off-chain trusted computing environment (e.g. SGX),
@@ -82,64 +78,18 @@ the TCB is a hybridization of two components with distinct properties.
 Computation in the smart contract is slow, costly, and completely transparent, meaning it cannot rely on secrets.
 An SGX enclave is computationally powerful and executes privately, but all external interaction, notably including communication with the contract, must go through an untrusted intermediary. While this hybridized TCB is powerful and generally useful well beyond \tc, it presents a challenge: establishing secure communication between the components while minimizing the code in the TCB.
 
-%In a system involving an off-chain trusted execution environment such as SGX
-%interacting with a smart contract, its TCB is a hybridization of two
-%heterogeneous functionalities with distinct properties.  The SGX part, or the
-%off-chain part of the TCB, is computationally powerful and can be executed
-%privately. On the other hand, the computation in the on-chain part (i.e. the
-%smart contract) is relatively slow and costly but verifiable. Moreover,
-%since the execution of smart contracts is transparent, it is impossible to sign
-%or computing MAC from within a smart contract. Both parts enjoy the integrity guarantee,
-%but all interaction must go through an untrusted intermediary. 
-%The challenge, therefore, is to establish secure communication channels between
-%them and keep the TCB minimal. 
-
-We define abstractions for both TCB components in Fig.~\ref{fig:tcb-hybridization}. To distinguish these abstractions from formal ideal functionalities, we denote them by $\mathcal{C}$ (for component), rather than $\mathcal{F}$.
-We model the authentication of on-chain messages by an oracle \oauth, which treturns true if an input is a valid blockchain transaction.
+We define abstractions for both TCB components in Fig.~\ref{fig:tcb-hybridization}.
+To distinguish these abstractions from formal ideal functionalities, we use \tcb (for trusted component), rather than $\mathcal{F}$.
+We model the authentication of on-chain messages by an oracle \oauth, which returns true if an input is a valid blockchain transaction.
 Since Ethereum blocks are self-authenticated using Merkle trees \cite{whitepaper,yellowpaper},
 in principle we can realize \oauth by including an Ethereum client in the TCB.
 Doing so drastically increases the code footprint, however, as the core Ethereum implementation is about 50k lines of C++.
-Similarly, a smart contract could authenticate messages from an SGX by checking attestations.
-But implementing this verification in a smart contract would be error-prone and computationally (and thus financially) expensive.
+Similarly, a smart contract could authenticate messages from an SGX by checking attestations,
+but implementing this verification in a smart contract would be error-prone and computationally (and thus financially) expensive.
 
 Instead we propose two general techniques to avoid these calls and thereby minimize code size in the TCB.
 The first applies to any hybrid system where one TCB component is a blockchain contract.
 The second applies to any hybrid system where the TCB components communicate only to make and respond to requests.
-
-%Fig. \ref{fig:tcb-hybridization} depicts the
-%ideal functionalities of off-chain and on-chain TCB that we need to realize.
-%In Fig. \ref{fig:tcb-hybridization}, we model the authentication of on-chain
-%messages by an oracle \oauth, which takes in a message
-%and returns a boolean indicating whether the input is a valid 
-%transaction on the blockchain.
-%Since Ethereum blockchain is self-authenticated using Merkle
-%tree~\cite{yellowpaper}, in theory we can realize \oauth
-%by including a Ethereum client in the TCB. But doing so blows the TCB size up 
-%significantly (the core of Ethereum implements contains about 50k lines of C/C++ code).
-%Similarly, in the opposite direction a smart contract can
-%authenticate messages coming from an SGX by checking 
-%attestations. But implementing
-%signature verification in a smart contract is error-prone and 
-%computationally expensive. Verification of ECDSA signatures
-%happens to be supported in Ethereum via a precompiled contract~\cite{yellowpaper}
-%but still costs extra gas.
-%Therefore we proposed two techniques that eliminate both \oauth
-%and explicit signature verification from the TCB. These techniques 
-%are quite general and can be applied to any system involving
-%such a hybrid TCB.
-%
-%\iffalse
-%As described in Section~\ref{sec:architecture}, \tc has two trusted components: the \encname and \tcont.
-%These components must communicate with each other, but can only do so over insecure channels (through the \medname).
-%Moreover, these components comprise very different properties.
-%\tcont resides on the blockchain where users can interact directly with \tc and all computation is verifiable, expensive, and transparent.
-%The \encname provides a private and less expensive environment, but all interaction (user or otherwise) must go through an untrusted intermediary.
-%
-%The simplest way to ensure authentic communication between the components is to have both perform verification;
-%\tcont receives signed messages from the \encname and verifies the signatures,
-%and the \encname receives raw blocks and verifies that they are well-formed.
-%Unfortunately, both of these verification mechanisms require a large amount of computation and complex code.
-%\fi
 
 
 \paragraph{Binding \tcboff to \tcadd.}
