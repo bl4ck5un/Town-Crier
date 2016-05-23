@@ -92,3 +92,10 @@ For any such request submitted by an honest user $\reqcont$, one of the followin
 
 
 \paragraph{Other security concerns.} In Section~\ref{subsec:enhanced_robustness}, we addressed concerns about attacks outside the SGX isolation model embraced in the basic \tc protocol. A threat we do not address in \tc is the risk of traffic analysis by a network adversary or compromised \medname against confidential applications (e.g., with private datagrams), although we briefly discuss the issue in Section~\ref{sec:applications}. We also note that while \tc assumes the correctness of data sources, if a scraping failure occurs, \tc delivers an empty datagram, enabling relying contracts to fail gracefully.
+
+Another security concern we took into consideration 
+is \skTC's resilience to power outage. This is 
+addressed using the sealing functionality~\cite{sgxmanual, anati2013innovative}
+provided by SGX. Also, ``sealing to the sealing identity'' can be used to 
+upgrade the enclave code after deployment. Due to space constraints, we refer reads
+to~\cite{anati2013innovative, sgxmanual} for details regarding sealing policies in SGX.
