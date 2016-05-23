@@ -38,11 +38,11 @@ We omit the full source code due to length and complexity.
 
   \multicolumn{2}{|l|}{\bf Constants} \\
   $T_\text{stock}$ & := \tcs stock info request type \\
-  $\sblue{\$F_\text{\tc}}$ & := fee payed to \tc for datagram delivery \\[1ex]
+  $\sblue{\$F_\mathrm{\tc}}$ & := fee payed to \tc for datagram delivery \\[1ex]
 
   \multicolumn{2}{|l|}{\bf Functions} \\
       {\bf Init:} & On recv $(\tcont, {\sf ticker}, P_S, P_U, M, {\sf expr}, \fee)$ from $\wallet_\text{issuer}$ \\
-                  & Assert $\fee = (P_S - P_U) \cdot M + \sblue{\$F_\text{\tc}}$ \\
+                  & Assert $\fee = (P_S - P_U) \cdot M + \sblue{\$F_\mathrm{\tc}}$ \\
                   & Save all inputs and $\wallet_\text{issuer}$ to storage. \\[1ex]
 
       {\bf Buy:} & On recv $(X, \fee)$ from $\userwallet$: \\
@@ -54,7 +54,7 @@ We omit the full source code due to length and complexity.
                  & Set $\wallet_\text{buyer} = \userwallet$ \\
                  & Save $X$ to storage \\
                  & Send $(P_S - P_U)(M - X)$ to $\wallet_\text{issuer}$ \\[-0.8em]
-                 & \sgray{\it //~Hold $P_S \cdot X + \sblue{\$F_\text{\tc}}$} \\[1ex]
+                 & \sgray{\it //~Hold $P_S \cdot X + \sblue{\$F_\mathrm{\tc}}$} \\[1ex]
 
       {\bf Put:} & On recv $()$ from $\wallet_\text{buyer}$: \\
                  & \quad and ${\sf timestamp} < {\sf expr}$ \\
@@ -62,7 +62,7 @@ We omit the full source code due to length and complexity.
                  & Set {\sf isPut} \\
                  & $\dgform := [T_\text{stock}, {\sf ticker}]$ \\
                  & $\dgcallback := {\tt this}.{\bf Settle}$ \\
-                 & $\tcont.{\bf Request}(\dgform, \dgcallback, \sblue{\$F_\text{\tc}})$ \\[1ex]
+                 & $\tcont.{\bf Request}(\dgform, \dgcallback, \sblue{\$F_\mathrm{\tc}})$ \\[1ex]
 
    {\bf Settle:} & On recv $(\dgid, P)$ from $\tcont$: \\
                  & If $P \geq P_S$ \\
@@ -109,9 +109,9 @@ In Figure~\ref{fig:flight-ins-real} we include a full implementation of {\sf Fli
 
 
 \paragraph{Steam Marketplace ({\sf SteamTrade}).} Steam~\cite{steam} is an online gaming platform that supports thousands of games and maintains its own marketplace, where users can trade, buy, and sell games and other virtual items.  We implement a contract for the sale of games and items for ether that showcases \tc's support for custom datagrams through the use of Steam's access-controlled API.\\
-\indent A user intending to sell items creates a contract {\sf SteamTrade} with her Steam account number $ID_S$, a list $L$ of items for sale, a price $P$, and a ciphertext $C$ under the \tc's public key $\pkTC$ of her Steam API key.  In order to purchase the list of items, a buyer first uses a Steam client to create a trade offer requesting each item in $L$.  The buyer then submits to {\sf SteamTrade} her Steam account number $ID_U$, a length of time $T_U$ indicating how long the seller has to respond to the offer, and an amount of ether equivalent to the price $P$.  {\sf SteamTrade} sends \tc a custom datagram containing the current time $T$, $ID_U$, $T_U$, $L$, and the encrypted API key $C$.  \tc decrypts $C$ to obtain the API key, delays for time $T_U$, then retrieves all trades between the two accounts using the provided API key within that time period.  \tc verifies whether or not a trade exactly matching the items in $L$ successfully occurred between the two accounts and returns the result to {\sf SteamTrade}.  If such a trade occurred, {\sf SteamTrade} sends the buyer's ether to the seller's account.  Otherwise the buyer's ether is refunded.
+\indent A user intending to sell items creates a contract {\sf SteamTrade} with her Steam account number ${\it ID}_S$, a list $L$ of items for sale, a price $P$, and a ciphertext $C$ under the \tc's public key $\pkTC$ of her Steam API key.  In order to purchase the list of items, a buyer first uses a Steam client to create a trade offer requesting each item in $L$.  The buyer then submits to {\sf SteamTrade} her Steam account number ${\it ID}_U$, a length of time $T_U$ indicating how long the seller has to respond to the offer, and an amount of ether equivalent to the price $P$.  {\sf SteamTrade} sends \tc a custom datagram containing the current time $T$, ${\it ID}_U$, $T_U$, $L$, and the encrypted API key $C$.  \tc decrypts $C$ to obtain the API key, delays for time $T_U$, then retrieves all trades between the two accounts using the provided API key within that time period.  \tc verifies whether or not a trade exactly matching the items in $L$ successfully occurred between the two accounts and returns the result to {\sf SteamTrade}.  If such a trade occurred, {\sf SteamTrade} sends the buyer's ether to the seller's account.  Otherwise the buyer's ether is refunded.
 
-In Figure~\ref{fig:steamtrade} we describe the protocol for {\sf CashSettledPut}.
+In Figure~\ref{fig:steamtrade} we describe the protocol for {\sf SteamTrade}.
 We again omit the full source code due to length and complexity.
 
 \begin{figure}[h!]
@@ -129,20 +129,20 @@ We again omit the full source code due to length and complexity.
   $\sblue{\$F_\text{\tc}}$ & := fee payed to \tc for datagram delivery \\[1ex]
 
   \multicolumn{2}{|l|}{\bf Functions} \\
-  {\bf Init:}   & On recv $(\tcont, ID_S, encAPI_S, List_I, P)$ from $\wallet_\text{seller}$: \\
-                & Save all inputs and $\wallet_\text{seller}$ to storage. \\[1ex]
+  {\bf Init:}   & On recv $(\tcont, {\it ID}_S, {\it encAPI}_S, {\it List}_I, P)$ from $\wallet_S$: \\
+                & Save all inputs and $\wallet_S$ to storage. \\[1ex]
 
-  {\bf Buy:} & On recv $(ID_U, T_U, \fee)$ from $\userwallet$: \\
+  {\bf Buy:} & On recv $({\it ID}_U, T_U, \fee)$ from $\userwallet$: \\
                 & Assert $\fee = P$ \\
-                & $\dgform := [encAPI_S, ID_U, T_U, LIST_I]$ \\
+                & $\dgform := [{\it encAPI}_S, {\it ID}_U, T_U, {\it List}_I]$ \\
                 & $\dgcallback := {\tt this}.{\bf Pay}$ \\
                 & $\dgid := \tcont.{\bf Request}(\dgform, \dgcallback, \sblue{\$F_\text{\tc}})$ \\
                 & Store $(\dgid, \userwallet)$ \\[1ex]
 
-  {\bf Pay:}    & On recv $(\dgid, status)$ from $\tcont$: \\
+  {\bf Pay:}    & On recv $(\dgid, {\it status})$ from $\tcont$: \\
                 & Retrieve and remove stored $(\dgid, \userwallet)$ \\
                 & \quad \sgray{\it //~Abort if not found} \\
-                & If $status > 0$ \\
+                & If ${\it status} > 0$ \\
                 & \quad Send $\sblue{\$F_\text{price}}$ to $\wallet_\text{seller}$ \\
                 & Else \\
                 & \quad send $\sblue{\$F_\text{price}}$ to $\userwallet$ \\
