@@ -6,7 +6,7 @@ We now present further, system-level details on the \tc contract \tcont and the 
 
 \subsection{TC Contract} 
 
-We implement \tcont with fees as described in Section~\ref{sec:gas-protocol} in Solidity,
+We implement \tcont as described in Section~\ref{sec:protocol} in Solidity,
 a high-level language with JavaScript-like syntax which compiles to Ethereum Virtual Machine bytecode---the language Ethereum contracts use.
 
 In order to handle the most general type of requests---including encrypted parameters---the \tcont implementation requires two parameter fields:
@@ -15,7 +15,7 @@ This byte array is parsed and interpreted inside the \encname, but is treated as
 For convenience, we include the timestamp of the current block as an implicit parameter.
 
 To guard against the \medname tampering with request parameters, the \tcont protocol includes $\dgform$ as an argument to {\bf Deliver} which validates against stored values.
-To reduce this cost for large arrays, we store and verify $\text{SHA3-256}({\sf requestType} || {\sf timestamp} || {\sf paramArray})$.
+To reduce this cost for large arrays, we store and verify \linebreak $\text{SHA3-256}({\sf requestType} || {\sf timestamp} || {\sf paramArray})$.
 The \medname scrapes the raw values for the \encname which computes the hash and includes it as an argument to {\bf Deliver}.
 
 As we mentioned in Section~\ref{sec:protocol-data-flows}, to allow for improved efficiency in client contracts,
@@ -164,7 +164,7 @@ We implemented the Ethereum ABI and RLP which, respectively, specify the seriali
 \noindent\emph{Attestation Generation.} Recall in Section \ref{sec:background}
 we mentioned that an \emph{attestation} is an \emph{report} digitally signed by
 the Intel-provided Quoting Enclave (QE).  Therefore two phases are involved in
-generating \att. First, the \encname calls \texttt{sgx\_create\_report} to
+generating \att. First, the \encname calls \linebreak \texttt{sgx\_create\_report} to
 generate a report with QE as the target enclave. Then the \medname forwards the
 report to QE and calls \texttt{sgx\_get\_quote} to get a signed version of the
 report, namely an attestation.

@@ -1,7 +1,7 @@
 
 \newcommand{\ucstring}[1]{{\color{black} #1}}
 
-\section{More Details on Formal Modeling} 
+\section{Formal Modeling} 
 \subsection{SGX Formal Modeling}
 \label{sec:sgxmodel}
 
@@ -47,8 +47,7 @@ and keeps track of
 multiple execution contexts
 for multiple enclave programs, happening on different SGX machines in the world.
 For convenience, 
-this paper adopts a new notation
-%In Figure~\ref{fig:fsgx}
+this paper adopts a new notation \linebreak
 $\fsgx(\sigsgx)[\enclaveprog, \relay]$
 to denote 
 one specific execution context of the global \fsgx
@@ -156,30 +155,19 @@ the real-world Ethereum instantiation of a blockchain.
 %Kosba et al.~\cite{hawk} and 
 %the real-world instantiation of blockchains such as Ethereum (and Bitcoin). 
 
-Recall that one tricky detail for the gas-aware version of the Town Crier 
-contract arises from the need to deal with  
-with {\bf Deliver}
-arriving after {\bf Cancel}.
-In the formal blockchain model
-proposed by Kosba et al.~\cite{hawk}, we can easily get away with this issue 
-by introducing 
-a timeout parameter
-$\Ttimeout$ that the requester attaches to each datagram request. 
-If the datagram fails to arrive before $\Ttimeout$, 
-the requester can call {\bf Cancel}
-any time after 
-$\Ttimeout + \Delta T$.  
-On the surface, this 
-seems to ensure that no {\bf Deliver} will be invoked
-after {\bf Cancel} assuming Town Crier is honest. 
+As we will see in the proof of Theorem~\ref{thm:tc-gas-sustainable}, we must carefully handle the case of {\bf Deliver} arriving after {\bf Cancel}.
+In the formal blockchain model proposed by Kosba et al.~\cite{hawk}, we can easily get away with this issue by introducing a timeout parameter
+$\Ttimeout$ that the requester attaches to each datagram request.
+If the datagram fails to arrive before $\Ttimeout$, the requester can call {\bf Cancel} any time after $\Ttimeout + \Delta T$.
+On the surface, this seems to ensure that no {\bf Deliver} will be invoked after {\bf Cancel} assuming Town Crier is honest.
 
-However, we did not adopt this approach due to a technical subtlety
+However, we do not adopt this approach due to a technical subtlety
 that arises in this context---again, the fact that  
 the Ethereum blockchain does not  
 perfectly match the formal blockchain 
 model specified by Kosba et al~\cite{hawk}.
 Specifically, the blockchain model by Kosba et al.
-assumes that every message (i.e., transaction) will be delivered 
+assumes that every message (i.e. transaction) will be delivered 
 to the blockchain 
 by the end of each epoch and that the adversary cannot drop
 any message.
@@ -193,7 +181,7 @@ capacity of Ethereum, a backlog of transactions will build up,
 and similarly in this case there is also guaranteed
 ordering of backlogged transactions.
 Due to these considerations, we defensively design our Town Crier contract
-such that gas neutrality is attained for Town Crier
+such that \constgasmax-gas sustainability is attained for Town Crier
 even if the {\bf Deliver} transaction arrives after {\bf Cancel}.
 
 %\elaine{in extension, we can support an abstraction
