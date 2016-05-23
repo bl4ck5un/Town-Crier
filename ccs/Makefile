@@ -4,7 +4,7 @@
 LATEX=pdflatex
 TEXFLAGS=
 
-TARGET=resubmit.pdf 
+TARGET=Resubmit.pdf 
 
 all: $(TARGET)
 
