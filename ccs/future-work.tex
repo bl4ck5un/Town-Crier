@@ -6,21 +6,19 @@ We discuss a few of those features here.
 
 \paragraph{Freeloading Protection.}
 There are concerns in the Ethereum community about ``parasite contracts'' that forward or resell datagrams from fee-based data feeds \cite{parasite}.
-In order to guard against these parasites, we plan to deploy a mechanism in \tc inspired by designated verifier proofs \cite{JakobssonSI1996}.
-All users ${\cal U}$ of a requesting contract would generate keys for a multi-party signature and submit the private keys to \tcont encrypted under \pkTC.
-\tc will then produce a datagram signed with the combination of all supplied keys.
+As a countermeasure, we plan to deploy a mechanism in \tc inspired by designated verifier proofs \cite{JakobssonSI1996}, as follows.
+The set of $n$ users ${\cal U} = \{U_1, U_2, \ldots, U_n\}$ of a requesting contract generate an $(n,n)$-secret-shared key pair $(\sk_{\cal U}, \pk_{\cal U})$. They submit their $n$ individual shares to the \tc enclave (e.g., as ciphertexts under $\pkTC$ sent to \tcont). 
 
-With all of the associated secret keys, \tcont can produce a datagram with the appropriate signature and each user $U_i$ can be sure the datagram is valid since she did not collude in its creation.
-However, potential parasitic users cannot determine whether the datagram was produced by \tcont or by ${\cal U}$, and thus whether or not it is valid.
+\tc now can sign datagrams using $\sk_{\cal U}$. Each user $U_i$ can be sure individually that a datagram produced by \tc is valid, since she did not collude in its creation. Potential parasitic users, however, cannot determine whether the datagram was produced by \tcont or by ${\cal U}$, and thus whether or not it is valid.
 Such a \emph{source-equivocal datagram} renders parasite contracts less trustworthy and thus less attractive.
 
 \paragraph{Revocation Support.}
 There are two forms of revocation relevant to \tc.
 First, the certificates of data sources may be revoked.
-Since \tc already uses HTTPS, it could easily use an Online Certificate Status Protocol (OCSP) to check TLS certificates.
+Since \tc already uses HTTPS, it could easily use the Online Certificate Status Protocol (OCSP) to check TLS certificates.
 Second, an SGX host could become compromised, prompting revocation of its EPID signatures by Intel.
-The Intel Attestation Service (IAS) will reportedly provide a means of disseminating such revocations.
-Conveniently, clients already use the IAS when checking the attestation \sigatt, so this requires no modification to \tc.
+The Intel Attestation Service (IAS) will reportedly disseminate such revocations.
+Conveniently, clients already use the IAS when checking the attestation \sigatt, so revocation checking will require no modification to \tc.
 
 \paragraph{Hedging Against SGX Compromise.}
 We discussed in Section~\ref{subsec:enhanced_robustness} how \tc can support majority voting across SGX hosts and data sources.
@@ -31,14 +29,14 @@ and each participating host can monitor the blockchain to ensure delivery.
 
 \paragraph{Updating \tc's Code.}
 As with any software, we may discover flaws in \tc or wish to add new functionality after initial deployment.
-However, with \tc as described above, updating \engine would cause the \encname to lose access to \skTC and thus be unable to respond to requests in \tcont.
-The \tc operators could set up a new contract $\tcont'$ referencing the new keys, but this is expensive and burdensome for \tc's operators and users.
-While arbitrary code changes would be highly insecure, we could create a template for user contracts that includes a means to approve upgrades.
+With \tc as described above, however, updating \engine would cause the \encname to lose access to \skTC and thus be unable to respond to requests in \tcont.
+The \tc operators could set up a new contract $\tcont'$ referencing new keys, but this would be expensive and burdensome for \tc's operators and users.
+While arbitrary code changes would insecure, we could create a template for user contracts that includes a means to approve upgrades.
 We plan to investigate this and other mechanisms.
 
 \paragraph{Generalized Custom Datagrams.}
 In our {\sf SteamTrade} example contract we demonstrated a custom datagram that scrapes a user's online account using her credentials.
-A more general approach would allow users to supply their own general purpose code and achieve inexpensive data-source-enriched emulation of private contracts in Hawk \cite{hawk}.
-Placing such large requests on the blockchain would be extremely expensive, but code could be easily loaded off-chain.
+A more generic approach would allow users to supply their own general-purpose code to \tc and achieve inexpensive data-source-enriched emulation of private contracts in Hawk \cite{hawk}.
+Placing such large requests on the blockchain would be prohibitively expensive, but code could be easily loaded into \tc enclave off-chain.
 Of course, deploying arbitrary user code raises many security and confidentiality concerns which \tc would need to address.
 
