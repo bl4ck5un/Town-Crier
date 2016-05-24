@@ -7,9 +7,10 @@ TEXFLAGS=
 TARGET=Resubmit.pdf 
 
 all: $(TARGET)
+	$(LATEX) main.tex
+	$(LATEX) supplementary.tex
 
 $(TARGET): $(TARGET:.pdf=.tex) *.tex *.bib 
-#	epstopdf figures/impl.eps
 	$(LATEX) $(TEXFLAGS) $<
 	$(LATEX) $(TEXFLAGS) $<
 	bibtex $(basename $<)
@@ -19,7 +20,6 @@ $(TARGET): $(TARGET:.pdf=.tex) *.tex *.bib
 
 light:
 	pdflatex $(TARGET:.pdf=.tex)
-
 
 clean:
 	rm -f $(TARGET) *.log *.aux *.bbl *.blg 
