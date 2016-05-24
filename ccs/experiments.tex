@@ -1,7 +1,7 @@
 \section{Experiments}
 \label{sec:experiments}
 
-We built and implemented three showcase applications which we plan to launch together with \tc.
+We implemented three showcase applications which we plan to launch together with \tc.
 We provide a brief description of our applications followed by cost and performance measurements.
 We refer the reader to Appendix~\ref{sec:applicationsfull} for more details on the applications and code samples.
 
@@ -47,25 +47,29 @@ We refer the reader to Appendix~\ref{sec:applicationsfull} for more details on t
 We executed 500 experimental runs, and report
 the statistics including 
 the average ({\bf mean}), proportion (\%), maximum ($t_{\max}$),
-minimum ($t_{\min}$) and standard deviation ($\sigma_t$). Note that {\bf Total} is the end-to-end response time as 
-defined in Section~\ref{subsec:response time}. Times may not
+minimum ($t_{\min}$), and standard deviation ($\sigma_t$). Note that {\bf Total} is the end-to-end response time as 
+defined in \emph{Enclave Response Time}. Times may not
 sum to this total due to minor unprofiled overhead.}
 \label{tab:eval_profiling}
+\vspace{-1em}
 \end{table*}
 
 We evaluated the performance of \tc on a Dell Inspiron 13-7359 laptop 
 with an Intel i7-6500U CPU and 8.00GB memory, one of the few SGX-enabled systems commercially available at the
-time of writing. We
-show that on this single host---not even a server, but a consumer device---our implementation of \tc can easily process
+time of writing.
+We show that on this single host---not even a server, but a consumer device---our implementation of \tc can easily process
 transactions at the peak global rate of Bitcoin, currently the most heavily loaded decentralized blockchain. 
+
+We report mean run times (with the standard deviation in parenthesis) over 100 trials.
 %a popular, modern blockchain such as Bitcoin. (Two such hosts could match Bitcoin's peak global transaction rate should it be scaled up through reparametrization.) 
 
 \paragraph{TCB Size.}
 The trusted computing base (TCB) of Town Crier includes the~\encname and \tcontract. The \encname consists of approximately 46.4k
-lines of C/C++ code, the vast majority of which (42.7k lines) is the modified mbedTLS \cite{mbedtls}
-library. The source code of mbedTLS has been widely deployed and tested, while the
+lines of C/C++ code, the vast majority of which (42.7k lines) is the modified mbedTLS library \cite{mbedtls}.
+The source code of mbedTLS has been widely deployed and tested, while the
 remainder of the~\encname codebase is small enough to admit formal verification.
-The \tcontract is also compact: It consists of approximately 120 lines of Solidity code.
+The \tcontract is also compact;
+it consists of approximately 120 lines of Solidity code.
 
 \paragraph{Enclave Response Time.}
 \label{subsec:response time}
@@ -108,7 +112,7 @@ over multiple roundtrips to fetch the desired datagram.
 \end{tikzpicture}
 }
 \caption{Throughput on a single SGX machine.  The x-axis is the number of
-concurrent enclaves and the y-axis is the number of tx / sec. 
+concurrent enclaves and the y-axis is the number of tx/sec. 
 Dashed lines indicate the ideal scaling for each application, and error bars, the standard deviation.
 We ran 20 rounds of experiments (each round processing 1000
 transactions in parallel).}
@@ -117,8 +121,7 @@ transactions in parallel).}
 \end{figure}
 We performed a sequence of experiments measuring the transaction throughput while scaling up the number of concurrently running enclaves 
 on our single SGX-enabled host from 1 to 20. 20 \tc enclaves is the maximum possible given the enclave memory constraints on the specific machine model we used.
-Figure \ref{fig:trpt}
-shows that for the three applications evaluated,
+Fig.~\ref{fig:trpt} shows that, for the three applications evaluated,
 {\bf a single SGX machine can handle
 15 to 65
 tx/sec}. 
@@ -126,19 +129,15 @@ tx/sec}.
 Several significant data points show
 how effectively \tc can serve the needs of 
 today's blockchains for authenticated data: 
-Ethereum currently handles 
-$< 1$ tx/sec on average. 
+Ethereum currently handles under 1 tx/sec on average.
 Bitcoin today handles slightly more than
 3 tx/sec, and 
 its maximum throughput (with full block utilization)
 is roughly 7 tx/sec.
 We know of no measurement study of the
 throughput bound of the Ethereum  peer-to-peer network.
-It has been shown that without
-a protocol redesign, however, the current 
-Bitcoin network cannot scale via reparametrization beyond  
-27 tx/sec~\cite{blockchainscaling}.
-Thus, with one or at most a few hosts, \tc can easily meet the data feed demands of  
+Recent work~\cite{blockchainscaling} indicates that Bitcoin cannot scale beyond 26 tx/sec without a protocol redesign.
+Thus, with few hosts \tc can easily meet the data feed demands of  
 even future decentralized blockchains.
 
 
@@ -166,7 +165,7 @@ even future decentralized blockchains.
 %\end{table*}
 
 \paragraph{Gas Costs.}
-Currently 1 gas costs $5 \times10^{-8}$ Ether, so at the exchange rate of \$15 for 1 Ether, \$1 buys 1.3 million gas.
+Currently 1 gas costs $5 \times10^{-8}$ Ether, so at the exchange rate of \$15 per Ether, \$1 buys 1.3 million gas.
 Here we provide costs for our implementation components.
 
 %Table~\ref{tbl:eval_gas} shows gas costs for calling \tc in our example applications; these costs are callback-independent to reflect datagram costs only, not application costs. We see an effective gas cost for \tc of roughly 10 to 15 cents.
@@ -179,7 +178,7 @@ The cost to execute {\bf Cancel} is 62500 gas (4.7\textcent)
 including the gas cost $\constgasinvokecancel$ and the refund $\constgascancel$ paid to \tc should {\bf Deliver} be called after {\bf Cancel}.
 
 The total callback-independent cost of acquiring a datagram from \tc (i.e., the cost of the datagram, not the application)
-ranges from 11.9\textcent\ ({\sf CashSettledPut}) to 12.9\textcent\ ({\sf SteamTrade})\footnote{This cost is for 1 item. Each additional item costs an additional 0.19\textcent.}.
+ranges from 11.9\textcent\ ({\sf CashSettledPut}) to 12.9\textcent\ ({\sf SteamTrade})\footnote{This cost is for 1 item. Each additional item costs 0.19\textcent.}.
 The variation results from differing parameter lengths.
 
 
@@ -201,8 +200,8 @@ In our experiments
 the enclave performed simple sequential scraping of current stock prices 
 from three different data sources: Bloomberg, Google Finance and Yahoo Finance.
 The enclave response time is roughly
-1743(109) ms in this case ({\it c.f.}  
-1058(88), 423(34) and 262(12) ms for 
+1743 (109) ms in this case ({\it c.f.}  
+1058 (88), 423 (34) and 262 (12) ms for 
 each respective data source). There is no change in gas cost, as voting is done
 inside the SGX enclave.
 In the future, we will investigate parallelization of SGX's thread mechanism, with careful consideration of the security implications.
@@ -217,24 +216,22 @@ the same data source.
 In this scenario 
 the gas cost would increase by a factor of 3 plus an additional 5.85\textcent.
 So {\sf CashSettledPut} would cost 35.6\textcent\ for Deliver without Cancel.
-The extra 5.85\textcent\ is a storage cost: The requester contract must store votes
-until a winner is known.
+The extra 5.85\textcent\ is the cost to store votes until a winner is known.
 \end{itemize}
 
 
 \paragraph{Offline Measurements.}
-Recall that a one-time setup operation is required 
-for an enclave, and involves attestation generation. We report mean run times (with the S.D. in parentheses) for these experiments over 100 trials.
-Setting up the \tc~\encname takes
-49.5 (7.2) ms,
+Recall that an enclave requires a one-time setup operation that involves attestation generation.
+Setting up the \tc\ \encname takes
+49.5 (7.2) ms
 and attestation generation takes 
 61.9 (10.7) ms, including
-7.65 (0.97) ms for report generation, 
-and 54.9 (10.3) ms for quote generation.
+7.65 (0.97) ms for the report, 
+and 54.9 (10.3) ms for the quote.
 
 Recall also that since clock() yields only relative time in SGX, \tc's absolute clock is calibrated through an externally furnished wall-clock timestamp.
 A user can verify the correctness of the \encname absolute clock by requesting a digitally signed timestamp.
 This procedure is, of course, accurate only to within its end-to-end latency. Our experiments show that the time between \medname transmission of a clock calibration request to the enclave and receipt of a response is
 11.4 (1.9) ms of which 10.5 (1.9) ms is to 
 sign the timestamp.
-To this must be added the wide-area network roundtrip latency, at most typically a few hundred milliseconds. %Note too that the user can measure the the latency of its timestamp verification, and therefore determine the accuracy of its measurement.
+To this must be added the wide-area network roundtrip latency, rarely more than a few hundred milliseconds. %Note too that the user can measure the the latency of its timestamp verification, and therefore determine the accuracy of its measurement.

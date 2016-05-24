@@ -12,13 +12,13 @@
 %how to use Town Crier's service.
 
 
-\paragraph{Financial derivative ({\sf CashSettledPut}).}
+\paragraph{Financial Derivative ({\sf CashSettledPut}).}
 Financial derivatives are among the most commonly cited smart contract
 applications,
 and exemplify the need for a data feed on financial instruments.
 We implemented an example contract {\sf CashSettledPut} for a {\em cash-settled put option}.
 This is an agreement for one party to buy an asset from the other at an agreed upon price on or before a particular date.
-It is ``cash-settled'' in that the sale is implicit, i.e. no asset changes hands, only cash reflecting the asset's value.
+It is ``cash-settled'' in that the sale is implicit, i.e., no asset changes hands, only cash reflecting the asset's value.
 %In our implementation, the issuer of the option specifies a strike price $P_S$, expiration date, unit price $P_U$, and maximum number of units $M$ she is willing to sell.
 %A customer may send a request to the contract specifying the number $X$ of option units to be purchased and containing the associated fee ($X \cdot P_U$).
 %A customer may then exercise the option by sending another request prior to the expiration date.
@@ -29,11 +29,11 @@ It is ``cash-settled'' in that the sale is implicit, i.e. no asset changes hands
 \paragraph{Financial Derivatives.}  In order to implement a financial derivative as a smart contract, we require information about the corresponding financial instrument upon which the derivative depends (typically a stock).  As an example, we implemented a cash-settled put option.  The issuer of the option creates a contract for a particular stock, strike price, time period, unit price, and the maximum number of units she is willing to sell.  Customers may purchase the option by sending requests to the contract along with the associated fee indicating the number of units of the option they would like to buy.  Until the expiration date, customers may choose to exercise the put option by making another request to the option contract.  The contract then requests that TC retrieve the closing price of the underlying instrument on the day the option was exercised, and pays out to the customer the difference between the strike price and the closing price for each unit of the option purchased.  To ensure the contract always has sufficient funds to pay out, it must control value of at least the strike price times the maximum number of units sold.
 \fi
 
-\paragraph{Flight insurance ({\sf FlightIns}).}
+\paragraph{Flight Insurance ({\sf FlightIns}).}
 Flight insurance indemnifies a purchaser should her flight be delayed or canceled.
 We have implemented a simple flight insurance contract called {\sf FlightIns}.
 Our implementation showcases \tc's {\it private-datagram} feature to address an obvious concern:
-Customers may not wish to reveal their travel plans publicly on the blockchain. 
+customers may not wish to reveal their travel plans publicly on the blockchain. 
 Roughly speaking, 
 a customer submits to $\tcont$ a 
 request ${\sf Enc}_{\pkTC}({\sf req})$ 
@@ -43,7 +43,7 @@ key $\pkTC$. The enclave decrypts
 sufficiently long before the flight time).
 The enclave will then fetch the flight information from a target website
 at a specified later time, and send to $\tcont$ a datagram indicating
-whether the flight is canceled. 
+whether the flight is delayed or canceled. 
 Finally, to avoid leaking information through timing (e.g.,
 when the flight 
 information website is accessed or datagram sent), random delays are introduced.
@@ -63,7 +63,7 @@ We implemented a contract for the sale of games and items for Ether that showcas
 In our implementation, 
 the seller sends ${\sf Enc}_{\pkTC}(\text{account credentials}, {\sf req})$
 to $\tcont$,
-such that \tc's enclave can log in as the seller  
+such that the \encname can log in as the seller  
 and determine from the web-page whether the virtual item
 has been shipped.
 
