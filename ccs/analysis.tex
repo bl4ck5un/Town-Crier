@@ -11,49 +11,38 @@ In our formal definition, we assume that the user and \tcont behave honestly.
 Recall that the user must verify upfront the attestation $\sigatt$ that vouches for the enclave's public key $\pksgx$.
 
 \begin{definition}[Authenticity of Data Feed]
+\label{defn:auth}
 We say that the \tc protocol satisfies \emph{Authenticity of Data Feed} if,
 for any polynomial-time adversary $\algA$ that can interact arbitrarily with $\fsgx$,
 $\algA$ cannot cause an honest verifier to accept $(\pksgx, \sigatt, \dgform:=(\weburl, \pkurl, T), \dgm, \sigma)$
-where $\dgm$ is not the contents of $\weburl$ with the public key $\pkurl$ at time $T$ (\enclaveprog\hspace{-1mm}$(${\sf params}$)$ in our model).
+where $\dgm$ is not the contents of $\weburl$ with the public key $\pkurl$ at time $T$ ($\enclaveprog.{\bf Resume}(\dgid, \dgform)$ in our model).
 More formally, for any probabilistic polynomial-time adversary $\algA$,
-\[
-\begin{array}{l}
-\Pr\left[
+\begin{align*}
+  \Pr & \left[
 \begin{array}{l}
 (\pksgx, \sigatt, {\sf id}, {\sf params}, {\sf data}, \sigma) \leftarrow 
 \algA^{\fsgx}(1^\lambda) :\\
 \quad \left(\sigsgx.{\sf Verify}(\pkM, \sigatt, (\enclaveprog, \pksgx)) = 1\right) \wedge \\
 \quad \left(\Sigma.{\sf Verify}(\pksgx, {\sf id}, {\sf params}, {\sf data})  = 1\right) \wedge\\
-\quad {\sf data} \neq \enclaveprog({\sf params}) 
+\quad {\sf data} \neq \enclaveprog.{\bf Resume}(\dgid, \dgform)
 \end{array}
-\right] \\[3pt] 
-\leq {\sf negl}(\lambda),
-\end{array}
-\]
-\label{defn:auth}
-
-
-\vspace{-2mm}
-\noindent for security parameter $\lambda$.
+\right] \\
+& \leq {\sf negl}(\lambda),
+\end{align*}
+for security parameter $\lambda$.
 \end{definition}
 
-\vspace{2mm}
 \begin{theorem}[Authenticity]
 \label{thm:authenticity}
-Assume that $\sigsgx$
-and $\Sigma$ are secure signature schemes.
-%and assume that the cryptographic protocol used to realize the secure channel
-%with $\pkurl$ is secure;
-Then, the full \tc
-protocol achieves authenticity of data feed under Definition~\ref{defn:auth}.\footnote{Recall
-that we
-model SGX's group signature as a regular signature
-scheme under a manufacturer public key $\pkM$ using the model in~\cite{sgxsok}.}
+Assume that $\sigsgx$ and $\Sigma$ are secure signature schemes.
+Then, the \tc protocol achieves authenticity of data feed under Definition~\ref{defn:auth}.%
+\footnote{Recall that we model SGX's group signature as a regular signature scheme under a manufacturer public key $\pkM$ using the model in~\cite{sgxsok}.}
 \end{theorem}
 
 
 
 
+\vspace{-1ex}
 \paragraph{Fee Safety.}
 Our protocol in Section~\ref{sec:protocol} ensures that an honest \tcs will not run out of money
 and that an honest requester will not pay excessive fees.
@@ -73,9 +62,9 @@ We now formalize this intuition.
 \begin{theorem}[Fair Expenditure for Honest Requester]
 \label{thm:fair-expenditure}
 For any $\dgform$ and $\dgcallback$,
-let $\constgasrequest$ and $\consthonestfee$ be the respective values chosen by an honest requester for $\gasrequest$ and $\fee$
+let \constgasrequest and \consthonestfee be the honestly-chosen values of \gasrequest and \fee, respectively,
 when submitting the request $(\dgform, \dgcallback, \fee, \gasrequest)$.
-For any such request submitted by an honest user $\reqcont$, one of the following holds:
+For any such request submitted by an honest user, one of the following holds:
 \begin{itemize}
   \setlength{\itemsep}{2pt}
   \setlength{\parskip}{0pt}
@@ -91,5 +80,6 @@ For any such request submitted by an honest user $\reqcont$, one of the followin
 
 
 
+\vspace{-1ex}
 \paragraph{Other security concerns.} In Section~\ref{subsec:enhanced_robustness}, we addressed concerns about attacks outside the SGX isolation model embraced in the basic \tc protocol. A threat we do not address in \tc is the risk of traffic analysis by a network adversary or compromised \medname against confidential applications (e.g., with private datagrams), although we briefly discuss the issue in Section~\ref{sec:applications}. We also note that while \tc assumes the correctness of data sources, if a scraping failure occurs, \tc delivers an empty datagram, enabling relying contracts to fail gracefully.
 

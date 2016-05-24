@@ -5,12 +5,16 @@ Before presenting the \tc protocol details, we discuss two key security properti
 \subsection{Gas Sustainability}
 \label{sec:gas-sustainability}
 
-As explained above, Ethereum's fee model requires that gas be paid by the user who initiates a transaction, including all gas resulting from dependent calls. 
+As explained above, Ethereum's fee model requires that gas costs be paid by the user who initiates a transaction, including all costs resulting from dependent calls.
 This means that a service that initiates calls to Ethereum contracts must spend money to execute those calls.
-Without careful design, such services run the risk of malicious users (or protocol bugs) draining financial resources by triggering blockchain calls for which the service's fees will not be reimbursed, resulting in financial depletion of the service and an application-layer denial-of-service attack.
+Without careful design, such services run the risk of malicious users (or protocol bugs) draining financial resources by triggering blockchain calls for which the service's fees will not be reimbursed.
+This could cause financial depletion and result in an application-layer denial-of-service attack.
 It is thus critical for the availability of Ethereum-based services that they always be reimbursed for blockchain computation they initiate.
 
-To ensure that a service is not vulnerable to such attacks, we define \emph{gas sustainability}, a new condition necessary for the liveness of blockchain contract-based services. Gas sustainability is a basic requirement for any self-perpetuating Ethereum service. It can also generalize beyond Ethereum: Any decentralized blockchain-based smart contract system must require fees of some kind to reimburse miners for performing and verifying computation. 
+To ensure that a service is not vulnerable to such attacks, we define \emph{gas sustainability}, a new condition necessary for the liveness of blockchain contract-based services.
+Gas sustainability is a basic requirement for any self-perpetuating Ethereum service.
+It can also generalize beyond Ethereum;
+any decentralized blockchain-based smart contract system must require fees of some kind to reimburse miners for performing and verifying computation.
 
 Let \bal{\wallet} denote the balance of an Ethereum wallet \wallet.
 
@@ -23,11 +27,11 @@ If $\bal{\wallet} \geq K$ prior to execution of any $f_i$ and the service behave
 
 Recall that a call made in Ethereum with insufficient gas will abort, but spend all provided gas. While Ethereum trivially guarantees 0-gas sustainability, if a transaction is submitted by a wallet with insufficient funds, the wallet's balance will drop to 0.
 Therefore, to be $K$-gas sustainable for $K > 0$, each blockchain call made by the service must reimburse gas expenditures.
-Moreover, the service must have sufficient gas for each call. Otherwise such reimbursement will be reverted with the rest of the transaction.
+Moreover, the service must have sufficient gas for each call or such reimbursement will be reverted with the rest of the transaction.
 
 The need for gas sustainability (with $K > 0$, as required by \tc) informs our protocol design in Section~\ref{sec:protocol}. We prove that \tc achieves this property in Section~\ref{sec:analysis}.
 
-\subsection{TCB Hybridization Minimization}
+\subsection{Hybrid TCB Minimization}
 \label{sec:tcb-hybridization}
 
 
@@ -69,9 +73,9 @@ We propose techniques to eliminate the most expensive operations (highlighted in
 \end{figure}
 
 In a system involving a smart contract interacting with an off-chain trusted computing environment (e.g. SGX),
-the TCB is a hybridization of two components with distinct properties.
+the TCB is a hybrid of two components with distinct properties.
 Computation in the smart contract is slow, costly, and completely transparent, meaning it cannot rely on secrets.
-An SGX enclave is computationally powerful and executes privately, but all external interaction, notably including communication with the contract, must go through an untrusted intermediary. While this hybridized TCB is powerful and generally useful well beyond \tc, it presents a challenge: establishing secure communication between the components while minimizing the code in the TCB.
+An SGX enclave is computationally powerful and executes privately, but all external interaction---notably including communication with the contract---must go through an untrusted intermediary. While this hybrid TCB is powerful and useful well beyond \tc, it presents a challenge: establishing secure communication between the components while minimizing the code in the TCB.
 
 We define abstractions for both TCB components in Fig.~\ref{fig:tcb-hybridization}.
 To distinguish these abstractions from formal ideal functionalities, we use \tcb (for trusted component), rather than $\mathcal{F}$.
@@ -93,7 +97,7 @@ There does exist a precompiled Ethereum contract to verify ECDSA signatures \cit
 Instead, we describe here how to bind the identity of \tcboff to an Ethereum wallet, which allows \tcbon to simply check the message sender,
 which is already verified as part of Ethereum's transaction protocol.
 
-The key observation is that information can only be inserted into the Ethereum blockchain as transactions from a wallet.
+The key observation is that information can only be inserted into the Ethereum blockchain as a transaction from a wallet.
 Thus, the only way the \medname can relay messages from \tcboff to \tcbon is through a wallet \tcadd.
 Since Ethereum itself already verifies signatures on transactions (i.e., users interact with Ethereum through an authenticated channel),
 we can piggyback verification of \tcboff signatures on top of the existing transaction signature verification mechanism.
@@ -101,14 +105,14 @@ Simply put, the \tcboff creates \tcadd with a fresh public key \pkoff whose secr
 
 To make this idea work fully, the public key \pkoff must be hardcoded into \tcbon.
 A client creating or relying on a contract that uses \tcbon is responsible for ensuring that this hardcoded \pkoff has an appropriate SGX attestation before interacting with \tcbon.
-Let {\sf Verify} denote a verification algorithm for EPID signatures.
+Letting {\sf Verify} denote a verification algorithm for EPID signatures,
 Fig.~\ref{fig:att_check} gives the protocol for a client to check that \tcbon is backed by a valid \tcboff instance.
 (We omit the modeling here of IAS online revocation checks.)
 
 In summary, by assuming that relying clients have verified an attestation of \tcboff, we can assume that datagrams sent from \tcadd are trusted to originate from \tcboff.
 This eliminates the need to do costly EPID signature verification in \tcbon.
 
-SGX can seal \pkoff into non-volatile storage while protecting integrity and confidentiality \cite{sgxmanual, anati2013innovative},
+Additionally, SGX can seal \pkoff in non-volatile storage while protecting integrity and confidentiality \cite{sgxmanual, anati2013innovative},
 allowing us to maintain the same binding through server restarts.
 
 \begin{figure}[htb!]
@@ -122,11 +126,11 @@ allowing us to maintain the same binding through server restarts.
 {\bf Verify:} \\
 Assert $\pkoff$ is the expected enclave code\\
 Assert $\sigsgx.{\sf Verify}(\pkM, \sigatt, (\tcboff, \pkoff))$ \\
-Assert \tcbon is correct and parametrized w/ \pkoff\\
+Assert \tcbon is correct and parametrized with \pkoff\\
 \sgray{\it //~now okay to rely on \tcbon}
 \end{tabular}
 \end{boxedminipage}
-\caption{A client checks an SGX attestation on the enclave's code $\tcboff$
+\caption{A client checks an SGX attestation of the enclave's code $\tcboff$
 and public key $\pkoff$.  The client also checks that $\pkoff$ is hardcoded into
 blockchain contract \tcbon before using \tcbon.} 
 \label{fig:att_check}

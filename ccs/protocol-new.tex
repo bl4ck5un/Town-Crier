@@ -116,7 +116,7 @@ As noted in Section~\ref{sec:architecture},
   \setlength{\parsep}{0pt}
   \item It scrapes the blockchain and monitors \tcont for new requests $(\dgid, \dgform)$.
   \item It boots the \encname with $\engine.{\bf Initialize}()$ and calls $\engine.{\bf Resume}(\dgid, \dgform)$ on incoming requests.
-  \item It forwards datagrams from \engine to the blockchain.
+  \item It forwards datagrams from the \encname to the blockchain.
 \end{enumerate}
 Recall that it forwards already-signed transacations to the blockchain as \tcadd.
 The program for \relay is shown in Fig.~\ref{fig:relayprotocol}.
@@ -161,7 +161,7 @@ It generates an ECDSA keypair $(\pkTC,\skTC)$ (parameterized as in Ethereum), wh
 
 Upon a call to {\bf Resume}$({\sf id}, {\sf params})$, \engine contacts the data source specified by {\sf params} via HTTPS and checks that the corresponding certificate {\sf cert} is valid.
 (We discuss certificate checking in Appendix~\ref{sec:impl}.)
-Then \engine fetches the requested datagram and returns it to \relay along with \dgform and \dgid, all digitally signed with \skTC and a {\tt GASLIMIT} $\gasdeliver := \constgasmax$.
+Then \engine fetches the requested datagram and returns it to \relay along with \dgform, \dgid, and a {\tt GASLIMIT} $\gasdeliver := \constgasmax$, all digitally signed with \skTC.
 Fig.~\ref{fig:engineprotocol} shows the protocol for \engine.
 
 \begin{figure}[!ht]
@@ -184,9 +184,9 @@ Fig.~\ref{fig:engineprotocol} shows the protocol for \engine.
     \quad Obtain webpage $w$ from $\weburl$ \\
     \quad Assert $\clock() \leq T.{\sf max}$\\
     \quad Parse $w$ to extract \dgm with specification \dgspec \\
-    \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, ({\sf id}, {\sf params}, {\sf data}))$\\
     \quad $\gasdeliver := \constgasmax$ \\
-    \quad Output $(({\sf id}, {\sf params}, {\sf data}, \gasdeliver), \sigma)$
+    \quad $\sigma := \Sigma.{\sf Sign}({\skTC}, (\dgid, \dgform, \dgm, \gasdeliver))$\\
+    \quad Output $((\dgid, \dgform, \dgm, \gasdeliver), \sigma)$
 \end{tabular}
 \end{boxedminipage}
 \caption{The \tcs\ \encname \engine.}
@@ -194,7 +194,7 @@ Fig.~\ref{fig:engineprotocol} shows the protocol for \engine.
 \end{figure}
 
 \paragraph{The Requester Contract $\reqcont$.}
-An honest request first follows the protocol in Fig.~\ref{fig:att_check} to verify the SGX attestation.
+An honest requester first follows the protocol in Fig.~\ref{fig:att_check} to verify the SGX attestation.
 Then she prepares $\dgform$ and $\dgcallback$, sets $\gasrequest$ to the cost of {\bf Request} with $\dgform$,
 sets $\fee$ to $\constgasmin$ plus the cost of executing $\dgcallback$,
 and invokes ${\bf Request}(\dgform, \dgcallback, \fee)$ with {\tt GASLIMIT} $\gasrequest$.
