@@ -1,0 +1,30 @@
+include_directories(../Common ../mbedtls-SGX/lib)
+
+set(SOURCE_FILES
+    Common/Debug.c
+    Common/Log.c
+    Enclave/ABI.cpp
+    Enclave/Attestation_Enc.c
+    Enclave/Current_bloomberg.cpp
+    Enclave/Current_Google.cpp
+    Enclave/Current_Yahoo.cpp
+    Enclave/dispatcher.cpp
+    Enclave/ECDAS.c
+    Enclave/ECDSA.h
+    Enclave/Enclave_t.c
+    Enclave/Enclave_t.h
+    Enclave/EventHandler.cpp
+    Enclave/EventHandler.h
+    Enclave/Flight.cpp
+    Enclave/keccak.c
+    Enclave/keccak.h
+    Enclave/RootCerts.c
+    Enclave/RootCerts.h
+    Enclave/Scraper_lib.c
+    Enclave/Scraper_lib.h
+    Enclave/SSLClient.c
+    Enclave/SSLClient.h
+    Enclave/Steam2.cpp
+    Enclave/StockTicker.cpp
+    Enclave/Transaction.cpp
+    Enclave/Transaction.h)
