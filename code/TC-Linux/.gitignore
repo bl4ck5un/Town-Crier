@@ -1,3 +1,6 @@
 *.o
 *.so
 *.a
+*.pyc
+*.db
+App/tc

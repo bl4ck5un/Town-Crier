@@ -1,9 +1,6 @@
 #include <cstdio>
 #include <cstdlib>
 
-#include "jsonrpc.h"
-#include "jsonrpc_httpclient.h"
-
 #include "App.h"
 #include "Enclave_u.h"
 #include "Log.h"
@@ -12,8 +9,14 @@
 #include <stdexcept>
 #include <iomanip>
 #include <sstream>
+#include <string>
 
+#include "ethrpcclient.h"
+#include <jsonrpccpp/client/connectors/httpclient.h>
 
+using namespace jsonrpc;
+
+/*
 static int rpc_base(std::string hostname, unsigned port, Json::Value& query, Json::Value& response)
 {
     Json::Rpc::HttpClient HttpClient(hostname, port);
@@ -62,6 +65,7 @@ static int rpc_base(std::string hostname, unsigned port, Json::Value& query, Jso
 
     return EXIT_SUCCESS;
 }
+*/
 
 
 /**
@@ -76,6 +80,7 @@ static int rpc_base(std::string hostname, unsigned port, Json::Value& query, Jso
 #define SEND_RAW_TX
 //#undef SEND_RAW_TX
 
+/*
 int send_transaction(std::string hostname, unsigned port, char* raw)
 {
   Json::Value query;
@@ -95,7 +100,32 @@ int send_transaction(std::string hostname, unsigned port, char* raw)
 
   return EXIT_SUCCESS;
 }
+*/
 
+HttpClient httpclient("http://localhost:8485");
+ethRPCClient c(httpclient);
+
+int send_transaction(std::string hostname, unsigned port, char* raw)
+{
+    ( void )(hostname);
+    ( void )(port);
+    std::string res;
+    std::string param1(raw);
+    try{
+        res = c.eth_sendRawTransaction(param1);
+
+        LL_CRITICAL("Response recorded in the blockchain.");
+        LL_CRITICAL("TX: %s", res.c_str());
+
+        return 0;
+    }
+    catch (JsonRpcException e) {
+        LL_CRITICAL("Error in send_transaction: %s", e.what());
+        return -1;
+    }
+}
+
+#if 0
 int eth_new_filter(std::string hostname, unsigned port, std::string& id, int from, int to)
 {
     /*
@@ -144,7 +174,27 @@ int eth_new_filter(std::string hostname, unsigned port, std::string& id, int fro
     id = result.asString();
     return EXIT_SUCCESS;
 }
+#endif
 
+int eth_new_filter(std::string hostname, unsigned port, std::string& id, int from, int to)
+{
+    Json::Value filter_opt;
+    try {
+        filter_opt["address"] = "0x08be24cd8dcf73f8fa5db42b855b4370bd5c448b";
+        filter_opt["topics"][0] = "0x8d2b45c22f17e6631529a8fb8f4b17f4f336d01b6db32584ec554476dbbf2af0";
+        filter_opt["fromBlock"] = from;
+        filter_opt["toBlock"] = to;
+
+        id = c.eth_newFilter(filter_opt);
+        return 0;
+    }
+    catch (JsonRpcException e) {
+        LL_CRITICAL("%s", e.what());
+        return -1;
+    }
+}
+
+#if 0
 int eth_getfilterlogs(std::string hostname, unsigned port, std::string filter_id, Json::Value& result)
 {
     Json::Value query;
@@ -170,7 +220,20 @@ int eth_getfilterlogs(std::string hostname, unsigned port, std::string filter_id
     }
     return EXIT_SUCCESS;
 }
+#endif
 
+int eth_getfilterlogs(std::string hostname, unsigned port, std::string filter_id, Json::Value& result) {
+    try {
+        result = c.eth_getFilterLogs(filter_id);
+        return 0;
+    }
+    catch (JsonRpcException e) {
+        LL_CRITICAL("%s", e.what());
+        return -1;
+    }
+}
+
+#if 0
 unsigned long eth_blockNumber(std::string hostname, unsigned port)
 {
     Json::Value query;
@@ -192,4 +255,16 @@ unsigned long eth_blockNumber(std::string hostname, unsigned port)
     }
         
     return -1;
+}
+#endif
+
+unsigned long eth_blockNumber(std::string hostname, unsigned port)
+{
+    try {
+        return c.eth_blockNumber();
+    }
+    catch (JsonRpcException e){
+        LL_CRITICAL("%s", e.what());
+        return -1;
+    }
 }

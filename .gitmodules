@@ -1,18 +1,6 @@
-[submodule "code/curl.git"]
-	path = code/curl.git
-	url = https://github.com/bagder/curl
-[submodule "code/jsoncpp.git"]
-	path = code/jsoncpp.git
-	url = https://github.com/open-source-parsers/jsoncpp
 [submodule "code/TC-Linux/mbedtls-SGX"]
 	path = code/TC-Linux/mbedtls-SGX
 	url = https://github.com/bl4ck5un/mbedtls-SGX
-[submodule "code/TC-Linux/jsoncpp"]
-	path = code/TC-Linux/jsoncpp
-	url = https://github.com/open-source-parsers/jsoncpp
-[submodule "code/TC-Linux/libsqlite3"]
-	path = code/TC-Linux/libsqlite3
-	url = https://github.com/LuaDist/libsqlite3
-[submodule "code/TC-Linux/curl"]
-	path = code/TC-Linux/curl
-	url = https://github.com/curl/curl
+[submodule "code/TC-Linux/libjson-rpc-cpp"]
+	path = code/TC-Linux/libjson-rpc-cpp
+	url = git://github.com/cinemast/libjson-rpc-cpp.git

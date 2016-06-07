@@ -9,7 +9,6 @@
 #endif
 
 
-#include "jsonrpc.h"
 #include "Enclave_u.h"
 #include "App.h"
 #include "Utils.h"

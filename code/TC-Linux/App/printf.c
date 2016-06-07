@@ -12,18 +12,6 @@
 extern "C" {
 #endif
 
-/* OCall functions */
-int ocall_print_string(const char *str)
-{
-    /* Proxy/Bridge will check the length and null-terminate 
-     * the input string to prevent buffer overflow. 
-     */
-    int ret = printf("%s", str);
-    fflush(stdout);
-    return ret;
-}
-
-
 #if defined(_MSC_VER) && _MSC_VER < 1900
 int c99_vsnprintf(char *outBuf, size_t size, const char *format, va_list ap)
 {
