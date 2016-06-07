@@ -1,6 +1,6 @@
-﻿#include "stdlib.h"
+﻿#include <assert.h>
+#include "stdlib.h"
 #include "stdint.h"
-#include "Enclave.h"
 #include "Enclave_t.h"
 #include "vector"
 #include "keccak.h"

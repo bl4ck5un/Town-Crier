@@ -21,7 +21,6 @@
 
 #include "SSLClient.h"
 #include "Log.h"
-#include "Enclave.h"
 #include "Enclave_t.h"
 #include "RootCerts.h"
 #include "Debug.h"

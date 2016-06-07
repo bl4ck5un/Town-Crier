@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "Enclave.h"
 #include "Enclave_t.h"
 
 #ifndef SSL_CLIENT_H

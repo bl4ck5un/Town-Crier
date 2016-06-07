@@ -1,5 +1,3 @@
-#include "Enclave.h"
-
 #ifndef SCRAPER_LIB_H
 #define SCRAPER_LIB_H
 
