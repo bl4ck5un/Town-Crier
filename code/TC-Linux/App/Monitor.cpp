@@ -136,25 +136,19 @@ int monitor_loop(sgx_enclave_id_t eid)
         {
             sleep_sec = static_cast<int>(pow(2, retry_n));
             LL_CRITICAL("retry in %d seconds", sleep_sec);
-#ifdef _WIN32
-            Sleep(sleep_sec * 1000);
-#else
             sleep(sleep_sec);
-#endif
         }
 
         // how many blocks do we have now?
-        try
+        highest_block = eth_blockNumber(RPC_HOSTNAME, RPC_PORT);
+
+        if (highest_block == -1)
         {
-            highest_block = eth_blockNumber(RPC_HOSTNAME, RPC_PORT);
-            retry_n = 0;
-        }
-        catch (std::exception& ex)
-        {
-            LL_NOTICE("%s", ex.what());
             retry_n++;
             continue;
         }
+
+        retry_n = 0;
 
         // if we've scanned all of them
         if (next_wanted > highest_block)
@@ -172,14 +166,11 @@ int monitor_loop(sgx_enclave_id_t eid)
         while (next_wanted <= highest_block)
         {
             // create a new filter for next_wanted
-            try
+            ret = eth_new_filter(RPC_HOSTNAME, RPC_PORT, filter_id, next_wanted, next_wanted);
+            retry_n = 0;
+
+            if (ret < 0)
             {
-                ret = eth_new_filter(RPC_HOSTNAME, RPC_PORT, filter_id, next_wanted, next_wanted);
-                retry_n = 0;
-            }
-            catch (std::exception& ex)
-            {
-                LL_CRITICAL("%s", ex.what());
                 retry_n++;
                 continue;
             }
@@ -192,15 +183,15 @@ int monitor_loop(sgx_enclave_id_t eid)
 
             LL_NOTICE("detected block %d", next_wanted);
 
-            try 
-            {
-                // get events of interest
-                ret = eth_getfilterlogs(RPC_HOSTNAME, RPC_PORT, filter_id, transaction);
-                if (ret != 0) {
-                    retry_n++;
-                    continue;
-                }
+            // get events of interest
+            ret = eth_getfilterlogs(RPC_HOSTNAME, RPC_PORT, filter_id, transaction);
+            if (ret != 0) {
+                retry_n++;
+                continue;
+            }
 
+//            try
+//            {
                 // reset retry counter
                 retry_n = 0;
 
@@ -245,12 +236,12 @@ int monitor_loop(sgx_enclave_id_t eid)
                         uint8_t* req_data = static_cast<uint8_t*>(malloc(req_len * 32));
                         memcpy(req_data, start + 0x100, req_len * 32);
 
-                        LL_NOTICE("find an request (id=%llu)", request_id);
+                        LL_NOTICE("find an request (id=%lu)", request_id);
 
 #ifdef VERBOSE
                         hexdump("req_data:", req_data, req_len * 32);
 #endif
-                        
+
                         get_last_nonce(db, &nonce);
 
                         handle_request(eid, &ret, nonce, request_id, request_type, req_data, req_len * 32, raw_tx, &raw_tx_len);
@@ -271,7 +262,7 @@ int monitor_loop(sgx_enclave_id_t eid)
                         if (ret != 0)
                         {
                             fprintf(stderr, "send_raw_tx returned %d\n", ret);
-                            return -1;       
+                            return -1;
                         }
                         else
                         {
@@ -287,24 +278,24 @@ int monitor_loop(sgx_enclave_id_t eid)
                 next_wanted += 1;
                 retry_n = 0;
                 continue;
-            }
-            catch (std::exception& el)
-            {
-                std::string exp(el.what());
-                LL_CRITICAL("%s", el.what());
-                if (exp.find("too low"))
-                {
-                    nonce++;
-                    record_nonce(db, nonce);
-                }
-                if (exp.find("invalid sender"))
-                {
-                    dump_buf("TX dump", raw_tx, raw_tx_len);
-                    return -100;
-                }
-                retry_n++;
-                continue;
-            }
+//            }
+//            catch (std::exception& el)
+//            {
+//                std::string exp(el.what());
+//                LL_CRITICAL("%s", el.what());
+//                if (exp.find("too low"))
+//                {
+//                    nonce++;
+//                    record_nonce(db, nonce);
+//                }
+//                if (exp.find("invalid sender"))
+//                {
+//                    dump_buf("TX dump", raw_tx, raw_tx_len);
+//                    return -100;
+//                }
+//                retry_n++;
+//                continue;
+//            }
             retry_n = 0;
         } // while (next_wanted <= highest_block)
     

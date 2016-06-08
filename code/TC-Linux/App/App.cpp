@@ -29,8 +29,6 @@
 #include <iostream>
 
 
-/* Global EID shared by multiple threads */
-sgx_enclave_id_t global_eid = 0;
 sqlite3* db = NULL;
 
 #ifdef _WIN32
@@ -309,6 +307,7 @@ exit:
 int main()
 {
     int ret;
+    sgx_enclave_id_t eid;
 
     std::cout << "Clean up database? y/[n] ";
     std::string new_db;
@@ -333,21 +332,21 @@ int main()
     sgx_launch_token_t token = {0};
     sgx_status_t st;
 
-    st = sgx_create_enclave(ENCLAVE_FILENAME, SGX_DEBUG_FLAG, &token, &updated, &global_eid, NULL);
-    if (st != SGX_SUCCESS)
-    {
-        print_error_message(st);
-        LL_CRITICAL("failed to create enclave. Returned %#x", st);
+    ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
+
+    if (ret != 0) {
+        goto exit;
     }
-    LL_NOTICE("enclave %llu created", global_eid);
+    else {
+        LL_NOTICE("enclave %lu created", eid);
+    }
+/*
+ *  Uncomment to test attestation
+ */
+//  remote_att_init(eid);
 
-//    remote_att_init(global_eid);
-//    goto exit;
-
-    monitor_loop(global_eid);
+    monitor_loop(eid);
 
 exit:
     LL_CRITICAL("Info: all enclave closed successfully.");
-    LL_CRITICAL("Enter a character before exit ...");
-    system("pause");
 }

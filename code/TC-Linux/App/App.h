@@ -27,16 +27,13 @@
 #define ENCLAVE_FILENAME "Enclave.signed.dll"
 #elif defined(__GNUC__)
 # define TOKEN_FILENAME   "enclave.token"
-# define ENCLAVE_FILENAME "../Enclav/enclave.signed.so"
+# define ENCLAVE_FILENAME "enclave.signed.so"
 #endif
 
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-
-extern sgx_enclave_id_t global_eid;    /* global enclave id */
-
 
 typedef struct _sgx_errlist_t {
     sgx_status_t err;

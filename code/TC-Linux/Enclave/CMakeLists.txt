@@ -19,7 +19,7 @@ set(SOURCE_FILES
     StockTicker.cpp
     Transaction.cpp)
 
-set(CMAKE_VERBOSE_MAKEFILE TRUE)
+set(CMAKE_VERBOSE_MAKEFILE FALSE)
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_t.c
