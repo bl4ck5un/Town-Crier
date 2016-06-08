@@ -4,10 +4,8 @@ set(SOURCE_FILES
         Enclave_u.c
         EthRPC.cpp
         ethrpcclient.h
-        Misc.h
         Monitor.cpp
         ocalls.cpp
-        ocalls.h
         printf.c
         RemoteAtt.cpp
         snprintf.c
@@ -67,15 +65,23 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wno-attributes")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
 
 target_link_libraries(tc
-        ${LIB_UAE_SERVICE_PATH}
-        ${LIB_URTS_PATH}
-        ${LIB_MBEDTLS_U_PATH}
-        sqlite3 jsoncpp curl jsonrpccpp-common jsonrpccpp-client)
+#        ${LIB_URTS_PATH}
+#        ${LIB_UAE_SERVICE_PATH}
+#        ${LIB_MBEDTLS_U_PATH}
+#        sqlite3 jsoncpp curl jsonrpccpp-common jsonrpccpp-client)
+        -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB}
+        -L${TC_ROOT_DIR}/mbedtls-SGX/lib -lmbedtls_sgx_u
+        -lsqlite3
+        -ljsoncpp
+        -lcurl
+        -ljsonrpccpp-common
+        -ljsonrpccpp-client)
+
 
 add_dependencies(tc signed.enclave)
 
 add_custom_command(TARGET tc
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${TC_ROOT_DIR}/bin
-        COMMAND ${CMAKE_COMMAND} -E copy tc ${TC_ROOT_DIR}/bin
+        COMMAND ${CMAKE_COMMAND} -E copy tc ${TC_ROOT_DIR}/bin/
         COMMENT "Installing Town Crier exectuable")

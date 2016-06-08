@@ -67,13 +67,13 @@ target_link_libraries(enclave "${SGX_COMMON_CFLAGS} \
 add_custom_target(signed.enclave
         ${SGX_ENCLAVE_SIGNER} sign -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
         -enclave enclave.so
-        -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml -out signed.enclave.so)
+        -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml -out enclave.signed.so)
 
 add_dependencies(signed.enclave enclave)
 
 add_custom_command(TARGET signed.enclave
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory ${TC_ROOT_DIR}/bin
-        COMMAND ${CMAKE_COMMAND} -E copy signed.enclave.so ${TC_ROOT_DIR}/bin
+        COMMAND ${CMAKE_COMMAND} -E copy enclave.signed.so ${TC_ROOT_DIR}/bin
         COMMAND ${CMAKE_COMMAND} -E copy enclave.so ${TC_ROOT_DIR}/bin
         COMMENT "Installing signed enclave files")
