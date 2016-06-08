@@ -51,7 +51,7 @@ else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -UEDEBUG")
 endif()
 
-if(${SGX_MODE} STREQUAL HW)
+if(SGX_MODE STREQUAL HW)
     set(UAE_SERVICE_LIB sgx_uae_service)
 else()
     set(UAE_SERVICE_LIB sgx_uae_service_sim)

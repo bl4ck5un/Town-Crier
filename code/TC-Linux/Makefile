@@ -2,6 +2,8 @@ include Makefile.defs
 
 .PHONY: all run
 
+INSTALL_PATH=$(PWD)/build
+
 ifeq ($(Build_Mode), HW_RELEASE)
 all: $(App_Name) $(Enclave_Name)
 	@echo "The project has been built in release hardware mode."
@@ -12,7 +14,12 @@ all: $(App_Name) $(Enclave_Name)
 	@echo "To build the project in simulation mode set SGX_MODE=SIM. To build the project in prerelease mode set SGX_PRERELEASE=1 and SGX_MODE=HW."
 else
 all:
-	make -C Enclave
+	@make -C App
+	@make -C Enclave
+	@echo "Installing"
+	@mkdir -p $(INSTALL_PATH)
+	@mv App/tc $(INSTALL_PATH)
+	@mv Enclave/enclave.signed.so $(INSTALL_PATH)
 endif
 
 .PHONY: clean

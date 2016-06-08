@@ -118,6 +118,11 @@ static sgx_errlist_t sgx_errlist[] = {
         "Can't open enclave file.",
         NULL
     },
+    {
+            SGX_ERROR_SERVICE_UNAVAILABLE,
+            "AE service did not respond or the requested service is not supported.",
+            NULL
+    }
 };
 
 #if defined(__cplusplus)
