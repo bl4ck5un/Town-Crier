@@ -1,0 +1,22 @@
+enclave {
+    from "../mbedtls-SGX/lib/mbedtls_sgx.edl" import *;
+    
+    include "sgx_report.h"
+    include "time.h"
+
+    trusted {
+        public int handle_request(
+                   int nonce, 
+                   uint64_t request_id, uint8_t request_type, 
+                   [in, size=req_len] uint8_t* req, int req_len, 
+                   [out] uint8_t tx[2048], [out] int* len);
+        public int ecall_create_report ([in] sgx_target_info_t* quote_enc_info, [out] sgx_report_t* report);
+        public int ecall_time_calibrate (time_t wall_clock, [out] uint8_t wtc_rsv[65]);
+    };
+
+    untrusted {
+        long long rdtsc();
+        void ocall_sleep(int milisec);
+        time_t ocall_time();
+    };
+};
