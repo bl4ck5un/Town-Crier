@@ -13,7 +13,7 @@ App_Include_Paths := \
 	-I/usr/include/jsoncpp \
 	-I../jsonrpc-cpp-0.6/include
 
-App_C_Files := $(wildcard *.c) 
+App_C_Files := $(wildcard *.c)
 App_C_Objects := $(App_C_Files:.c=.o)
 App_C_Flags := $(SGX_COMMON_CFLAGS) -fPIC -Wno-attributes $(App_Include_Paths)
 

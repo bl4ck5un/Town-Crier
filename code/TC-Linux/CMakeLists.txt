@@ -50,3 +50,4 @@ message("status SGX_ENCLAVE_SIGNER: ${SGX_ENCLAVE_SIGNER}")
 message("status SGX_EDGER8R: ${SGX_EDGER8R}")
 
 add_subdirectory(App)
+add_subdirectory(Enclave)

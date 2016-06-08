@@ -72,4 +72,10 @@ target_link_libraries(tc
         ${LIB_MBEDTLS_U_PATH}
         sqlite3 jsoncpp curl jsonrpccpp-common jsonrpccpp-client)
 
+add_dependencies(tc signed.enclave)
 
+add_custom_command(TARGET tc
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${TC_ROOT_DIR}/bin
+        COMMAND ${CMAKE_COMMAND} -E copy tc ${TC_ROOT_DIR}/bin
+        COMMENT "Installing Town Crier exectuable")
