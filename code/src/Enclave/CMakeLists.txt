@@ -1,25 +1,25 @@
 set(SOURCE_FILES
-    ../Common/Debug.c
-    ../Common/Log.c
-    ABI.cpp
-    Attestation_Enc.c
-    Current_bloomberg.cpp
-    Current_Google.cpp
-    Current_Yahoo.cpp
-    dispatcher.cpp
-    ECDAS.c
-    Enclave_t.c
-    EventHandler.cpp
-    Flight.cpp
-    keccak.c
-    RootCerts.c
-    Scraper_lib.c
-    SSLClient.c
-    Steam2.cpp
-    StockTicker.cpp
-    Transaction.cpp)
+        ../Common/Debug.c
+        ../Common/Log.c
+        ABI.cpp
+        Attestation_Enc.c
+        Current_bloomberg.cpp
+        Current_Google.cpp
+        Current_Yahoo.cpp
+        dispatcher.cpp
+        ECDAS.c
+        Enclave_t.c
+        EventHandler.cpp
+        Flight.cpp
+        keccak.c
+        RootCerts.c
+        Scraper_lib.c
+        SSLClient.c
+        Steam2.cpp
+        StockTicker.cpp
+        Transaction.cpp)
 
-set(CMAKE_VERBOSE_MAKEFILE FALSE)
+set(CMAKE_VERBOSE_MAKEFILE False)
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_t.c
@@ -42,6 +42,8 @@ endif()
 set(CRYPTO_LIB_NAME sgx_tcrypto)
 
 include_directories(
+        boost_1_61_0
+        ${TC_ROOT_DIR}/Enclave/ethereum
     ${TC_ROOT_DIR}/Common
     ${TC_ROOT_DIR}/mbedtls-SGX/lib/include
     ${SGX_SDK}/include
@@ -67,13 +69,19 @@ target_link_libraries(enclave "${SGX_COMMON_CFLAGS} \
 add_custom_target(signed.enclave
         ${SGX_ENCLAVE_SIGNER} sign -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
         -enclave enclave.so
-        -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml -out enclave.signed.so)
+        -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml -out enclave.signed.so
+        COMMENT "Signing the enclave")
 
 add_dependencies(signed.enclave enclave)
 
+## This command is only need for working with CLion
+## Please set output path of CLion to be ${PROJECT}/bin
 add_custom_command(TARGET signed.enclave
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${TC_ROOT_DIR}/bin
-        COMMAND ${CMAKE_COMMAND} -E copy enclave.signed.so ${TC_ROOT_DIR}/bin
-        COMMAND ${CMAKE_COMMAND} -E copy enclave.so ${TC_ROOT_DIR}/bin
-        COMMENT "Installing signed enclave files")
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${TC_ROOT_DIR}/bin/Debug
+        COMMAND ${CMAKE_COMMAND} -E copy enclave.signed.so ${TC_ROOT_DIR}/bin/Debug
+        COMMENT "Installing signed enclave")
+
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/enclave.signed.so DESTINATION ${CMAKE_BINARY_DIR})
+install(TARGETS enclave DESTINATION ${CMAKE_BINARY_DIR})

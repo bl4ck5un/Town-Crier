@@ -1,6 +1,9 @@
+set(CMAKE_VERBOSE_MAKEFILE False)
+
 set(SOURCE_FILES
         App.cpp
         Bookkeeping.cpp
+        ../Common/Converter.cpp
         Enclave_u.c
         EthRPC.cpp
         ethrpcclient.h
@@ -9,6 +12,7 @@ set(SOURCE_FILES
         printf.c
         RemoteAtt.cpp
         snprintf.c
+        Init.cpp
         Utils.cpp
         ../Common/Debug.c
         ../Common/Log.c
@@ -17,8 +21,8 @@ set(SOURCE_FILES
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_u.c
         COMMAND ${SGX_EDGER8R} --untrusted ${TC_ROOT_DIR}/Enclave/Enclave.edl
-                               --search-path ${TC_ROOT_DIR}/Enclave
-                               --search-path ${SGX_SDK}/include
+        --search-path ${TC_ROOT_DIR}/Enclave
+        --search-path ${SGX_SDK}/include
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
@@ -28,7 +32,22 @@ add_custom_command(
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+
+
 add_executable(tc ${SOURCE_FILES})
+
+# Tests
+add_executable(test_main
+        test/test_main.cpp
+        test/test_init.cpp
+        test/test_handle_request.cpp
+        Init.cpp
+        Enclave_u.c
+        Utils.cpp
+        ocalls.cpp
+        ../Common/Converter.cpp
+        ../Common/Debug.c
+        ../Common/Log.c)
 
 if (NOT SGX_MODE STREQUAL HW)
     set(Urts_Library_Name sgx_urts_sim)
@@ -57,18 +76,10 @@ else()
     set(UAE_SERVICE_LIB sgx_uae_service_sim)
 endif()
 
-find_library(LIB_UAE_SERVICE_PATH ${UAE_SERVICE_LIB} PATHS ${SGX_LIBRARY_PATH} NO_DEFAULT_PATH)
-find_library(LIB_URTS_PATH ${Urts_Library_Name} PATHS ${SGX_LIBRARY_PATH} NO_DEFAULT_PATH)
-find_library(LIB_MBEDTLS_U_PATH mbedtls_sgx_u PATHS ${MBEDTLS_LIB_DIR} NO_DEFAULT_PATH)
-
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wno-attributes")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
 
 target_link_libraries(tc
-#        ${LIB_URTS_PATH}
-#        ${LIB_UAE_SERVICE_PATH}
-#        ${LIB_MBEDTLS_U_PATH}
-#        sqlite3 jsoncpp curl jsonrpccpp-common jsonrpccpp-client)
         -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB}
         -L${TC_ROOT_DIR}/mbedtls-SGX/lib -lmbedtls_sgx_u
         -lsqlite3
@@ -77,11 +88,21 @@ target_link_libraries(tc
         -ljsonrpccpp-common
         -ljsonrpccpp-client)
 
+target_link_libraries(test_main
+        -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB}
+        -L${TC_ROOT_DIR}/mbedtls-SGX/lib -lmbedtls_sgx_u
+        -lsqlite3
+        -ljsoncpp
+        -lcurl
+        -ljsonrpccpp-common
+        -ljsonrpccpp-client
+        -lgtest
+        -lgtest_main
+        -lpthread)
+
 
 add_dependencies(tc signed.enclave)
 
-add_custom_command(TARGET tc
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${TC_ROOT_DIR}/bin
-        COMMAND ${CMAKE_COMMAND} -E copy tc ${TC_ROOT_DIR}/bin/
-        COMMENT "Installing Town Crier exectuable")
+add_dependencies(test_main tc)
+
+install(TARGETS tc test_main DESTINATION ${CMAKE_BINARY_DIR})

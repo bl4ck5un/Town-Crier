@@ -13,7 +13,6 @@ void fromHex(const char* src, std::vector<uint8_t> & out);
 //#endif
 // Utils.cpp
 void print_error_message(sgx_status_t ret);
-int initialize_enclave(const char*, sgx_enclave_id_t*);
 
 //#if defined(__cplusplus)
 //}

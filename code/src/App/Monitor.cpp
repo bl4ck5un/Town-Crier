@@ -187,38 +187,8 @@ int monitor_loop(sgx_enclave_id_t eid)
 #ifdef VERBOSE
                         hexdump("TX:", &data[0], data.size());
 #endif
-                        // RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, uint reqLen, bytes32[] requestData);
-                        // 0x00 - 32 bytes : uint64 id
-                        // 0x20 - 64 bytes : uint8  requestType
-                        // 0x40 - 96 bytes : requester
-                        // 0x60 - 128      : fee
-                        // 0x80 - 160     : cb
-                        // 0xa0 - 192     : hash
-                        // 0xc0 - 224     : offset
-                        // 0xe0- 256      : reqLen
-                        // 0x100-         : reqData
-                        uint8_t* start = &data[0];
-                        uint64_t request_id;
-                        uint8_t request_type;
-                        uint32_t req_len;
-
-                        // get id
-                        memcpy(&request_id,             start + 32 - sizeof ( uint64_t ), sizeof ( uint64_t ));
-                        request_id = swap_uint64(request_id);
-
-                        // get type
-                        memcpy(&request_type,   start + 64 - sizeof ( uint8_t ), sizeof ( uint8_t ));
-
-                        // get req_len
-                        // note that req_len has the unit of bytes32
-                        memcpy(&req_len,        start + 0xe0 + 32 - sizeof ( uint32_t ), sizeof ( uint32_t ));
-                        req_len = swap_uint32(req_len);
-
-                        // get req_data
-                        uint8_t* req_data = static_cast<uint8_t*>(malloc(req_len * 32));
-                        memcpy(req_data, start + 0x100, req_len * 32);
-
-                        LL_NOTICE("find an request (id=%lu)", request_id);
+                        Request request(&data[0]);
+                        LL_NOTICE("find an request (id=%lu)", request.id);
 
 #ifdef VERBOSE
                         hexdump("req_data:", req_data, req_len * 32);
@@ -226,7 +196,14 @@ int monitor_loop(sgx_enclave_id_t eid)
 
                         get_last_nonce(db, &nonce);
 
-                        handle_request(eid, &ret, nonce, request_id, request_type, req_data, req_len * 32, raw_tx, &raw_tx_len);
+                        handle_request(eid, &ret, nonce,
+                                       request.id,
+                                       request.type,
+                                       request.data,
+                                       request.data_len,
+                                       raw_tx,
+                                       &raw_tx_len);
+
                         if (ret != 0)
                         {
                             LL_CRITICAL("%s returned %d", "handle_request", ret);

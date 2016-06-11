@@ -19,7 +19,7 @@ typedef std::vector<uint8_t> bytes;
 #define ROUND_TO_32(x) ((x + 31) / 32 * 32)
 
 
-static uint8_t char2int(char input)
+static uint8_t hex2int(char input)
 {
   if(input >= '0' && input <= '9')
     return input - '0';
@@ -32,12 +32,12 @@ static uint8_t char2int(char input)
 
 inline void fromHex(const char* src, bytes& out)
 {
-    if (strlen(src) % 2 != 0) 
+    if (strlen(src) % 2 != 0)
         { LL_CRITICAL("Error: input is not of even len\n");}
     if (strncmp(src, "0x", 2) == 0) src += 2;
     while(*src && src[1])
     {
-        out.push_back(char2int(*src)*16 + char2int(src[1]));
+        out.push_back(hex2int(*src)*16 + hex2int(src[1]));
         src += 2;
     }
 }
@@ -56,7 +56,7 @@ inline void fromHex(const char* src, uint8_t* target, unsigned* len)
     if (strlen(src) > 2 && strncmp(src, "0x", 2) == 0) src += 2;
     while(*src && src[1])
     {
-        try { *(target++) = char2int(*src)*16 + char2int(src[1]); } 
+        try { *(target++) = hex2int(*src)*16 + hex2int(src[1]); }
         catch (std::invalid_argument e)
             { printf_sgx("Error: can't convert %s to bytes\n", src); }
         src += 2; 

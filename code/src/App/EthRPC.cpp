@@ -11,7 +11,10 @@
 #include <sstream>
 #include <string>
 
+#include "Converter.h"
+
 #include "ethrpcclient.h"
+#include "Utils.h"
 #include <jsonrpccpp/client/connectors/httpclient.h>
 
 #include <sstream>
@@ -273,5 +276,32 @@ long eth_blockNumber(std::string hostname, unsigned port)
     catch (JsonRpcException e){
         LL_CRITICAL("eth_blockNumber: %s", e.what());
         return -1;
+    }
+}
+
+Request::Request(uint8_t *input) {
+    this->id = u64_from_b(input + 0x20 - sizeof(this->id));
+    this->type = u64_from_b(input + 0x40 - sizeof(this->type));
+
+    memcpy(this->requester, input + 0x40 + 16, 20);
+
+    this->fee = u32_from_b(input + 0x80 - sizeof(this->fee));
+    memcpy(this->callback, input + 0x80 + 16, 20);
+
+    this->data_len = u32_from_b(input + 0x100 - sizeof(this->data_len)) * 32;
+    this->data = (uint8_t*) malloc(this->data_len);
+
+    if (this->data == NULL) {
+        LL_CRITICAL("Failed to allocate memory. RID=%d", this->id);
+        throw std::runtime_error("failed to malloc");
+    }
+    else {
+        memcpy(this->data, input + 0x100, this->data_len);
+    }
+}
+
+Request::~Request() {
+    if (this->data != NULL) {
+        free(this->data);
     }
 }
