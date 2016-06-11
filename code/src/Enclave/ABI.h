@@ -25,11 +25,11 @@ protected:
     uint64_t _data;
 public:
     ABI_UInt64(uint64_t data): _data(data) {};
-//    size_t head_len() override {return this->encode_len();}
-//    size_t tail_len() override {return 0;}
-    int encode(bytes& out) override;
-    int encode_len() override {return 32;}
-    bool dynamic() override {return false;}
+//    size_t head_len()  {return this->encode_len();}
+//    size_t tail_len()  {return 0;}
+    int encode(bytes& out) ;
+    int encode_len()  {return 32;}
+    bool dynamic()  {return false;}
     ~ABI_UInt64() {};
 };
 
@@ -37,7 +37,7 @@ class ABI_UInt8: public ABI_UInt64
 {
 public:
     ABI_UInt8(uint8_t data): ABI_UInt64(data) {};
-    int encode(bytes& out) override;
+    int encode(bytes& out) ;
     ~ABI_UInt8() {};
 };
 
@@ -45,7 +45,7 @@ class ABI_UInt32: public ABI_UInt64
 {
 public:
     ABI_UInt32(uint32_t data): ABI_UInt64(data) {};
-    int encode(bytes& out) override;
+    int encode(bytes& out) ;
     ~ABI_UInt32() {};
 };
 
@@ -55,9 +55,9 @@ protected:
     bytes20* _data;
 public:
     ABI_Address(bytes20* data): _data(data) {};
-    int encode(bytes& out) override;
-    int encode_len() override {return 32;}
-    bool dynamic() override {return false;}
+    int encode(bytes& out) ;
+    int encode_len()  {return 32;}
+    bool dynamic()  {return false;}
     ~ABI_Address() {};
 };
 
@@ -67,12 +67,12 @@ class ABI_Bytes32: public ABI_serializable
 protected:
     bytes32* _data;
 public:
-//    size_t head_len() override {return this->encode_len();}
-//    size_t tail_len() override {return 0;}
+//    size_t head_len()  {return this->encode_len();}
+//    size_t tail_len()  {return 0;}
     ABI_Bytes32(bytes32* data): _data(data) {};
-    int encode(bytes& out) override;
-    int encode_len() override {return 32;}
-    bool dynamic() override {return false; }
+    int encode(bytes& out) ;
+    int encode_len()  {return 32;}
+    bool dynamic()  {return false; }
     ~ABI_Bytes32() {};
 };
 
@@ -82,11 +82,11 @@ protected:
     bytes& _data;
 public:
     ABI_Bytes(bytes& data) : _data(data){};
-//    size_t head_len() override {return 32;}
-//    size_t tail_len() override {return this->encode_len();}
-    int encode(bytes& out) override;
-    int encode_len() override {return 32 + ROUND_TO_32(this->_data.size());}
-    bool dynamic() override {return true;}
+//    size_t head_len()  {return 32;}
+//    size_t tail_len()  {return this->encode_len();}
+    int encode(bytes& out) ;
+    int encode_len()  {return 32 + ROUND_TO_32(this->_data.size());}
+    bool dynamic()  {return true;}
     ~ABI_Bytes() {};
 };
 
@@ -103,9 +103,9 @@ public:
                 throw std::invalid_argument("item is dynamic");
         }
     }
-    int encode(bytes& out) override;
-    int encode_len() override;
-    bool dynamic() override {return true;}
+    int encode(bytes& out) ;
+    int encode_len() ;
+    bool dynamic()  {return true;}
     ~ABI_T_Array() {};
 };
 
@@ -114,12 +114,12 @@ class ABI_Generic_Array: public ABI_serializable
 protected:
     vector<ABI_serializable*>& items;
 public:
-//    size_t head_len() override {return 32;}
-//    size_t tail_len() override;
+//    size_t head_len()  {return 32;}
+//    size_t tail_len() ;
     ABI_Generic_Array(vector<ABI_serializable*>& items) : items(items) {};
-    int encode(bytes& out) override;
-    int encode_len() override;
-    bool dynamic() override {return true;}
+    int encode(bytes& out);
+    int encode_len();
+    bool dynamic() {return true;}
     ~ABI_Generic_Array() {};
 };
 

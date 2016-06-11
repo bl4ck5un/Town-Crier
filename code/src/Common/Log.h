@@ -1,3 +1,5 @@
+#include <string.h>
+
 #ifndef ENC_LOG_H
 #define ENC_LOG_H
 
@@ -11,6 +13,8 @@ extern "C" {
 #include <stdio.h>
 #define printf_sgx printf
 #endif
+
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
  
 enum {
 	LOG_LVL_NONE, // 0
@@ -51,7 +55,7 @@ extern const char * log_level_strings [];
 #else
 #define LOG(level, fmt, arg...) do {	\
 	if ( LOG_SHOULD_I(level) ) { \
-		printf_sgx("[%s] %s:%d: " fmt "\n", log_level_strings[level], __FUNCTION__,__LINE__, ##arg); \
+		printf_sgx("[%s] %s:%d: " fmt "\n", log_level_strings[level], __FILENAME__,__LINE__, ##arg); \
 	} \
 } while(0)
 #endif

@@ -2,7 +2,7 @@
 {
     "method": "eth_blockNumber",
     "params": [],
-    "returns": 1207
+    "returns": "0x9900"
 },
 {
     "method": "eth_sendRawTransaction",
@@ -22,6 +22,6 @@
 {
     "method": "eth_getFilterLogs",
     "params": ["0x16"],
-    "returns": {}
+    "returns": [{}]
 }
 ]

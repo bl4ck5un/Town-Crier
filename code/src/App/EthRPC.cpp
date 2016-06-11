@@ -14,6 +14,8 @@
 #include "ethrpcclient.h"
 #include <jsonrpccpp/client/connectors/httpclient.h>
 
+#include <sstream>
+
 using namespace jsonrpc;
 
 /*
@@ -102,7 +104,7 @@ int send_transaction(std::string hostname, unsigned port, char* raw)
 }
 */
 
-HttpClient httpclient("http://localhost:8485");
+HttpClient httpclient("http://localhost:8200");
 ethRPCClient c(httpclient);
 
 int send_transaction(std::string hostname, unsigned port, char* raw)
@@ -258,13 +260,18 @@ unsigned long eth_blockNumber(std::string hostname, unsigned port)
 }
 #endif
 
-unsigned long eth_blockNumber(std::string hostname, unsigned port)
+long eth_blockNumber(std::string hostname, unsigned port)
 {
     try {
-        return c.eth_blockNumber();
+        unsigned long ret;
+        std::string blk = c.eth_blockNumber();
+        std::stringstream ss;
+        ss << std::hex << blk;
+        ss >> ret;
+        return ret;
     }
     catch (JsonRpcException e){
-        LL_CRITICAL("%s", e.what());
+        LL_CRITICAL("eth_blockNumber: %s", e.what());
         return -1;
     }
 }

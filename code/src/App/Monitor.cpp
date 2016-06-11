@@ -116,7 +116,7 @@ int monitor_loop(sgx_enclave_id_t eid)
     unsigned retry_n = 0;
     int sleep_sec;
     std::string filter_id;
-    unsigned long highest_block;
+    long highest_block;
     int nonce = 0;
 
     // TX_BUF_SIZE is defined in Enclave.edl
@@ -129,71 +129,53 @@ int monitor_loop(sgx_enclave_id_t eid)
         {
             LL_CRITICAL("Exit after %d retries", retry_n);
             ret = -1;
-            return -1;
+            break;
         }
 
         if (retry_n > 0)
         {
-            sleep_sec = static_cast<int>(pow(2, retry_n));
+            sleep_sec = 1 << retry_n; // 2^retry_n
             LL_CRITICAL("retry in %d seconds", sleep_sec);
             sleep(sleep_sec);
         }
 
-        // how many blocks do we have now?
-        highest_block = eth_blockNumber(RPC_HOSTNAME, RPC_PORT);
+        try {
+            // how many blocks do we have now?
+            highest_block = eth_blockNumber(RPC_HOSTNAME, RPC_PORT);
 
-        if (highest_block == -1)
-        {
-            retry_n++;
-            continue;
-        }
-
-        retry_n = 0;
-
-        // if we've scanned all of them
-        if (next_wanted > highest_block)
-        {
-            LL_NOTICE("waiting for block No.%d...", next_wanted);
-#ifdef _WIN32
-            Sleep(5000);
-#else
-            sleep(5);
-#endif
-            continue;
-        }
-
-        // fetch up to the latest block
-        while (next_wanted <= highest_block)
-        {
-            // create a new filter for next_wanted
-            ret = eth_new_filter(RPC_HOSTNAME, RPC_PORT, filter_id, next_wanted, next_wanted);
-            retry_n = 0;
-
-            if (ret < 0)
+            if (highest_block < 0)
             {
-                retry_n++;
-                continue;
+                LL_CRITICAL("eth_blockNumber returns %d", highest_block);
+                throw EX_GET_BLOCK_NUM;
             }
 
-            if (ret)
+            // if we've scanned all of them
+            if (next_wanted > highest_block)
             {
-                LL_CRITICAL("Error: can't create new filter!");
-                return -1;
+                LL_NOTICE("Highest block is %d, waiting for block %d...", highest_block, next_wanted);
+                throw EX_NOTHING_TO_DO;
             }
 
-            LL_NOTICE("detected block %d", next_wanted);
+            // fetch up to the latest block
+            for (; next_wanted <= highest_block; next_wanted++)
+            {
+                // create a new filter for next_wanted
+                ret = eth_new_filter(RPC_HOSTNAME, RPC_PORT, filter_id, next_wanted, next_wanted);
 
-            // get events of interest
-            ret = eth_getfilterlogs(RPC_HOSTNAME, RPC_PORT, filter_id, transaction);
-            if (ret != 0) {
-                retry_n++;
-                continue;
-            }
+                if (ret < 0)
+                {
+                    LL_CRITICAL("Error: can't create new filter!");
+                    throw EX_CREATE_FILTER;
+                }
 
-//            try
-//            {
-                // reset retry counter
-                retry_n = 0;
+                LL_NOTICE("detected block %d", next_wanted);
+
+                // get events of interest
+                ret = eth_getfilterlogs(RPC_HOSTNAME, RPC_PORT, filter_id, transaction);
+                if (ret != 0) {
+                    LL_CRITICAL("Error: can't get filter logs");
+                    throw EX_GET_FILTER_LOG;
+                }
 
                 if (transaction.isArray() && transaction.size() > 0)
                 {
@@ -248,9 +230,9 @@ int monitor_loop(sgx_enclave_id_t eid)
                         if (ret != 0)
                         {
                             LL_CRITICAL("%s returned %d", "handle_request", ret);
-                            retry_n++;
-                            continue;
+                            throw EX_HANDLE_REQ;
                         }
+
                         char* tx_str = static_cast<char*>( malloc(raw_tx_len * 2 + 1));
                         char2hex(raw_tx, raw_tx_len, tx_str);
 #ifdef VERBOSE
@@ -261,44 +243,46 @@ int monitor_loop(sgx_enclave_id_t eid)
                         ret = send_transaction(RPC_HOSTNAME, RPC_PORT, tx_str);
                         if (ret != 0)
                         {
-                            fprintf(stderr, "send_raw_tx returned %d\n", ret);
-                            return -1;
+                            LL_CRITICAL("send_raw_tx returned %d", ret);
+                            throw EX_SEND_TRANSACTION;
                         }
-                        else
-                        {
-                            LL_NOTICE("Response sent");
-                            LL_LOG("new nonce being dumped: %d", nonce);
-                            nonce++;
-                            record_nonce(db, nonce);
-                        }
+
+                        LL_NOTICE("Response sent");
+                        LL_LOG("new nonce being dumped: %d", nonce);
+                        nonce++;
+                        record_nonce(db, nonce);
                     }
                 }
                 LL_NOTICE("Done processing block %d", next_wanted);
                 record_scan(db, next_wanted);
-                next_wanted += 1;
                 retry_n = 0;
-                continue;
-//            }
-//            catch (std::exception& el)
-//            {
-//                std::string exp(el.what());
-//                LL_CRITICAL("%s", el.what());
-//                if (exp.find("too low"))
-//                {
-//                    nonce++;
-//                    record_nonce(db, nonce);
-//                }
-//                if (exp.find("invalid sender"))
-//                {
-//                    dump_buf("TX dump", raw_tx, raw_tx_len);
-//                    return -100;
-//                }
-//                retry_n++;
-//                continue;
-//            }
-            retry_n = 0;
-        } // while (next_wanted <= highest_block)
-    
+            } // for (next_wanted <= highest_block)
+        }
+        catch (EX_REASONS e) {
+            switch (e) {
+                case EX_GET_BLOCK_NUM:
+                case EX_CREATE_FILTER:
+                case EX_GET_FILTER_LOG:
+                case EX_HANDLE_REQ:
+                case EX_SEND_TRANSACTION:
+                    retry_n++;
+                    break;
+                case EX_NOTHING_TO_DO:
+                    LL_CRITICAL("Nothing to do. Sleep for 5 seconds");
+                    sleep(5);
+                    break;
+                default:
+                    LL_CRITICAL("Unknown exception: %d", e);
+                    return -1;
+            }
+        }
+        catch (std::exception ex) {
+            LL_CRITICAL("Unexpected exception %s", ex.what());
+        }
+        catch (...) {
+            LL_CRITICAL("Unexpected exception!");
+            retry_n++;
+        }
     } while (true); // this loop never ends;
 #endif
 }
