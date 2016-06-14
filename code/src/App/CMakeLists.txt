@@ -102,7 +102,7 @@ target_link_libraries(test_main
         -lpthread)
 
 
-add_dependencies(tc signed.enclave)
+add_dependencies(tc enclave)
 
 add_dependencies(test_main tc)
 
