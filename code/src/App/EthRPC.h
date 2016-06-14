@@ -11,7 +11,7 @@
 using namespace std;
 
 class Request {
-// RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, uint reqLen, bytes32[] requestData);
+// RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, byte32 hash, bytes32[] requestData);
 // Byte code of ABI encoding:
 // 0x00 - 0x20 bytes : id
 // 0x20 - 0x40 bytes : requestType
@@ -28,6 +28,7 @@ public:
     uint8_t requester[20];
     uint32_t fee;
     uint8_t callback[20];
+    uint8_t param_hash[32];
     uint32_t data_len;
     uint8_t* data;
 public:

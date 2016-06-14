@@ -21,92 +21,6 @@
 
 using namespace jsonrpc;
 
-/*
-static int rpc_base(std::string hostname, unsigned port, Json::Value& query, Json::Value& response)
-{
-    Json::Rpc::HttpClient HttpClient(hostname, port);
-    Json::FastWriter writer;
-    std::string queryStr;
-    std::string responseStr;
-    Json::Value res;
-    Json::Reader resReader;
-    std::stringstream str;
-
-    if(!networking::init())
-    {
-        throw std::runtime_error("Networking initialization failed");
-    }
-
-    queryStr = writer.write(query);
-    LL_LOG("query: %s", queryStr.c_str());
-
-    if(HttpClient.Send(queryStr) != 0)
-    {
-        throw std::runtime_error("Error while sending data!");
-    }
-
-    if(HttpClient.Recv(responseStr) == -1)
-    {
-        throw std::runtime_error("Error while receiving data!");
-    }
-
-    if (!resReader.parse(responseStr, res))
-    {
-        std::cout << "Can't parse" << responseStr << std::endl;
-        throw std::runtime_error("Parse Error");
-    }
-
-    if (!res["error"].isNull())
-    {
-        throw std::invalid_argument(res["error"]["message"].asString());
-    }
-
-    response = res["result"];
-    
-    LL_LOG("response: %s", writer.write(response).c_str());
-
-    HttpClient.Close();
-    networking::cleanup();
-
-    return EXIT_SUCCESS;
-}
-*/
-
-
-/**
- * \brief Entry point of the program.
- * \param argc number of argument
- * \param argv array of arguments
- * \return EXIT_SUCCESS or EXIT_FAILURE
- */
-
-//  curl -X POST --data '{"jsonrpc":"2.0","method":"web3_clientVersion","params":[],"id":67}' 52.23.173.127:8201
-
-#define SEND_RAW_TX
-//#undef SEND_RAW_TX
-
-/*
-int send_transaction(std::string hostname, unsigned port, char* raw)
-{
-  Json::Value query;
-  Json::Value params;
-  Json::Value resp;
-  
-  query["jsonrpc"] = "2.0";
-  query["id"] = 1;
-  params = raw;
-  query["method"] = "eth_sendRawTransaction";
-  query["params"][0] = params;
-
-  rpc_base(hostname, port, query, resp);
-
-  LL_CRITICAL("Response recorded in the blockchain.");
-  LL_CRITICAL("TX: %s", resp.asCString());
-
-  return EXIT_SUCCESS;
-}
-*/
-
 HttpClient httpclient("http://localhost:8200");
 ethRPCClient c(httpclient);
 
@@ -288,11 +202,13 @@ Request::Request(uint8_t *input) {
     this->fee = u32_from_b(input + 0x80 - sizeof(this->fee));
     memcpy(this->callback, input + 0x80 + 16, 20);
 
+    memcpy(this->param_hash, input + 0xa0, 32);
+
     this->data_len = u32_from_b(input + 0x100 - sizeof(this->data_len)) * 32;
     this->data = (uint8_t*) malloc(this->data_len);
 
     if (this->data == NULL) {
-        LL_CRITICAL("Failed to allocate memory. RID=%d", this->id);
+        LL_CRITICAL("Failed to allocate memory. RID=%ld", this->id);
         throw std::runtime_error("failed to malloc");
     }
     else {

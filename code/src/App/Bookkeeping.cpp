@@ -55,7 +55,7 @@ int record_nonce(sqlite3* db, int nonce)
     return sqlite3_exec_wrapper(db, ss.str().c_str());
 }
 
-int record_scan(sqlite3* db, int blk)
+int record_scan(sqlite3* db, long blk)
 {
     std::stringstream ss;
     ss << "INSERT INTO Scans (block_id, time) VALUES (" << blk << ", \"" << current_datetime() << "\");";
@@ -93,7 +93,7 @@ int get_last_nonce(sqlite3* db, int *nonce)
     return 0;  
 }
 
-int get_last_scan (sqlite3* db, int* blk)
+int get_last_scan (sqlite3* db, long* blk)
 {
     int ret;
     char* error;
@@ -120,6 +120,7 @@ int get_last_scan (sqlite3* db, int* blk)
         return -1;
     }
 
+#pragma message ("WARNING let atoi return long")
     *blk = atoi(result[1]);
     return 0;  
 }

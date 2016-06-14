@@ -1,10 +1,12 @@
-#define REQ_TYPE_FINANCE 1
+#ifndef ENCLAVE_EVENTHANDLER_H
+#define ENCLAVE_EVENTHANDLER_H
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
-int handle_request(int nonce, uint64_t request_id, uint8_t request_type, 
-                   uint8_t* req, int req_len, uint8_t* raw_tx, int* raw_tx_len);
+
+int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int data_len, uint8_t* raw_tx, int* raw_tx_len);
+
 #if defined(__cplusplus)
 }
 #endif
@@ -16,3 +18,5 @@ inline uint32_t swap_uint32( uint32_t num )
                     ((num>>8)&0xff00) | // move byte 2 to byte 1
                     ((num<<24)&0xff000000); // byte 0 to byte 3
 }
+
+#endif

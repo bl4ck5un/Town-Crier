@@ -1,7 +1,7 @@
 #include "SSLClient.h"
 #include "Scraper_lib.h"
 
-static void client_opt_init(client_opt_t* opt) {
+void client_opt_init(client_opt_t* opt) {
     opt->server_name         = DFL_SERVER_NAME;
     opt->server_addr         = DFL_SERVER_ADDR;
     opt->server_port         = DFL_SERVER_PORT;

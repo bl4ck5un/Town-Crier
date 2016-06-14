@@ -57,6 +57,9 @@ int main()
     else {
         LL_NOTICE("enclave %lu created", eid);
     }
+
+    ssl_test(eid, &ret);
+    return 0;
 /*
  *  Uncomment to test attestation
  */

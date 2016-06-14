@@ -36,30 +36,14 @@ static uint8_t hex2int(char input)
 }
 
 
-int b_from_hex(const char* src, std::vector<uint8_t> & out)
-{
-    if (strlen(src) % 2 != 0)
-    {
-        LL_CRITICAL("Error: input is not of even len");
-        return -1;
-    }
-    if (strncmp(src, "0x", 2) == 0) src += 2;
-    while(*src && src[1])
-    {
-        out.push_back(hex2int(*src)*16 + hex2int(src[1]));
-        src += 2;
-    }
-
-    return -1;
-}
-
-int b_from_hex(const char* str, unsigned char* b) {
+int hex_to_bytes(const char *str, unsigned char *b) {
+    if (str == NULL) { return -1; }
     if (strlen(str) % 2 != 0)
     {
         LL_CRITICAL("Error: input is not of even len");
         return -1;
     }
-    if (strncmp(str, "0x", 2) == 0) {str += 2;}
+    if (strncmp(str, "0x", 2) == 0 || strncmp(str, "0X", 2) == 0) {str += 2;}
     int i = 0;
     while(*str && str[1])
     {
@@ -68,5 +52,18 @@ int b_from_hex(const char* str, unsigned char* b) {
         i++;
     }
 
-    return -1;
+    return 0;
+}
+
+long calc_b_size(const char* str) {
+    if (str == NULL) {return -1;}
+    long len = strlen(str);
+    if (len % 2 != 0) {
+        LL_CRITICAL("Error: input is of odd len %ld", len);
+        return -1;
+    }
+    if (strncmp(str, "0x", 2) == 0 || strncmp(str, "0X", 2) == 0) {
+        return len / 2 -1;
+    }
+    return len / 2;
 }

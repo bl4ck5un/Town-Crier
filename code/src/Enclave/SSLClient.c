@@ -25,6 +25,8 @@
 #include "RootCerts.h"
 #include "Debug.h"
 
+#include "Scraper_lib.h"
+
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"
 #else
@@ -311,6 +313,16 @@ static int my_verify( void *data, mbedtls_x509_crt *crt, int depth, uint32_t *fl
 }
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
+int ssl_test(){
+    client_opt_t opt;
+    client_opt_init(&opt);
+    opt.server_name = "google.com";
+    opt.server_port = "443";
+    unsigned char output[2048];
+    return ssl_client(opt, NULL, 0, output, 2048);
+}
+
+
 int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* output, int length)
 {
     int ret = 0, len, tail_len, i, written, frags, retry_left;
@@ -363,6 +375,7 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
 #if defined(MBEDTLS_DEBUG_C)
     mbedtls_debug_set_threshold( opt.debug_level );
 #endif
+
 
     if( opt.force_ciphersuite[0] > 0 )
     {
@@ -420,6 +433,7 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
      */
     if( strlen( opt.psk ) )
     {
+
         unsigned char c;
         size_t j;
 
@@ -462,7 +476,10 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
             psk[ j / 2 ] |= c;
         }
     }
+    LL_NOTICE("after if");
+
 #endif /* MBEDTLS_KEY_EXCHANGE__SOME__PSK_ENABLED */
+
 
 #if defined(MBEDTLS_SSL_ALPN)
     if( opt.alpn_string != NULL )
@@ -483,7 +500,6 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
         }
     }
 #endif /* MBEDTLS_SSL_ALPN */
-
     // XXX starting here!
     /*
      * 0. Initialize the RNG and the session data
@@ -491,6 +507,7 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
     LL_LOG("Seeding the random number generator..." );
 
     mbedtls_entropy_init( &entropy );
+    LL_LOG("Done init entropy" );
     if( ( ret = mbedtls_ctr_drbg_seed( &ctr_drbg, mbedtls_entropy_func, &entropy,
                                (const unsigned char *) pers,
                                strlen( pers ) ) ) != 0 )
@@ -946,7 +963,10 @@ send_request:
         {
             len = length - 1;
             memset( output, 0, length);
+            LL_NOTICE("here");
             ret = mbedtls_ssl_read( &ssl, output, len );
+
+            LL_NOTICE("here");
 
             if( ret == MBEDTLS_ERR_SSL_WANT_READ ||
                 ret == MBEDTLS_ERR_SSL_WANT_WRITE )

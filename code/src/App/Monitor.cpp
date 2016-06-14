@@ -107,7 +107,7 @@ int monitor_loop(sgx_enclave_id_t eid)
 //    free(tx_str);
     return ret;
 #else
-    int next_wanted;
+    long next_wanted;
     get_last_scan(db, &next_wanted);
     next_wanted++;
 
@@ -145,14 +145,14 @@ int monitor_loop(sgx_enclave_id_t eid)
 
             if (highest_block < 0)
             {
-                LL_CRITICAL("eth_blockNumber returns %d", highest_block);
+                LL_CRITICAL("eth_blockNumber returns %ld", highest_block);
                 throw EX_GET_BLOCK_NUM;
             }
 
             // if we've scanned all of them
             if (next_wanted > highest_block)
             {
-                LL_NOTICE("Highest block is %d, waiting for block %d...", highest_block, next_wanted);
+                LL_NOTICE("Highest block is %ld, waiting for block %ld...", highest_block, next_wanted);
                 throw EX_NOTHING_TO_DO;
             }
 
@@ -168,7 +168,7 @@ int monitor_loop(sgx_enclave_id_t eid)
                     throw EX_CREATE_FILTER;
                 }
 
-                LL_NOTICE("detected block %d", next_wanted);
+                LL_NOTICE("detected block %ld", next_wanted);
 
                 // get events of interest
                 ret = eth_getfilterlogs(RPC_HOSTNAME, RPC_PORT, filter_id, transaction);
@@ -230,7 +230,7 @@ int monitor_loop(sgx_enclave_id_t eid)
                         record_nonce(db, nonce);
                     }
                 }
-                LL_NOTICE("Done processing block %d", next_wanted);
+                LL_NOTICE("Done processing block %ld", next_wanted);
                 record_scan(db, next_wanted);
                 retry_n = 0;
             } // for (next_wanted <= highest_block)

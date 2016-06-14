@@ -96,7 +96,7 @@ static int flight_insurance_handler()
     return ret;
 }
 
-static int steam_exchange(uint8_t* req, int len, int* resp_data)
+static int handler_steam_exchange(uint8_t *req, int len, int *resp_data)
 {
     /*
     format[0] = encAPI[0];
@@ -126,7 +126,7 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
     // 0x00 .. 0x40
     // - encAPI: TODO: insert dec here
     std::string enc_api_key = toHex(req, 0x40);
-    dump_buf("API Key Ciphertext", req, 0x40);
+    LL_NOTICE("API KEY: %s", enc_api_key.c_str());
 
     // 0x40 .. 0x60 buyer_id
     buyer_id = toHex(req + 0x40, 0x20);
@@ -134,11 +134,11 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
     
     // 0x60 .. 0x80
     // get last 4 bytes
-    memcpy(&wait_time, req + 0x80 - 4, 4);
+    memcpy(&wait_time, req + 0x80 - sizeof(uint32_t), sizeof(uint32_t));
     wait_time = swap_uint32(wait_time);
 
     // 0x80 .. 0xa0 - item_len
-    memcpy(&item_len, req + 0xa0 - 4, 4);
+    memcpy(&item_len, req + 0xa0 - sizeof(size_t), sizeof(size_t));
     item_len = swap_uint32(item_len);
 
     // 0xa0 .. 0xc0
@@ -176,22 +176,17 @@ static int steam_exchange(uint8_t* req, int len, int* resp_data)
     return 0;
 }
 
-//request(uint8 type, address cb, bytes4 cb_fid, bytes32[] req)
-int handle_request(int nonce, uint64_t request_id, uint8_t request_type, 
-                   uint8_t* req, int req_len, uint8_t* raw_tx, int* raw_tx_len)
+int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int data_len, uint8_t* raw_tx, int* raw_tx_len)
 {
     int ret;
     bytes resp_data;
     int resp_data_len = 0;
-    // note that length is in byte
 
-
-
-    switch (request_type)
+    switch (type)
     {
     case TYPE_FINANCE_INFO:
-        return stock_ticker_handler(nonce, request_id, request_type, 
-            req, req_len, 
+        return stock_ticker_handler(nonce, id, type,
+            data, data_len,
             raw_tx, raw_tx_len);
         break;
     case TYPE_FLIGHT_INS:
@@ -199,15 +194,15 @@ int handle_request(int nonce, uint64_t request_id, uint8_t request_type,
     case TYPE_STEAM_EX:
         {
             int found = 0;
-            if (req_len != 6 * 32)
+            if (data_len != 6 * 32)
             {
-                LL_CRITICAL("req_len %d is not 6*32", req_len);
+                LL_CRITICAL("data_len %d*32 is not 6*32", data_len / 32);
                 return -1;
             }
-            ret = steam_exchange(req, req_len, &found);
+            ret = handler_steam_exchange(data, data_len, &found);
             if (ret != 0)
             {
-                LL_CRITICAL("%s returns %d", "steam_exchange", ret);
+                LL_CRITICAL("%s returns %d", "handler_steam_exchange", ret);
                 return -1;
             }
 //            found = 1;
@@ -236,12 +231,12 @@ int handle_request(int nonce, uint64_t request_id, uint8_t request_type,
         break;
         }
     default :
-        LL_CRITICAL("Unknown request type: %d", request_type);
+        LL_CRITICAL("Unknown request type: %d", type);
         return -1;
         break;
     }
 
-    ret = get_raw_signed_tx(nonce, 32, request_id, request_type, req, req_len, &resp_data[0], resp_data_len, raw_tx, raw_tx_len);
+    ret = get_raw_signed_tx(nonce, 32, id, type, data, data_len, &resp_data[0], resp_data_len, raw_tx, raw_tx_len);
     return ret;
 }
 

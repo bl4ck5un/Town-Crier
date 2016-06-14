@@ -11,7 +11,7 @@
 uint32_t u32_from_b(uint8_t* b);
 uint64_t u64_from_b(uint8_t* b);
 
-int b_from_hex(const char* src, std::vector<uint8_t> & out);
-int b_from_hex(const char* src, unsigned char* out);
+int hex_to_bytes(const char *src, unsigned char *out);
+long calc_b_size(const char* str);
 
 #endif //TC_LINUX_CONVERTER_H
