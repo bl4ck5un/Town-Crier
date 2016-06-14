@@ -45,6 +45,7 @@ add_executable(test_main
         Enclave_u.c
         Utils.cpp
         ocalls.cpp
+        EthRPC.cpp
         ../Common/Converter.cpp
         ../Common/Debug.c
         ../Common/Log.c)
