@@ -66,22 +66,27 @@ target_link_libraries(enclave "${SGX_COMMON_CFLAGS} \
     -Wl,-pie,-eenclave_entry -Wl,--export-dynamic \
     -Wl,--defsym,__ImageBase=0")
 
-add_custom_target(signed.enclave
-        ${SGX_ENCLAVE_SIGNER} sign -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
-        -enclave enclave.so
-        -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml -out enclave.signed.so
-        COMMENT "Signing the enclave")
-
-add_dependencies(signed.enclave enclave)
-
-## This command is only need for working with CLion
-## Please set output path of CLion to be ${PROJECT}/bin
-add_custom_command(TARGET signed.enclave
+add_custom_command(TARGET enclave
         POST_BUILD
+        COMMAND ${SGX_ENCLAVE_SIGNER} sign
+            -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
+            -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
+            -enclave enclave.so
+            -out ${CMAKE_BINARY_DIR}/enclave.signed.so
+        # only needed for CLion. Set OUTPUT_PATH to bin
         COMMAND ${CMAKE_COMMAND} -E make_directory ${TC_ROOT_DIR}/bin/Debug
-        COMMAND ${CMAKE_COMMAND} -E copy enclave.signed.so ${TC_ROOT_DIR}/bin/Debug
-        COMMENT "Installing signed enclave")
+        # only needed for CLion. Set OUTPUT_PATH to bin
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/enclave.signed.so ${TC_ROOT_DIR}/bin/Debug
+        COMMENT "Signing the enclave. Written to ${CMAKE_BINARY_DIR}")
 
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/enclave.signed.so DESTINATION ${CMAKE_BINARY_DIR})
+add_custom_command(TARGET enclave
+        POST_BUILD
+        COMMAND ${SGX_ENCLAVE_SIGNER} sign
+        -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
+        -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
+        -enclave enclave.so
+        -out ${CMAKE_BINARY_DIR}/enclave.signed.so
+        COMMENT "Signing the enclave. Written to ${CMAKE_BINARY_DIR}")
+
 install(TARGETS enclave DESTINATION ${CMAKE_BINARY_DIR})

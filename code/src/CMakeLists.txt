@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(TC_Linux)
+project(Town-Crier)
 
 set(SGX_SDK /opt/intel/sgxsdk)
 set(SGX_MODE HW)
