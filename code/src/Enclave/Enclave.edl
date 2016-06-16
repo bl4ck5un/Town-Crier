@@ -1,5 +1,5 @@
 enclave {
-    from "../mbedtls-SGX/lib/mbedtls_sgx.edl" import *;
+    from "mbedtls-SGX/lib/mbedtls_sgx.edl" import *;
     
     include "sgx_report.h"
     include "time.h"

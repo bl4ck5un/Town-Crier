@@ -313,17 +313,8 @@ static int my_verify( void *data, mbedtls_x509_crt *crt, int depth, uint32_t *fl
 }
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
-int ssl_test(){
-    client_opt_t opt;
-    client_opt_init(&opt);
-    opt.server_name = "google.com";
-    opt.server_port = "443";
-    unsigned char output[2048];
-    return ssl_client(opt, NULL, 0, output, 2048);
-}
 
-
-int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* output, int length)
+int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* output, int length, int* copied)
 {
     int ret = 0, len, tail_len, i, written, frags, retry_left;
     mbedtls_net_context server_fd;
@@ -476,7 +467,6 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
             psk[ j / 2 ] |= c;
         }
     }
-    LL_NOTICE("after if");
 
 #endif /* MBEDTLS_KEY_EXCHANGE__SOME__PSK_ENABLED */
 
@@ -507,7 +497,6 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
     LL_LOG("Seeding the random number generator..." );
 
     mbedtls_entropy_init( &entropy );
-    LL_LOG("Done init entropy" );
     if( ( ret = mbedtls_ctr_drbg_seed( &ctr_drbg, mbedtls_entropy_func, &entropy,
                                (const unsigned char *) pers,
                                strlen( pers ) ) ) != 0 )
@@ -515,6 +504,7 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
         LL_CRITICAL(" mbedtls_ctr_drbg_seed returned -%#x", -ret);
         goto exit;
     }
+    LL_LOG("Done init entropy" );
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
     /*
@@ -571,7 +561,7 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
     if( opt.server_addr == NULL)
         opt.server_addr = opt.server_name;
 
-    LL_LOG("connecting to %s:%s:%s...",
+    LL_LOG("connecting over %s: %s:%s...",
             opt.transport == MBEDTLS_SSL_TRANSPORT_STREAM ? "TCP" : "UDP",
             opt.server_addr, opt.server_port );
 
@@ -948,7 +938,9 @@ send_request:
     LL_LOG("%d bytes written in %d fragments", written, frags);
     LL_LOG("%s", (char*) buf);
 
-    if (opt.debug_level > 0) hexdump("Bytes written:", buf, written);
+    if (opt.debug_level > 0) {
+        hexdump("Bytes written:", buf, written);
+    }
 
     /*
      * 7. Read the HTTP response
@@ -957,16 +949,15 @@ send_request:
     /*
      * TLS and DTLS need different reading styles (stream vs datagram)
      */
+    *copied = 0;
+    uint8_t* p_output = output;
     if( opt.transport == MBEDTLS_SSL_TRANSPORT_STREAM )
     {
         do
         {
-            len = length - 1;
-            memset( output, 0, length);
-            LL_NOTICE("here");
-            ret = mbedtls_ssl_read( &ssl, output, len );
-
-            LL_NOTICE("here");
+            len = sizeof( buf ) - 1;
+            memset( buf, 0, sizeof( buf ) );
+            ret = mbedtls_ssl_read( &ssl, buf, len );
 
             if( ret == MBEDTLS_ERR_SSL_WANT_READ ||
                 ret == MBEDTLS_ERR_SSL_WANT_WRITE )
@@ -977,77 +968,50 @@ send_request:
                 switch( ret )
                 {
                     case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
-                        mbedtls_printf( " connection was closed gracefully\n" );
+                        LL_CRITICAL( " connection was closed gracefully" );
                         ret = 0;
                         goto close_notify;
 
                     case 0:
                     case MBEDTLS_ERR_NET_CONN_RESET:
-                        mbedtls_printf( " connection was reset by peer\n" );
+                        LL_CRITICAL( " connection was reset by peer" );
                         ret = 0;
                         goto reconnect;
 
                     default:
-                        mbedtls_printf( " mbedtls_ssl_read returned -0x%x\n", -ret );
+                        LL_CRITICAL( " mbedtls_ssl_read returned -0x%x", -ret );
                         goto exit;
                 }
             }
 
+            if (*copied + len > length) {
+                LL_CRITICAL("Output buffer is not big enough (%d)", length);
+            }
+
             len = ret;
 
-            LL_LOG( "get %d bytes ending with %x", len, output[len-1]);
-            if (opt.debug_level> 0) hexdump("REPONSE:", output, len);
-            // TODO: Add full-fledge HTTP parser here
-            // possibly from libcurl
-            if( ret > 0 && (output[len-1] == '\n' || output[len-1] == '}'))
+            memcpy(p_output, buf, len);
+            *copied += len;
+            p_output += len;
+
+            LL_LOG("%d bytes read", len);
+            LL_LOG("%d bytes copied", *copied);
+
+            /* End of message should be detected according to the syntax of the
+             * application protocol (eg HTTP), just use a dummy test here. */
+            if( ret > 0 && buf[len-1] == '\n')
             {
                 ret = 0;
-                output[len] = 0;
                 break;
             }
-            
-
-            output += len;
-            length -= len;
         }
-#pragma warning (disable: 4127)
         while( 1 );
-#pragma warning (default: 4127)
     }
     else /* Not stream, so datagram */
     {
-        len = sizeof( buf ) - 1;
-        memset( buf, 0, sizeof( buf ) );
-
-        do ret = mbedtls_ssl_read( &ssl, buf, len );
-        while( ret == MBEDTLS_ERR_SSL_WANT_READ ||
-               ret == MBEDTLS_ERR_SSL_WANT_WRITE );
-
-        if( ret <= 0 )
-        {
-            switch( ret )
-            {
-                case MBEDTLS_ERR_SSL_TIMEOUT:
-                    mbedtls_printf( " timeout\n" );
-                    if( retry_left-- > 0 )
-                        goto send_request;
-                    goto exit;
-
-                case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
-                    mbedtls_printf( " connection was closed gracefully\n" );
-                    ret = 0;
-                    goto close_notify;
-
-                default:
-                    mbedtls_printf( " mbedtls_ssl_read returned -0x%x\n", -ret );
-                    goto exit;
-            }
-        }
-
-        len = ret;
-        buf[len] = '\0';
-        mbedtls_printf( " %d bytes read\n\n%s", len, (char *) buf );
-        ret = 0;
+        LL_CRITICAL("please use TCP in opt.transport which is %d", opt.transport);
+        ret = -1;
+        goto exit;
     }
 
     /*
@@ -1159,6 +1123,9 @@ reconnect:
         mbedtls_printf( " ok\n" );
 
         goto send_request;
+    }
+    else {
+        LL_NOTICE("reconnect is not enabled by opt.reconnect: %d", opt.reconnect);
     }
 
     /*

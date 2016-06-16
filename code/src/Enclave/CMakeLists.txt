@@ -17,7 +17,8 @@ set(SOURCE_FILES
         SSLClient.c
         Steam2.cpp
         StockTicker.cpp
-        Transaction.cpp)
+        Transaction.cpp
+        test_ssl.cpp)
 
 set(CMAKE_VERBOSE_MAKEFILE False)
 
@@ -42,19 +43,17 @@ endif()
 set(CRYPTO_LIB_NAME sgx_tcrypto)
 
 include_directories(
-        boost_1_61_0
-        ${TC_ROOT_DIR}/Enclave/ethereum
-    ${TC_ROOT_DIR}/Common
-    ${TC_ROOT_DIR}/mbedtls-SGX/lib/include
-    ${SGX_SDK}/include
-    ${SGX_SDK}/include/tlibc
-    ${SGX_SDK}/include/stlport
+        ${TC_ROOT_DIR}/Common
+        mbedtls-SGX/include
+        ${SGX_SDK}/include
+        ${SGX_SDK}/include/tlibc
+        ${SGX_SDK}/include/stlport
 )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DENCLAVE_STD_ALT ${SGX_COMMON_CFLAGS} -nostdinc -fvisibility=hidden -fpie -fstack-protector")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++03 -nostdinc++")
 
-set(LIB_MBEDTLS_PATH "${TC_ROOT_DIR}/mbedtls-SGX/lib/libmbedtls_sgx.a")
+set(LIB_MBEDTLS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/mbedtls-SGX/lib/libmbedtls_sgx.a")
 
 set_target_properties(enclave PROPERTIES PREFIX "")
 
@@ -73,20 +72,6 @@ add_custom_command(TARGET enclave
             -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
             -enclave enclave.so
             -out ${CMAKE_BINARY_DIR}/enclave.signed.so
-        # only needed for CLion. Set OUTPUT_PATH to bin
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${TC_ROOT_DIR}/bin/Debug
-        # only needed for CLion. Set OUTPUT_PATH to bin
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/enclave.signed.so ${TC_ROOT_DIR}/bin/Debug
-        COMMENT "Signing the enclave. Written to ${CMAKE_BINARY_DIR}")
-
-
-add_custom_command(TARGET enclave
-        POST_BUILD
-        COMMAND ${SGX_ENCLAVE_SIGNER} sign
-        -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
-        -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
-        -enclave enclave.so
-        -out ${CMAKE_BINARY_DIR}/enclave.signed.so
         COMMENT "Signing the enclave. Written to ${CMAKE_BINARY_DIR}")
 
 install(TARGETS enclave DESTINATION ${CMAKE_BINARY_DIR})

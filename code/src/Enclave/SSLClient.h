@@ -94,7 +94,14 @@ typedef struct options
     char etm;                    /* negotiate encrypt then mac?              */
 } client_opt_t;
 
+#if defined(__cplusplus)
+extern "C" {
+#endif
 
-int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* buf, int len);
+int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* buf, int len, int* copied);
+
+#if defined(__cplusplus)
+}
+#endif
 
 #endif
