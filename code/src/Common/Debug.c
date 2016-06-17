@@ -1,22 +1,37 @@
 #include "Debug.h"
+#include "string.h"
+#include "Log.h"
+
+#define MIN(x,y) (x < y ? x : y)
 
 void dump_buf( const char *title, unsigned char *buf, size_t len )
 {
     hexdump(title, buf, len);
 }
 
-void string_dump(const char* title, void const* data, size_t len)
+void print_str_dbg(const char* title, const unsigned char* data, size_t len)
 {
-    unsigned int i;
-    
-    if (!data)
-	return;
+    unsigned char buf[1024 + 1] = {0};
+    if (!data) {
+        return;
+    }
+    if (len == 0) {
+        LL_CRITICAL("zero length");
+        return;
+    }
 
-    printf_sgx("%s\n", title);
-	
-    /* ASCII dump */
-	for (i = 0; i < len; i++) 	    {
-        printf_sgx("%c", ((unsigned char const *)data)[i]);
+    long remaining = len, tp = 0;
+
+    printf_sgx("%s: ", title);
+
+    while (remaining > 0) {
+        tp = MIN(1024, remaining);
+
+        memcpy(buf, data, tp);
+        buf[tp] = '\0'; // just to make sure
+        printf_sgx("%s", buf);
+        remaining -= 1024;
+        data += 1024;
     }
 	printf_sgx("\n");
 }

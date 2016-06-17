@@ -33,8 +33,7 @@ extern "C" {
 
 void dump_buf( const char *title, unsigned char *buf, size_t len );
 void hexdump(const char* title, void const * data, unsigned int len);
-void string_dump(const char* title, void const* data, size_t len);
-
+void print_str_dbg(const char* title, const unsigned char* data, size_t len);
 
 #if defined(__cplusplus)
 }
