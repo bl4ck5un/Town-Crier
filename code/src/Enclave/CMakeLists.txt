@@ -18,7 +18,8 @@ set(SOURCE_FILES
         Steam2.cpp
         StockTicker.cpp
         Transaction.cpp
-        test_ssl.cpp)
+        test_ssl.cpp
+        http_parser.c)
 
 set(CMAKE_VERBOSE_MAKEFILE False)
 

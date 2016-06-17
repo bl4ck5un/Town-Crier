@@ -25,6 +25,8 @@
 #include "RootCerts.h"
 #include "Debug.h"
 
+#include "http_parser.h"
+
 #include "Scraper_lib.h"
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -232,9 +234,6 @@
  * global options
  */
 
-
-
-
 static void my_debug( void *ctx, int level,
                       const char *file, int line,
                       const char *str )
@@ -297,22 +296,48 @@ static int my_verify( void *data, mbedtls_x509_crt *crt, int depth, uint32_t *fl
     char buf[1024];
     ((void) data);
 
-    mbedtls_printf( "\nVerify requested for (Depth %d):\n", depth );
+    LL_LOG( "\nVerify requested for (Depth %d):", depth );
     mbedtls_x509_crt_info( buf, sizeof( buf ) - 1, "", crt );
-    mbedtls_printf( "%s", buf );
+    LL_LOG( "%s", buf );
 
     if ( ( *flags ) == 0 )
-        mbedtls_printf( "  This certificate has no flags\n" );
+        LL_LOG( "  This certificate has no flags" );
     else
     {
         mbedtls_x509_crt_verify_info( buf, sizeof( buf ), "  ! ", *flags );
-        mbedtls_printf( "%s\n", buf );
+        LL_LOG( "%s", buf );
     }
 
     return( 0 );
 }
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
+typedef struct {
+    uint8_t eof;
+    uint8_t* buffer;
+    int* copied;
+} cb_data_t;
+
+int cb_on_message_complete (http_parser* parser) {
+    LL_LOG("message_complete");
+    cb_data_t* d = (cb_data_t*) parser->data;
+    d->eof = 1;
+    return 0;
+}
+
+int cb_on_body (http_parser* parser, const char* at, size_t len) {
+    cb_data_t* p = (cb_data_t*) parser->data;
+
+    LL_LOG("buffer at %p", p->buffer);
+    LL_LOG("copied at %p %d", p->copied, *p->copied);
+
+    uint8_t* dest = p->buffer + *p->copied;
+    LL_LOG("copy %d bytes to %p", len, dest);
+    memcpy(dest, at, len);
+    *p->copied += len;
+
+    return 0;
+}
 
 int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* output, int length, int* copied)
 {
@@ -835,7 +860,7 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
         {
             LL_DEBUG( "Peer certificate information");
             mbedtls_x509_crt_info( (char *) buf, sizeof( buf ) - 1, "|-", mbedtls_ssl_get_peer_cert( &ssl ) );
-            mbedtls_printf("%s\n", buf);   
+            LL_DEBUG("%s\n", buf);
         }
 
     }
@@ -939,7 +964,7 @@ send_request:
     LL_LOG("%s", (char*) buf);
 
     if (opt.debug_level > 0) {
-        hexdump("Bytes written:", buf, written);
+        hexdump("bytes written:", buf, written);
     }
 
     /*
@@ -949,8 +974,38 @@ send_request:
     /*
      * TLS and DTLS need different reading styles (stream vs datagram)
      */
+    http_parser* parser = malloc(sizeof(http_parser));
+    if (parser == NULL) {
+        LL_CRITICAL("failed to malloc %s", "http_parser");
+    }
+    http_parser_init(parser, HTTP_RESPONSE);
+
+    http_parser_settings settings;
+    http_parser_settings_init(&settings);
+
+    size_t nparsed;
+
+    // prepare callback data
+    cb_data_t* p_cb_data = (cb_data_t*) malloc(sizeof (cb_data_t));
+    if (!p_cb_data) {
+        LL_CRITICAL("Error: can't malloc for p_cb_data (%d)", sizeof(cb_data_t));
+        ret = -1;
+        goto exit;
+    }
+    memset(p_cb_data, 0, sizeof(cb_data_t));
+
+    p_cb_data->buffer = output;
+    p_cb_data->copied = copied;
     *copied = 0;
-    uint8_t* p_output = output;
+
+    LL_CRITICAL("output is at %p %p", output, p_cb_data->buffer);
+    LL_CRITICAL("copied is at %p %p", copied, p_cb_data->copied);
+
+    parser->data = p_cb_data;
+
+    settings.on_message_complete = cb_on_message_complete;
+    settings.on_body = cb_on_body;
+
     if( opt.transport == MBEDTLS_SSL_TRANSPORT_STREAM )
     {
         do
@@ -963,7 +1018,7 @@ send_request:
                 ret == MBEDTLS_ERR_SSL_WANT_WRITE )
                 continue;
 
-            if( ret <= 0 )
+            if( ret < 0 )
             {
                 switch( ret )
                 {
@@ -971,8 +1026,6 @@ send_request:
                         LL_CRITICAL( " connection was closed gracefully" );
                         ret = 0;
                         goto close_notify;
-
-                    case 0:
                     case MBEDTLS_ERR_NET_CONN_RESET:
                         LL_CRITICAL( " connection was reset by peer" );
                         ret = 0;
@@ -990,20 +1043,31 @@ send_request:
 
             len = ret;
 
-            memcpy(p_output, buf, len);
-            *copied += len;
-            p_output += len;
+            nparsed = http_parser_execute(parser, &settings, buf, len);
+            if (parser->upgrade) {
+                LL_CRITICAL("Not supprted yet");
+            } else if (nparsed != len) {
+                LL_CRITICAL("Error happend");
+            }
 
             LL_LOG("%d bytes read", len);
             LL_LOG("%d bytes copied", *copied);
 
-            /* End of message should be detected according to the syntax of the
-             * application protocol (eg HTTP), just use a dummy test here. */
-            if( ret > 0 && buf[len-1] == '\n')
-            {
-                ret = 0;
+            if (p_cb_data->eof == 1) {
+                LL_LOG("EOF");
                 break;
             }
+
+
+//            if (ret == 0)
+//                break;
+//            /* End of message should be detected according to the syntax of the
+//             * application protocol (eg HTTP), just use a dummy test here. */
+//            if( ret > 0 && buf[len-1] == '\n')
+//            {
+//                ret = 0;
+//                break;
+//            }
         }
         while( 1 );
     }
@@ -1123,9 +1187,6 @@ reconnect:
         mbedtls_printf( " ok\n" );
 
         goto send_request;
-    }
-    else {
-        LL_NOTICE("reconnect is not enabled by opt.reconnect: %d", opt.reconnect);
     }
 
     /*

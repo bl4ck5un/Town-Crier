@@ -23,6 +23,7 @@ int ssl_test(){
     LL_CRITICAL("%d copied", len);
     output[len] = '\0';
     LL_CRITICAL("%d strlen", strlen((const char*)output));
-    hexdump("RESPONSE", output, len);
+
+    print_str_dbg("RESPONSE", output, len);
     return 0;
 }
