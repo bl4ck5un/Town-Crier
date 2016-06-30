@@ -1,5 +1,0 @@
-LIBRARY	"service_provider"
-
-EXPORTS
-   ra_network_send_receive @1
-   ra_free_network_response_buffer @2

@@ -26,6 +26,10 @@ cat <<EOF
 var source = '$SRC'
 EOF
 
+cat <<EOF >> full.sol
+$SRC
+EOF
+
 cat <<EOF
 var contracts = eth.compile.solidity(source)
 var TownCrier = eth.contract(contracts.TownCrier.info.abiDefinition)

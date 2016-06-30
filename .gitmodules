@@ -1,6 +1,6 @@
-[submodule "code/curl.git"]
-	path = code/curl.git
-	url = https://github.com/bagder/curl
-[submodule "code/jsoncpp.git"]
-	path = code/jsoncpp.git
-	url = https://github.com/open-source-parsers/jsoncpp
+[submodule "code/TC-Linux/mbedtls-SGX"]
+	path = code/TC-Linux/mbedtls-SGX
+	url = https://github.com/bl4ck5un/mbedtls-SGX
+[submodule "code/src/mbedtls-SGX"]
+	path = code/src/Enclave/mbedtls-SGX
+	url = https://github.com/bl4ck5un/mbedtls-SGX/
