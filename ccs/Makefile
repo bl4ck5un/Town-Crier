@@ -6,11 +6,13 @@ TEXFLAGS=
 
 TARGET=Resubmit.pdf 
 
-all: $(TARGET)
+all: $(TARGET) eprint.pdf
 	$(LATEX) main.tex
 	$(LATEX) supplementary.tex
 
-$(TARGET): $(TARGET:.pdf=.tex) *.tex *.bib 
+eprint: eprint.pdf
+
+%.pdf: %.tex
 	$(LATEX) $(TEXFLAGS) $<
 	$(LATEX) $(TEXFLAGS) $<
 	bibtex $(basename $<)
