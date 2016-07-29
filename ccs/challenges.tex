@@ -124,7 +124,7 @@ allowing us to maintain the same binding through server restarts.
 \begin{tabular}{l}
 {\bf {\em Inputs}}: $\pkM$, $\pkoff$, $\tcboff$, $\sigatt$ \\[5pt]
 {\bf Verify:} \\
-Assert $\pkoff$ is the expected enclave code\\
+Assert $\tcboff$ is the expected enclave code\\
 Assert $\sigsgx.{\sf Verify}(\pkM, \sigatt, (\tcboff, \pkoff))$ \\
 Assert \tcbon is correct and parametrized with \pkoff\\
 \sgray{\it //~now okay to rely on \tcbon}

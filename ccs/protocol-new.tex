@@ -14,10 +14,10 @@ We use \msgi{i} to label messages corresponding to those in Fig.~\ref{fig:datafl
 For payment, let $\gas$ denote gas and $\fee$ to denote non-gas currency.
 In both cases \$ is a type annotation and the letter denotes the numerical amount.
 For simplicity, we assume that gas and currency adopt the same units (allowing us to avoid explicit conversions).
-We use the identifiers in Table~\ref{tbl:gas-ids} to denote currency and gas amounts.
+We use the following identifiers to denote currency and gas amounts.
 
-\begin{table}[ht!]
-\centering
+\vspace{-2ex}
+\begin{center}
 \begin{tabular}{m{0.08\columnwidth}m{0.85\columnwidth}}
   \hline
   $\fee$
@@ -42,9 +42,7 @@ We use the identifiers in Table~\ref{tbl:gas-ids} to denote currency and gas amo
   & Gas needed for {\bf Deliver} on a canceled request \\
   \hline
 \end{tabular}
-\caption{Identifiers for currency and gas amounts.}
-\label{tbl:gas-ids}
-\end{table}
+\end{center}
 
 $\constgasmin$, $\constgasmax$, $\constgasinvokecancel$, and $\constgascancel$ are system constants,
 $\fee$ is chosen by the requester (and may be malicious if the requester is dishonest),
