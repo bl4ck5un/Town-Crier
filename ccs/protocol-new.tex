@@ -160,7 +160,7 @@ by storing this time and setting a clock reference point, it calibrates its abso
 It generates an ECDSA keypair $(\pkTC,\skTC)$ (parameterized as in Ethereum), where $\pkTC$ is bound to the \engine instance through insertion into attestations.
 
 Upon a call to {\bf Resume}$({\sf id}, {\sf params})$, \engine contacts the data source specified by {\sf params} via HTTPS and checks that the corresponding certificate {\sf cert} is valid.
-(We discuss certificate checking in Appendix~\ref{sec:impl}.)
+(We discuss certificate checking in Appendix~\ref{sec:impl} of the online version~\cite{cryptoeprint:2016:168}.)
 Then \engine fetches the requested datagram and returns it to \relay along with \dgform, \dgid, and a {\tt GASLIMIT} $\gasdeliver := \constgasmax$, all digitally signed with \skTC.
 Fig.~\ref{fig:engineprotocol} shows the protocol for \engine.
 
@@ -277,5 +277,5 @@ Similarly, \tc can hedge against the compromise of a data source by scraping mul
 
 \subsection{Implementation Details}
 We implemented a full version of the \tc protocol in a complete, end-to-end system using Intel SGX and Ethereum.
-We defer discussion of implementation details and other practical considerations to Appendix \ref{sec:impl}.
+We defer discussion of implementation details and other practical considerations to Appendix \ref{sec:impl} of the online version~\cite{cryptoeprint:2016:168}.
 

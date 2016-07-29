@@ -1,4 +1,4 @@
-\documentclass{sig-alternate}
+\documentclass{sig-alternate-05-2015}
 
 \usepackage{acmcopyright}
 \usepackage{epsfig,endnotes}
@@ -59,12 +59,12 @@
 
 %\DeclareMathAlphabet{\mathcal}{OMS}{cmsy}{m}{n}
 
-\newcommand{\kyle}[1]{\textcolor{blue}{[\textsf{Kyle:  #1}]}}
-\newcommand{\fan}[1]{\textcolor{red}{[\small \bf {Fan:  #1}]}}
+\newcommand{\kyle}[1]{}
+\newcommand{\fan}[1]{}
 \definecolor{darkgreen}{rgb}{0,0.6,0}
-\newcommand{\ari}[1]{\textcolor{darkgreen}{[\textsf{Ari:  #1}]}}
-\newcommand{\ethan}[1]{\textcolor{cyan}{[\small \textsf{Ethan: #1}]}}
-\newcommand{\elaine}[1]{\textcolor{magenta}{[\textsf{elaine:  #1}]}}
+\newcommand{\ari}[1]{}
+\newcommand{\ethan}[1]{}
+\newcommand{\elaine}[1]{}
 
 % Complex \xxx for making notes of things to do.  Use \xxx{...} for general
 % notes, and \xxx[who]{...} if you want to blame someone in particular.
@@ -98,40 +98,81 @@
   \begin{rethm}%
 }{\end{rethm}}
 
-\frenchspacing
+%\frenchspacing
 
-%don't want date printed
-\date{}
+\begin{document}
+\CopyrightYear{2016} 
+\setcopyright{acmcopyright}
+\conferenceinfo{CCS'16,}{October 24-28, 2016, Vienna, Austria}
+\isbn{978-1-4503-4139-4/16/10}\acmPrice{\$15.00}
+\doi{http://dx.doi.org/10.1145/2976749.2978326}
 
 \title{Town Crier: \\ An Authenticated Data Feed for Smart Contracts}
 
-\numberofauthors{5}%
+% You need the command \numberofauthors to handle the 'placement
+% and alignment' of the authors beneath the title.
+%
+% For aesthetic reasons, we recommend 'three authors at a time'
+% i.e. three 'name/affiliation blocks' be placed beneath the title.
+%
+% NOTE: You are NOT restricted in how many 'rows' of
+% "name/affiliations" may appear. We just ask that you restrict
+% the number of 'columns' to three.
+%
+% Because of the available 'opening page real-estate'
+% we ask you to refrain from putting more than six authors
+% (two rows with three columns) beneath the article title.
+% More than six makes the first-page appear very cluttered indeed.
+%
+% Use the \alignauthor commands to handle the names
+% and affiliations for an 'aesthetic maximum' of six authors.
+% Add names, affiliations, addresses for
+% the seventh etc. author(s) as the argument for the
+% \additionalauthors command.
+% These 'additional authors' will be output/set for you
+% without further effort on your part as the last section in
+% the body of your article BEFORE References or any Appendices.
+
+\numberofauthors{5} 
 \author{
-%% 1st. author
-\alignauthor 
-Fan Zhang$^{1,3}$ \\
+% You can go ahead and credit any number of authors here,
+% e.g. one 'row of three' or two rows (consisting of one row of three
+% and a second row of one, two or three).
+%
+% The command \alignauthor (no curly braces needed) should
+% precede each author name, affiliation/snail-mail address and
+% e-mail address. Additionally, tag each line of
+% affiliation/address with \affaddr, and tag the
+% e-mail address with \email.
+%
+% 1st. author
+\alignauthor Fan Zhang \\
+  \affaddr{Cornell University}\\
+  \affaddr{IC3${}^\dagger$}\\
   \email{fanz@cs.cornell.edu}
 % 2nd. author
-\alignauthor 
-Ethan Cecchetti$^{1,3}$\\
+\alignauthor Ethan Cecchetti \\
+  \affaddr{Cornell University}\\
+  \affaddr{IC3${}^\dagger$}\\
   \email{ethan@cs.cornell.edu}
 % 3rd. author
-\alignauthor 
-Kyle Croman$^{1,3}$ \\
+\alignauthor Kyle Croman \\
+  \affaddr{Cornell University}\\
+  \affaddr{IC3${}^\dagger$}\\
   \email{kcroman@cs.cornell.edu}
 \and  % use '\and' if you need 'another row' of author names
 % 4th. author
-\alignauthor 
-Ari Juels$^{2,3}$ \\
+\alignauthor Ari Juels \\
+  \affaddr{Cornell Tech, Jacobs Institute}\\
+  \affaddr{IC3${}^\dagger$}\\
   \email{juels@cornell.edu}
 % 5th. author
-\alignauthor 
-Elaine Shi$^{1,3}$ \\
+\alignauthor Elaine Shi \\
+  \affaddr{Cornell University}\\
+  \affaddr{IC3${}^\dagger$}\\
   \email{rs2358@cornell.edu}
 \and
-\affaddr{$^1$Cornell University}
-\affaddr{$^2$Cornell Tech, Jacobs Institute}
-\affaddr{$^3$Initiative for CryptoCurrencies and Contracts}
+\affaddr{${}^\dagger$Initiative for CryptoCurrencies and Contracts}
 }
 % There's nothing stopping you putting the seventh, eighth, etc.
 % author on the opening page (as the 'third row') but we ask,
@@ -239,17 +280,12 @@ Elaine Shi$^{1,3}$ \\
 
 \renewcommand{\paragraph}[1]{{\vspace{5pt}\noindent\textbf{#1}}}
 
-%*****************************
-
-\makeatletter
-\def\@copyrightspace{\relax}
-\makeatother
-
-\begin{document}
-
 \maketitle
 
 \input{abstract}
+
+\keywords{Authenticated Data Feeds; Smart Contracts; Trusted Hardware; Intel SGX}
+
 \input{introduction}
 \input{background}
 \input{architecture}
@@ -268,16 +304,12 @@ Elaine Shi$^{1,3}$ \\
 \bibliographystyle{abbrv}
 \bibliography{ethereum,fan,bitcoin,elaine}
 
+\pagebreak
 \appendix 
-%\input{clock}
 \input{implementation}
 \input{sgxmodel}
 \input{analysis-proofs}
 \input{applications-full}
-%\input{advanced}
-%\input{pseudocode}
-
-
 
 %\theendnotes
 \end{document}

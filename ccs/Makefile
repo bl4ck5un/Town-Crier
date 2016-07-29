@@ -4,7 +4,7 @@
 LATEX=pdflatex
 TEXFLAGS=
 
-TARGET=Resubmit.pdf 
+TARGET=final.pdf 
 
 all: $(TARGET) eprint.pdf
 	$(LATEX) main.tex
@@ -14,8 +14,6 @@ eprint: eprint.pdf
 
 %.pdf: %.tex
 	$(LATEX) $(TEXFLAGS) $<
-	$(LATEX) $(TEXFLAGS) $<
-	bibtex $(basename $<)
 	bibtex $(basename $<)
 	$(LATEX) $(TEXFLAGS) $<
 	$(LATEX) $(TEXFLAGS) $<
