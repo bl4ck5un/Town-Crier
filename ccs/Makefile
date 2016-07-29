@@ -4,22 +4,31 @@
 LATEX=pdflatex
 TEXFLAGS=
 
-TARGET=final.pdf 
+TARGETS=Resubmit.pdf eprint.pdf final.pdf
+PARTIALS=main.pdf supplementary.pdf
 
-all: $(TARGET) eprint.pdf
+final: final.build
+
+all: $(TARGETS:.pdf=.build)
 	$(LATEX) main.tex
 	$(LATEX) supplementary.tex
 
-eprint: eprint.pdf
+main: Resubmit.build
+	$(LATEX) main.tex
 
-%.pdf: %.tex
+supplementary: Resubmit.build
+	$(LATEX) supplementary.tex
+
+eprint: eprint.build
+
+%.build: %.tex
 	$(LATEX) $(TEXFLAGS) $<
 	bibtex $(basename $<)
 	$(LATEX) $(TEXFLAGS) $<
 	$(LATEX) $(TEXFLAGS) $<
 
 light:
-	pdflatex $(TARGET:.pdf=.tex)
+	pdflatex $(TARGETS:.pdf=.tex)
 
 clean:
-	rm -f $(TARGET) *.log *.aux *.bbl *.blg 
+	rm -f $(TARGETS) $(PARTIALS) *.log *.aux *.bbl *.blg 
