@@ -35,9 +35,9 @@ The \tc operators could set up a new contract $\tcont'$ referencing new keys, bu
 While arbitrary code changes would be insecure, we could create a template for user contracts that includes a means to approve upgrades.
 We plan to investigate this and other mechanisms.
 
-\paragraph{Generalized Custom Datagrams.}
+\paragraph{Generalized Custom Datagrams and Within-Enclave Smart-Contract Execution.}
 In our {\sf SteamTrade} example contract we demonstrated a custom datagram that scrapes a user's online account using her credentials.
-A more generic approach would allow users to supply their own general-purpose code to \tc and achieve inexpensive data-source-enriched emulation of private contracts in Hawk \cite{hawk}.
-Placing such large requests on the blockchain would be prohibitively expensive, but code could be easily loaded into \tc enclave off-chain.
-Of course, deploying arbitrary user code raises many security and confidentiality concerns which \tc would need to address.
+A more generic approach would allow users to supply their own general-purpose code to \tc and data-source-enriched emulation of private contracts as in Hawk \cite{hawk}, but with considerably less computational overhead.
+Placing such large requests on the blockchain would be prohibitively expensive, but code could easily be loaded into the \tc enclave off-chain.
+Of course, deploying arbitrary user code raises many security and confidentiality concerns which \tc would need to address. \tc offers a fbasic ramework, however, within which to provide confidential, integrity-protected smart-contract code execution off-chain with trustworthy integration into on-chain smart-contract code.
 
