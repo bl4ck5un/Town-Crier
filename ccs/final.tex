@@ -22,6 +22,9 @@
 \pgfplotsset{compat=1.9}
 \usepackage{textcomp}
 
+%\usepackage{flushend}
+\usepackage{balance}
+
 % suppress left margin for items
 \usepackage{enumitem}
 \setlist[itemize]{leftmargin=*}
@@ -299,6 +302,7 @@ Intel SGX; Ethereum; Bitcoin
 \input{acknowledgements}
 
 \bibliographystyle{abbrv}
+\balance
 \bibliography{ethereum,fan,bitcoin,elaine}
 
 %\pagebreak
@@ -309,4 +313,5 @@ Intel SGX; Ethereum; Bitcoin
 %\input{applications-full}
 
 %\theendnotes
+
 \end{document}

@@ -31,4 +31,4 @@ light:
 	pdflatex $(TARGETS:.pdf=.tex)
 
 clean:
-	rm -f $(TARGETS) $(PARTIALS) *.log *.aux *.bbl *.blg 
+	@rm -f $(TARGETS) $(PARTIALS) *.log *.aux *.bbl *.blg 
