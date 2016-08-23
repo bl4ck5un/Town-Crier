@@ -84,7 +84,6 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
 
 target_link_libraries(tc
         -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB}
-#        -L${TC_ROOT_DIR}/mbedtls-SGX/lib -lmbedtls_sgx_u
         -lsqlite3
         -ljsoncpp
         -lcurl
@@ -93,7 +92,6 @@ target_link_libraries(tc
 
 target_link_libraries(test_main
         -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB}
-#        -L${TC_ROOT_DIR}/mbedtls-SGX/lib -lmbedtls_sgx_u
         -lsqlite3
         -ljsoncpp
         -lcurl

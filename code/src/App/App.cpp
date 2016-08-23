@@ -26,7 +26,7 @@ int main()
     int ret;
     sgx_enclave_id_t eid;
 
-    std::cout << "Clean up database? y/[n] ";
+    std::cout << "Do you want to clean up the database? y/[n] ";
     std::string new_db;
     std::cin >> new_db;
     if (new_db == "y")
@@ -52,6 +52,7 @@ int main()
     ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
 
     if (ret != 0) {
+        LL_CRITICAL("Failed to initialize the enclave");
         goto exit;
     }
     else {
@@ -59,9 +60,10 @@ int main()
     }
 
     ssl_test(eid, &ret);
-    return 0;
+
 /*
- *  Uncomment to test attestation
+ *  We don't care about the attestation at the moment.
+ *  Revisit after we have the official attestation service.
  */
 //  remote_att_init(eid);
 
