@@ -164,7 +164,7 @@
       </FunctionLevelLinking>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tstdcxx.lib;sgx_tcrypto_opt.lib;TLSlib.lib</AdditionalDependencies>
+      <AdditionalDependencies>sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tstdcxx.lib;sgx_tcrypto.lib;TLSlib.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\$(Configuration);$(SGXSDKInstallPath)bin\$(Platform)\$(Configuration)</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol />
@@ -303,7 +303,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tstdcxx.lib;sgx_tcrypto_opt.lib;TLSlib.lib</AdditionalDependencies>
+      <AdditionalDependencies>sgx_trts.lib;sgx_tstdc.lib;sgx_tservice.lib;sgx_tstdcxx.lib;sgx_tcrypto.lib;TLSlib.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\Debug;$(SGXSDKInstallPath)bin\$(Platform)\Release</AdditionalLibraryDirectories>
       <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
       <EntryPointSymbol>
@@ -416,7 +416,6 @@
     <ClCompile Include="Current_bloomberg.cpp" />
     <ClCompile Include="Current_Google.cpp" />
     <ClCompile Include="Current_Yahoo.cpp" />
-    <ClCompile Include="dispatcher.cpp" />
     <ClCompile Include="EventHandler.cpp" />
     <ClCompile Include="Flight.cpp" />
     <ClCompile Include="SSLClient.c" />
@@ -429,6 +428,7 @@
     <ClCompile Include="Steam2.cpp" />
     <ClCompile Include="StockTicker.cpp" />
     <ClCompile Include="Transaction.cpp" />
+    <ClCompile Include="UPS_Tracking.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Common\Constants.h" />
@@ -436,8 +436,9 @@
     <ClInclude Include="..\Common\Log.h" />
     <ClInclude Include="ABI.h" />
     <ClInclude Include="Commons.h" />
-    <ClInclude Include="dispatcher.h" />
+    <ClInclude Include="handlers.h" />
     <ClInclude Include="EventHandler.h" />
+    <ClInclude Include="int.h" />
     <ClInclude Include="SSLClient.h" />
     <ClInclude Include="ECDSA.h" />
     <ClInclude Include="Enclave.h" />

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Scraper_lib.h"
-#include "dispatcher.h"
+#include "handlers.h"
 
 static int construct_query(char* symbol, char** buf) {
     int len;

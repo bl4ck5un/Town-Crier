@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Scraper_lib.h"
-#include "dispatcher.h"
+#include "handlers.h"
 #include <Log.h>
 #include "Enclave_t.h"
 

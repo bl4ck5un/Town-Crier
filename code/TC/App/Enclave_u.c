@@ -1,4 +1,5 @@
 #include "Enclave_u.h"
+#include <errno.h>
 
 typedef struct ms_handle_request_t {
 	int ms_retval;
@@ -22,6 +23,11 @@ typedef struct ms_ecall_time_calibrate_t {
 	time_t ms_wall_clock;
 	uint8_t* ms_wtc_rsv;
 } ms_ecall_time_calibrate_t;
+
+typedef struct ms_ups_tracking_t {
+	int ms_retval;
+	char* ms_tracking_num;
+} ms_ups_tracking_t;
 
 typedef struct ms_rdtsc_t {
 	long long ms_retval;
@@ -109,6 +115,7 @@ static sgx_status_t SGX_CDECL Enclave_rdtsc(void* pms)
 {
 	ms_rdtsc_t* ms = SGX_CAST(ms_rdtsc_t*, pms);
 	ms->ms_retval = rdtsc();
+
 	return SGX_SUCCESS;
 }
 
@@ -116,6 +123,7 @@ static sgx_status_t SGX_CDECL Enclave_ocall_sleep(void* pms)
 {
 	ms_ocall_sleep_t* ms = SGX_CAST(ms_ocall_sleep_t*, pms);
 	ocall_sleep(ms->ms_milisec);
+
 	return SGX_SUCCESS;
 }
 
@@ -123,6 +131,7 @@ static sgx_status_t SGX_CDECL Enclave_ocall_time(void* pms)
 {
 	ms_ocall_time_t* ms = SGX_CAST(ms_ocall_time_t*, pms);
 	ms->ms_retval = ocall_time();
+
 	return SGX_SUCCESS;
 }
 
@@ -130,6 +139,7 @@ static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_connect(void* pms)
 {
 	ms_ocall_mbedtls_net_connect_t* ms = SGX_CAST(ms_ocall_mbedtls_net_connect_t*, pms);
 	ms->ms_retval = ocall_mbedtls_net_connect(ms->ms_ctx, (const char*)ms->ms_host, (const char*)ms->ms_port, ms->ms_proto);
+
 	return SGX_SUCCESS;
 }
 
@@ -137,6 +147,7 @@ static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_bind(void* pms)
 {
 	ms_ocall_mbedtls_net_bind_t* ms = SGX_CAST(ms_ocall_mbedtls_net_bind_t*, pms);
 	ms->ms_retval = ocall_mbedtls_net_bind(ms->ms_ctx, (const char*)ms->ms_bind_ip, (const char*)ms->ms_port, ms->ms_proto);
+
 	return SGX_SUCCESS;
 }
 
@@ -144,6 +155,7 @@ static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_accept(void* pms)
 {
 	ms_ocall_mbedtls_net_accept_t* ms = SGX_CAST(ms_ocall_mbedtls_net_accept_t*, pms);
 	ms->ms_retval = ocall_mbedtls_net_accept(ms->ms_bind_ctx, ms->ms_client_ctx, ms->ms_client_ip, ms->ms_buf_size, ms->ms_ip_len);
+
 	return SGX_SUCCESS;
 }
 
@@ -151,6 +163,7 @@ static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_set_block(void* pms)
 {
 	ms_ocall_mbedtls_net_set_block_t* ms = SGX_CAST(ms_ocall_mbedtls_net_set_block_t*, pms);
 	ms->ms_retval = ocall_mbedtls_net_set_block(ms->ms_ctx);
+
 	return SGX_SUCCESS;
 }
 
@@ -158,6 +171,7 @@ static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_set_nonblock(void* pms)
 {
 	ms_ocall_mbedtls_net_set_nonblock_t* ms = SGX_CAST(ms_ocall_mbedtls_net_set_nonblock_t*, pms);
 	ms->ms_retval = ocall_mbedtls_net_set_nonblock(ms->ms_ctx);
+
 	return SGX_SUCCESS;
 }
 
@@ -165,6 +179,7 @@ static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_usleep(void* pms)
 {
 	ms_ocall_mbedtls_net_usleep_t* ms = SGX_CAST(ms_ocall_mbedtls_net_usleep_t*, pms);
 	ocall_mbedtls_net_usleep(ms->ms_usec);
+
 	return SGX_SUCCESS;
 }
 
@@ -172,6 +187,7 @@ static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_recv(void* pms)
 {
 	ms_ocall_mbedtls_net_recv_t* ms = SGX_CAST(ms_ocall_mbedtls_net_recv_t*, pms);
 	ms->ms_retval = ocall_mbedtls_net_recv(ms->ms_ctx, ms->ms_buf, ms->ms_len);
+
 	return SGX_SUCCESS;
 }
 
@@ -179,6 +195,7 @@ static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_send(void* pms)
 {
 	ms_ocall_mbedtls_net_send_t* ms = SGX_CAST(ms_ocall_mbedtls_net_send_t*, pms);
 	ms->ms_retval = ocall_mbedtls_net_send(ms->ms_ctx, (const unsigned char*)ms->ms_buf, ms->ms_len);
+
 	return SGX_SUCCESS;
 }
 
@@ -186,6 +203,7 @@ static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_recv_timeout(void* pms)
 {
 	ms_ocall_mbedtls_net_recv_timeout_t* ms = SGX_CAST(ms_ocall_mbedtls_net_recv_timeout_t*, pms);
 	ms->ms_retval = ocall_mbedtls_net_recv_timeout(ms->ms_ctx, ms->ms_buf, ms->ms_len, ms->ms_timeout);
+
 	return SGX_SUCCESS;
 }
 
@@ -193,6 +211,7 @@ static sgx_status_t SGX_CDECL Enclave_ocall_mbedtls_net_free(void* pms)
 {
 	ms_ocall_mbedtls_net_free_t* ms = SGX_CAST(ms_ocall_mbedtls_net_free_t*, pms);
 	ocall_mbedtls_net_free(ms->ms_ctx);
+
 	return SGX_SUCCESS;
 }
 
@@ -200,6 +219,7 @@ static sgx_status_t SGX_CDECL Enclave_ocall_print_string(void* pms)
 {
 	ms_ocall_print_string_t* ms = SGX_CAST(ms_ocall_print_string_t*, pms);
 	ms->ms_retval = ocall_print_string((const char*)ms->ms_str);
+
 	return SGX_SUCCESS;
 }
 
@@ -260,6 +280,16 @@ sgx_status_t ecall_time_calibrate(sgx_enclave_id_t eid, int* retval, time_t wall
 	ms.ms_wall_clock = wall_clock;
 	ms.ms_wtc_rsv = (uint8_t*)wtc_rsv;
 	status = sgx_ecall(eid, 2, &ocall_table_Enclave, &ms);
+	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
+	return status;
+}
+
+sgx_status_t ups_tracking(sgx_enclave_id_t eid, int* retval, char* tracking_num)
+{
+	sgx_status_t status;
+	ms_ups_tracking_t ms;
+	ms.ms_tracking_num = tracking_num;
+	status = sgx_ecall(eid, 3, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
 }
