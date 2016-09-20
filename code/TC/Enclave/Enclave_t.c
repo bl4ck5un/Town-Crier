@@ -43,6 +43,7 @@ typedef struct ms_ecall_time_calibrate_t {
 typedef struct ms_ups_tracking_t {
 	int ms_retval;
 	char* ms_tracking_num;
+	char* ms_state;
 } ms_ups_tracking_t;
 
 typedef struct ms_rdtsc_t {
@@ -272,9 +273,13 @@ static sgx_status_t SGX_CDECL sgx_ups_tracking(void* pms)
 	char* _tmp_tracking_num = ms->ms_tracking_num;
 	size_t _len_tracking_num = _tmp_tracking_num ? strlen(_tmp_tracking_num) + 1 : 0;
 	char* _in_tracking_num = NULL;
+	char* _tmp_state = ms->ms_state;
+	size_t _len_state = sizeof(*_tmp_state);
+	char* _in_state = NULL;
 
 	CHECK_REF_POINTER(pms, sizeof(ms_ups_tracking_t));
 	CHECK_UNIQUE_POINTER(_tmp_tracking_num, _len_tracking_num);
+	CHECK_UNIQUE_POINTER(_tmp_state, _len_state);
 
 	if (_tmp_tracking_num != NULL) {
 		_in_tracking_num = (char*)malloc(_len_tracking_num);
@@ -286,9 +291,21 @@ static sgx_status_t SGX_CDECL sgx_ups_tracking(void* pms)
 		memcpy(_in_tracking_num, _tmp_tracking_num, _len_tracking_num);
 		_in_tracking_num[_len_tracking_num - 1] = '\0';
 	}
-	ms->ms_retval = ups_tracking(_in_tracking_num);
+	if (_tmp_state != NULL) {
+		if ((_in_state = (char*)malloc(_len_state)) == NULL) {
+			status = SGX_ERROR_OUT_OF_MEMORY;
+			goto err;
+		}
+
+		memset((void*)_in_state, 0, _len_state);
+	}
+	ms->ms_retval = ups_tracking(_in_tracking_num, _in_state);
 err:
 	if (_in_tracking_num) free(_in_tracking_num);
+	if (_in_state) {
+		memcpy(_tmp_state, _in_state, _len_state);
+		free(_in_state);
+	}
 
 	return status;
 }

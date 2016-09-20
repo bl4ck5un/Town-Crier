@@ -11,7 +11,7 @@ int google_current(char* symbol, double* r);
 int yahoo_current(char* symbol, double* r);
 int bloomberg_current(double* r);
 
-int ups_tracking(char* tracking_num, std::string* status);
+int ups_tracking(char* tracking_num, char* status);
 
 #if defined(__cplusplus)
 }

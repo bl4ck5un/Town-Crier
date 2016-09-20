@@ -1,22 +1,25 @@
 #include "Scraper_lib.h"
 #include "handlers.h"
 #include "Log.h"
-//#include "https.h"
 #include <string>
-#include <iostream>
 
 using namespace std;
+
+#define PACKAGE_NOT_FOUND 0
+#define ORDER_PROCESSED 1
+#define SHIPPED 2
+#define IN_TRANSIT 3
+#define OUT_FOR_DELIVERY 4
+#define DELIVERED 5
 
 static int construct_query(char* symbol, std::string &query){
     query = "/WebTracking/track?track=yes&trackNums=";
     query += symbol;
     return query.size();
-
 }
-static std::string parse_response(char* resp){
 
-	char ret[10] = "a string";
-	char* res = ret; 
+static std::string parse_response(char* resp){
+ 
 
 
 	//char* end;
@@ -37,32 +40,35 @@ static std::string parse_response(char* resp){
 		pos += 1;
 	}
 	std::size_t end = pos - 1;
-	//printf("start: %ld\nend: %ld\n",start, end); 
 	std::string token = buf_string.substr(start, end-start);
-	//cout << token << '\n';
-	//printf("end\n");
 
 	return token;
 }
 
-int ups_tracking (char* tracking_num, std::string* status){
+int ups_tracking (char* tracking_num, const char* status){
 	//printf("Begin ups_current\n");
 	int ret = 0;
 	int buf_size = 100*1024;
 	char* buf = (char*) malloc(buf_size);
 	std::string query;
 
-	ret = construct_query(track_id, query);
+	ret = construct_query(tracking_num, query);
 	if(ret < 0){
-		//LL_CRITICAL("%s returne %d","construct_query", ret);
-		printf("failure\n");
+		LL_CRITICAL("%s returned %d","construct_query", ret);
 		return -1;
 	}
+
 	/* execute the query*/ 
 	ret = get_page_on_ssl("https://wwwapps.ups.com",query.c_str(), NULL ,0,(unsigned char*)buf, buf_size);
-    
+    if(ret<0){
+        LL_CRITICAL("%s returned %d", "get_page_on_ssl", ret);
+        return -1;
+    }
+
     // parse the buffer
-    *status = parse_response(buf);
+    std::string tmp_string = parse_response(buf);
+
+    status = tmp_string.c_str();
 
     return 0;
 }

@@ -80,7 +80,8 @@ int main()
 
 #if defined(SHORTCUT_GETH)
 	int retval = 0;
-	ups_tracking(global_eid, &retval, "123");
+    char res[32];
+	ups_tracking(global_eid, &retval, "123", res);
 	LL_LOG("ups_tracking(..) returns %d", retval);
 #endif
 
@@ -89,4 +90,4 @@ exit:
 error:
     LL_CRITICAL("Enter a character before exit ...");
     system("pause");
-}
+ }
