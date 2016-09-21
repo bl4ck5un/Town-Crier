@@ -3,7 +3,7 @@
 #include "Log.h"
 //#include "https.h"
 #include <string>
-#include <iostream>
+// #include <iostream>
 
 using namespace std;
 
@@ -45,24 +45,26 @@ static std::string parse_response(char* resp){
 	return token;
 }
 
-int ups_tracking (char* tracking_num, std::string* status){
+int ups_tracking (char* tracking_num){
 	//printf("Begin ups_current\n");
 	int ret = 0;
 	int buf_size = 100*1024;
 	char* buf = (char*) malloc(buf_size);
 	std::string query;
 
-	ret = construct_query(track_id, query);
+	ret = construct_query(tracking_num, query);
 	if(ret < 0){
 		//LL_CRITICAL("%s returne %d","construct_query", ret);
-		printf("failure\n");
+		LL_CRITICAL("failure\n");
 		return -1;
 	}
 	/* execute the query*/ 
 	ret = get_page_on_ssl("https://wwwapps.ups.com",query.c_str(), NULL ,0,(unsigned char*)buf, buf_size);
     
     // parse the buffer
-    *status = parse_response(buf);
+    std::string result = parse_response(buf);
+
+	// return an int according to the result. E.g. 1 for delivered, etc.
 
     return 0;
 }
