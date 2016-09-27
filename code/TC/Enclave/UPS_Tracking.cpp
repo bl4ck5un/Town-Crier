@@ -7,6 +7,13 @@
 
 using namespace std;
 
+#define PACKAGE_NOT_FOUND 0
+#define ORDER_PROCESSED 1
+#define SHIPPED 2
+#define IN_TRANSIT 3
+#define OUT_FOR_DELIVERY 4
+#define DELIVERED 5
+
 static int construct_query(char* symbol, std::string &query){
     query = "/WebTracking/track?track=yes&trackNums=";
     query += symbol;
@@ -65,8 +72,28 @@ int ups_tracking (char* tracking_num){
     std::string result = parse_response(buf);
 
 	// return an int according to the result. E.g. 1 for delivered, etc.
-
-    return 0;
+    if(tmp_string.compare("Package not found")==0){
+        return PACKAGE_NOT_FOUND;
+    }
+    if(tmp_string.compare("Delivered")==0){
+        return DELIVERED;
+    }
+    if(tmp_string.compare("Order processed")==0){
+        return ORDER_PROCESSED;
+    }
+    if(tmp_string.compare("Shipped")==0){
+        return SHIPPED;
+    }
+    if(tmp_string.compare("In transit")==0){
+        return IN_TRANSIT;
+    }
+    if(tmp_string.compare("Out for delivery")==0){
+        return OUT_FOR_DELIVERY;
+    }
+    else{
+    	LL_CRITICAL("failed to get information\n")
+        return -1;
+    }
 }
 
 /* Code used for testing
