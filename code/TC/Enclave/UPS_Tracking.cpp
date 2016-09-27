@@ -75,26 +75,26 @@ int ups_tracking (char* tracking_num){
     std::string result = parse_response(buf);
 
 	// return an int according to the result. E.g. 1 for delivered, etc.
-    if(tmp_string.compare("Package not found")==0){
+    if(result.compare("Package not found")==0){
         return PACKAGE_NOT_FOUND;
     }
-    if(tmp_string.compare("Delivered")==0){
+    if(result.compare("Delivered")==0){
         return DELIVERED;
     }
-    if(tmp_string.compare("Order processed")==0){
+    if(result.compare("Order processed")==0){
         return ORDER_PROCESSED;
     }
-    if(tmp_string.compare("Shipped")==0){
+    if(result.compare("Shipped")==0){
         return SHIPPED;
     }
-    if(tmp_string.compare("In transit")==0){
+    if(result.compare("In transit")==0){
         return IN_TRANSIT;
     }
-    if(tmp_string.compare("Out for delivery")==0){
+    if(result.compare("Out for delivery")==0){
         return OUT_FOR_DELIVERY;
     }
     else{
-    	LL_CRITICAL("failed to get information\n")
+    	LL_CRITICAL("failed to get information\n");
         return -1;
     }
 }

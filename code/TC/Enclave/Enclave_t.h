@@ -21,7 +21,7 @@ extern "C" {
 int handle_request(int nonce, uint64_t request_id, uint8_t request_type, uint8_t* req, int req_len, uint8_t tx[2048], int* len);
 int ecall_create_report(sgx_target_info_t* quote_enc_info, sgx_report_t* report);
 int ecall_time_calibrate(time_t wall_clock, uint8_t wtc_rsv[65]);
-int ups_tracking(char* tracking_num, char* state);
+int ups_tracking(char* tracking_num);
 
 sgx_status_t SGX_CDECL rdtsc(long long* retval);
 sgx_status_t SGX_CDECL ocall_sleep(int milisec);

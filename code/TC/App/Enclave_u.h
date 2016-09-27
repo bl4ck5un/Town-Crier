@@ -36,7 +36,7 @@ int SGX_UBRIDGE(SGX_NOCONVENTION, ocall_print_string, (const char* str));
 sgx_status_t handle_request(sgx_enclave_id_t eid, int* retval, int nonce, uint64_t request_id, uint8_t request_type, uint8_t* req, int req_len, uint8_t tx[2048], int* len);
 sgx_status_t ecall_create_report(sgx_enclave_id_t eid, int* retval, sgx_target_info_t* quote_enc_info, sgx_report_t* report);
 sgx_status_t ecall_time_calibrate(sgx_enclave_id_t eid, int* retval, time_t wall_clock, uint8_t wtc_rsv[65]);
-sgx_status_t ups_tracking(sgx_enclave_id_t eid, int* retval, char* tracking_num, char* state);
+sgx_status_t ups_tracking(sgx_enclave_id_t eid, int* retval, char* tracking_num);
 
 #ifdef __cplusplus
 }

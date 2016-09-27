@@ -13,7 +13,7 @@ enclave {
         public int ecall_create_report ([in] sgx_target_info_t* quote_enc_info, [out] sgx_report_t* report);
         public int ecall_time_calibrate (time_t wall_clock, [out] uint8_t wtc_rsv[65]);
 
-		public int ups_tracking ([in, string] char* tracking_num, [out] char* state);
+		public int ups_tracking ([in, string] char* tracking_num);
     };
 
     untrusted {

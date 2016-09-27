@@ -27,7 +27,6 @@ typedef struct ms_ecall_time_calibrate_t {
 typedef struct ms_ups_tracking_t {
 	int ms_retval;
 	char* ms_tracking_num;
-	char* ms_state;
 } ms_ups_tracking_t;
 
 typedef struct ms_rdtsc_t {
@@ -285,12 +284,11 @@ sgx_status_t ecall_time_calibrate(sgx_enclave_id_t eid, int* retval, time_t wall
 	return status;
 }
 
-sgx_status_t ups_tracking(sgx_enclave_id_t eid, int* retval, char* tracking_num, char* state)
+sgx_status_t ups_tracking(sgx_enclave_id_t eid, int* retval, char* tracking_num)
 {
 	sgx_status_t status;
 	ms_ups_tracking_t ms;
 	ms.ms_tracking_num = tracking_num;
-	ms.ms_state = state;
 	status = sgx_ecall(eid, 3, &ocall_table_Enclave, &ms);
 	if (status == SGX_SUCCESS && retval) *retval = ms.ms_retval;
 	return status;
