@@ -3,6 +3,8 @@
 #include "Log.h"
 #include <string>
 
+// #include <iostream>
+
 using namespace std;
 
 #define PACKAGE_NOT_FOUND 0
@@ -45,7 +47,8 @@ static std::string parse_response(char* resp){
 	return token;
 }
 
-int ups_tracking (char* tracking_num, const char* status){
+
+int ups_tracking (char* tracking_num){
 	//printf("Begin ups_current\n");
 	int ret = 0;
 	int buf_size = 100*1024;
@@ -54,7 +57,9 @@ int ups_tracking (char* tracking_num, const char* status){
 
 	ret = construct_query(tracking_num, query);
 	if(ret < 0){
-		LL_CRITICAL("%s returned %d","construct_query", ret);
+
+		//LL_CRITICAL("%s returne %d","construct_query", ret);
+		LL_CRITICAL("failure\n");
 		return -1;
 	}
 
@@ -66,11 +71,32 @@ int ups_tracking (char* tracking_num, const char* status){
     }
 
     // parse the buffer
-    std::string tmp_string = parse_response(buf);
 
-    status = tmp_string.c_str();
+    std::string result = parse_response(buf);
 
-    return 0;
+	// return an int according to the result. E.g. 1 for delivered, etc.
+    if(tmp_string.compare("Package not found")==0){
+        return PACKAGE_NOT_FOUND;
+    }
+    if(tmp_string.compare("Delivered")==0){
+        return DELIVERED;
+    }
+    if(tmp_string.compare("Order processed")==0){
+        return ORDER_PROCESSED;
+    }
+    if(tmp_string.compare("Shipped")==0){
+        return SHIPPED;
+    }
+    if(tmp_string.compare("In transit")==0){
+        return IN_TRANSIT;
+    }
+    if(tmp_string.compare("Out for delivery")==0){
+        return OUT_FOR_DELIVERY;
+    }
+    else{
+    	LL_CRITICAL("failed to get information\n")
+        return -1;
+    }
 }
 
 /* Code used for testing
