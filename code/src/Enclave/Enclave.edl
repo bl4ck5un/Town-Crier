@@ -3,7 +3,6 @@ enclave {
     
     include "sgx_report.h"
     include "time.h"
-    include "SSLClient.h"
 
     trusted {
         public int handle_request(
