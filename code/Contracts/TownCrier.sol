@@ -1,3 +1,5 @@
+pragma solidity ^0.4.2;
+
 contract TownCrier {
     struct Request {
         address requester;
@@ -28,6 +30,12 @@ contract TownCrier {
     uint64 requestCnt;
     Request[2**64] requests;
 
+    // Contracts that receive Ether but do not define a fallback function throw
+    // an exception, sending back the Ether (this was different before Solidity
+    // v0.4.0). So if you want your contract to receive Ether, you have to
+    // implement a fallback function.
+    function () { }
+
     function TownCrier() public {
         // Start request IDs at 1 for two reasons:
         //   1. We can use 0 to denote an invalid request (ids are unsigned)
@@ -38,9 +46,7 @@ contract TownCrier {
         requests[0].requester = msg.sender;
     }
 
-    function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, bytes32[] requestData) public returns (uint64) {
-//    function request(uint8 requestType, address callbackAddr, bytes32[] requestData) public returns (uint64) {
-//        bytes4 callbackFID = bytes4(0);
+    function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, bytes32[] requestData) public payable returns (uint64) {
         RequestLog(this, 0);
         if (msg.value < MIN_FEE || msg.value > MAX_FEE) {
             RequestInfo(0, requestType, msg.sender, msg.value, callbackAddr, 0, requestData);
@@ -62,12 +68,8 @@ contract TownCrier {
         }
     }
 
-//    function deliver(uint64 requestId, bytes32 paramsHash, bytes32 respData, uint8 v, bytes32 r, bytes32 s) public {
     function deliver(uint64 requestId, bytes32 paramsHash, bytes32 respData) public {
         uint fee = requests[requestId].fee;
-//        address signer = ecrecover(sha3(requestId, paramsHash, respData), v, r, s);
-//        DeliverSig(v, r, s, signer);
-//        if (signer != SGX_ADDRESS
         if (msg.sender != SGX_ADDRESS
                 || requests[requestId].requester == 0
                 || fee == DELIVERED_FEE_FLAG) {
@@ -80,14 +82,18 @@ contract TownCrier {
             return;
         } else if (requests[requestId].fee == CANCELLED_FEE_FLAG) {
             DeliverLog(msg.gas, 1);
-            SGX_ADDRESS.send(CANCELLATION_FEE);
+            if (! SGX_ADDRESS.send(CANCELLATION_FEE)){
+                throw;
+            }
             requests[requestId].fee = DELIVERED_FEE_FLAG;
             DeliverLog(msg.gas, int(CANCELLATION_FEE));
             return;
         }
 
         DeliverLog(msg.gas, 8);
-        SGX_ADDRESS.send(fee);
+        if (!SGX_ADDRESS.send(fee)) {
+            throw;
+        }
         requests[requestId].fee = DELIVERED_FEE_FLAG;
         DeliverLog(msg.gas, 16);
 
@@ -108,7 +114,9 @@ contract TownCrier {
         // If the request has was sent by this user and has money left on it, then cancel it.
         uint fee = requests[requestId].fee;
         if (requests[requestId].requester == msg.sender && fee > CANCELLATION_FEE) {
-            msg.sender.send(fee - CANCELLATION_FEE);
+            if (msg.sender.send(fee - CANCELLATION_FEE)) {
+                throw;
+            }
             requests[requestId].fee = CANCELLED_FEE_FLAG;
             Cancel(requestId, msg.sender, requests[requestId].requester, int(CANCELLED_FEE_FLAG));
             return true;

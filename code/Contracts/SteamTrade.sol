@@ -1,3 +1,5 @@
+pragma solidity ^0.4.2;
+
 import "TownCrier.sol";
 
 contract SteamTrade {
@@ -8,12 +10,13 @@ contract SteamTrade {
     TownCrier public TC_CONTRACT;
     bytes32 public ID_S;
     bytes32 public ITEM;
-//    bytes32[] public LIST_I;
     bytes32[2] public encAPI;
     uint public P;
     address[2**64] buyers;
     uint constant TC_FEE = (35000 + 20000) * 5 * 10**10;
     bytes4 constant TC_CALLBACK_FID = 0x3d622256;
+
+    function () {  }
 
     function SteamTrade(TownCrier tcCont, bytes32 encApiKey0, bytes32 encApiKey1, bytes32 item, uint p) public {
         TC_CONTRACT = tcCont;
@@ -24,12 +27,14 @@ contract SteamTrade {
         encAPI[1] = encApiKey1;
     }
 
-    function purchase(bytes32 ID_B, uint32 T_B) returns (uint) {
+    function purchase(bytes32 ID_B, uint32 T_B) public payable returns (uint) {
         uint i;
         uint j;
         if (msg.value != P + TC_FEE) {
             Buy(ID_B, T_B, encAPI, ITEM, -1);
-            msg.sender.send(msg.value);
+            if (!msg.sender.send(msg.value)) {
+                throw;
+            }
             return 0;
         }
 
@@ -48,7 +53,7 @@ contract SteamTrade {
         return format.length;
     } 
 
-    function pay(uint64 requestId, bytes32 result) public { // uint result, uint payout) public {
+    function pay(uint64 requestId, bytes32 result) public { 
         address buyer = buyers[requestId];
         if (msg.sender != address(TC_CONTRACT)) { // && msg.sender != 0x50adbfc5017cc4fe557e64425c8d0ce674f8de69) {
             UINT(666);
@@ -59,11 +64,15 @@ contract SteamTrade {
         }
 
         if (uint(result) > 0) {
-            owner.send(P);
+            if (!owner.send(P)) {
+                throw;
+            }
             UINT(1);
         }
         else {
-            buyer.send(P);
+            if (!buyer.send(P)) {
+                throw;
+            }
             UINT(0);
         }
     }
