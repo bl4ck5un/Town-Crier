@@ -1,12 +1,12 @@
 {
   "alloc": {
-    "560e65fd260f88cc11a86ec89ccb272ee76515c9": { 
+    "397b935f191a5b8e1024e65d5c39d76fcc85343b": { 
         "balance": "0x77923068547758070"
     },
-    "23e313b44fafb92230fd9ae0334fb8f83b554ee6": { 
+    "ae83d55cab6a685b1ea4624e2e90265e6b469c52": { 
         "balance": "0x44922320357758000"
     },
-    "212749c576958a28e7b709e501c39764c68d2d62": {
+    "89dc48f00332935291eecd65da7dd1134bd9096a": {
         "balance": "0x55922337203684790"
     },
     "89b44e4d3c81ede05d0f5de8d1a68f754d73d997": {
@@ -22,4 +22,3 @@
   "extraData": "0x",
   "gasLimit": "0x2fefd8"
 }
-
