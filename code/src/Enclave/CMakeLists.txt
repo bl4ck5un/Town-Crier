@@ -75,4 +75,4 @@ add_custom_command(TARGET enclave
             -out ${CMAKE_BINARY_DIR}/enclave.signed.so
         COMMENT "Signing the enclave. Written to ${CMAKE_BINARY_DIR}")
 
-install(TARGETS enclave DESTINATION ${CMAKE_BINARY_DIR})
+install(TARGETS enclave DESTINATION ${PROJECT_BINARY_DIR})

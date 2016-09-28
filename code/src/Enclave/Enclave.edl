@@ -3,6 +3,7 @@ enclave {
     
     include "sgx_report.h"
     include "time.h"
+    include "SSLClient.h"
 
     trusted {
         public int handle_request(
@@ -14,7 +15,6 @@ enclave {
         public int ecall_time_calibrate (time_t wall_clock, [out] uint8_t wtc_rsv[65]);
 
         public int ssl_test();
-
     };
 
     untrusted {

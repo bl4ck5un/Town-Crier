@@ -24,9 +24,8 @@
 #include "Enclave_t.h"
 #include "RootCerts.h"
 #include "Debug.h"
-
 #include "http_parser.h"
-
+#include "../Common/Constants.h"
 #include "Scraper_lib.h"
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -893,8 +892,7 @@ int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* o
     retry_left = opt.max_resend;
 
 send_request:
-    len = mbedtls_snprintf( (char *) buf, sizeof(buf) - 1, GET_REQUEST,
-                    opt.request_page );
+    len = mbedtls_snprintf( (char *) buf, sizeof(buf) - 1, GET_REQUEST, opt.request_page );
 
     if (headers && n_header > 0)
     {
@@ -974,9 +972,13 @@ send_request:
     /*
      * TLS and DTLS need different reading styles (stream vs datagram)
      */
+
+    // create a HTTP parser
     http_parser* parser = malloc(sizeof(http_parser));
     if (parser == NULL) {
         LL_CRITICAL("failed to malloc %s", "http_parser");
+        ret = ERR_ENCLAVE_SSL_CLIENT;
+        goto exit;
     }
     http_parser_init(parser, HTTP_RESPONSE);
 
@@ -989,7 +991,7 @@ send_request:
     cb_data_t* p_cb_data = (cb_data_t*) malloc(sizeof (cb_data_t));
     if (!p_cb_data) {
         LL_CRITICAL("Error: can't malloc for p_cb_data (%d)", sizeof(cb_data_t));
-        ret = -1;
+        ret = ERR_ENCLAVE_SSL_CLIENT;
         goto exit;
     }
     memset(p_cb_data, 0, sizeof(cb_data_t));
@@ -997,9 +999,6 @@ send_request:
     p_cb_data->buffer = output;
     p_cb_data->copied = copied;
     *copied = 0;
-
-    LL_CRITICAL("output is at %p %p", output, p_cb_data->buffer);
-    LL_CRITICAL("copied is at %p %p", copied, p_cb_data->copied);
 
     parser->data = p_cb_data;
 
@@ -1057,17 +1056,6 @@ send_request:
                 LL_LOG("EOF");
                 break;
             }
-
-
-//            if (ret == 0)
-//                break;
-//            /* End of message should be detected according to the syntax of the
-//             * application protocol (eg HTTP), just use a dummy test here. */
-//            if( ret > 0 && buf[len-1] == '\n')
-//            {
-//                ret = 0;
-//                break;
-//            }
         }
         while( 1 );
     }

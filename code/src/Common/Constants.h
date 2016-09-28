@@ -27,3 +27,5 @@
 #define TYPE_FINANCE_INFO   0x3
 
 #define FREQ 2500000.0
+
+#define ERR_ENCLAVE_SSL_CLIENT 0x1001

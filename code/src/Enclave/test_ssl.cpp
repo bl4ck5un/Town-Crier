@@ -10,8 +10,9 @@
 int ssl_test(){
     client_opt_t opt;
     client_opt_init(&opt);
-    opt.server_name = "google.com";
+    opt.server_name = "httpbin.org";
     opt.server_port = "443";
+    opt.request_page = "/";
     opt.debug_level = 1;
     unsigned char output[1024*100];
     int len;
@@ -25,5 +26,5 @@ int ssl_test(){
     LL_CRITICAL("%d strlen", strlen((const char*)output));
 
     print_str_dbg("RESPONSE", output, len);
-    return 0;
+    return ret;
 }
