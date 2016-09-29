@@ -1,6 +1,6 @@
 #include "Log.h"
 
-unsigned char log_run_level = LOG_LVL_CRITICAL;
+unsigned char log_run_level = LOG_LVL_NOTICE;
 const char * log_level_strings [] = {
 	"NONE", // 0
 	"CRIT", // 1

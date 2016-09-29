@@ -1,6 +1,9 @@
 #include "ECDSA.h"
 #include "keccak.h"
 #include "Debug.h"
+#include "Log.h"
+#include "glue.h"
+#include "mbedtls/error.h"
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"
@@ -68,59 +71,6 @@ static int pubkey_to_address (unsigned char *pubkey, size_t pubkey_len, unsigned
 
 
 #if defined(VERBOSE)
-void dump_pubkey( const char *title, mbedtls_ecdsa_context *key )
-{
-    // each point on our curve is 256 bit (32 Bytes)
-    // two points plus the leading 0x04 byte
-    unsigned char buf[2*32 + 1];
-    size_t len;
-
-    if( mbedtls_ecp_point_write_binary( &key->grp, &key->Q,
-                MBEDTLS_ECP_PF_UNCOMPRESSED, &len, buf, sizeof buf ) != 0 )
-    {
-        mbedtls_printf("internal error\n");
-        return;
-    }
-
-    // buf + 1 to skip the first 0x04 byte
-    dump_buf( title, buf + 1, len -1);
-}
-
-void dump_mpi (const char* title, mbedtls_mpi* X)
-{
-    size_t len = mbedtls_mpi_bitlen(X);
-    unsigned char* buf;
-
-    if (len == 0)
-    {
-        printf("%s%d\n", title, 0);
-        return;
-    }
-    
-    len = ((len + 7) & ~0x07) / 8;
-    buf = (unsigned char*) malloc(len);
-    mbedtls_mpi_write_binary (X, buf, len);
-    dump_buf (title, buf, len);
-    free(buf);
-}
-
-void dump_group( const char* title, mbedtls_ecp_group* grp)
-{
-    unsigned char buf[128];
-    size_t len;
-
-    mbedtls_printf("%s", title);
-
-    dump_mpi("A=", &grp->A);
-    dump_mpi("B=", &grp->B);
-
-    mbedtls_ecp_point_write_binary( grp, &grp->G,
-                MBEDTLS_ECP_PF_UNCOMPRESSED, &len, buf, sizeof buf );
-    dump_buf("G=", buf, len);
-
-    dump_mpi("N=", &grp->N);
-    printf("h=%d\n", grp->h);
-}
 #else
 #define dump_pubkey( a, b )
 #define dump_group(a, b)
@@ -181,10 +131,8 @@ exit:
 #ifndef FROM_PRIVATE_KEY
     mbedtls_ctr_drbg_free( &ctr_drbg );
     mbedtls_entropy_free( &entropy );
-#else
-    return;
 #endif
-
+    return;
 }
 
 int sign(uint8_t* data, int in_len, uint8_t* rr, uint8_t *ss, uint8_t* vv)
@@ -195,10 +143,8 @@ int sign(uint8_t* data, int in_len, uint8_t* rr, uint8_t *ss, uint8_t* vv)
     mbedtls_ctr_drbg_context ctr_drbg;
 
     mbedtls_mpi r, s;
-    char v;
 
     // here begins statements
-
     mbedtls_mpi_init(&r);
     mbedtls_mpi_init(&s);
     mbedtls_ecdsa_init( &ctx_sign );
@@ -216,22 +162,25 @@ int sign(uint8_t* data, int in_len, uint8_t* rr, uint8_t *ss, uint8_t* vv)
 #endif
 
     // sign
+    /*
     ret = mbedtls_ecdsa_sign_bitcoin(&ctx_sign.grp, &r, &s, &v, &ctx_sign.d, 
         data, in_len, MBEDTLS_MD_SHA256);
+    */
+    ret = mbedtls_ecdsa_sign_with_v(&ctx_sign.grp, &r, &s, vv, &ctx_sign.d, 
+            data, in_len, mbedtls_sgx_drbg_random, NULL);
     if (ret != 0) {
-        mbedtls_printf("Error: mbedtls_ecdsa_sign_bitcoin returned %d\n", ret);
+        LL_CRITICAL("mbedtls_ecdsa_sign_bitcoin returned %#x", ret);
         goto exit;
     }
 
+#define SIGN_DEBUG
 #ifdef SIGN_DEBUG
     dump_mpi("r: ", &r);
     dump_mpi("s: ", &s);
-    printf  ("v: %d\n", v);  
 #endif // SIGN_DEBUG
 
     mbedtls_mpi_write_binary(&r, rr, 32);
     mbedtls_mpi_write_binary(&s, ss, 32);
-    *vv = v;
 
 #ifdef SIGN_DEBUG
     dump_buf("r_buf: ", rr, 32);
@@ -241,7 +190,8 @@ int sign(uint8_t* data, int in_len, uint8_t* rr, uint8_t *ss, uint8_t* vv)
 
     ret = mbedtls_ecdsa_verify(&ctx_sign.grp, data, in_len, &ctx_sign.Q, &r, &s);
     if (ret != 0) {
-        mbedtls_printf("Error: mbedtls_ecdsa_verify returned %d\n", ret);
+        LL_CRITICAL("Error: mbedtls_ecdsa_verify returned %#x", ret);
+        goto exit;
     }
     else {
 #ifdef SIGN_DEBUG
@@ -252,6 +202,11 @@ int sign(uint8_t* data, int in_len, uint8_t* rr, uint8_t *ss, uint8_t* vv)
     }
 
 exit:
+    if (ret != 0) {
+        char error_buf[100];
+        mbedtls_strerror( ret, error_buf, 100 );
+        LL_CRITICAL("Last error was: -0x%X - %s", -ret, error_buf );
+    }
     mbedtls_ecdsa_free( &ctx_verify );
     mbedtls_ecdsa_free( &ctx_sign );
     mbedtls_ctr_drbg_free( &ctr_drbg );

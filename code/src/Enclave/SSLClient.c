@@ -536,7 +536,10 @@ send_request:
 
             len = ret;
             LL_LOG("%d bytes received.", ret);
-            hexdump("RESPONSE", buf, ret);
+            
+            if (opt.debug_level > 0) {
+                hexdump("RESPONSE", buf, ret);
+            }
 
             nparsed = http_parser_execute(parser, &settings, buf, len);
             LL_LOG("%d bytes parsed", nparsed);

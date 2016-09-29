@@ -2,13 +2,12 @@
 #include <stdint.h>
 #include <vector>
 #include "Log.h"
-//#include "stdio.h"
 
 // home-made Big-endian long int
 // NOTE: no leading zeros. Starts with useful bytes.
 // size is the actual bytes that is used
-// for example, bytes32 (0xFFFF) is
-// FF, FF, 00, 00, .. , 00,
+// for example, bytes32 (0xAAFF) is
+// AA, FF, 00, 00, .. , 00,
 // size = 2
 
 typedef struct _b32 {uint8_t b[32]; unsigned size;} bytes32;

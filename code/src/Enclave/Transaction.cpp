@@ -117,7 +117,7 @@ public:
         memset(&this->m_gas, 0, sizeof ( bytes32 ));
         memset(&this->r, 0, sizeof ( bytes32 ));
         memset(&this->s, 0, sizeof ( bytes32 ));
-        memset(&this->v, 0, sizeof ( bytes ));
+        memset(&this->v, 0, sizeof ( byte ));
     }
     void rlp_list(bytes& out, bool withSig=true) {
         int i;
@@ -169,17 +169,14 @@ int get_raw_signed_tx(int nonce, int nonce_len,
                       uint8_t* resp_data, int resp_len,
                       uint8_t* serialized_tx, int* o_len)
 {
-#ifdef E2E_BENCHMARK
-    long long time1, time2;
-    rdtsc(&time1);
-#endif
-    if (serialized_tx == NULL || o_len == NULL) 
-        {LL_CRITICAL("Error: get_raw_tx gets NULL input\n"); return -1;}
+    if (serialized_tx == NULL || o_len == NULL) {
+        LL_CRITICAL("Error: get_raw_tx gets NULL input\n"); 
+        return -1;
+    }
 
     bytes out;
     int ret;
-
-
+    TX tx(TX::MessageCall);
 
     assert(nonce_len == 32);
 
@@ -228,6 +225,7 @@ int get_raw_signed_tx(int nonce, int nonce_len,
     
     bytes abi_str;
 
+
     if (abi_items.encode(abi_str) != 0) {
         LL_CRITICAL("abi_encoded returned non-zero\n");
         return -1;
@@ -240,12 +238,9 @@ int get_raw_signed_tx(int nonce, int nonce_len,
     // insert function selector
     for (int i = 0; i < 4; i++) {abi_str.insert(abi_str.begin(), func_selector[3 - i]);}
 
-#ifdef E2E_BENCHMARK
-    rdtsc(&time2);
-    LL_CRITICAL("ABI encoding: %llu", time2-time1);
-#endif
+#define VERBOSE
 
-    TX tx(TX::MessageCall);
+    // XXX
     uint8_t hash[32]; 
 
     bytes nonce_bytes;
@@ -288,35 +283,17 @@ int get_raw_signed_tx(int nonce, int nonce_len,
     if (ret != 0) { LL_CRITICAL("Error: signing returned %d\n", ret); return ret;}
     else {tx.r.size = 32; tx.s.size = 32;}
 
-#ifdef E2E_BENCHMARK
-    rdtsc(&time1);
-    LL_CRITICAL("Sign: %llu", time1 - time2);
-#endif
-
     out.clear();
 
     tx.rlp_list(out, true);
-
-#ifdef E2E_BENCHMARK
-    rdtsc(&time2);
-    LL_CRITICAL("RLP: %llu", time2 - time1);
-#endif
 
     if (out.size() > TX_BUF_SIZE) { LL_CRITICAL("Error buffer size (%d) is too small.\n", TX_BUF_SIZE); return -1;}
 
 #ifdef VERBOSE
     hexdump("RLP:", &out[0], out.size());
 #endif
-
     memcpy(serialized_tx, &out[0], out.size());
     *o_len = out.size();
-
-//cleanup:
-//    fosr (size_t i = 0; i < request_data.size(); i++)
-//    {
-//        delete request_data[i];
-//    }
-//    free(r);
-
+    LL_CRITICAL("BEfore return");
     return 0;
 }

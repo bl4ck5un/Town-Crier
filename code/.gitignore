@@ -1,3 +1,5 @@
 *.exe
 *.out
 *.o
+Contracts/demo/chain0
+Contracts/demo/full.sol

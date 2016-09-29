@@ -60,8 +60,7 @@ void hexdump(const char* title, void const * data, unsigned int len)
 	
 	for (c=i+8; c<i+16; c++) /* right half of hex dump */
 	    if (c<len)
-		printf_sgx("%02X ",((unsigned char const *)data)[c]);
-	    else
+		printf_sgx("%02X ",((unsigned char const *)data)[c]); else
 		printf_sgx("   "); /* pad if short line */
 	
 	printf_sgx("   ");

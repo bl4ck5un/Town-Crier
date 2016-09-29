@@ -12,6 +12,7 @@
 #include <string>
 
 #include "Converter.h"
+#include "Constants.h"
 
 #include "ethrpcclient.h"
 #include "Utils.h"
@@ -99,7 +100,7 @@ int eth_new_filter(std::string hostname, unsigned port, std::string& id, int fro
 {
     Json::Value filter_opt;
     try {
-        filter_opt["address"] = "0x08be24cd8dcf73f8fa5db42b855b4370bd5c448b";
+        filter_opt["address"] = TC_ADDRESS;
         filter_opt["topics"][0] = "0x8d2b45c22f17e6631529a8fb8f4b17f4f336d01b6db32584ec554476dbbf2af0";
         filter_opt["fromBlock"] = from;
         filter_opt["toBlock"] = to;

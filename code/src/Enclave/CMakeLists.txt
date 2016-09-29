@@ -7,7 +7,7 @@ set(SOURCE_FILES
         Current_Google.cpp
         Current_Yahoo.cpp
         dispatcher.cpp
-        ECDAS.c
+        ECDSA.c
         Enclave_t.c
         EventHandler.cpp
         Flight.cpp
@@ -19,6 +19,7 @@ set(SOURCE_FILES
         StockTicker.cpp
         Transaction.cpp
         test_ssl.cpp
+        Exception.c
         http_parser.c)
 
 set(CMAKE_VERBOSE_MAKEFILE False)

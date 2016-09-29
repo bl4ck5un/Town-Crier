@@ -108,11 +108,7 @@ static int handler_steam_exchange(uint8_t *req, int len, int *resp_data)
     */
     int ret, rc;
     (void) len;
-#ifdef E2E_BENCHMARK
-    long long time1, time2;
-    rdtsc(&time1);
-    LL_CRITICAL("swtich in done:  %llu", time1);
-#endif
+
     /* handling input */
     std::string buyer_id;  // buyer_id is 32B, each of byte takes two chars. Plus \0
     uint32_t wait_time;
@@ -156,22 +152,16 @@ static int handler_steam_exchange(uint8_t *req, int len, int *resp_data)
     // XXX: set wait time to 1 for test purpose
 //    wait_time = 1;
 
-    rc = get_steam_transaction(listB, 1, "32884794", wait_time, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
-    if (rc == 0 && ret == 1) {
-        LL_NOTICE("Found a trade, %d, %d", rc, ret);
-        *resp_data = ret;
+    int result = 0;
+    ret = get_steam_transaction(listB, 1, "32884794", wait_time, "7978F8EDEF9695B57E72EC468E5781AD", &result);
+    if (ret == 0 && result == 1) {
+        LL_NOTICE("Found a trade");
+        *resp_data = result;
         return 0;
     }
 
 //    uncomment to simulate an real trade
 //    *resp_data = 1;
-
-#ifdef E2E_BENCHMARK
-    rdtsc(&time2);
-    LL_CRITICAL("get_flight_delay: %llu", time2-time1);
-    rdtsc(&time1);
-    LL_CRITICAL("swtich out begins:  %llu", time1);
-#endif
 
     return 0;
 }
