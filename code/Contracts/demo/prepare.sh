@@ -1,4 +1,10 @@
 cat << EOF
+if (eth.accounts.length < 3)
+{
+    console.log(eth.accounts.length + ' accounts found. Need 3')
+    exit;
+}
+
 var minerAddr = eth.accounts[0]
 var sellerAddr = eth.accounts[1]
 var buyerAddr = eth.accounts[2]
@@ -26,7 +32,7 @@ cat <<EOF
 var source = '$SRC'
 EOF
 
-cat <<EOF >> full.sol
+cat <<EOF > full.sol
 $SRC
 EOF
 
@@ -47,17 +53,26 @@ function checkWork(){
     }
 }
 
-function setup_log(tc) {
-    var f0 = eth.filter({
-        address: tc.address,
-        topics: [],
-    });
-    f0.watch(function (e, l) {
-        if (!e) 
-            console.log(JSON.stringify(l));
-        else
-            console.log(e);
-    });
+function setup_log(tc, tradeContract) {
+	tc.RequestLog(function(e,r) {
+		if (!e) { console.log('RequestLog: ' + JSON.stringify(r.args))}
+		else { console.log(e)}
+	});
+
+	tc.RequestInfo(function(e,r) { 
+		if (!e) { console.log('RequestInfo: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
+
+	tradeContract.UINT(function(e,r) { 
+		if (!e) { console.log('UNIT: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
+
+	tradeContract.Buy(function(e,r) { 
+		if (!e) { console.log('Buy: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
 }
 
 // TODO: watch RequestLog and print it out
@@ -73,6 +88,7 @@ function setup_tc() {
                     console.log("Town Crier created at: " + c.address)
                 }
             } 
+            else {console.log("Failed to create Town Crier contract: " + e)}
         });
     miner.start(1); admin.sleepBlocks(1); miner.stop();
     return tc;
@@ -90,6 +106,7 @@ function createSteamTrade(apiKey, item, price) {
                         console.log('SteamTrade created at: ' + c.address)
                       }
                   } 
+                  else {console.log("Failed to create SteamTrade contract: " + e)}
               });
   miner.start(1); admin.sleepBlocks(1); miner.stop();
   return tradeContract;

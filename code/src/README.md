@@ -22,6 +22,7 @@ Third party dependencies
     ```
 
 - sqlite3: `sudo apt-get install libsqlite3-0 libsqlite3-dev`
+- google-test: https://www.eriksmistad.no/getting-started-with-google-test-on-ubuntu/
 - http-parser: https://github.com/nodejs/http-parser. No package available yet.
   Can only be installed by compilcation.
 
