@@ -226,7 +226,6 @@ int parse_response1(char* resp, char* other, char** listB, int lenB, char* key) 
 /* 
 */
 int get_steam_transaction(char** item_name_list, int item_list_len, char* other, unsigned int time_cutoff, char* key, int* resp) {
-    /***** VARIABLE DECLARATIONS */
     int ret;
     int i;
     char buf[16385];
@@ -235,10 +234,11 @@ int get_steam_transaction(char** item_name_list, int item_list_len, char* other,
     time_t time1, time2;
     
     for (i = 0; i < 20; i++) {
+        /*
         ocall_time(&time1);
-        /*ocall_sleep(time_cutoff * 1000);*/
         ocall_sleep(10 * 1000);
         ocall_time(&time2);
+        */
 
         LL_NOTICE("%lld seconds passed", time2 - time1);
 
@@ -246,13 +246,10 @@ int get_steam_transaction(char** item_name_list, int item_list_len, char* other,
     
         // reference query
         // https://api.steampowered.com/IEconService/GetTradeOffers/v0001/?get_sent_offers=1&get_received_offers=0&get_descriptions=0&active_only=1&historical_only=1&key=7978F8EDEF9695B57E72EC468E5781AD&time_historical_cutoff=1355220300
-        /***** CONSTRUCT THE QUERY */
         ret = construct_query1(key, req_time, &query);
         if (ret < 0)
             return -1;
-    /*printf("%s\n", query);*/
 
-    /***** EXECUTE THE QUERY */
         ret = get_page_on_ssl("api.steampowered.com", query, headers, header_size, (unsigned char*)buf, 16384); 
         free(query);
         if (ret < 0) {
@@ -260,14 +257,12 @@ int get_steam_transaction(char** item_name_list, int item_list_len, char* other,
             *resp = 0;
             return -1;
         }
-        /*printf("%s\n", buf);*/
-        /***** PARSE THE RESPONSE */
+
         ret = parse_response1(buf, other, item_name_list, item_list_len, key);
-        /***** OUTPUT */
         if (ret < 0) {
             LL_CRITICAL("Found no trade");
             *resp = 0;
-            /*return 0;*/
+            return 0;
         }
         else {
             *resp = 1;

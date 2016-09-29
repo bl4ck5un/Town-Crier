@@ -34,7 +34,6 @@ add_custom_command(
 )
 
 
-
 add_executable(tc ${SOURCE_FILES})
 
 # Tests
@@ -42,6 +41,7 @@ add_executable(test_main
         test/test_main.cpp
         test/test_init.cpp
         test/test_handle_request.cpp
+        test/test_ssl.cpp
         Init.cpp
         Enclave_u.c
         Utils.cpp
@@ -103,7 +103,6 @@ target_link_libraries(test_main
 
 
 add_dependencies(tc enclave)
-
 add_dependencies(test_main tc)
 
-install(TARGETS tc test_main DESTINATION ${CMAKE_BINARY_DIR})
+install(TARGETS tc test_main DESTINATION ${PROJECT_BINARY_DIR})

@@ -25,6 +25,7 @@ int main()
 {
     int ret;
     sgx_enclave_id_t eid;
+    sgx_status_t st;
 
     std::cout << "Do you want to clean up the database? y/[n] ";
     std::string new_db;
@@ -37,18 +38,6 @@ int main()
 
     sqlite3_init(&db);
 
-#if defined(_MSC_VER)
-    if (query_sgx_status() < 0) {
-        LL_CRITICAL("sgx is not support");
-        ret = -1; 
-        goto exit;
-    }
-#endif 
-
-    int updated = 0;
-    sgx_launch_token_t token = {0};
-    sgx_status_t st;
-
     ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
 
     if (ret != 0) {
@@ -59,7 +48,11 @@ int main()
         LL_NOTICE("enclave %lu created", eid);
     }
 
-    ssl_test(eid, &ret);
+    st = register_exception_handlers(eid, &ret);
+    if (st != SGX_SUCCESS || ret )
+    {
+        LL_CRITICAL("Failed to register exception handlers");
+    }
 
 /*
  *  We don't care about the attestation at the moment.

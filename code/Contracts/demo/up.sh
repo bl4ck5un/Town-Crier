@@ -1,10 +1,10 @@
 #!/bin/bash
 
-GETH=$HOME/dev/go-ethereum/build/bin/geth
-datadir=$HOME/chain0/data/00
+GETH=geth
+datadir=chain0
 mkdir -p $datadir
 
-read -p "Do you need a new account? [y/N] " yn
+read -p "Create new accounts? [y/N] " yn
 case $yn in
 	[Yy]*) $GETH --datadir $datadir account new;; 
 	*    ) echo "No account created";;
