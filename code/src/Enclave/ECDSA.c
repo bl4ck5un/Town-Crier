@@ -173,7 +173,8 @@ int sign(uint8_t* data, int in_len, uint8_t* rr, uint8_t *ss, uint8_t* vv)
         goto exit;
     }
 
-#define SIGN_DEBUG
+
+// #define SIGN_DEBUG
 #ifdef SIGN_DEBUG
     dump_mpi("r: ", &r);
     dump_mpi("s: ", &s);

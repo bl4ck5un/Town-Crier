@@ -18,14 +18,14 @@
 #include <stdio.h>
 #include <iostream>
 
-
 sqlite3* db = NULL;
 
-int main()
+int main(int argc, char* argv[])
 {
     int ret;
     sgx_enclave_id_t eid;
     sgx_status_t st;
+
 
     std::cout << "Do you want to clean up the database? y/[n] ";
     std::string new_db;
@@ -37,6 +37,14 @@ int main()
     }
 
     sqlite3_init(&db);
+
+    int nonce = 0;
+    if (argc == 2) {
+        nonce = atoi(argv[1]);
+    }
+
+    if (nonce > 0)
+        dump_nonce((uint8_t*)&nonce);
 
     ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
 
@@ -60,7 +68,7 @@ int main()
  */
 //  remote_att_init(eid);
 
-    monitor_loop(eid);
+    monitor_loop(eid, nonce);
 
 exit:
     LL_CRITICAL("Info: all enclave closed successfully.");

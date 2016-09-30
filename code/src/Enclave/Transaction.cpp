@@ -15,10 +15,12 @@
 #include "Transaction.h"
 #include <Debug.h>
 
+// uncomment to dump transactions
+// #define VERBOSE
+
 #ifdef VERBOSE
 #include "Debug.h"
 #endif
-
 
 static uint8_t bytesRequired(int _i)
 {
@@ -238,7 +240,6 @@ int get_raw_signed_tx(int nonce, int nonce_len,
     // insert function selector
     for (int i = 0; i < 4; i++) {abi_str.insert(abi_str.begin(), func_selector[3 - i]);}
 
-#define VERBOSE
 
     // XXX
     uint8_t hash[32]; 
@@ -294,6 +295,5 @@ int get_raw_signed_tx(int nonce, int nonce_len,
 #endif
     memcpy(serialized_tx, &out[0], out.size());
     *o_len = out.size();
-    LL_CRITICAL("BEfore return");
     return 0;
 }

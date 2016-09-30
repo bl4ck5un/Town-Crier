@@ -12,5 +12,5 @@ enum EX_REASONS {
     EX_HANDLE_REQ,
 };
 
-int monitor_loop(sgx_enclave_id_t eid);
+int monitor_loop(sgx_enclave_id_t eid, int nonce);
 int demo_test_loop(sgx_enclave_id_t eid, uint8_t* nonce);

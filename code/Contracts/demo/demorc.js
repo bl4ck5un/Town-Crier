@@ -39,18 +39,26 @@ function checkWork(){
     }
 }
 
-function setup_log(tc) {
-    var f0 = eth.filter({
-        address: tc.address,
-        topics: [],
-    });
-    f0.watch(function (e, l) {
-        if (!e) 
-            console.log(JSON.stringify(l));
-        else
-            console.log(e);
-    });
-    return "Done!"
+function setup_log(tc, tradeContract) {
+	tc.RequestLog(function(e,r) {
+		if (!e) { console.log('RequestLog: ' + JSON.stringify(r.args))}
+		else { console.log(e)}
+	});
+
+	tc.RequestInfo(function(e,r) { 
+		if (!e) { console.log('RequestInfo: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
+
+	tradeContract.UINT(function(e,r) { 
+		if (!e) { console.log('UNIT: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
+
+	tradeContract.Buy(function(e,r) { 
+		if (!e) { console.log('Buy: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
 }
 
 // TODO: watch RequestLog and print it out

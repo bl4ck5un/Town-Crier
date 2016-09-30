@@ -43,7 +43,7 @@ inline uint32_t swap_uint32( uint32_t num )
 
 long g_frequency = 2500000000;
 
-int monitor_loop(sgx_enclave_id_t eid)
+int monitor_loop(sgx_enclave_id_t eid, int nonce)
 {
 #ifdef E2E_BENCHMARK
     // prepare
@@ -117,7 +117,6 @@ int monitor_loop(sgx_enclave_id_t eid)
     int sleep_sec;
     std::string filter_id;
     long highest_block;
-    int nonce = 0;
 
     // TX_BUF_SIZE is defined in Enclave.edl
     uint8_t raw_tx[TX_BUF_SIZE] = {0};
@@ -214,8 +213,8 @@ int monitor_loop(sgx_enclave_id_t eid)
                         char2hex(raw_tx, raw_tx_len, tx_str);
 #ifdef VERBOSE
                         dump_buf("tx body: ", raw_tx, raw_tx_len);
-                        printf("tx_str: %s\n", tx_str);
 #endif
+                        std::cout << "TX BINARY " << tx_str << std::endl;
 
                         ret = send_transaction(RPC_HOSTNAME, RPC_PORT, tx_str);
                         if (ret != 0)
@@ -265,6 +264,7 @@ int monitor_loop(sgx_enclave_id_t eid)
 }
 
 
+/*
 int demo_test_loop(sgx_enclave_id_t eid)
 {
     int ret = 0;
@@ -306,3 +306,4 @@ int demo_test_loop(sgx_enclave_id_t eid)
     }
     return 0;
 }
+*/
