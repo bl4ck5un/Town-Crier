@@ -18,9 +18,11 @@ set(SOURCE_FILES
         Steam2.cpp
         StockTicker.cpp
         Transaction.cpp
-        test_ssl.cpp
         Exception.c
         http_parser.c)
+
+FILE(GLOB TEST_SRC_FILES test/*.cpp)
+SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES})
 
 set(CMAKE_VERBOSE_MAKEFILE False)
 
@@ -45,6 +47,7 @@ endif()
 set(CRYPTO_LIB_NAME sgx_tcrypto)
 
 include_directories(
+        $(CMAKE_CURRENT_SOURCE_DIR)
         ${TC_ROOT_DIR}/Common
         mbedtls-SGX/include
         ${SGX_SDK}/include

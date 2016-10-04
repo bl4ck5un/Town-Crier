@@ -19,6 +19,8 @@ set(SOURCE_FILES
         mbedtls_sgx_net.c
         )
 
+FILE(GLOB TEST_SRC_FILES "test/*.cpp")
+
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_u.c
         COMMAND ${SGX_EDGER8R} --untrusted ${TC_ROOT_DIR}/Enclave/Enclave.edl
@@ -37,11 +39,8 @@ add_custom_command(
 add_executable(tc ${SOURCE_FILES})
 
 # Tests
-add_executable(test_main
-        test/test_main.cpp
-        test/test_init.cpp
-        test/test_handle_request.cpp
-        test/test_ssl.cpp
+add_executable(TestMain
+        ${TEST_SRC_FILES}
         Init.cpp
         Enclave_u.c
         Utils.cpp
@@ -90,7 +89,7 @@ target_link_libraries(tc
         -ljsonrpccpp-common
         -ljsonrpccpp-client)
 
-target_link_libraries(test_main
+target_link_libraries(TestMain
         -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB}
         -lsqlite3
         -ljsoncpp
@@ -103,6 +102,6 @@ target_link_libraries(test_main
 
 
 add_dependencies(tc enclave)
-add_dependencies(test_main tc)
+add_dependencies(TestMain tc)
 
-install(TARGETS tc test_main DESTINATION ${PROJECT_BINARY_DIR})
+install(TARGETS tc TestMain DESTINATION ${PROJECT_BINARY_DIR})

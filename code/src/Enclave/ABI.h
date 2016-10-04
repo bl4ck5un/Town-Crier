@@ -1,12 +1,15 @@
+/*
+ * Implementation of Ethereum ABI
+ * https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
+ *
+ * This file is part of Town Crier
+ */
 #pragma once
 #include "Commons.h"
 #include <cstddef>
 #include <vector>
 
 using namespace std;
-
-#pragma warning (push)
-#pragma warning (disable: 4512)
 
 class ABI_serializable
 {
@@ -123,27 +126,5 @@ public:
     ~ABI_Generic_Array() {};
 };
 
-#pragma warning(pop)
-
-//request(uint8 type, address cb, bytes4 cb_fid, bytes32[] req)
-class ABI_Reader_adhoc
-{
-protected:
-    string type;
-    string callback;
-    string callbackFID;
-    string requestData;
-public:
-    ABI_Reader_adhoc(string abi)
-    {
-        type = abi.substr(0, 32);
-        callback = abi.substr(32, 64);
-        callbackFID = abi.substr(64, 96);
-        requestData = abi.substr(96, abi.length());
-    }
-};
-
-int get_demo_ABI();
 int enc_int(bytes& out, uint64_t in, int len);
-int ABI_self_test();
 
