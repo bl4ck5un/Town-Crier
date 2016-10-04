@@ -13,7 +13,6 @@
 #include "Commons.h"
 
 #include "Transaction.h"
-#include <Debug.h>
 
 // uncomment to dump transactions
 // #define VERBOSE
@@ -92,25 +91,7 @@ int set_byte_length (bytes32* d)
     return 0;
 }
 
-class TX {
-public:
-    enum Type {
-        NullTransaction,
-        ContractCreation,
-        MessageCall
-    };
-    Type    m_type;
-    bytes32 m_nonce;
-    bytes32 m_value;
-    bytes20 m_receiveAddress;
-    bytes32 m_gasPrice;
-    bytes32 m_gas;
-    bytes   m_data;
-    bytes32 r;
-    bytes32 s;
-    byte    v;
-
-    TX(Type p) {
+TX::TX(TX::Type p) {
         this->m_type = p;
         memset(&this->m_nonce, 0, sizeof ( bytes32 ));
         memset(&this->m_value, 0, sizeof ( bytes32 ));
@@ -120,8 +101,9 @@ public:
         memset(&this->r, 0, sizeof ( bytes32 ));
         memset(&this->s, 0, sizeof ( bytes32 ));
         memset(&this->v, 0, sizeof ( byte ));
-    }
-    void rlp_list(bytes& out, bool withSig=true) {
+}
+
+void TX::rlp_list(bytes& out, bool withSig) {
         int i;
         uint8_t len_len, b;
         rlp_item(&m_nonce, out);
@@ -158,8 +140,7 @@ public:
             }
             out.insert(out.begin(), buff.begin(), buff.end());
         }
-    }
-};
+}
 
 #include "Constants.h"
 
