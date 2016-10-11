@@ -269,11 +269,15 @@ int test_get_page_on_sll(){
 
 	//Case: Test parsing a simple webpage that does not contain content-length
 	char* buf_small = (char*)malloc(buf_size);
+	std::string html_string = String(small_html);
 	for(int i = 0; i < 10000; i ++){
 		get_page_on_ssl("http://cohengroup.ccmr.cornell.edu","/courses/phys3327/phys3327.htm", \
 			NULL, 0, buf_small);
-
-		
+		std::string tmp = String(buf_small);
+		if (tmp.compare(small_html) != 0){
+			//Something went wrong in getting the ssl for this page
+			return -1;
+		}
 
 	}
 
@@ -289,10 +293,5 @@ int test_get_page_on_sll(){
 		get_page_on_ssl("https://en.wikipedia.org","/wiki/Chunked_transfer_encoding", NULL, 0, buf3, buf_size);
 	}
 
-
-
 	return 0;
 }
-
-
-i
