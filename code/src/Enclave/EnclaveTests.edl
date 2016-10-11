@@ -1,0 +1,9 @@
+enclave {
+	trusted {
+		public int UPS_scaper_test();
+		public int Bloomberg_scaper_test();
+		public int Google_scraper_test();
+		public int Yahoo_scraper_test();
+		public int test_get_page_on_sll();
+	}
+}
