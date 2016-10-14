@@ -19,6 +19,7 @@ set(SOURCE_FILES
         StockTicker.cpp
         Transaction.cpp
         Exception.c
+        Encoding.cpp
         http_parser.c)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
@@ -53,6 +54,7 @@ include_directories(
         ${SGX_SDK}/include
         ${SGX_SDK}/include/tlibc
         ${SGX_SDK}/include/stlport
+        .
 )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DENCLAVE_STD_ALT ${SGX_COMMON_CFLAGS} -nostdinc -fvisibility=hidden -fpie -fstack-protector")
