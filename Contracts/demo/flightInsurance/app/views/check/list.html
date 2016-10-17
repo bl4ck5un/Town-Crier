@@ -1,0 +1,54 @@
+<div class="row">
+  <div class="col-sm-8 col-md-8 col-sm-offset-2  col-md-offset-2">
+    <div class="page-header">
+      <h2>Your policies</h2>
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-sm-8 col-md-8 col-sm-offset-2  col-md-offset-2">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Your accounts</h3>
+        </div>
+        <div class="panel-body">
+          <div class="list-group">
+         	  <button type="button" class="list-group-item"
+                    ng-repeat="account in accounts"
+                    ng-click="selectAccount(account)"
+                    ng-class="{'list-group-item-info': selectedAccount == account.address}">{{account.address}} - Balance: {{account.balance}} ETH</button>
+		      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-sm-8 col-md-8 col-sm-offset-2  col-md-offset-2">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Your policies</h3>
+        </div>
+        <div class="panel-body">
+          <p ng-if="allPolicies.length == 0">You don't have any policy on this account yet.</p>
+          <table ng-if="allPolicies.length > 0" class="table">
+            <tr>
+              <th>Policy #</th>
+              <th>Flight Code</th>
+              <th></th>
+            </tr>
+            <tr ng-repeat="policy in allPolicies">
+              <td>{{policy.args.requestId}}</td>
+              <td>{{policy.args.encFN}}</td>
+              <td><button type="button" ng-click="showPolicyDetails(policy.args.requestId)">Details</button></td>
+            </tr>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -1,48 +1,77 @@
+pragma solidity ^0.4.2;
+
 import "TownCrier.sol";
 
-// A simple flight insurance contract using Town Crier's private datagram.
 contract FlightIns {
-    uint8 constant TC_REQUEST_TYPE = 0;
+    event Insure(address beneficiary, uint dataLength, bytes32[] data, int72 requestId);
+    event PaymentLog(int flag);
+    event PaymentInfo(address payee, uint payeeBalance, uint gasRemaining, uint64 requestId, uint delay, uint amount);
+    event FlightCancel(address canceller, address requester, bool success);
+
     uint constant TC_FEE = (35000 + 20000) * 5 * 10**10;
     uint constant FEE = 10**18;
     uint constant PAYOUT = 2 * 10**19;
-    uint32 constant MIN_DELAY_MINUTES = 30;
+    uint32 constant PAYOUT_DELAY = 30;
 
-    // The function identifier in solidity is the first 4 bytes
-    // of the sha3 hash of the functions' canonical signature.
-    // For this contract's callback, bytes4(sha3("pay(uint64,bytes32)"))
-    bytes4 constant CALLBACK_FID = 0x3d622256;
+    bytes4 constant TC_CALLBACK_FID = 0x3d622256; // bytes4(sha3("pay(uint64,bytes32)"));
 
-    TownCrier tcont;
+    TownCrier public TC_CONTRACT;
     address[2**64] requesters;
 
-    // Constructor which sets the address of the Town Crier contract.
-    function FlightIns(TownCrier _tcont) public {
-        tcont = _tcont;
+    function() { }
+
+    function FlightIns(TownCrier tcCont) public {
+        TC_CONTRACT = tcCont;
     }
 
-    // A user can purchase insurance through this entry point.
-    function insure(bytes32[] encFN) public {
-        if (msg.value != FEE) return;
+    function insure(bytes32[] encryptedFlightInfo, uint payment) public payable{
+        if (msg.value != payment * FEE + TC_FEE) {
+            Insure(msg.sender, encryptedFlightInfo.length, encryptedFlightInfo, -1);
+            return;
+        }
 
-        // Adding money to a function call involves calling '.value()'
-        // on the function itself before calling it with arguments.
-        uint64 requestId =
-            tcont.request.value(TC_FEE)(TC_REQUEST_TYPE, this, CALLBACK_FID, encFN);
+        Insure(msg.sender, encryptedFlightInfo.length, encryptedFlightInfo, -2);
+        uint64 requestId = TC_CONTRACT.request.value(TC_FEE)(0, this, TC_CALLBACK_FID, encryptedFlightInfo);
+        Insure(msg.sender, encryptedFlightInfo.length, encryptedFlightInfo, -3);
         requesters[requestId] = msg.sender;
+        Insure(msg.sender, encryptedFlightInfo.length, encryptedFlightInfo, int72(requestId));
     }
 
-    // This is the entry point for Town Crier to respond to a request.
     function pay(uint64 requestId, bytes32 delay) public {
-        // Check that this is a response from Town Crier
-        // and that the ID is valid and unfulfilled.
         address requester = requesters[requestId];
-        if (msg.sender != address(tcont) || requester == 0) return;
+        if (msg.sender != address(TC_CONTRACT)) {
+            PaymentLog(-1);
+            return;
+        } else if (requesters[requestId] == 0) {
+            PaymentLog(-2);
+            return;
+        }
 
-        if (uint(delay) >= MIN_DELAY_MINUTES) {
+        PaymentLog(1);
+
+        PaymentInfo(requester, requester.balance, msg.gas, requestId, uint(delay), 1);
+        if (uint(delay) >= PAYOUT_DELAY) {
             address(requester).send(PAYOUT);
+            PaymentInfo(requester, requester.balance, msg.gas, requestId, uint(delay), PAYOUT);
+        } else {
+            PaymentInfo(requester, requester.balance, msg.gas, requestId, uint(delay), 0);
         }
         requesters[requestId] = 0;
+        PaymentLog(2);
     }
+
+//    function cancel(uint64 requestId) public returns (bool) {
+//        if (requesters[requestId] == msg.sender) {
+//            bool tcCancel = TC_CONTRACT.cancel(requestId);
+//            if (tcCancel) {
+//                FlightCancel(msg.sender, requesters[requestId], true);
+//                requesters[requestId] = 0;
+//                msg.sender.send(FEE);
+//                return true;
+//            }
+//        }
+//        FlightCancel(msg.sender, requesters[requestId], false);
+//        return false;
+//    }
 }
 

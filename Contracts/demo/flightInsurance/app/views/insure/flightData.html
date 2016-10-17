@@ -1,0 +1,46 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="page-header">
+      <h1>Good. <small>Now we just need some information about your flight ...</small></h1>
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-sm-6 col-md-6 col-sm-offset-3  col-md-offset-3">
+    <form name="flightDataForm" id="flightDataForm">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Your flight details</h3>
+        </div>
+        <div class="panel-body">
+          <div ng-if="error" ng-cloak class="ng-cloak error-panel">
+            <div class="title">{{error.title}}</div>
+            <div class="message">{{error.message}}</div>
+          </div>
+
+          <div class="form-group" ng-class="{'has-error': flightDataForm.code.$touched && !flightDataForm.code.$valid}">
+            <label for="code">Flight code</label>
+             <div ng-show="flightDataForm.code.$touched && !flightDataForm.code.$valid" class="text-danger">You have to type a code there.</div>
+            <input type="text" class="form-control" name="code" ng-model="flightData.code" required/>
+          </div>
+          <div class="form-group" ng-class="{'has-error': flightDataForm.date.$touched && !flightDataForm.time.$valid}">
+            <label for="code">Flight date</label>
+             <div ng-show="flightDataForm.date.$touched && !flightDataForm.date.$valid" class="text-danger">You have to type a code there.</div>
+            <div uib-datepicker ng-model="flightData.date" class="well well-sm"></div>
+          </div>
+          <div class="form-group">
+            <label for="code">Flight time</label>
+            <div uib-timepicker ng-model="flightData.time"></div>
+          </div>
+
+          <div class="form-group submit-container centered-text " style="margin-top:20px;">
+            <button type="button" class="btn btn-red" ui-sref="insure.account" ng-disabled="querying || !flightDataForm.$valid" >
+              Next
+            </button>
+          </div>
+      </div>
+    </form>
+  </div>
+</div>
