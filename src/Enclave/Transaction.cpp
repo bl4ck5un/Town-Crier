@@ -1,4 +1,4 @@
-﻿#include <assert.h>
+#include <assert.h>
 #include "stdlib.h"
 #include "stdint.h"
 #include "Enclave_t.h"
@@ -21,12 +21,6 @@
 #include "Debug.h"
 #endif
 
-static uint8_t bytesRequired(int _i)
-{
-    uint8_t i = 0;
-    for (; _i != 0; ++i, _i >>= 8) {}
-    return i;
-}
 
 void rlp_item(const uint8_t* input, const int len, bytes& out){
     int i;
@@ -53,24 +47,12 @@ void rlp_item(const uint8_t* input, const int len, bytes& out){
     }
 }
 
-void rlp_item(const bytes32* b, bytes& out) {
-    rlp_item((const uint8_t*)b->b, b->size, out);
-}
-
-void rlp_item(const bytes20* b, bytes& out) {
-    rlp_item((const uint8_t*)b->b, b->size, out);
-}
-
-
-void from32(const char* src, bytes32* d) { fromHex(src, d->b, &d->size); }
-void from20(const char* src, bytes20* d) { fromHex(src, d->b, &d->size); }
-
 int set_byte_length (bytes32* d)
 {
     mbedtls_mpi tmp;
     mbedtls_mpi_init(&tmp);
     size_t len, i;
-    if (mbedtls_mpi_read_binary (&tmp, d->b, 32) != 0)
+    if (mbedtls_mpi_read_binary (&tmp, &(*d)[0], 32) != 0)
     {
         LL_CRITICAL("Error reading mpi from binary!\n");
         return -1;
@@ -82,44 +64,37 @@ int set_byte_length (bytes32* d)
     // need to move to the begining of the d->d
     for (i = 0; i < len; i++)
     {
-        d->b[i] = d->b[32 - len + i];
-        d->b[32 - len + i] = 0;
+        (*d)[i] = (*d)[32 - len + i];
+        (*d)[32 - len + i] = 0;
     }
 
-    d->size = len;
+    d->set_size(len);
     mbedtls_mpi_free(&tmp);
     return 0;
 }
 
 TX::TX(TX::Type p) {
         this->m_type = p;
-        memset(&this->m_nonce, 0, sizeof ( bytes32 ));
-        memset(&this->m_value, 0, sizeof ( bytes32 ));
-        memset(&this->m_receiveAddress, 0, sizeof ( bytes20 ));
-        memset(&this->m_gasPrice, 0, sizeof ( bytes32 ));
-        memset(&this->m_gas, 0, sizeof ( bytes32 ));
-        memset(&this->r, 0, sizeof ( bytes32 ));
-        memset(&this->s, 0, sizeof ( bytes32 ));
-        memset(&this->v, 0, sizeof ( byte ));
+		this->v = 0;
 }
 
 void TX::rlp_list(bytes& out, bool withSig) {
         int i;
         uint8_t len_len, b;
-        rlp_item(&m_nonce, out);
-        rlp_item(&m_gasPrice, out);
-        rlp_item(&m_gas, out);
+        m_nonce.rlp(out);
+        m_gasPrice.rlp(out);
+        m_gas.rlp(out);
         if (m_type == MessageCall) {
-            rlp_item(&m_receiveAddress, out);
+            m_receiveAddress.rlp(out);
         }
-        rlp_item(&m_value, out);
-        rlp_item((const uint8_t*)&m_data[0], m_data.size(), out);
+        m_value.rlp(out);
+        m_data.rlp(out);
         // v is also different
 
         if (withSig) {
             rlp_item((const uint8_t*)&v, 1, out);
-            rlp_item(&r, out);
-            rlp_item(&s, out);
+            r.rlp(out);
+            s.rlp(out);
         } 
         int len = out.size();
         // list header
@@ -185,7 +160,7 @@ int get_raw_signed_tx(int nonce, int nonce_len,
     in[0] = request_type;
     memcpy(in + 1, req_data, req_len);
 
-    keccak(in, hash_in_len, param_hash.b, 32);
+    keccak(in, hash_in_len, &param_hash[0], 32);
 
 #ifdef VERBOSE
     hexdump("Hash Input", in, hash_in_len);
@@ -195,7 +170,7 @@ int get_raw_signed_tx(int nonce, int nonce_len,
 
     bytes32 resp_b32;
     assert (resp_len == 32);
-    memcpy(resp_b32.b, resp_data, resp_len);
+    memcpy(&resp_b32[0], resp_data, resp_len);
 
     ABI_Bytes32 d(&resp_b32);
 
@@ -227,13 +202,12 @@ int get_raw_signed_tx(int nonce, int nonce_len,
 
     bytes nonce_bytes;
     enc_int(nonce_bytes, nonce, 4);
-    memcpy(tx.m_nonce.b, &nonce_bytes[0], nonce_bytes.size());
+    memcpy(&tx.m_nonce[0], &nonce_bytes[0], nonce_bytes.size());
 
     set_byte_length(& tx.m_nonce);
-    from32(GASPRICE, &tx.m_gasPrice);
-    from32(GASLIMIT, &tx.m_gas);
-    from20(TC_ADDRESS, &tx.m_receiveAddress);
-    from32("0x00", &tx.m_value);
+	tx.m_gasPrice.fromHex(GASPRICE);
+	tx.m_gas.fromHex(GASLIMIT);
+	tx.m_receiveAddress.fromHex(TC_ADDRESS);
     
     tx.m_data.clear();
     tx.m_data = abi_str;
@@ -251,7 +225,7 @@ int get_raw_signed_tx(int nonce, int nonce_len,
         tx.rlp_list(out, false);
     }
     catch (std::invalid_argument& ex) {
-        LL_CRITICAL("%s\n", ex.what()); 
+        LL_CRITICAL("%s\n", ex.what());
         return -1;
     }
 
@@ -260,10 +234,10 @@ int get_raw_signed_tx(int nonce, int nonce_len,
     {
         LL_CRITICAL("keccak returned %d", ret); return -1;
     }
-    ret = sign(hash, 32, tx.r.b, tx.s.b, &tx.v);
+    ret = sign(hash, 32, &tx.r[0], &tx.s[0], &tx.v);
 
     if (ret != 0) { LL_CRITICAL("Error: signing returned %d\n", ret); return ret;}
-    else {tx.r.size = 32; tx.s.size = 32;}
+    else {tx.r.set_size(32); tx.s.set_size(32);}
 
     out.clear();
 

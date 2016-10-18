@@ -6,6 +6,7 @@
  */
 #pragma once
 #include "Commons.h"
+#include "Encoding.h"
 #include <cstddef>
 #include <vector>
 
@@ -28,8 +29,6 @@ protected:
     uint64_t _data;
 public:
     ABI_UInt64(uint64_t data): _data(data) {};
-//    size_t head_len()  {return this->encode_len();}
-//    size_t tail_len()  {return 0;}
     int encode(bytes& out) ;
     int encode_len()  {return 32;}
     bool dynamic()  {return false;}
@@ -55,9 +54,9 @@ public:
 class ABI_Address: public ABI_serializable
 {
 protected:
-    bytes20* _data;
+    bytes32* _data;
 public:
-    ABI_Address(bytes20* data): _data(data) {};
+    ABI_Address(bytes32* data): _data(data) {};
     int encode(bytes& out) ;
     int encode_len()  {return 32;}
     bool dynamic()  {return false;}
@@ -70,8 +69,6 @@ class ABI_Bytes32: public ABI_serializable
 protected:
     bytes32* _data;
 public:
-//    size_t head_len()  {return this->encode_len();}
-//    size_t tail_len()  {return 0;}
     ABI_Bytes32(bytes32* data): _data(data) {};
     int encode(bytes& out) ;
     int encode_len()  {return 32;}
@@ -85,46 +82,41 @@ protected:
     bytes& _data;
 public:
     ABI_Bytes(bytes& data) : _data(data){};
-//    size_t head_len()  {return 32;}
-//    size_t tail_len()  {return this->encode_len();}
     int encode(bytes& out) ;
     int encode_len()  {return 32 + ROUND_TO_32(this->_data.size());}
     bool dynamic()  {return true;}
     ~ABI_Bytes() {};
 };
 
-class ABI_T_Array: public ABI_serializable
-{
-protected:
-    vector<ABI_serializable*>& items;
-public:
-    ABI_T_Array(vector<ABI_serializable*>& items): items(items)
-    {
-        for (size_t i = 0; i < items.size(); i++)
-        {
-            if (items[i]->dynamic())
-                throw std::invalid_argument("item is dynamic");
-        }
-    }
-    int encode(bytes& out) ;
-    int encode_len() ;
-    bool dynamic()  {return true;}
-    ~ABI_T_Array() {};
-};
+//template<class T>
+//class ABI_T_Array: public ABI_serializable
+//{
+//protected:
+//    vector<T*>& items;
+//public:
+//    ABI_T_Array(vector<T*>& items): items(items)
+//    {
+//        for (size_t i = 0; i < items.size(); i++)
+//        {
+//            if (items[i]->dynamic())
+//                throw std::invalid_argument("item is dynamic");
+//        }
+//    }
+//    int encode(bytes& out) ;
+//    int encode_len() ;
+//    bool dynamic()  {return true;}
+//    ~ABI_T_Array() {};
+//};
 
 class ABI_Generic_Array: public ABI_serializable
 {
 protected:
     vector<ABI_serializable*>& items;
 public:
-//    size_t head_len()  {return 32;}
-//    size_t tail_len() ;
     ABI_Generic_Array(vector<ABI_serializable*>& items) : items(items) {};
     int encode(bytes& out);
     int encode_len();
     bool dynamic() {return true;}
     ~ABI_Generic_Array() {};
 };
-
-int enc_int(bytes& out, uint64_t in, int len);
 

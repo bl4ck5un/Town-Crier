@@ -3,5 +3,6 @@ enclave {
         public int ssl_self_test();
         public int ABI_self_test();
         public int RLP_self_test();
+        public int transaction_rlp_test();
     };
 };

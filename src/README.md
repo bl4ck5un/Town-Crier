@@ -30,6 +30,7 @@ Then build the Town Crier with CMake:
 
 ```
 mkdir build
+cd build
 cmake ..
 make
 make install
