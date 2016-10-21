@@ -13,7 +13,7 @@ int flight_self_test(){
   	//printf("USAGE: get_flight_delay(YYYYMMDD, HHmm, flight#, return_variable)\n");
     //printf("\tdate/time in Zulu/UTC, flight in ICAO\n");
     int rc, delay ;
-    rc = get_flight_delay("20161022", "0530", "SOL361", &delay);
+    rc = get_flight_delay(1477114200, "SOL361", &delay);
     if (rc < 0){
         //printf("Could not find flight info for DAL900 at specified departure time\n");
     	return -1;

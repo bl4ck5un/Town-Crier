@@ -67,7 +67,7 @@ int construct_query(char* flight, char** buf) {
     return len;
 }
 
-int parse_response(char* resp, int* buf, char* date, char* departure) {
+int parse_response(char* resp, int* buf, int unix_epoch_time) {
     int i, t;
     char* temp = resp;
     char* end;
@@ -82,7 +82,8 @@ int parse_response(char* resp, int* buf, char* date, char* departure) {
     int len, tactual, tscheduled, hours, minutes, seconds, diff;
 
 //    tstamp[11] = 0;
-    t = utime(date, departure);
+    t = unix_epoch_time;
+
     snprintf(tstamp, 11, "%d", t);
     //LL_NOTICE("tstamp: %s", tstamp);
     strncpy(tempbuff, "filed_departuretime\":\0", 22);
@@ -174,7 +175,7 @@ int parse_response(char* resp, int* buf, char* date, char* departure) {
       as its content. 
     - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
 */
-int get_flight_delay(char* date, char* time, char* flight, int* resp) {
+int get_flight_delay(int unix_epoch_time, char* flight, int* resp) {
     /***** VARIABLE DECLARATIONS */
     int ret, delay;
     char buf[20480] = {0};
@@ -204,7 +205,7 @@ int get_flight_delay(char* date, char* time, char* flight, int* resp) {
 #endif 
 
     free(query);
-    ret = parse_response(buf, &delay, date, time);
+    ret = parse_response(buf, &delay, unix_epoch_time);
 
     if (ret < 0) {
         LL_CRITICAL("no data/bad request");
@@ -220,20 +221,20 @@ cleanup:
 
 #ifdef MAIN
 int main(int argc, char* argv[]) {
-    int rc, delay;
-    printf("USAGE: get_flight_delay(YYYYMMDD, HHmm, flight#, return_variable)\n");
-    printf("\tdate/time in Zulu/UTC, flight in ICAO\n");
-    rc = get_flight_delay("20160129", "1450", "DAL900", &delay);
-    if (rc < 0)
-        printf("Could not find flight info for DAL900 at specified departure time\n");
-    else
-        printf("Delta Airlines flight 900 is %d minutes late on 26 January 2016 (should be 2 minutes late)\n", delay);
+    // int rc, delay;
+    // printf("USAGE: get_flight_delay(YYYYMMDD, HHmm, flight#, return_variable)\n");
+    // printf("\tdate/time in Zulu/UTC, flight in ICAO\n");
+    // rc = get_flight_delay("20160129", "1450", "DAL900", &delay);
+    // if (rc < 0)
+    //     printf("Could not find flight info for DAL900 at specified departure time\n");
+    // else
+    //     printf("Delta Airlines flight 900 is %d minutes late on 26 January 2016 (should be 2 minutes late)\n", delay);
 
 
-    rc = get_flight_delay("20160204", "0310", "SWA450", &delay);
-    printf("%d, %d (should be 11)\n", rc, delay);
-    rc = get_flight_delay("20160202", "0650", "UAL1183", &delay);
-    printf("%d, %d (should be -12)\n", rc, delay);
+    // rc = get_flight_delay("20160204", "0310", "SWA450", &delay);
+    // printf("%d, %d (should be 11)\n", rc, delay);
+    // rc = get_flight_delay("20160202", "0650", "UAL1183", &delay);
+    // printf("%d, %d (should be -12)\n", rc, delay);
 
     return 0;
 }

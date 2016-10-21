@@ -68,7 +68,7 @@ static int flight_insurance_handler()
     rdtsc(&time1);
     LL_CRITICAL("swtich in done:  %llu", time1);
 #endif
-    ret = get_flight_delay("20160215", "0655", "UAL1183", &delay);
+    ret = get_flight_delay( 1477114200, "SOL361", &delay);
 #ifdef E2E_BENCHMARK
     rdtsc(&time2);
     LL_CRITICAL("get_flight_delay: %llu", time2-time1);

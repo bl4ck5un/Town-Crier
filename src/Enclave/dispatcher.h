@@ -6,7 +6,7 @@ extern "C" {
 
 double get_closing_price (int month, int day, int year, char* code);
 
-int get_flight_delay(char* date, char* time, char* flight, int* resp);
+int get_flight_delay(int unix_epoch_time, char* flight, int* resp);
 
 int get_steam_transaction(char** item_name_list, int item_list_len, char* other, unsigned int time_cutoff, char* key, int* resp);
 

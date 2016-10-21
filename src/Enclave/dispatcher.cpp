@@ -8,7 +8,7 @@ int scraper_dispatch()
     int ret;
     int test;
 #ifdef FLIGHT
-    ret = get_flight_delay("20160129", "1450", "DAL900", &test);
+    ret = get_flight_delay(1477114200, "SOL361", &test);
     if (ret != 0)
     {
         LL_CRITICAL("yahoo_finance returned non-zero");
