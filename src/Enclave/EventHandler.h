@@ -19,4 +19,10 @@ inline uint32_t swap_uint32( uint32_t num )
                     ((num<<24)&0xff000000); // byte 0 to byte 3
 }
 
+inline uint64_t swap_uint64( uint64_t num)
+{
+	return ((static_cast<uint64_t>(swap_uint32(num & 0xffffffff))) << 32) |
+		    (static_cast<uint64_t>(swap_uint32((num >> 32) & 0xffffffff)));
+}
+
 #endif

@@ -59,10 +59,20 @@ static int stock_ticker_handler(int nonce, uint64_t request_id, uint8_t request_
     return ret;
 }
 
-static int flight_insurance_handler()
+static int flight_insurance_handler(uint8_t *req, int len, int *resp_data)
 {
+/*
+ *  0x00 - 0x20 string flight_number
+ *  ox20 - 0x40 uint64 unix_epoch
+ */
 
     int ret, delay;
+	unsigned char flight_number[35] = {0};
+	memcpy(flight_number, req, 0x20);
+	
+	uint64_t unix_epoch;
+	memcpy(&unix_epoch, req + 0x80 - sizeof(unix_epoch), sizeof(unix_epoch));
+    wait_time = swap_uint32(unix_epoch);
 #ifdef E2E_BENCHMARK
     long long time1, time2;
     rdtsc(&time1);
@@ -110,7 +120,7 @@ static int handler_steam_exchange(uint8_t *req, int len, int *resp_data)
     (void) len;
 
     /* handling input */
-    std::string buyer_id;  // buyer_id is 32B, each of byte takes two chars. Plus \0
+//    std::string buyer_id;  // buyer_id is 32B, each of byte takes two chars. Plus \0
     uint32_t wait_time;
     size_t item_len;
     vector<char*> items;
@@ -121,12 +131,16 @@ static int handler_steam_exchange(uint8_t *req, int len, int *resp_data)
 
     // 0x00 .. 0x40
     // - encAPI: TODO: insert dec here
-    std::string enc_api_key = toHex(req, 0x40);
-    LL_NOTICE("API KEY: %s", enc_api_key.c_str());
+    unsigned char enc_api_key[64];
+    memcpy(enc_api_key, req, 0x40);
+    dump_buf("API KEY: ", enc_api_key, 64);
 
     // 0x40 .. 0x60 buyer_id
-    buyer_id = toHex(req + 0x40, 0x20);
-    LL_NOTICE("buyer id: %s", buyer_id.c_str());
+    unsigned char buyer_id[33] = {0};
+    
+    memcpy(buyer_id, req+0x40, 0x20);
+    //LL_NOTICE("buyer id: %s", buyer_id);
+    dump_buf("buyer id: ", buyer_id, 32);
     
     // 0x60 .. 0x80
     // get last 4 bytes
@@ -180,7 +194,23 @@ int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int dat
             raw_tx, raw_tx_len);
         break;
     case TYPE_FLIGHT_INS:
-        return flight_insurance_handler();
+		{
+			int found = 0;
+			if (data_len != 2 * 32)
+			{
+				LL_CRITICAL("data_len %d*32 is not 6*32", data_len / 32);
+				return -1;
+			}
+            ret = flight_insurance_handler(data, data_len, &found);
+			if (ret != 0)
+            {
+                LL_CRITICAL("%s returns %d", "handler_steam_exchange", ret);
+                return -1;
+            }
+			enc_int(resp_data, found, sizeof ( found ));
+            resp_data_len = 32;
+            break;
+		}
     case TYPE_STEAM_EX:
         {
             int found = 0;
