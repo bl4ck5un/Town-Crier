@@ -24,7 +24,7 @@ static int utime(const char* ds, const char* ts) {
     memcpy(day, ds+6, 2);
     memcpy(hour, ts, 2);
     memcpy(minute, ts+2, 2);
-    /*printf("%s %s %s, %s:%s\n", year, month, day, hour, minute);*/
+    LL_NOTICE("%s %s %s, %s:%s\n", year, month, day, hour, minute);
     y = atoi(year);
     mo = atoi(month);
     d = atoi(day);
@@ -41,7 +41,7 @@ static int utime(const char* ds, const char* ts) {
         mo--;
     }
 
-    temp += (d-1) * 24 * 60 * 60;
+    temp += (d) * 24 * 60 * 60;
     temp += h * 60 * 60;
     temp += mi * 60;
 
@@ -84,9 +84,10 @@ int parse_response(char* resp, int* buf, char* date, char* departure) {
 //    tstamp[11] = 0;
     t = utime(date, departure);
     snprintf(tstamp, 11, "%d", t);
-
+    //LL_NOTICE("tstamp: %s", tstamp);
     strncpy(tempbuff, "filed_departuretime\":\0", 22);
     strncat(tempbuff, tstamp, sizeof tempbuff);
+    //LL_NOTICE("tempbuff: %s", tempbuff);
     len = strlen(resp);
     while(strncmp(temp, tempbuff, 31) != 0) {
         temp+=1;
@@ -97,26 +98,39 @@ int parse_response(char* resp, int* buf, char* date, char* departure) {
     }
     sd = temp;
 
-    for (i=0; i < 7; i++) {
+    for (i=0; i < 5; i++) {
         while(*temp!=',') {
             temp+= 1;
         }
         temp+=1;
     }
-    temp += 20;
-    end = temp+10;
+    temp += 22; //only get up to the next ","
+    end = temp;
+    while(*end!= ','){
+    	end += 1;
+    }
 
-    scheduled[10] = 0;
-    actual[10] = 0;
-
+    //end = temp+10;
     len = end-temp;
-    memcpy(actual, temp, len);
+
+    scheduled[len] = 0;
     actual[len] = 0;
+
+    memcpy(actual, temp, len);
+    LL_NOTICE("actual: %s", actual);
+
+    actual[len] = 0;
+    LL_NOTICE("actual: %s", actual);
     /*printf("%s\n", actual);*/
     tactual = atoi(actual);
+
     if (tactual == 0)
         return -1;
-
+    if (tactual == -1){
+    	LL_NOTICE("Flight Canceled!");
+    	*buf = 2147483647;
+    	return len;
+    }
     temp = sd;
     for (i=0; i < 2; i++) {
         while(*temp!=',') {
@@ -176,6 +190,7 @@ int get_flight_delay(char* date, char* time, char* flight, int* resp) {
     ret = get_page_on_ssl("flightxml.flightaware.com", query, headers, 2, (unsigned char*)buf, sizeof buf);
 
     LL_NOTICE("%d bytes returned", strlen(buf));
+    //LL_NOTICE("%s\n", buf);
     tmp  = strchr(buf, '{');
 
     if (!tmp )

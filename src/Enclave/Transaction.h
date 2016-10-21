@@ -1,6 +1,7 @@
 #include <sgx_tseal.h>
 #include "stdint.h"
 #include "Commons.h"
+#include "Encoding.h"
 
 #ifndef TX_H
 #define TX_H
@@ -16,13 +17,13 @@ public:
     Type    m_type;
     bytes32 m_nonce;
     bytes32 m_value;
-    bytes20 m_receiveAddress;
+    bytes32 m_receiveAddress;
     bytes32 m_gasPrice;
     bytes32 m_gas;
     bytes   m_data;
     bytes32 r;
     bytes32 s;
-    byte    v;
+    uint8_t v;
     TX(Type p);
     void rlp_list(bytes& out, bool withSig=true);
 };
