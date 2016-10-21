@@ -1,0 +1,50 @@
+<div class="row">
+  <div class="col-sm-8 col-md-8 col-sm-offset-2  col-md-offset-2">
+    <div class="page-header">
+      <h1>Ok. <small>Please select an account</small></h1>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-8 col-md-8 col-sm-offset-2  col-md-offset-2">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Premium Amount</h3>
+      </div>
+      <div class="panel-body">
+        <div class="list-group">
+          <div class="title">If the flight is delayed you will receive 5x what you pay: {{policy.amount * 5}} ETH</div>
+          <input type="text" ng-model="policy.amount"/>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="row">
+  <div class="col-sm-8 col-md-8 col-sm-offset-2  col-md-offset-2">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Your accounts</h3>
+        </div>
+        <div class="panel-body">
+          <div class="list-group">
+         	  <button type="button" class="list-group-item"
+                    ng-repeat="account in accounts"
+                    ng-click="selectAccount(account)"
+                    ng-class="{'list-group-item-info': selectedAccount == account}">{{account.address}} - Balance:{{account.balance}} ETH</button>
+		      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-8 col-md-8 col-sm-offset-2  col-md-offset-2">
+    <button type="button" class="btn btn-default pull-left"  ui-sref="insure.flightData">Back</button>
+    <button type="button" class="btn btn-primary pull-right" ng-click="insure()" ng-disabled="!(policy.amount > 0)">Pay {{policy.amount}} Ether</button>
+  </div>
+</div>

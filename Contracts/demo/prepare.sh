@@ -11,10 +11,11 @@ var buyerAddr = eth.accounts[2]
 var sgxAddr = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 
 var gasCnt = 3e+6
+var TC_FEE = 55 * 5e+13
 
-personal.unlockAccount(minerAddr, '123123')
-personal.unlockAccount(sellerAddr, '123123')
-personal.unlockAccount(buyerAddr, '123123')
+personal.unlockAccount(minerAddr, '000000')
+personal.unlockAccount(sellerAddr, '000000')
+personal.unlockAccount(buyerAddr, '000000')
 // personal.unlockAccount(sgxAddr)
 
 
@@ -26,7 +27,7 @@ var buyerSteamId = String(32884794);
 EOF
 
 # Make sure you modify the TC contract to have the right SGX address.
-SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../TownCrier.sol ../SteamTrade.sol | paste -sd '' | sed 's/\s\+/ /g')
+SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../TownCrier.sol ../SteamTrade.sol ../FlightIns.sol | paste -sd '' | sed 's/\s\+/ /g')
 
 cat <<EOF
 var source = '$SRC'
@@ -40,6 +41,7 @@ cat <<EOF
 var contracts = eth.compile.solidity(source)
 var TownCrier = eth.contract(contracts.TownCrier.info.abiDefinition)
 var SteamTrade = eth.contract(contracts.SteamTrade.info.abiDefinition)
+var FlightIns = eth.contract(contracts.FlightIns.info.abiDefinition)
 
 function checkWork(){
     if (eth.getBlock("pending").transactions.length > 0) {
@@ -52,6 +54,11 @@ function checkWork(){
         console.log("== No transactions! Mining stopped.");
     }
 }
+
+function mineBlocks(num) {
+    miner.start(1); miner.start(1); admin.sleepBlocks(num); miner.stop();
+}
+
 
 function setup_log(tc, tradeContract) {
 	tc.RequestLog(function(e,r) {
@@ -90,7 +97,7 @@ function setup_tc() {
             } 
             else {console.log("Failed to create Town Crier contract: " + e)}
         });
-    miner.start(1); admin.sleepBlocks(1); miner.stop();
+        mineBlocks(1);
     return tc;
 }
 
@@ -108,29 +115,56 @@ function createSteamTrade(apiKey, item, price) {
                   } 
                   else {console.log("Failed to create SteamTrade contract: " + e)}
               });
-  miner.start(1); admin.sleepBlocks(1); miner.stop();
-  return tradeContract;
+    mineBlocks(1);
+    return tradeContract;
 }
 
-function purchase(contract, steamId, delay) {
+function createFlightIns() {
+    var tradeContract = FlightIns.new(
+            tc.address, {
+                from: sellerAddr,
+                data: contracts.FlightIns.code,
+                gas: gasCnt},
+                function(e, c) {
+                    if (!e) {
+                        if (c.address) {
+                            console.log('FlightIns created at: ' + c.address)
+                        }
+                    }
+                    else {console.log("Failed to create FligthIns contract: " + e)}
+                });
+    mineBlocks(1);
+    return tradeContract;
+}
+
+function SteamPurchase(contract, steamId, delay) {
   // var timeoutSecs = Math.floor((new Date((new Date()).getTime() + (delay * 1000))).getTime() / 1000);
   // to simplify, delay is the time for SGX to wait before fetching
   // delay = 60, typically
   contract.purchase.sendTransaction( steamId, delay, {
       from: buyerAddr, 
-      value: 1e+18 + (55 * 5e+13), 
+      value: 1e+18 + TC_FEE, 
       gas: gasCnt
   });
-  miner.start(1); admin.sleepBlocks(1); miner.stop();
-
+  mineBlocks(1);
   return "Purchased!"
+}
+
+function FlightInsure(contract, flightID, fee) {
+    contract.insure.sendTransaction(flightID, fee, {
+        from: buyerAddr,
+        value: fee * 1e+18 + TC_FEE,
+        gas: gasCnt
+    });
+    mineBlocks(1);
+    return "Insured!"
 }
 
 function check_balance(){
     var before = Number(eth.getBalance(sellerAddr));
     var before_b = Number(eth.getBalance(buyerAddr));
 
-    miner.start(1); admin.sleepBlocks(1); miner.stop();
+    mineBlocks(1);
 
     var after = Number(eth.getBalance(sellerAddr));
     var after_b = Number(eth.getBalance(buyerAddr));

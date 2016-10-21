@@ -1,0 +1,42 @@
+<div class="row">
+  <div class="col-sm-8 col-md-8 col-sm-offset-2  col-md-offset-2">
+    <div class="page-header">
+      <h2>Policy {{policy.policyid}}</h2>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="row">
+  <div class="col-sm-8 col-md-8 col-sm-offset-2  col-md-offset-2">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Events</h3>
+        </div>
+        <div class="panel-body">
+          <p ng-if="policyDetails.length == 0">There is nothing to show. That should not happen.</p>
+          <table ng-if="policyDetails.length > 0" class="table">
+            <tr>
+              <th>Date and Time</th>
+              <th>Event</th>
+            </tr>
+            <tr ng-repeat="event in policyDetails">
+              <td>{{event.args.time.toNumber()*1000 | date:'medium'}}</td>
+              <td ng-if="event.args.status == 1">Purchased policy</td>
+              <td ng-if="event.args.status == 2">Flight has been delayed by {{event.args.delay}}</td>
+              <td ng-if="event.args.status == 3 && event.args.delay == 0">Policy expired. Flight was not delayed.</td>
+              <td ng-if="event.args.status == 3 && event.args.delay == 0">Policy expired. Flight was delayed by {{event.args.delay}}. Policy amount has been payed to your account.</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-sm-8 col-md-8 col-sm-offset-2  col-md-offset-2">
+  	<button class="pull-right" type="button" ui-sref="check.list">Back</button>
+  </div>
+ </div>

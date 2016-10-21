@@ -1,6 +1,7 @@
 #!/bin/bash
 
 GETH=geth
+IPC=~/.ethereum/geth.ipc
 datadir=chain0
 mkdir -p $datadir
 
@@ -28,4 +29,6 @@ $GETH --datadir=$datadir \
   --rpccorsdomain='*' \
   --verbosity="3" \
   --nodiscover \
+  --rpcapi="db,eth,ne,web3,personal" \
+  --ipcpath=$IPC \
   console 
