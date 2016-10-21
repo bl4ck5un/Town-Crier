@@ -4,6 +4,7 @@
 #include "Scraper_lib.h"
 #include "Debug.h"
 #include "Log.h"
+#include <stdint.h>
 
 #include "dispatcher.h"
 #include <cstring>
@@ -67,8 +68,9 @@ int construct_query(char* flight, char** buf) {
     return len;
 }
 
-int parse_response(char* resp, int* buf, int unix_epoch_time) {
-    int i, t;
+int parse_response(char* resp, int* buf, uint64_t unix_epoch_time) {
+    int i;
+    uint64_t t;
     char* temp = resp;
     char* end;
     char* sd;
@@ -175,7 +177,7 @@ int parse_response(char* resp, int* buf, int unix_epoch_time) {
       as its content. 
     - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
 */
-int get_flight_delay(int unix_epoch_time, char* flight, int* resp) {
+int get_flight_delay(uint64_t unix_epoch_time, char* flight, int* resp) {
     /***** VARIABLE DECLARATIONS */
     int ret, delay;
     char buf[20480] = {0};
