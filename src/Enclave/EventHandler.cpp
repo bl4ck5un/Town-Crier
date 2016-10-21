@@ -67,27 +67,24 @@ static int flight_insurance_handler(uint8_t *req, int len, int *resp_data)
  */
 
     int ret, delay;
-	unsigned char flight_number[35] = {0};
+	char flight_number[35] = {0};
 	memcpy(flight_number, req, 0x20);
 	
 	uint64_t unix_epoch;
 	memcpy(&unix_epoch, req + 0x80 - sizeof(unix_epoch), sizeof(unix_epoch));
-    wait_time = swap_uint32(unix_epoch);
-#ifdef E2E_BENCHMARK
-    long long time1, time2;
-    rdtsc(&time1);
-    LL_CRITICAL("swtich in done:  %llu", time1);
-#endif
-    ret = get_flight_delay( 1477114200, "SOL361", &delay);
-#ifdef E2E_BENCHMARK
-    rdtsc(&time2);
-    LL_CRITICAL("get_flight_delay: %llu", time2-time1);
-#endif
+    unix_epoch = swap_uint64(unix_epoch);
+
+    LL_NOTICE("unix_epoch=%ld, flight_number=%s", unix_epoch, flight_number);
+    ret = get_flight_delay(unix_epoch, flight_number, &delay);
+
     LL_NOTICE("delay is %d", delay);
 
-    bytes rr;
-    enc_int(rr, delay, sizeof (delay));
+    *resp_data = delay;
 
+    // bytes rr;
+    // enc_int(rr, delay, sizeof (delay));
+
+    /*
     uint8_t req[64];
     uint8_t raw_tx[1024];
     int raw_tx_len = sizeof ( raw_tx );
@@ -98,11 +95,8 @@ static int flight_insurance_handler(uint8_t *req, int len, int *resp_data)
         req, sizeof ( req ), 
         &rr[0], 32, 
         raw_tx, &raw_tx_len);
+    */
 
-#ifdef E2E_BENCHMARK
-    rdtsc(&time1);
-    LL_CRITICAL("swtich out begins:  %llu", time1);
-#endif
     return ret;
 }
 
