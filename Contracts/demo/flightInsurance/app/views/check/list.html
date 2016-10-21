@@ -39,11 +39,13 @@
             <tr>
               <th>Policy #</th>
               <th>Flight Code</th>
+              <th>Flight Time</th>
               <th></th>
             </tr>
             <tr ng-repeat="policy in allPolicies">
               <td>{{policy.args.requestId}}</td>
-              <td>{{policy.args.encFN}}</td>
+              <td>{{policy.args.data[0]}}</td>
+              <td>{{policy.args.data[1]}}</td>
               <td><button type="button" ng-click="showPolicyDetails(policy.args.requestId)">Details</button></td>
             </tr>
         </div>

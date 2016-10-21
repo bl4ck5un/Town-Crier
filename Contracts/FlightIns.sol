@@ -16,11 +16,12 @@ contract FlightIns {
     bytes4 constant TC_CALLBACK_FID = 0x3d622256; // bytes4(sha3("pay(uint64,bytes32)"));
 
     TownCrier public TC_CONTRACT;
+    address owner;
     address[2**64] requesters;
 
     function() { }
 
-    function FlightIns(TownCrier tcCont) public {
+    function FlightIns(TownCrier tcCont) public payable{
         TC_CONTRACT = tcCont;
     }
 
@@ -30,9 +31,7 @@ contract FlightIns {
             return;
         }
 
-        Insure(msg.sender, encryptedFlightInfo.length, encryptedFlightInfo, -2);
         uint64 requestId = TC_CONTRACT.request.value(TC_FEE)(0, this, TC_CALLBACK_FID, encryptedFlightInfo);
-        Insure(msg.sender, encryptedFlightInfo.length, encryptedFlightInfo, -3);
         requesters[requestId] = msg.sender;
         Insure(msg.sender, encryptedFlightInfo.length, encryptedFlightInfo, int72(requestId));
     }
@@ -49,7 +48,6 @@ contract FlightIns {
 
         PaymentLog(1);
 
-        PaymentInfo(requester, requester.balance, msg.gas, requestId, uint(delay), 1);
         if (uint(delay) >= PAYOUT_DELAY) {
             address(requester).send(PAYOUT);
             PaymentInfo(requester, requester.balance, msg.gas, requestId, uint(delay), PAYOUT);
