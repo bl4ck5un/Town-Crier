@@ -9,6 +9,10 @@
 #include "dispatcher.h"
 #include <cstring>
 
+#define DEPARTURED 0
+#define NOT_DEPARTURED 1
+#define INVALID 2
+
 static int utime(const char* ds, const char* ts) {
     char year[5], month[3], day[3], hour[3], minute[3];
     int y, mo, d, h, mi, temp;
@@ -126,9 +130,12 @@ int parse_response(char* resp, int* buf, uint64_t unix_epoch_time) {
     LL_NOTICE("actual: %s", actual);
     /*printf("%s\n", actual);*/
     tactual = atoi(actual);
-
-    if (tactual == 0)
-        return -1;
+    LL_NOTICE("tactual %d", tactual);
+    if (tactual == 0){//Not departured
+    	LL_NOTICE("Flight not departured");
+        return -2;
+    }
+    
     if (tactual == -1){
     	LL_NOTICE("Flight Canceled!");
     	*buf = 2147483647;
@@ -177,7 +184,7 @@ int parse_response(char* resp, int* buf, uint64_t unix_epoch_time) {
       as its content. 
     - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
 */
-int get_flight_delay(uint64_t unix_epoch_time, char* flight, int* resp) {
+int get_flight_delay(uint64_t unix_epoch_time, char* flight, int* status, int* resp) {
     /***** VARIABLE DECLARATIONS */
     int ret, delay;
     char buf[20480] = {0};
@@ -187,18 +194,25 @@ int get_flight_delay(uint64_t unix_epoch_time, char* flight, int* resp) {
 
     ret = construct_query(flight, &query);
     LL_DEBUG("query is %s", query);
-    if (ret < 0)
+    if (ret < 0){
+    	*status - 2;
         return -1;
-
+	}
     ret = get_page_on_ssl("flightxml.flightaware.com", query, headers, 2, (unsigned char*)buf, sizeof buf);
 
     LL_NOTICE("%d bytes returned", strlen(buf));
     //LL_NOTICE("%s\n", buf);
+    if(strlen(buf)< 31){
+    	*status = 2; //Invalid command
+    	LL_NOTICE("Flight not found!\n");
+    	return 0;
+    }
     tmp  = strchr(buf, '{');
 
     if (!tmp )
     {
         LL_CRITICAL("Error: buf2 is NULL");
+        *status = 2;
         ret = -1; goto cleanup;
     }
 
@@ -208,13 +222,26 @@ int get_flight_delay(uint64_t unix_epoch_time, char* flight, int* resp) {
 
     free(query);
     ret = parse_response(buf, &delay, unix_epoch_time);
+    
+    if (ret == -2){//Indicates that flight has not departured
+    	*status = NOT_DEPARTURED;
+    	return 0;
+    }
 
-    if (ret < 0) {
+    if(delay < 0){
+    	*status = DEPARTURED;
+    	*resp = 0;
+    	return 1;
+    }
+
+    if (ret == -1) {
         LL_CRITICAL("no data/bad request");
+        *status = INVALID;
         ret = -1; goto cleanup;
     }
     else {
         *resp = delay;
+        *status = DEPARTURED;
         ret = 0;
     }
 cleanup:
