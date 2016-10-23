@@ -31,7 +31,7 @@ contract FlightIns {
             return;
         }
 
-        uint64 requestId = TC_CONTRACT.request.value(TC_FEE)(0, this, TC_CALLBACK_FID, encryptedFlightInfo);
+        uint64 requestId = TC_CONTRACT.request.value(TC_FEE)(1, this, TC_CALLBACK_FID, encryptedFlightInfo);
         requesters[requestId] = msg.sender;
         Insure(msg.sender, encryptedFlightInfo.length, encryptedFlightInfo, int72(requestId));
     }

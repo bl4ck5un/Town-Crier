@@ -25,6 +25,8 @@
 #define RPC_PORT        8545
 
 
+#define VERBOSE
+
 inline uint64_t swap_uint64(uint64_t X) {
     uint64_t x = X;
     x = (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32;
@@ -183,14 +185,12 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
                         std::vector<uint8_t> data;
                         const char* data_c = transaction[i]["data"].asCString();
                         fromHex(data_c, data);
-#ifdef VERBOSE
-                        hexdump("TX:", &data[0], data.size());
-#endif
                         Request request(&data[0]);
                         LL_NOTICE("find an request (id=%lu)", request.id);
+                        LL_NOTICE("find an request (type=%lu)", request.type);
 
 #ifdef VERBOSE
-                        hexdump("req_data:", req_data, req_len * 32);
+                        std::cout << "REQDATA BINARY " << data_c << std::endl;
 #endif
 
                         get_last_nonce(db, &nonce);
@@ -203,16 +203,20 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
                                        raw_tx,
                                        &raw_tx_len);
 
-                        if (ret != 0)
+                        if (ret == 1)
                         {
-                            LL_CRITICAL("%s returned %d", "handle_request", ret);
+                            LL_CRITICAL("%s returned %d, NOT DEPARTURED", "handle_request", ret);
+                            throw EX_HANDLE_REQ;
+                        } else if (ret == 2)
+                        {
+                            LL_CRITICAL("%s returned %d, INVALID", "handle_request", ret);
                             throw EX_HANDLE_REQ;
                         }
 
                         char* tx_str = static_cast<char*>( malloc(raw_tx_len * 2 + 1));
                         char2hex(raw_tx, raw_tx_len, tx_str);
 #ifdef VERBOSE
-                        dump_buf("tx body: ", raw_tx, raw_tx_len);
+                        std::cout << "REQDATA BINARY " << data_c << std::endl;
 #endif
                         std::cout << "TX BINARY " << tx_str << std::endl;
 

@@ -7,7 +7,7 @@ function initConfig() {
 
     var fiContractAddress = '0x8622039a3d41aabe6301e289e7d3525dd747287c';
     var tcContractAddress = '0xd8ecae22aa26953488e0c91acb6120db0be74cda';
-    var fiAbiArray = 
+    var fiAbiArray =
         [{
             constant: false,
             inputs: [{
@@ -130,6 +130,7 @@ function initConfig() {
                 name: "FlightCancel",
                 type: "event"
         }];
+
 
     var tcAbiArray = 
         [{

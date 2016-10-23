@@ -63,6 +63,7 @@ angular.module('flightInsuranceApp')
                 });
             }
             console.log("account:", $scope.selectedAccount);
+            console.log("history:", $scope.allPolicies);
         })
     }
 
@@ -75,6 +76,7 @@ angular.module('flightInsuranceApp')
         var MyContract = Web3Service.eth.contract(FI_ABI_ARRAY);
         var contractInstance = MyContract.at(FI_CONTRACT_ADDRESS);
         var his = contractInstance.allEvents({fromBlock: 0, toBlock: 'latest'});
+        console.log(his);
         his.get(function(error, result) {
             if (!error) {
                 $scope.$apply(function () {

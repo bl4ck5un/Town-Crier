@@ -49,7 +49,7 @@ angular.module('flightInsuranceApp')
       var time = new Date(tmp);
       console.log(time.getTime());
       var result = contractInstance.insure([Web3Service.fromAscii($scope.flightData.code, 32), 
-                        Web3Service.fromAscii((Math.floor(time.getTime() / 60) * 60).toString(), 32)], 
+                        Web3Service.fromAscii((Math.floor(time.getTime() / 60000) * 60).toString(), 32)], 
                         $scope.policy.amount, {value: price, gas: 3000000}, function (error, result){
         if (error) {
           console.error("RAAAAAH WHY DO NOTHING EVER WORKS !");
