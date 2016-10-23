@@ -8,10 +8,7 @@
 
 #include "dispatcher.h"
 #include <cstring>
-
-#define DEPARTURED 0
-#define NOT_DEPARTURED 1
-#define INVALID 2
+#include "Constants.h"
 
 static int utime(const char* ds, const char* ts) {
     char year[5], month[3], day[3], hour[3], minute[3];

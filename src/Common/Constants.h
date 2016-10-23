@@ -27,4 +27,9 @@
 
 #define FREQ 2500000.0
 
-#define ERR_ENCLAVE_SSL_CLIENT 0x1001
+#define ERR_ENCLAVE_SSL_CLIENT 0x1001 
+
+//Define flight status constants 
+#define DEPARTURED 0
+#define NOT_DEPARTURED 1
+#define INVALID 2
