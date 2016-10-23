@@ -7,7 +7,7 @@ extern "C" {
 #include <stdint.h>
 double get_closing_price (int month, int day, int year, char* code);
 
-int get_flight_delay(uint64_t unix_epoch_time, char* flight, int* resp);
+int get_flight_delay(uint64_t unix_epoch_time, char* flight, int* status, int* resp);
 
 int get_steam_transaction(char** item_name_list, int item_list_len, char* other, unsigned int time_cutoff, char* key, int* resp);
 
