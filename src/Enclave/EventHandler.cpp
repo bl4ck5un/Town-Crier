@@ -72,8 +72,11 @@ static int flight_insurance_handler(uint8_t *req, int len, int *resp_data)
 	char flight_number[35] = {0};
 	memcpy(flight_number, req, 0x20);
 	
+
 	uint64_t unix_epoch;
 	memcpy(&unix_epoch, req + 0x80 - sizeof(unix_epoch), sizeof(unix_epoch));
+    
+    LL_NOTICE("unix_epoch b4 swap: %ld", unix_epoch);
     unix_epoch = swap_uint64(unix_epoch);
 
     LL_NOTICE("unix_epoch=%ld, flight_number=%s", unix_epoch, flight_number);
