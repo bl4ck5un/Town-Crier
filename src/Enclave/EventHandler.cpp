@@ -66,6 +66,8 @@ static int flight_insurance_handler(uint8_t *req, int len, int *resp_data)
  *  ox20 - 0x40 uint64 unix_epoch
  */
 
+    dump_buf("Request", req, len);
+
     int ret, delay, status;
 	char flight_number[35] = {0};
 	memcpy(flight_number, req, 0x20);
