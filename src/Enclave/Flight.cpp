@@ -50,7 +50,7 @@ static int utime(const char* ds, const char* ts) {
     return temp;
 }
 
-int construct_query(char* flight, char** buf) {
+int construct_query(const char* flight, char** buf) {
     int len;
     char query[1000];
     
@@ -69,12 +69,12 @@ int construct_query(char* flight, char** buf) {
     return len;
 }
 
-int parse_response(char* resp, int* buf, uint64_t unix_epoch_time) {
+int parse_response(const char* resp, int* buf, uint64_t unix_epoch_time) {
     int i;
     uint64_t t;
-    char* temp = resp;
-    char* end;
-    char* sd;
+    const char* temp = resp;
+    const char* end;
+    const char* sd;
 
     char tempbuff[100] = {0};
     char tstamp[11] = {0};
@@ -87,7 +87,7 @@ int parse_response(char* resp, int* buf, uint64_t unix_epoch_time) {
 //    tstamp[11] = 0;
     t = unix_epoch_time;
 
-    snprintf(tstamp, 11, "%d", t);
+    snprintf(tstamp, 11, "%llu", t);
     //LL_NOTICE("tstamp: %s", tstamp);
     strncpy(tempbuff, "filed_departuretime\":\0", 22);
     strncat(tempbuff, tstamp, sizeof tempbuff);
@@ -181,13 +181,13 @@ int parse_response(char* resp, int* buf, uint64_t unix_epoch_time) {
       as its content. 
     - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
 */
-int get_flight_delay(uint64_t unix_epoch_time, char* flight, int* status, int* resp) {
+int get_flight_delay(uint64_t unix_epoch_time, const char* flight, int* status, int* resp) {
     /***** VARIABLE DECLARATIONS */
     int ret, delay;
     char buf[20480] = {0};
     char* tmp = NULL;
     char* query = NULL;
-    char* headers[] = {AUTH_CODE, HOST};
+    const char* headers[] = {AUTH_CODE, HOST};
 
     ret = construct_query(flight, &query);
     LL_DEBUG("query is %s", query);

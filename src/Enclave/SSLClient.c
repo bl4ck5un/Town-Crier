@@ -132,7 +132,7 @@ int cb_on_body (http_parser* parser, const char* at, size_t len) {
     return 0;
 }
 
-int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* output, int length, int* copied)
+int ssl_client(client_opt_t opt, const char* headers[], int n_header, unsigned char* output, int length, int* copied)
 {
     int ret = 0, len, tail_len, i, written, frags, retry_left;
     mbedtls_net_context server_fd;

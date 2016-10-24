@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-int get_page_on_ssl(const char* server_name, const char* url, char* header[], int n_header, unsigned char* buf, int len);
+int get_page_on_ssl(const char* server_name, const char* url, const char* header[], int n_header, unsigned char* buf, int len);
 void client_opt_init(client_opt_t* opt);
 
 #if defined(__cplusplus)

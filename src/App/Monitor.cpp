@@ -206,8 +206,7 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
                         if (ret == 1)
                         {
                             LL_CRITICAL("%s returned %d, NOT DEPARTURED", "handle_request", ret);
-                            throw EX_HANDLE_REQ;
-                        } else if (ret == 2)
+                        } else if (ret != 0)
                         {
                             LL_CRITICAL("%s returned %d, INVALID", "handle_request", ret);
                             throw EX_HANDLE_REQ;

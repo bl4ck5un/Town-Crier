@@ -72,13 +72,10 @@ static int flight_insurance_handler(uint8_t *req, int len, int *resp_data)
 	char flight_number[35] = {0};
 	memcpy(flight_number, req, 0x20);
 	
-
-	uint64_t unix_epoch;
-	memcpy(&unix_epoch, req + 0x80 - sizeof(unix_epoch), sizeof(unix_epoch));
-    
-    LL_NOTICE("unix_epoch b4 swap: %ld", unix_epoch);
-    unix_epoch = swap_uint64(unix_epoch);
-
+    char* flighttime = (char*)req + 0x20;
+    uint64_t unix_epoch = strtol(flighttime, NULL, 10);
+	//memcpy(&unix_epoch, req + 0x40 - sizeof(unix_epoch), sizeof(unix_epoch));
+    //unix_epoch = swap_uint64(unix_epoch);
     LL_NOTICE("unix_epoch=%ld, flight_number=%s", unix_epoch, flight_number);
     ret = get_flight_delay(unix_epoch, flight_number, &status, &delay);
 
@@ -167,7 +164,7 @@ static int handler_steam_exchange(uint8_t *req, int len, int *resp_data)
         wait_time = 59;
     LL_NOTICE("waiting time: %d", wait_time);
 
-    char * listB[1] = {"Portal"};
+    const char * listB[1] = {"Portal"};
     // XXX: set wait time to 1 for test purpose
 //    wait_time = 1;
 

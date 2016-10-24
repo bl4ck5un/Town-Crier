@@ -6,7 +6,7 @@
 #include <string>
 #include <Log.h>
 
-static int construct_query(char* symbol, std::string& query) {
+static int construct_query(const char* symbol, std::string& query) {
     query += "/finance?q=";
     query += symbol;
     return query.size();
@@ -42,7 +42,7 @@ static double parse_response(char* resp) {
     return ret;
 }
 
-int google_current(char* symbol, double* r) {
+int google_current(const char* symbol, double* r) {
     /***** VARIABLE DECLARATIONS */
     int ret = 0;
     char* buf = (char*) malloc(300*1024);
