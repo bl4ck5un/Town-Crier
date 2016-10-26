@@ -5,7 +5,7 @@ import "TownCrier.sol";
 contract FlightIns {
     event Insure(address beneficiary, uint dataLength, bytes32[] data, int72 requestId);
     event PaymentLog(int flag);
-    event PaymentInfo(address payee, uint payeeBalance, uint gasRemaining, uint64 requestId, uint delay, uint amount);
+    event PaymentInfo(address payee, uint payeeBalance, uint gasRemaining, uint64 requestId, uint delay);
     event FlightCancel(address canceller, address requester, bool success);
 
     uint constant TC_FEE = (35000 + 20000) * 5 * 10**10;
@@ -18,11 +18,13 @@ contract FlightIns {
     TownCrier public TC_CONTRACT;
     address owner;
     address[2**64] requesters;
+    uint[2**64] premium;
 
     function() { }
 
     function FlightIns(TownCrier tcCont) public payable{
         TC_CONTRACT = tcCont;
+        owner = msg.sender;
     }
 
     function insure(bytes32[] encryptedFlightInfo, uint payment) public payable{
@@ -33,6 +35,7 @@ contract FlightIns {
 
         uint64 requestId = TC_CONTRACT.request.value(TC_FEE)(1, this, TC_CALLBACK_FID, encryptedFlightInfo);
         requesters[requestId] = msg.sender;
+        premium[requestId] = payment;
         Insure(msg.sender, encryptedFlightInfo.length, encryptedFlightInfo, int72(requestId));
     }
 
@@ -48,11 +51,14 @@ contract FlightIns {
 
         PaymentLog(1);
 
-        if (uint(delay) >= PAYOUT_DELAY) {
-            address(requester).send(PAYOUT);
-            PaymentInfo(requester, requester.balance, msg.gas, requestId, uint(delay), PAYOUT);
-        } else {
-            PaymentInfo(requester, requester.balance, msg.gas, requestId, uint(delay), 0);
+        if (uint(delay) == 0) {
+            PaymentInfo(requester, premium[requestId], msg.gas, requestId, uint(delay));
+        } else if (uint(delay) == 1 || uint(delay) == 2) {
+            address(requester).send(premium[requestId] * 5 * FEE);
+            PaymentInfo(requester, premium[requestId], msg.gas, requestId, uint(delay));
+        } else if (uint(delay) == 3 || uint(delay) == 4) {
+            address(requester).send(premium[requestId] * FEE);
+            PaymentInfo(requester, premium[requestId], msg.gas, requestId, uint(delay));
         }
         requesters[requestId] = 0;
         PaymentLog(2);

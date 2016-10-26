@@ -77,18 +77,12 @@ static int flight_insurance_handler(uint8_t *req, int len, int *resp_data)
 	//memcpy(&unix_epoch, req + 0x40 - sizeof(unix_epoch), sizeof(unix_epoch));
     //unix_epoch = swap_uint64(unix_epoch);
     LL_NOTICE("unix_epoch=%ld, flight_number=%s", unix_epoch, flight_number);
-    ret = get_flight_delay(unix_epoch, flight_number, &status, &delay);
+    ret = get_flight_delay(unix_epoch, flight_number, &delay);
 
     LL_NOTICE("delay is %d", delay);
 
     *resp_data = delay;
-    if (status == INVALID || status == NOT_DEPARTURED){//Invalid flight
-        return status;
-    }
-    if (status == DEPARTURED){
-
-        return 0;
-    }
+    
     // bytes rr;
     // enc_int(rr, delay, sizeof (delay));
 
@@ -222,7 +216,7 @@ int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int dat
                 return -1;
             }
             ret = handler_steam_exchange(data, data_len, &found);
-            if (ret != 0)
+            if (ret == -1)
             {
                 LL_CRITICAL("%s returns %d", "handler_steam_exchange", ret);
                 return -1;

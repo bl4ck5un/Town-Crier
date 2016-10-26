@@ -105,10 +105,6 @@ function initConfig() {
                 indexed: false,
                 name: "delay",
                 type: "uint256"
-            }, {
-                indexed: false,
-                name: "amount",
-                type: "uint256"
             }],
                 name: "PaymentInfo",
                 type: "event"
@@ -345,7 +341,7 @@ function initConfig() {
                 type: "event"
         }];
 
-    var app = angular.module('flightInsuranceApp');
+    var app = angular.module('Flight Insurance App');
     app.constant('FI_CONTRACT_ADDRESS', fiContractAddress);
     app.constant('TC_CONTRACT_ADDRESS', tcContractAddress);
     app.constant('FI_ABI_ARRAY', fiAbiArray);

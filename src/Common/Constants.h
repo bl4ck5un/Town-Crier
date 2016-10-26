@@ -31,5 +31,8 @@
 
 //Define flight status constants 
 #define DEPARTURED 0
-#define NOT_DEPARTURED 1
-#define INVALID 2
+#define DELAYED 1
+#define CANCELLED 2
+#define NOT_DEPARTURED 3
+#define NOT_FOUND 4
+

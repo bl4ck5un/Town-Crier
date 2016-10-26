@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module('flightInsuranceApp')
+angular.module('Flight Insurance App')
 .factory('Web3Service', function($http, $q, $window){
   //var web3
   // Init a new web3 object, unless we're in Mist

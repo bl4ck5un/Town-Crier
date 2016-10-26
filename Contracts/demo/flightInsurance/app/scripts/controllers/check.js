@@ -2,12 +2,12 @@
 
 /**
  * @ngdoc function
- * @name flightInsuranceApp.controller:CheckCtrl
+ * @name Flight Insurance App.controller:CheckCtrl
  * @description
  * # CheckCtrl
- * Controller of the flightInsuranceApp
+ * Controller of the Flight Insurance App
  */
-angular.module('flightInsuranceApp')
+angular.module('Flight Insurance App')
 .controller('CheckCtrl', function ($scope, Web3Service, $state, FI_ABI_ARRAY, FI_CONTRACT_ADDRESS) {
     $scope.accounts = [];
     $scope.flightData = {code: '', date: '', time: '', zone: ''};
@@ -84,6 +84,11 @@ angular.module('flightInsuranceApp')
                 });
                 console.log("history");
                 console.log($scope.policyDetails);
+                for (var i = 0; i < $scope.policyDetails.length; ++i) {
+                    console.log($scope.policyDetails[i].args.payeeBalance);
+                    $scope.policyDetails[i].args.payeeBalance = parseInt($scope.policyDetails[i].args.payeeBalance);
+                }
+                $scope.selectedPolicy = parseInt($scope.selectedPolicy);
                 $state.go("check.details");
             }
         })
