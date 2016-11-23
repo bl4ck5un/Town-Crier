@@ -33,7 +33,5 @@ int seal_data_test()
     }
     rdtsc(&time2);
 
-    printf_sgx("%lld", time2-time2);
-
     return 0;
 }

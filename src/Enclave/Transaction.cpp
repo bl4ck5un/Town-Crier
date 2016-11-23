@@ -90,7 +90,6 @@ void TX::rlp_list(bytes& out, bool withSig) {
         m_value.rlp(out);
         m_data.rlp(out);
         // v is also different
-
         if (withSig) {
             rlp_item((const uint8_t*)&v, 1, out);
             r.rlp(out);

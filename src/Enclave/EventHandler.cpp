@@ -181,7 +181,15 @@ int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int dat
     int ret;
     bytes resp_data;
     int resp_data_len = 0;
-
+/*
+    printf_sgx("nonce: %d\n", nonce);
+    printf_sgx("id: %llu\n", id);
+    printf_sgx("type: %llu\n", type);
+    printf_sgx("data len: %d\n", data_len);
+    for (int i = 0; i < data_len; i++)
+        printf_sgx("%u,", data[i]);
+    printf_sgx("\n");
+*/
     switch (type)
     {
     case TYPE_FINANCE_INFO:
@@ -254,6 +262,12 @@ int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int dat
 
     //sign transactions
     ret = get_raw_signed_tx(nonce, 32, id, type, data, data_len, &resp_data[0], resp_data_len, raw_tx, raw_tx_len);
+    /*
+    printf_sgx("raw tx len: %d\n", *raw_tx_len);
+    for (int i = 0; i < *raw_tx_len; i++)
+        printf_sgx("%u,", raw_tx[i]);
+    printf_sgx("\n");
+     */
     return ret;
 }
 

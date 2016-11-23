@@ -1,7 +1,11 @@
-#include "Transaction.h"
-#include <vector>
-#include "Debug.h"
 #include <stdint.h>
+#include <vector>
+
+#include "Transaction.h"
+#include "Debug.h"
+#include "Encoding.h"
+#include "Constants.h"
+
 extern "C" int transaction_rlp_test();
 int transaction_rlp_test()
 {
@@ -35,11 +39,21 @@ int transaction_rlp_test()
     if (ret) return ret;
     if (o_len != 204) return 1;
 	uint8_t ans[] = {248, 202, 128, 133, 11, 164, 59, 116, 0, 131, 1, 95, 144, 148, 136, 203, 90, 183, 19, 87, 217, 140, 123, 249, 202, 18, 3, 22, 197, 122, 67, 56, 15, 40, 128, 184, 100, 176, 112, 185, 186, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 18, 120, 47, 194, 110, 22, 175, 204, 97, 158, 123, 124, 230, 84, 174, 112, 89, 153, 10, 80, 130, 49, 109, 143, 251, 41, 135, 225, 230, 105, 64, 202, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 28};
-	if (memcmp(serialized_tx, ans, 138))
+
+    bytes tcAddress;
+    tcAddress.fromHex(TC_ADDRESS);
+
+    for (int i = 14; i < 14 + 20; i++)
+    {
+        ans[i] = tcAddress.at(i-14);
+    }
+
+
+	if (memcmp(serialized_tx, ans, 136))
 	{
         LL_CRITICAL("memcmp failed");
-        hexdump("tx:", ans, 138);
-        hexdump("Ours: ", serialized_tx, 138);
+        hexdump("correct:", ans, 136);
+        hexdump("Ours: ", serialized_tx, 136);
 		return 1;
 	}
 	
