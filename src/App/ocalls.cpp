@@ -2,7 +2,7 @@
 #include <string>
 #include <ctime>
 #include "Enclave_u.h"
-
+#include <sgx_tseal.h>
 #ifdef _WIN32
 #include "windows.h"
 #endif
@@ -48,4 +48,10 @@ void ocall_sleep(int milisec)
 time_t ocall_time()
 {
     return time(NULL);
+}
+
+void write(uint32_t sealed_data_size, sgx_sealed_data_t * p_sealed_data, char* filename)
+{
+	FILE* fp = fopen(filename, "wb");
+	fwrite(p_sealed_data, sealed_data_size, 1, fp);
 }

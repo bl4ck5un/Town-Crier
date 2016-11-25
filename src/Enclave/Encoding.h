@@ -14,8 +14,8 @@ public:
     bytes(){}
     bytes(int len):std::vector<uint8_t>(len, static_cast<uint8_t>(0)){}
     bytes(std::vector<uint8_t>& data):std::vector<uint8_t>(data){}
-    void fromHex(const char* src);
-	void rlp(bytes& out);
+    virtual void fromHex(const char* src);
+	virtual void rlp(bytes& out);
 };
 
 class bytes32 : public bytes{
