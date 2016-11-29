@@ -1,4 +1,18 @@
+/* Monitor.cpp is the main monitor loop that recieves requests from the Town Crier
+ * contract, relays the request to the Enclave, and then relays the response from the
+ * Enclave back to the Town Crier contract. In addition, Monitor.cpp can be run in various modes
+ * usefull to debugging and running benchmarks it contains various flags:
+ *      VERBOSE: Debugging flag that allows outputs various variable values
+ *      E2E_BENCHMARK: Run a benchmark test on the enclave, to determing the
+ *                     time it tries to run an handle_request enclave call
+ *                     Note: The monitor loops terminates after one call to Handle Request
+ *
+ */
+
 #include <iostream>
+#include <math.h>
+#include <unistd.h>
+
 #include "Monitor.h"
 #include "EthRPC.h"
 #include "Log.h"
@@ -18,8 +32,7 @@
 #include "Bookkeeping.h"
 #include <iomanip>
 
-#include <math.h>
-#include <unistd.h>
+
 
 #define RPC_HOSTNAME    "localhost"
 #define RPC_PORT        8545
@@ -27,6 +40,7 @@
 
 #define VERBOSE
 
+/* Let x = 0xABCDEFGH then swap(x) returns 0XHGFEDCBA */ 
 inline uint64_t swap_uint64(uint64_t X) {
     uint64_t x = X;
     x = (x & 0x00000000FFFFFFFF) << 32 | (x & 0xFFFFFFFF00000000) >> 32;
@@ -35,6 +49,7 @@ inline uint64_t swap_uint64(uint64_t X) {
     return x;
 }
 
+/* let x = 0xABCD then swap(x) return DCBA */
 inline uint32_t swap_uint32( uint32_t num )
 {
     return ((num>>24)&0xff) | // move byte 3 to byte 0
@@ -42,80 +57,25 @@ inline uint32_t swap_uint32( uint32_t num )
                     ((num>>8)&0xff00) | // move byte 2 to byte 1
                     ((num<<24)&0xff000000); // byte 0 to byte 3
 }
-
+//Constant that is never used
 long g_frequency = 2500000000;
 
+/* Monitor_loop [eid] [nonce] is the main loop that will relay all request from the TC contract
+ * to enclave [eid]. Then, relay back the results to RPC_HOSTNAME in RPC_PORT
+ * When the monitor recieved a request from a block, relay message, the for some reason the
+ * request fails, retry up to 5 times.  If the request fails 5 times, the monitor_loop exists
+ * If a request succeds, the result will sent back to the blockchain
+ */
 int monitor_loop(sgx_enclave_id_t eid, int nonce)
 {
-#ifdef E2E_BENCHMARK
-    // prepare
-    long long time1, time2;
-    time1 = __rdtsc();
-    LL_CRITICAL("Starting..");
-    time2 = __rdtsc();
-    LL_CRITICAL("print overhead: %llu", time2-time1);
-
-    // benchmark remote att
-    time1 = __rdtsc();
-    remote_att_init();
-    time2 = __rdtsc();
-    LL_CRITICAL("remote_att overall %llu", (time2-time1));
-
-    int ret = 0;
-    char req[64] = {0};
-    req[0] = 'G';
-    req[1] = 'O';
-    req[2] = 'O';
-    req[3] = 'G';
-    req[4] = 'L';
-    uint8_t raw_tx[TX_BUF_SIZE];
-    int raw_tx_len = sizeof ( raw_tx );
-
-    // benchmark request handling
-    time1 = __rdtsc();
-    LL_CRITICAL("Entering handle_request: %llu", time1);
-    handle_request(global_eid, &ret, nonce, 0xFF, 0x01, (uint8_t*) req, sizeof ( req ), raw_tx, &raw_tx_len);
-    time2 = __rdtsc();
-    LL_CRITICAL("overall: %llu", time2-time1);
-    
-    if (ret != 0)
-    {
-        LL_CRITICAL("handle_request returned %d", ret);
-        return -1;
-    }
-    char* tx_str = (char*) malloc(raw_tx_len * 2 + 1);
-    char2hex(raw_tx, raw_tx_len, tx_str);
-
-#ifdef VERBOSE
-    dump_buf("tx body: ", raw_tx, raw_tx_len);
-    printf("tx_str: %s\n", tx_str);
-#endif
-#ifdef E2E_BENCHMARK
-    ret = -1;
-#else
-    ret = send_transaction(tx_str);
-#endif
-    if (ret != 0)
-    {
-        fprintf(stderr, "send_raw_tx returned %d\n", ret);
-        return -1;       
-    }
-    else
-    {
-        dump_buf("new nonce being dumped: ", nonce, 32);
-        // add accounting info
-        dump_nonce(nonce);
-    }
-//    free(tx_str);
-    return ret;
-#else
-    long next_wanted;
+    //Case: No Benchmark standard loop
+    long next_wanted;               //Next_wanted keeps track of the blocks that have been processed
     get_last_scan(db, &next_wanted);
     next_wanted++;
 
     int ret = 0;
     Json::Value transaction;
-    unsigned retry_n = 0;
+    unsigned retry_n = 0;       //Number of retries
     int sleep_sec;
     std::string filter_id;
     long highest_block;
@@ -124,8 +84,9 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
     uint8_t raw_tx[TX_BUF_SIZE] = {0};
     int raw_tx_len = 0;
 
-    do
+    do //Begin REPL loops
     {
+        //Will Retry at most 5 times
         if (retry_n >= 5)
         {
             LL_CRITICAL("Exit after %d retries", retry_n);
@@ -135,6 +96,7 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
 
         if (retry_n > 0)
         {
+            //Increase timeout everytime we retry
             sleep_sec = 1 << retry_n; // 2^retry_n
             LL_CRITICAL("retry in %d seconds", sleep_sec);
             sleep(sleep_sec);
@@ -142,7 +104,7 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
 
         try {
             // how many blocks do we have now?
-            highest_block = eth_blockNumber(RPC_HOSTNAME, RPC_PORT);
+            highest_block = eth_blockNumber();
 
             if (highest_block < 0)
             {
@@ -161,7 +123,7 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
             for (; next_wanted <= highest_block; next_wanted++)
             {
                 // create a new filter for next_wanted
-                ret = eth_new_filter(RPC_HOSTNAME, RPC_PORT, filter_id, next_wanted, next_wanted);
+                ret = eth_new_filter(filter_id, next_wanted, next_wanted);
 
                 if (ret < 0)
                 {
@@ -172,7 +134,7 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
                 LL_NOTICE("detected block %ld", next_wanted);
 
                 // get events of interest
-                ret = eth_getfilterlogs(RPC_HOSTNAME, RPC_PORT, filter_id, transaction);
+                ret = eth_getfilterlogs(filter_id, transaction);
                 if (ret != 0) {
                     LL_CRITICAL("Error: can't get filter logs");
                     throw EX_GET_FILTER_LOG;
@@ -180,12 +142,14 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
 
                 if (transaction.isArray() && transaction.size() > 0)
                 {
+                    //Loop over all transactions in the block
                     for (int i = 0; i < transaction.size(); i++)
                     {
+                        //Parse the request
                         std::vector<uint8_t> data;
                         const char* data_c = transaction[i]["data"].asCString();
                         fromHex(data_c, data);
-                        Request request(&data[0]);
+                        Request request(&data[0]);//take vector of uint8
                         LL_NOTICE("find an request (id=%lu)", request.id);
                         LL_NOTICE("find an request (type=%lu)", request.type);
 
@@ -194,7 +158,7 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
 #endif
 
                         get_last_nonce(db, &nonce);
-
+                        //Enclave call to parse the given request
                         handle_request(eid, &ret, nonce,
                                        request.id,
                                        request.type,
@@ -212,7 +176,7 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
                             LL_CRITICAL("%s returned %d, INVALID", "handle_request", ret);
                             throw EX_HANDLE_REQ;
                         }
-
+                        //TODO: get rid of malloc
                         char* tx_str = static_cast<char*>( malloc(raw_tx_len * 2 + 1));
                         char2hex(raw_tx, raw_tx_len, tx_str);
 #ifdef VERBOSE
@@ -220,7 +184,7 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
 #endif
                         std::cout << "TX BINARY " << tx_str << std::endl;
 
-                        ret = send_transaction(RPC_HOSTNAME, RPC_PORT, tx_str);
+                        ret = send_transaction(tx_str);
                         if (ret != 0)
                         {
                             LL_CRITICAL("send_raw_tx returned %d", ret);
@@ -264,50 +228,4 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
             retry_n++;
         }
     } while (true); // this loop never ends;
-#endif
 }
-
-
-/*
-int demo_test_loop(sgx_enclave_id_t eid)
-{
-    int ret = 0;
-    // TX_BUF_SIZE is defined in Enclave.edl
-    uint8_t raw_tx[TX_BUF_SIZE] = {0};
-    int raw_tx_len = 0;
-
-    int nonce = 6;
-
-    uint64_t id = 0;
-    uint8_t request_type = TYPE_STEAM_EX;
-    uint32_t req_len = 6;
-    size_t req_len_bytes = req_len * 32;
-
-    uint8_t* req_data = static_cast<uint8_t*>(malloc(req_len * 32));
-    memset(req_data, 0xF0, req_len_bytes);
-                        
-    handle_request(eid, &ret, nonce, id, request_type, req_data, req_len * 32, raw_tx, &raw_tx_len);
-    if (ret)
-    {
-       LL_CRITICAL("%s returned %d", "handle_request", ret);
-       return -1;
-    }
-
-    char* tx_str = static_cast<char*>( malloc(raw_tx_len * 2 + 1));
-    char2hex(raw_tx, raw_tx_len, tx_str);
-    dump_buf("tx body: ", raw_tx, raw_tx_len);
-    printf("tx_str: %s\n", tx_str);
-//    ret = send_transaction(tx_str);
-    ret = -1;
-    if (ret != 0)
-    {
-        fprintf(stderr, "send_raw_tx returned %d\n", ret);
-        return -1;       
-    }
-    else
-    {
-        record_nonce(db, ++nonce);
-    }
-    return 0;
-}
-*/
