@@ -1,8 +1,9 @@
+# need 3.0 for multiple line strings
 cmake_minimum_required(VERSION 3.0)
 project(Town-Crier)
 
 set(SGX_SDK /opt/intel/sgxsdk)
-set(SGX_MODE HW)
+set(SGX_MODE SIM)
 set(SGX_ARCH x64)
 set(SGX_DEBUG 1)
 
@@ -48,6 +49,9 @@ message(STATUS "SGX_MODE: ${SGX_MODE}")
 message(STATUS "SGX_LIBRARY_PATH: ${SGX_LIBRARY_PATH}")
 message(STATUS "SGX_ENCLAVE_SIGNER: ${SGX_ENCLAVE_SIGNER}")
 message(STATUS "SGX_EDGER8R: ${SGX_EDGER8R}")
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(App)
 add_subdirectory(Enclave)

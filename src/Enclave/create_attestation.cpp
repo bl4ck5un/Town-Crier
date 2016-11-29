@@ -3,7 +3,7 @@
 #include "string.h"
 #include "time.h"
 #include "keccak.h"
-#include "ECDSA.h"
+#include "eth_ecdsa.h"
 #include "Log.h"
 #include "Enclave_t.h"
 #include "Constants.h"

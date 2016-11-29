@@ -49,34 +49,34 @@ add_executable(TestMain
         mbedtls_sgx_net.c
         ../Common/Converter.cpp
         ../Common/Debug.c
-        ../Common/Log.c test/seal_data.cpp)
+        ../Common/Log.c test/Sealing.cpp)
 
 if (NOT SGX_MODE STREQUAL HW)
     set(Urts_Library_Name sgx_urts_sim)
-else()
+else ()
     set(Urts_Library_Name sgx_urts)
-endif()
+endif ()
 
 include_directories(
-    ../Common
-    ${SGX_SDK}/include
-    ${MBEDTLS_LIB_DIR}/include
-    /usr/include/jsoncpp)
+        ../Common
+        ${SGX_SDK}/include
+        ${MBEDTLS_LIB_DIR}/include
+        /usr/include/jsoncpp)
 
 
-if(SGX_DEBUG STREQUAL 1)
+if (SGX_DEBUG STREQUAL 1)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG -UNDEBUG -UEDEBUG")
-elseif(SGX_PRERELEASE STREQUAL 1)
+elseif (SGX_PRERELEASE STREQUAL 1)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -DEDEBUG")
-else()
+else ()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -UEDEBUG")
-endif()
+endif ()
 
-if(SGX_MODE STREQUAL HW)
+if (SGX_MODE STREQUAL HW)
     set(UAE_SERVICE_LIB sgx_uae_service)
-else()
+else ()
     set(UAE_SERVICE_LIB sgx_uae_service_sim)
-endif()
+endif ()
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wno-attributes")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
@@ -103,5 +103,3 @@ target_link_libraries(TestMain
 
 add_dependencies(tc enclave)
 add_dependencies(TestMain tc)
-
-install(TARGETS tc TestMain DESTINATION ${PROJECT_BINARY_DIR})

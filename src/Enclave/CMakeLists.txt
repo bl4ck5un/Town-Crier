@@ -1,13 +1,13 @@
 set(SOURCE_FILES
         ../Common/Debug.c
         ../Common/Log.c
-        ABI.cpp
-        Attestation_Enc.c
+        eth_abi.cpp
+        create_attestation.cpp
         Current_bloomberg.cpp
         Current_Google.cpp
         Current_Yahoo.cpp
         dispatcher.cpp
-        ECDSA.c
+        eth_ecdsa.c
         Enclave_t.c
         EventHandler.cpp
         Flight.cpp
@@ -40,10 +40,10 @@ add_library(enclave SHARED ${SOURCE_FILES})
 if (NOT SGX_MODE STREQUAL HW)
     set(TRTS_LIB_NAME sgx_trts_sim)
     set(SERVICE_LIB_NAME sgx_tservice_sim)
-else()
+else ()
     set(TRTS_LIB_NAME sgx_trts)
     set(SERVICE_LIB_NAME sgx_tservice)
-endif()
+endif ()
 
 set(CRYPTO_LIB_NAME sgx_tcrypto)
 
@@ -75,10 +75,8 @@ target_link_libraries(enclave "${SGX_COMMON_CFLAGS} \
 add_custom_command(TARGET enclave
         POST_BUILD
         COMMAND ${SGX_ENCLAVE_SIGNER} sign
-            -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
-            -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
-            -enclave enclave.so
-            -out ${CMAKE_BINARY_DIR}/enclave.signed.so
+        -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
+        -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
+        -enclave ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.so
+        -out ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so
         COMMENT "Signing the enclave. Written to ${CMAKE_BINARY_DIR}")
-
-install(TARGETS enclave DESTINATION ${PROJECT_BINARY_DIR})

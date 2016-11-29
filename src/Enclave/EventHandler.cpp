@@ -5,7 +5,7 @@
 #include "dispatcher.h"
 #include "time.h"
 #include "Transaction.h"
-#include "ABI.h"
+#include "eth_abi.h"
 #include "Enclave_t.h"
 #include "keccak.h"
 #include <Debug.h>

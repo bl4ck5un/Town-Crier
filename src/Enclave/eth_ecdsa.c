@@ -1,4 +1,4 @@
-#include "ECDSA.h"
+#include "eth_ecdsa.h"
 #include "keccak.h"
 #include "Debug.h"
 #include "Log.h"
@@ -26,6 +26,8 @@
 #include "mbedtls/bignum.h"
 
 #include <string.h>
+#include <mbedtls/ecp.h>
+
 #endif
 
 #include "mbedtls/sha256.h"
@@ -108,7 +110,10 @@ void keygen(mbedtls_ecdsa_context* ctx)
         mbedtls_printf( "Error: mbedtls_ecdsa_genkey returned %d\n", ret );
         goto exit;
     }
-    mbedtls_printf("haha\n");
+
+    size_t lenSecretKey = mbedtls_mpi_size(&ctx->d);
+    mbedtls_ecp_point* pubKey = &ctx->Q;
+
 #else
     mbedtls_ecp_group_load( &ctx->grp, ECPARAMS);
     ret = mbedtls_mpi_read_string(&ctx->d, 16, FROM_PRIVATE_KEY);

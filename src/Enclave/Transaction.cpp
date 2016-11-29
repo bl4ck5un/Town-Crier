@@ -6,10 +6,10 @@
 #include "keccak.h"
 #include "mbedtls/bignum.h"
 
-#include "ECDSA.h"
+#include "eth_ecdsa.h"
 #include "Log.h"
 
-#include "ABI.h"
+#include "eth_abi.h"
 #include "Commons.h"
 
 #include "Transaction.h"
