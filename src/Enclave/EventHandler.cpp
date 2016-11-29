@@ -50,7 +50,7 @@ static int stock_ticker_handler(int nonce, uint64_t request_id, uint8_t request_
     ret = get_raw_signed_tx(nonce, 32, 
         request_id, request_type, 
         req, req_len, 
-        &rr[0], 32, 
+        rr,
         raw_tx, raw_tx_len);
 #ifdef E2E_BENCHMARK
     rdtsc(&time1);
@@ -261,7 +261,7 @@ int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int dat
     }
 
     //sign transactions
-    ret = get_raw_signed_tx(nonce, 32, id, type, data, data_len, &resp_data[0], resp_data_len, raw_tx, raw_tx_len);
+    ret = get_raw_signed_tx(nonce, 32, id, type, data, data_len, resp_data, raw_tx, raw_tx_len);
     /*
     printf_sgx("raw tx len: %d\n", *raw_tx_len);
     for (int i = 0; i < *raw_tx_len; i++)

@@ -13,7 +13,7 @@ protected:
 public:
     bytes(){}
     bytes(int len):std::vector<uint8_t>(len, static_cast<uint8_t>(0)){}
-    bytes(std::vector<uint8_t>& data):std::vector<uint8_t>(data){}
+    bytes(std::vector<uint8_t> data):std::vector<uint8_t>(data){}
     virtual void fromHex(const char* src);
 	virtual void rlp(bytes& out);
 };

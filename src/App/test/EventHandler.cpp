@@ -5,7 +5,7 @@
 #include "../Utils.h"
 #include "../../Common/Constants.h"
 
-TEST (EventHandler, All) {
+TEST (EventHandler, Steam) {
     sgx_enclave_id_t eid;
     sgx_status_t ecall_ret;
     int ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
