@@ -12,6 +12,12 @@ TEST(Scraper, flight){
     int ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
     ASSERT_EQ(SGX_SUCCESS, ret);
 
-    flight_self_test(eid, &ret);
+    yahoo_self_test(eid, &ret);
+    ASSERT_EQ(0, ret);
+
+    google_self_test(eid, &ret);
+    ASSERT_EQ(0, ret);
+
+    bloomberg_self_test(eid, &ret);
     ASSERT_EQ(0, ret);
 }
