@@ -43,6 +43,12 @@ static double parse_response(char* resp) {
 }
 
 int google_current(const char* symbol, double* r) {
+
+    /* Null Checker */
+    if (symbol == NULL || r == NULL){
+        LL_CRITICAL("Error: Passed null pointers");
+        return -1;
+    }
     /***** VARIABLE DECLARATIONS */
     int ret = 0;
     char* buf = (char*) malloc(300*1024);

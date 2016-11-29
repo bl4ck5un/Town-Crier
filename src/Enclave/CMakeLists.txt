@@ -20,7 +20,8 @@ set(SOURCE_FILES
         Transaction.cpp
         Exception.c
         Encoding.cpp
-        http_parser.c)
+        slre.c
+	http_parser.c)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
 SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES})

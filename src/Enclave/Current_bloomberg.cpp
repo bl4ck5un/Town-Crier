@@ -3,8 +3,10 @@
 #include <string.h>
 #include "Scraper_lib.h"
 #include "dispatcher.h"
+#include "Log.h"
 
 static int construct_query(const char* symbol, char** buf) {
+
     int len;
     char query[1000];
     query[0] = 0;
@@ -56,14 +58,19 @@ static int parse_response(char* resp, char** buf) {
     return len;
 }
 
-int bloomberg_current(double* r) {
+int bloomberg_current(char* symbol, double* r) {
+    if (symbol == NULL || r == NULL){
+        LL_CRITICAL("Error: Passed in a NULL pointer\n");
+        return -1;
+    }
     /***** VARIABLE DECLARATIONS */
     int ret = 0;
     char buf[3000];
     char* query = NULL;
     char* output = NULL;
 
-    const char* symbol = "GOOG";
+
+    //char* symbol = "GOOG";
 
     /***** CONSTRUCT THE QUERY */
     ret = construct_query(symbol, &query);

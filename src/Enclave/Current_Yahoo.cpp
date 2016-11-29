@@ -28,17 +28,22 @@ static double parse_response(char* resp) {
     int len;
     len = strlen(resp);
     /// FIXME PLEASE ADD SOME ERROR HANDLING
-    if (len > 8)
-    {
-        return 0.0;
-    }
-    else
-    {
-        return std::strtod(resp, NULL);
-    }
+    //if (len > 8)
+    //{
+    //    return 0.0;
+    //}
+    //else
+    //{
+    return std::strtod(resp, NULL);
+    //}
 }
 
 int yahoo_current(const char* symbol, double* r) {
+
+    if (symbol == NULL || r == NULL){
+        LL_CRITICAL("Error: Passed in NULL pointer args\n");
+        return -1;
+    }
     /***** VARIABLE DECLARATIONS */
     int ret = 0;
     char buf[16385];
@@ -56,6 +61,7 @@ int yahoo_current(const char* symbol, double* r) {
     ret = get_page_on_ssl("download.finance.yahoo.com", query, headers, 1, (unsigned char*)buf, 16384); 
     free(query);
     /*printf("%s\n", buf);*/
+    //LL_CRITICAL("%s\n", buf);
     /***** PARSE THE RESPONSE */
     *r = parse_response(buf);
 

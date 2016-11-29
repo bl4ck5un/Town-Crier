@@ -177,11 +177,63 @@
 "mnkPIAou1Z5jJh5VkpTYghdae9C8x49OhgQ=\r\n"  \
 "-----END CERTIFICATE-----\r\n"  
 
+
+#define Bloomberg_CA \
+"-----BEGIN CERTIFICATE-----\r\n" \
+"MIIISzCCBzOgAwIBAgIQQNqlXf/xkq3Ousa9wmr56jANBgkqhkiG9w0BAQsFADB3\r\n" \
+"MQswCQYDVQQGEwJVUzEdMBsGA1UEChMUU3ltYW50ZWMgQ29ycG9yYXRpb24xHzAd\r\n" \
+"BgNVBAsTFlN5bWFudGVjIFRydXN0IE5ldHdvcmsxKDAmBgNVBAMTH1N5bWFudGVj\r\n" \
+"IENsYXNzIDMgRVYgU1NMIENBIC0gRzMwHhcNMTYwODAxMDAwMDAwWhcNMTgwODAy\r\n" \
+"MjM1OTU5WjCCARAxEzARBgsrBgEEAYI3PAIBAxMCVVMxGTAXBgsrBgEEAYI3PAIB\r\n" \
+"AgwIRGVsYXdhcmUxHTAbBgNVBA8TFFByaXZhdGUgT3JnYW5pemF0aW9uMRAwDgYD\r\n" \
+"VQQFEwcyMTEwMjM0MQswCQYDVQQGEwJVUzEOMAwGA1UEEQwFMTAwMjIxETAPBgNV\r\n" \
+"BAgMCE5ldyBZb3JrMREwDwYDVQQHDAhOZXcgWW9yazEdMBsGA1UECQwUNzMxIExl\r\n" \
+"eGluZ3RvbiBBdmVudWUxFzAVBgNVBAoMDkJsb29tYmVyZyBMLlAuMRYwFAYDVQQL\r\n" \
+"DA1CbG9vbWJlcmcgV2ViMRowGAYDVQQDDBF3d3cuYmxvb21iZXJnLmNvbTCCASIw\r\n" \
+"DQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALNL/iWFHicOWbY3GrjCNF1nh5Op\r\n" \
+"7t2TzlNbZm4PyfCMlCVeBSByvgiw29hpkmEOFNLfq/KziU26bN7uHPinmGItfsHf\r\n" \
+"wjDs4n9kpgSDlmBlEfZ6UTB87K9CqEgIkKIC+Zd6Kibt6XkLApuV3ow1H8LXwtUh\r\n" \
+"tX+yyFXPC1wjvEWeTNbig8DEX72KxylaMmE0bdWubMIqSYELkUZ/lhCCOurrdw0C\r\n" \
+"k8jDEq0QjgntweNUnoOTG6dy5PPARoHkLgM8ZUuSnp0ezAk5qrEuJAWzl3JQBfin\r\n" \
+"51gIjM6Sek4QmEEwoz7/GkH/d4OJ3oBCevZpuZE6k3elkNxZVj3mm29aghMCAwEA\r\n" \
+"AaOCBDYwggQyMIIBWwYDVR0RBIIBUjCCAU6CE2J4LmJ1c2luZXNzd2Vlay5jb22C\r\n" \
+"Em1vYmlsZS1pbWcuYndieC5pb4IRbmF2LmJsb29tYmVyZy5jb22CEWNkbi5nb3Ry\r\n" \
+"YWZmaWMubmV0ghN3d3cuYmxvb21iZXJnLmNvLmpwghRhcGkuYnVzaW5lc3N3ZWVr\r\n" \
+"LmNvbYIYY2RuLW1vYmFwaS5ibG9vbWJlcmcuY29tghRjaGFydHMuYmxvb21iZXJn\r\n" \
+"LmNvbYIVd3d3LmJsb29tYmVyZ3ZpZXcuY29tgg5hc3NldHMuYndieC5pb4IZY2Ru\r\n" \
+"My52aWRlb3MuYmxvb21iZXJnLmNvbYIRd3d3LmJsb29tYmVyZy5jb22CDmJ2aWV3\r\n" \
+"LmJ0cmQubmV0gg9iYmctaW1nLmJ3YnguaW+CE2ZvbnRzLmdvdHJhZmZpYy5uZXSC\r\n" \
+"F2J5emFudGl1bS5ibG9vbWJlcmcuY29tMAkGA1UdEwQCMAAwDgYDVR0PAQH/BAQD\r\n" \
+"AgWgMB0GA1UdJQQWMBQGCCsGAQUFBwMBBggrBgEFBQcDAjBvBgNVHSAEaDBmMAcG\r\n" \
+"BWeBDAEBMFsGC2CGSAGG+EUBBxcGMEwwIwYIKwYBBQUHAgEWF2h0dHBzOi8vZC5z\r\n" \
+"eW1jYi5jb20vY3BzMCUGCCsGAQUFBwICMBkMF2h0dHBzOi8vZC5zeW1jYi5jb20v\r\n" \
+"cnBhMB8GA1UdIwQYMBaAFAFZq+fdOgtZpmRj1s8gB1fVkedqMCsGA1UdHwQkMCIw\r\n" \
+"IKAeoByGGmh0dHA6Ly9zci5zeW1jYi5jb20vc3IuY3JsMFcGCCsGAQUFBwEBBEsw\r\n" \
+"STAfBggrBgEFBQcwAYYTaHR0cDovL3NyLnN5bWNkLmNvbTAmBggrBgEFBQcwAoYa\r\n" \
+"aHR0cDovL3NyLnN5bWNiLmNvbS9zci5jcnQwggF9BgorBgEEAdZ5AgQCBIIBbQSC\r\n" \
+"AWkBZwB2AN3rHSt6DU+mIIuBrYFocH4ujp0B1VyIjT0RxM227L7MAAABVkgv1WMA\r\n" \
+"AAQDAEcwRQIhAKeDtxYTdgI9EymmCpBswMzc0uAu/SLfJe/2uqhIu1rRAiAa3D2y\r\n" \
+"LklJveS/6fG495JjfIiP7qWWDmnWF0EyEwa4vwB1AKS5CZC0GFgUh7sTosxncAo8\r\n" \
+"NZgE+RvfuON3zQ7IDdwQAAABVkgv1gwAAAQDAEYwRAIgYxtIPL/K62UkdokcWqbW\r\n" \
+"B0kjYCvXijypZwKMwUGhu8oCID+ZxxU8VfrhZTF6p8uUNLJJnvdl0Ra80EKtLyuU\r\n" \
+"e1SFAHYAaPaY+B9kgr46jO65KB1M/HFRXWeT1ETRCmesu09P+8QAAAFWSC/WDgAA\r\n" \
+"BAMARzBFAiB1V2NeizPti6T7yRwPikUg3aCFa8wNQ107uNTQJxnzLgIhAN8yZ5ex\r\n" \
+"0CAoq7JAbIsiaLfdXYQr6xMQA4wiaRp1VsgdMA0GCSqGSIb3DQEBCwUAA4IBAQBw\r\n" \
+"FE1S/SmZSl5RfuNovBW0qf5YuEq+SarMANMmVyrMy8T+F8XMyfgsIqEguDOmPiJS\r\n" \
+"Lilrp+gyWtrBll4+9j8tY/TSXSYE7Q5HyWSozfEqhYNgqBwt7zBX+2rTUkd4xAFR\r\n" \
+"QKo7WXrIkZlKwjCymYxHRbN2HAF0bGvr4RMBUbGHB52yKapWtg8TI8LimlLGvK6e\r\n" \
+"HsVmWRyxhJt40sGS1Yop9yQmAm16kIcBdcqkCquNBFNwdVPt/z+RegeB29GMx5yW\r\n" \
+"nCKrBoib5yXT4qWDQURCWt2U+fACpXOBFsY8KRQTmA0hq/NYa6jpm7D+9CSQa23+\r\n" \
+"zwNnCoAqGLDJi+Tgu61r\r\n" \
+"-----END CERTIFICATE-----\r\n"
+
+
 const char root_cas_pem[] = GeoTrust_Global_CA \
     Equifax_Secure_Certificate_Authority \
     Symantec_Class_3_Secure_Server_CA_G4 \
     DigiCert_SHA2_Secure_Server_CA \
     DigiCert_High_Assurance_EV_Root_CA \
     AddTrust_External_CA_Root \
+    Bloomberg_CA \
     ;
 const size_t root_cas_pem_len = sizeof( root_cas_pem );

@@ -14,6 +14,7 @@ int ssl_self_test(){
     unsigned char output[1024*100];
     int len;
     const char* hdrs[] = {"Host: httpbin.org"};
+
     int ret = ssl_client(opt, hdrs, 1, output, 1024*100, &len);
     if (ret < 0) {
         LL_CRITICAL("Error: returned %d", ret);

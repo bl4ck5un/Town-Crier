@@ -15,7 +15,8 @@ int scraper_dispatch();
 
 int google_current(const char* symbol, double* r);
 int yahoo_current(const char* symbol, double* r);
-int bloomberg_current(double* r);
+int bloomberg_current(const char* symbol, double* r);
+
 
 #if defined(__cplusplus)
 }
