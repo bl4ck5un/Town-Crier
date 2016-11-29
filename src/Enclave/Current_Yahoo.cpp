@@ -6,7 +6,7 @@
 #include <string>
 #include <Log.h>
 
-static int construct_query(char* symbol, char** buf) {
+static int construct_query(const char* symbol, char** buf) {
     int len;
     char query[1000];
     query[0] = 0;
@@ -38,13 +38,13 @@ static double parse_response(char* resp) {
     }
 }
 
-int yahoo_current(char* symbol, double* r) {
+int yahoo_current(const char* symbol, double* r) {
     /***** VARIABLE DECLARATIONS */
     int ret = 0;
     char buf[16385];
     char* query = NULL;
 
-    char*headers[] = {"Host: download.finance.yahoo.com"};
+    const char*headers[] = {"Host: download.finance.yahoo.com"};
 
     /***** CONSTRUCT THE QUERY */
     ret = construct_query(symbol, &query);

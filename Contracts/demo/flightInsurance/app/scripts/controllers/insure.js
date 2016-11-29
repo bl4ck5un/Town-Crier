@@ -2,13 +2,14 @@
 
 /**
  * @ngdoc function
- * @name flightInsuranceApp.controller:InsureCtrl
+ * @name Flight Insurance App.controller:InsureCtrl
  * @description
  * # InsureCtrl
- * Controller of the flightInsuranceApp
+ * Controller of the Flight Insurance App
  */
-angular.module('flightInsuranceApp')
+angular.module('Flight Insurance App')
   .controller('InsureCtrl', function ($scope, Web3Service, $state, FI_ABI_ARRAY, FI_CONTRACT_ADDRESS) {
+    $scope.accountName = ["Bank of America", "Chase Bank"];
     $scope.accounts = [];
     $scope.flightData = {code: '', date: '', time: '', zone:''};
     $scope.policy = {amount: ''};
@@ -26,8 +27,8 @@ angular.module('flightInsuranceApp')
       }
       else {
         var i;
-        for (i in result) {
-          $scope.accounts.push({address: result[i], balance: Web3Service.eth.getBalance(result[i]) / Math.pow(10, 18)});
+        for (i = 0; i < result.length; ++i) {
+          $scope.accounts.push({address: result[i], name: $scope.accountName[i], balance: Math.floor(Web3Service.eth.getBalance(result[i]) / Math.pow(10, 18))});
         }
         $scope.selectAccount($scope.accounts[0].address);
       }

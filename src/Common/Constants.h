@@ -16,7 +16,7 @@
 
 #define TX_BUF_SIZE 2048
 
-#define TC_ADDRESS "0xd8ecae22aa26953488e0c91acb6120db0be74cda"
+#define TC_ADDRESS "0xe0e280585376c0b720aeab975885fbad5ac4e6ce"
 #define GASPRICE    "0x0BA43B7400"  //50000000000
 #define GASLIMIT    "0x015F90"      // 90000
 
@@ -31,5 +31,8 @@
 
 //Define flight status constants 
 #define DEPARTURED 0
-#define NOT_DEPARTURED 1
-#define INVALID 2
+#define DELAYED 1
+#define CANCELLED 2
+#define NOT_DEPARTURED 3
+#define NOT_FOUND 4
+

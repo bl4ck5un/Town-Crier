@@ -49,7 +49,7 @@ add_executable(TestMain
         mbedtls_sgx_net.c
         ../Common/Converter.cpp
         ../Common/Debug.c
-        ../Common/Log.c)
+        ../Common/Log.c test/seal_data.cpp)
 
 if (NOT SGX_MODE STREQUAL HW)
     set(Urts_Library_Name sgx_urts_sim)

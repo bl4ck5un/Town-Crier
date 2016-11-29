@@ -13,7 +13,7 @@ int flight_self_test(){
   	//printf("USAGE: get_flight_delay(YYYYMMDD, HHmm, flight#, return_variable)\n");
     //printf("\tdate/time in Zulu/UTC, flight in ICAO\n");
     int rc, delay, status;
-    rc = get_flight_delay(1477114200, "SOL361", &status, &delay);
+    rc = get_flight_delay(1477114200, "SOL361", &delay);
     if (rc < 0){
         //printf("Could not find flight info for DAL900 at specified departure time\n");
     	return -1;
@@ -33,7 +33,7 @@ int flight_self_test(){
 
 
     //Test2: Test on jargon/dummy inputs
-    rc = get_flight_delay(1477101654960, "SOL", &status, &delay);
+    rc = get_flight_delay(1477101654960, "SOL", &delay);
     if (status != 2){
     	LL_NOTICE("jargon failed");
     	return -1;
@@ -43,13 +43,13 @@ int flight_self_test(){
     //}
     
     //Test3: Test on departured flight
-    rc = get_flight_delay(1477226100, "ASH6110", &status, &delay);
+    rc = get_flight_delay(1477226100, "ASH6110", &delay);
     if (status != 0){
     	LL_NOTICE("departured failed\n");
     	return -1;
     }
     //Test4: Test on valid, not departured flight
-    rc = get_flight_delay(1477398900, "ASH6110",&status, &delay);
+    rc = get_flight_delay(1477398900, "ASH6110", &delay);
     if (status != 1){
     	LL_NOTICE("not departured failed\n");
     	return -1;

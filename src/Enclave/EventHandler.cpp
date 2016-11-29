@@ -68,30 +68,21 @@ static int flight_insurance_handler(uint8_t *req, int len, int *resp_data)
 
     dump_buf("Request", req, len);
 
-    int ret, delay, status;
-	char flight_number[35] = {0};
-	memcpy(flight_number, req, 0x20);
-	
-
-	uint64_t unix_epoch;
-	memcpy(&unix_epoch, req + 0x80 - sizeof(unix_epoch), sizeof(unix_epoch));
+    int ret, delay;
+    char flight_number[35] = {0};
+    memcpy(flight_number, req, 0x20);
     
-    LL_NOTICE("unix_epoch b4 swap: %ld", unix_epoch);
-    unix_epoch = swap_uint64(unix_epoch);
-
+    char* flighttime = (char*)req + 0x20;
+    uint64_t unix_epoch = strtol(flighttime, NULL, 10);
+    //memcpy(&unix_epoch, req + 0x40 - sizeof(unix_epoch), sizeof(unix_epoch));
+    //unix_epoch = swap_uint64(unix_epoch);
     LL_NOTICE("unix_epoch=%ld, flight_number=%s", unix_epoch, flight_number);
-    ret = get_flight_delay(unix_epoch, flight_number, &status, &delay);
+    ret = get_flight_delay(unix_epoch, flight_number, &delay);
 
     LL_NOTICE("delay is %d", delay);
 
     *resp_data = delay;
-    if (status == INVALID || status == NOT_DEPARTURED){//Invalid flight
-        return status;
-    }
-    if (status == DEPARTURED){
-
-        return 0;
-    }
+    
     // bytes rr;
     // enc_int(rr, delay, sizeof (delay));
 
@@ -121,8 +112,8 @@ static int handler_steam_exchange(uint8_t *req, int len, int *resp_data)
     format[4] = bytes32(LIST_I.length);
     format[5] = LIST_I[0];
     */
-    int ret, rc;
-    (void) len;
+    int ret;
+    //(void) len;
 
     /* handling input */
 //    std::string buyer_id;  // buyer_id is 32B, each of byte takes two chars. Plus \0
@@ -154,7 +145,7 @@ static int handler_steam_exchange(uint8_t *req, int len, int *resp_data)
 
     // 0x80 .. 0xa0 - item_len
     memcpy(&item_len, req + 0xa0 - sizeof(size_t), sizeof(size_t));
-    item_len = swap_uint32(item_len);
+    item_len = swap_uint32(item_len);//?
 
     // 0xa0 .. 0xc0
     for (size_t i = 0; i < item_len; i++)
@@ -167,7 +158,7 @@ static int handler_steam_exchange(uint8_t *req, int len, int *resp_data)
         wait_time = 59;
     LL_NOTICE("waiting time: %d", wait_time);
 
-    char * listB[1] = {"Portal"};
+    const char * listB[1] = {"Portal"};
     // XXX: set wait time to 1 for test purpose
 //    wait_time = 1;
 
@@ -190,7 +181,15 @@ int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int dat
     int ret;
     bytes resp_data;
     int resp_data_len = 0;
-
+/*
+    printf_sgx("nonce: %d\n", nonce);
+    printf_sgx("id: %llu\n", id);
+    printf_sgx("type: %llu\n", type);
+    printf_sgx("data len: %d\n", data_len);
+    for (int i = 0; i < data_len; i++)
+        printf_sgx("%u,", data[i]);
+    printf_sgx("\n");
+*/
     switch (type)
     {
     case TYPE_FINANCE_INFO:
@@ -199,23 +198,23 @@ int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int dat
             raw_tx, raw_tx_len);
         break;
     case TYPE_FLIGHT_INS:
-		{
-			int found = 0;
-			if (data_len != 2 * 32)
-			{
-				LL_CRITICAL("data_len %d*32 is not 6*32", data_len / 32);
-				return -1;
-			}
-            ret = flight_insurance_handler(data, data_len, &found);
-			if (ret != 0)
+        {
+            int found = 0;
+            if (data_len != 2 * 32)
             {
-                LL_CRITICAL("%s returns %d", "handler_steam_exchange", ret);
+                LL_CRITICAL("data_len %d*32 is not 2*32", data_len / 32);
+                return -1;
+            }
+            ret = flight_insurance_handler(data, data_len, &found);
+            if (ret != 0)
+            {
+                LL_CRITICAL("%s returns %d", "handler_flight_insurance", ret);
                 return ret;
             }
-			enc_int(resp_data, found, sizeof ( found ));
+            enc_int(resp_data, found, sizeof ( found ));
             resp_data_len = 32;
             break;
-		}
+        }
     case TYPE_STEAM_EX:
         {
             int found = 0;
@@ -225,7 +224,7 @@ int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int dat
                 return -1;
             }
             ret = handler_steam_exchange(data, data_len, &found);
-            if (ret != 0)
+            if (ret == -1)
             {
                 LL_CRITICAL("%s returns %d", "handler_steam_exchange", ret);
                 return -1;
@@ -237,23 +236,23 @@ int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int dat
         }
     case TYPE_CURRENT_VOTE:
         {
-        double r1 = 0, r2 = 0, r3 = 0;
-        long long time1, time2;
+            double r1 = 0, r2 = 0, r3 = 0;
+            long long time1, time2;
 
-        rdtsc(&time1);
-        yahoo_current("GOOG", &r1);
-        rdtsc(&time2);
-        LL_CRITICAL("Yahoo: %llu", time2-time1);
+            rdtsc(&time1);
+            yahoo_current("GOOG", &r1);
+            rdtsc(&time2);
+            LL_CRITICAL("Yahoo: %llu", time2 - time1);
 
-        google_current("GOOG", &r3);
-        rdtsc(&time1);
-        LL_CRITICAL("Bloomberg: %llu", time1-time2);
+            google_current("GOOG", &r3);
+            rdtsc(&time1);
+            LL_CRITICAL("Bloomberg: %llu", time1 - time2);
 
-        google_current("GOOG", &r2);
-        rdtsc(&time2);
-        LL_CRITICAL("GOOGLE: %llu", time2-time1);
+            google_current("GOOG", &r2);
+            rdtsc(&time2);
+            LL_CRITICAL("GOOGLE: %llu", time2 - time1);
 
-        break;
+            break;
         }
     default :
         LL_CRITICAL("Unknown request type: %d", type);
@@ -261,7 +260,14 @@ int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int dat
         break;
     }
 
+    //sign transactions
     ret = get_raw_signed_tx(nonce, 32, id, type, data, data_len, &resp_data[0], resp_data_len, raw_tx, raw_tx_len);
+    /*
+    printf_sgx("raw tx len: %d\n", *raw_tx_len);
+    for (int i = 0; i < *raw_tx_len; i++)
+        printf_sgx("%u,", raw_tx[i]);
+    printf_sgx("\n");
+     */
     return ret;
 }
 

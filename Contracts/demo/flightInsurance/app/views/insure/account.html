@@ -1,7 +1,7 @@
 <div class="row">
   <div class="col-sm-8 col-md-8 col-sm-offset-2  col-md-offset-2">
     <div class="page-header">
-      <h1>Ok. <small>Please select an account</small></h1>
+        <h1>Good! <br> <small>Please finish the payment.</small></h1>
     </div>
   </div>
 </div>
@@ -14,7 +14,7 @@
       </div>
       <div class="panel-body">
         <div class="list-group">
-          <div class="title">If the flight is delayed you will receive 5x what you pay: {{policy.amount * 5}} ETH</div>
+            <div class="title">If the flight is delayed for more than 30 minutes or cancelled,<br> you will receive 5x as much as you payed: {{policy.amount * 5}} USD</div>
           <input type="text" ng-model="policy.amount"/>
         </div>
       </div>
@@ -34,7 +34,7 @@
          	  <button type="button" class="list-group-item"
                     ng-repeat="account in accounts"
                     ng-click="selectAccount(account)"
-                    ng-class="{'list-group-item-info': selectedAccount == account}">{{account.address}} - Balance:{{account.balance}} ETH</button>
+                    ng-class="{'list-group-item-info': selectedAccount == account}">Account at {{account.name}}<br>Balance:{{account.balance}} USD</button>
 		      </div>
         </div>
       </div>
@@ -45,6 +45,6 @@
 <div class="row">
   <div class="col-sm-8 col-md-8 col-sm-offset-2  col-md-offset-2">
     <button type="button" class="btn btn-default pull-left"  ui-sref="insure.flightData">Back</button>
-    <button type="button" class="btn btn-primary pull-right" ng-click="insure()" ng-disabled="!(policy.amount > 0)">Pay {{policy.amount}} Ether</button>
+    <button type="button" class="btn btn-primary pull-right" ng-click="insure()" ng-disabled="!(policy.amount > 0)">Pay {{parseInt(policy.amount)}} USD</button>
   </div>
 </div>

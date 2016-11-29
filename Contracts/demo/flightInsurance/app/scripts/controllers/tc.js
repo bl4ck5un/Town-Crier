@@ -2,12 +2,12 @@
 
 /**
  * @ngdoc function
- * @name flightInsuranceApp.controller:InsureCtrl
+ * @name Flight Insurance App.controller:InsureCtrl
  * @description
  * # InsureCtrl
- * Controller of the flightInsuranceApp
+ * Controller of the Flight Insurance App
  */
-angular.module('flightInsuranceApp')
+angular.module('Flight Insurance App')
   .controller('TCCtrl', function ($scope, Web3Service, $state, TC_ABI_ARRAY, TC_CONTRACT_ADDRESS, FI_ABI_ARRAY, FI_CONTRACT_ADDRESS) {
 
     Web3Service.eth.getAccounts(function(error, result){

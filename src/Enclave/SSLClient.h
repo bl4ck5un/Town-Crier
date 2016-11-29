@@ -98,7 +98,7 @@ typedef struct options
 extern "C" {
 #endif
 
-int ssl_client(client_opt_t opt, char* headers[], int n_header, unsigned char* buf, int len, int* copied);
+int ssl_client(client_opt_t opt, const char* headers[], int n_header, unsigned char* buf, int len, int* copied);
 
 #if defined(__cplusplus)
 }

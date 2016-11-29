@@ -86,8 +86,8 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
 
     do //Begin REPL loops
     {
-        //Will Retry at most 5 times
-        if (retry_n >= 5)
+
+        if (retry_n >= 50)
         {
             LL_CRITICAL("Exit after %d retries", retry_n);
             ret = -1;
@@ -97,7 +97,8 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
         if (retry_n > 0)
         {
             //Increase timeout everytime we retry
-            sleep_sec = 1 << retry_n; // 2^retry_n
+            sleep_sec = 1; // 2^retry_n
+
             LL_CRITICAL("retry in %d seconds", sleep_sec);
             sleep(sleep_sec);
         }
@@ -167,11 +168,7 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
                                        raw_tx,
                                        &raw_tx_len);
 
-                        if (ret == 1)
-                        {
-                            LL_CRITICAL("%s returned %d, NOT DEPARTURED", "handle_request", ret);
-                            throw EX_HANDLE_REQ;
-                        } else if (ret == 2)
+                        if (ret != 0)
                         {
                             LL_CRITICAL("%s returned %d, INVALID", "handle_request", ret);
                             throw EX_HANDLE_REQ;

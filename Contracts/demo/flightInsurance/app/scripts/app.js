@@ -2,14 +2,14 @@
 
 /**
  * @ngdoc overview
- * @name flightInsuranceApp
+ * @name Flight Insurance App
  * @description
- * # flightInsuranceApp
+ * # Flight Insurance App
  *
  * Main module of the application.
  */
 angular
-  .module('flightInsuranceApp', [
+  .module('Flight Insurance App', [
     'ngAnimate',
     'ngCookies',
     'ngResource',
@@ -45,6 +45,7 @@ angular
         url: '/done',
         templateUrl:  'views/insure/done.html',
       })
+ 
       .state('check', {
         templateUrl:  'views/check/layout.html',
         controller:   'CheckCtrl',
@@ -58,10 +59,5 @@ angular
         templateUrl:  'views/check/details.html',
         url:          '/details'
       })
-      .state('tc', {
-        templateUrl:  'views/tc.html',
-        controller:   'TCCtrl',
-        url:          '/details'
-      });
   })
 

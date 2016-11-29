@@ -4,7 +4,7 @@
 #include "Scraper_lib.h"
 #include "dispatcher.h"
 
-static int construct_query(char* symbol, char** buf) {
+static int construct_query(const char* symbol, char** buf) {
     int len;
     char query[1000];
     query[0] = 0;
@@ -63,7 +63,7 @@ int bloomberg_current(double* r) {
     char* query = NULL;
     char* output = NULL;
 
-    char* symbol = "GOOG";
+    const char* symbol = "GOOG";
 
     /***** CONSTRUCT THE QUERY */
     ret = construct_query(symbol, &query);

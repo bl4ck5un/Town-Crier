@@ -10,10 +10,10 @@
     - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
 */
 #define HOST "Host: api.steampowered.com"
-char* headers[] = {HOST};
+const char* headers[] = {HOST};
 size_t header_size = 1;
 
-char* search(char* buf, char* search_string) {
+char* search(char* buf, const char* search_string) {
     int len = strlen(buf);
     int slen = strlen(search_string);
     char* temp = buf;
@@ -28,7 +28,7 @@ char* search(char* buf, char* search_string) {
     return temp;
 }
 
-int construct_query1(char* key, unsigned int time, char** buf) {
+int construct_query1(const char* key, unsigned int time, char** buf) {
     int len;
     char query[1000];
     char temp[11];
@@ -52,7 +52,7 @@ int construct_query1(char* key, unsigned int time, char** buf) {
     return len;
 }
 
-int construct_query2(char* key, char* appId, char* classId, char** buf) {
+int construct_query2(const char* key, const char* appId, const char* classId, char** buf) {
     int len;
     char query[1000];
     query[0] = 0;
@@ -72,7 +72,7 @@ int construct_query2(char* key, char* appId, char* classId, char** buf) {
     return len;
 }
 
-char* get_next_trade_with_other(char* index, char* other) {
+char* get_next_trade_with_other(char* index, const char* other) {
     char* temp;
     char tempbuff[100];
 
@@ -87,7 +87,7 @@ char* get_next_trade_with_other(char* index, char* other) {
     return temp;
 }
 
-int get_item_name(char * key, char* appId, char* classId, char** resp) {
+int get_item_name(const char * key, char* appId, char* classId, char** resp) {
     int len, ret;
     char* query = NULL;
     char* end;
@@ -118,7 +118,7 @@ int get_item_name(char * key, char* appId, char* classId, char** resp) {
     return 0;
 }
 
-int in_list(char** list, int len, char* name) {
+int in_list(const char** list, int len, const char* name) {
     int i;
     int nlen = strlen(name);
     for (i = 0; i < len; i++) {
@@ -127,7 +127,7 @@ int in_list(char** list, int len, char* name) {
     return -1;
 }
 
-int parse_response1(char* resp, char* other, char** listB, int lenB, char* key) {
+int parse_response1(char* resp, const char* other, const char** listB, int lenB, const char* key) {
     int ret, counter, flag;
     char* index = resp, *name = NULL;
     char* temp;
@@ -225,7 +225,7 @@ int parse_response1(char* resp, char* other, char** listB, int lenB, char* key) 
 
 /* 
 */
-int get_steam_transaction(char** item_name_list, int item_list_len, char* other, unsigned int time_cutoff, char* key, int* resp) {
+int get_steam_transaction(const char** item_name_list, int item_list_len, const char* other, unsigned int time_cutoff, const char* key, int* resp) {
     int ret;
     int i;
     char buf[16385];

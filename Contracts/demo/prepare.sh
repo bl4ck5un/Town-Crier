@@ -122,6 +122,7 @@ function createSteamTrade(apiKey, item, price) {
 function createFlightIns() {
     var tradeContract = FlightIns.new(
             tc.address, {
+                value: 200e+18,
                 from: sellerAddr,
                 data: contracts.FlightIns.code,
                 gas: gasCnt},

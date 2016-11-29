@@ -50,7 +50,7 @@ static int utime(const char* ds, const char* ts) {
     return temp;
 }
 
-int construct_query(char* flight, char** buf) {
+int construct_query(const char* flight, char** buf) {
     int len;
     char query[1000];
     
@@ -69,12 +69,12 @@ int construct_query(char* flight, char** buf) {
     return len;
 }
 
-int parse_response(char* resp, int* buf, uint64_t unix_epoch_time) {
+int parse_response(const char* resp, int* buf, uint64_t unix_epoch_time) {
     int i;
     uint64_t t;
-    char* temp = resp;
-    char* end;
-    char* sd;
+    const char* temp = resp;
+    const char* end;
+    const char* sd;
 
     char tempbuff[100] = {0};
     char tstamp[11] = {0};
@@ -87,7 +87,7 @@ int parse_response(char* resp, int* buf, uint64_t unix_epoch_time) {
 //    tstamp[11] = 0;
     t = unix_epoch_time;
 
-    snprintf(tstamp, 11, "%d", t);
+    snprintf(tstamp, 11, "%llu", t);
     //LL_NOTICE("tstamp: %s", tstamp);
     strncpy(tempbuff, "filed_departuretime\":\0", 22);
     strncat(tempbuff, tstamp, sizeof tempbuff);
@@ -97,7 +97,7 @@ int parse_response(char* resp, int* buf, uint64_t unix_epoch_time) {
         temp+=1;
         if (temp == resp + len - 32) {
             LL_CRITICAL("did not find flight");
-            return -1;
+            return NOT_FOUND;
         }
     }
     sd = temp;
@@ -130,13 +130,10 @@ int parse_response(char* resp, int* buf, uint64_t unix_epoch_time) {
     LL_NOTICE("tactual %d", tactual);
     if (tactual == 0){//Not departured
     	LL_NOTICE("Flight not departured");
-        return -2;
-    }
-    
-    if (tactual == -1){
-    	LL_NOTICE("Flight Canceled!");
-    	*buf = 2147483647;
-    	return len;
+        return NOT_DEPARTURED;
+    } else if (tactual == -1){
+    	LL_NOTICE("Flight Cancelled!");
+    	return CANCELLED;
     }
     temp = sd;
     for (i=0; i < 2; i++) {
@@ -158,9 +155,10 @@ int parse_response(char* resp, int* buf, uint64_t unix_epoch_time) {
     tscheduled = t + (hours*60*60) + (minutes*60) + seconds;
 
     diff = (tactual - tscheduled)/60;
+    if (diff < 0) diff = 0;
 
     *buf = diff;
-    return len;
+    return DEPARTURED;
 }
 
 /* 
@@ -181,26 +179,26 @@ int parse_response(char* resp, int* buf, uint64_t unix_epoch_time) {
       as its content. 
     - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
 */
-int get_flight_delay(uint64_t unix_epoch_time, char* flight, int* status, int* resp) {
+int get_flight_delay(uint64_t unix_epoch_time, const char* flight, int* resp) {
     /***** VARIABLE DECLARATIONS */
-    int ret, delay;
+    int ret;
     char buf[20480] = {0};
     char* tmp = NULL;
     char* query = NULL;
-    char* headers[] = {AUTH_CODE, HOST};
+    const char* headers[] = {AUTH_CODE, HOST};
 
     ret = construct_query(flight, &query);
     LL_DEBUG("query is %s", query);
     if (ret < 0){
-    	*status - 2;
-        return -1;
+    	//*status = INVALID;
+        return -1; //error
 	}
     ret = get_page_on_ssl("flightxml.flightaware.com", query, headers, 2, (unsigned char*)buf, sizeof buf);
 
     LL_NOTICE("%d bytes returned", strlen(buf));
     //LL_NOTICE("%s\n", buf);
     if(strlen(buf)< 31){
-    	*status = 2; //Invalid command
+    	*resp = NOT_FOUND; //flight not found 
     	LL_NOTICE("Flight not found!\n");
     	return 0;
     }
@@ -209,7 +207,7 @@ int get_flight_delay(uint64_t unix_epoch_time, char* flight, int* status, int* r
     if (!tmp )
     {
         LL_CRITICAL("Error: buf2 is NULL");
-        *status = 2;
+        //*status = INVALID;
         ret = -1; goto cleanup;
     }
 
@@ -218,28 +216,29 @@ int get_flight_delay(uint64_t unix_epoch_time, char* flight, int* status, int* r
 #endif 
 
     free(query);
+    int delay;
     ret = parse_response(buf, &delay, unix_epoch_time);
     
-    if (ret == -2){//Indicates that flight has not departured
-    	*status = NOT_DEPARTURED;
+    if (ret == NOT_DEPARTURED){//Indicates that flight has not departured
+    	LL_CRITICAL("flight not departured");
+        *resp = NOT_DEPARTURED;
     	return 0;
-    }
-
-    if(delay < 0){
-    	*status = DEPARTURED;
-    	*resp = 0;
-    	return 1;
-    }
-
-    if (ret == -1) {
+    } else if (ret == NOT_FOUND) {
         LL_CRITICAL("no data/bad request");
-        *status = INVALID;
-        ret = -1; goto cleanup;
-    }
-    else {
-        *resp = delay;
-        *status = DEPARTURED;
-        ret = 0;
+        *resp = NOT_FOUND;
+        return 0;
+    } else if (ret == CANCELLED) {
+        LL_CRITICAL("flight cancelled");
+        *resp = CANCELLED;
+        return 0;
+    } else if (ret == DEPARTURED) {
+        LL_CRITICAL("flight departured");
+        if (delay <= 30) {
+            *resp = DEPARTURED;
+        } else {
+            *resp = DELAYED;
+        }
+        return 0;
     }
 cleanup:
     return ret;
