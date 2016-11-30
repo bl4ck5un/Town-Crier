@@ -3,16 +3,16 @@
 #include "stdint.h"
 #include "Enclave_t.h"
 #include "vector"
-#include "keccak.h"
+#include "external/keccak.h"
 #include "mbedtls/bignum.h"
 
 #include "eth_ecdsa.h"
 #include "Log.h"
 
 #include "eth_abi.h"
-#include "Commons.h"
+#include "commons.h"
 
-#include "Transaction.h"
+#include "eth_transaction.h"
 
 // uncomment to dump transactions
 // #define VERBOSE

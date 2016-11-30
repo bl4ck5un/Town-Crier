@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <Debug.h>
-#include "Scraper_lib.h"
-#include "dispatcher.h"
+#include "scrapers/scraper_lib.h"
+#include "scrapers.h"
 #include "Log.h"
-#include "slre.h"
+#include "external/slre.h"
 
 static int static_total_tests = 0;
 static int static_failed_tests = 0;

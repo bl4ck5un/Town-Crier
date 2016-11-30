@@ -1,11 +1,11 @@
-#include "SSLClient.h"
+#include "tls_client.h"
 #include "Log.h"
 #include "Enclave_t.h"
-#include "RootCerts.h"
+#include "trusted_ca_certs.h"
 #include "Debug.h"
-#include "http_parser.h"
+#include "external/http_parser.h"
 #include "../Common/Constants.h"
-#include "Scraper_lib.h"
+#include "scrapers/scraper_lib.h"
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"

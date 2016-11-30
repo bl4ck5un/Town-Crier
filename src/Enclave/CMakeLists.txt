@@ -3,25 +3,24 @@ set(SOURCE_FILES
         ../Common/Log.c
         eth_abi.cpp
         create_attestation.cpp
-        Current_bloomberg.cpp
-        Current_Google.cpp
-        Current_Yahoo.cpp
-        dispatcher.cpp
+        scrapers/current_bloomberg.cpp
+        scrapers/current_Google.cpp
+        scrapers/current_Yahoo.cpp
         eth_ecdsa.c
         Enclave_t.c
-        EventHandler.cpp
-        Flight.cpp
-        keccak.c
-        RootCerts.c
-        Scraper_lib.c
-        SSLClient.c
-        Steam2.cpp
-        StockTicker.cpp
-        Transaction.cpp
-        Exception.c
-        Encoding.cpp
-        slre.c
-	http_parser.c)
+        event_handler.cpp
+        scrapers/flight.cpp
+        external/keccak.c
+        trusted_ca_certs.c
+        scrapers/scraper_lib.c
+        tls_client.c
+        scrapers/steam2.cpp
+        scrapers/stock_ticker.cpp
+        eth_transaction.cpp
+        enclave_exception_hdlr.c
+        encoding.cpp
+        external/slre.c
+        external/http_parser.c)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
 SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES})
@@ -30,7 +29,7 @@ set(CMAKE_VERBOSE_MAKEFILE False)
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_t.c
-        COMMAND ${SGX_EDGER8R} --trusted ${TC_ROOT_DIR}/Enclave/Enclave.edl
+        COMMAND ${SGX_EDGER8R} --trusted ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.edl
         --search-path ${TC_ROOT_DIR}/Enclave
         --search-path ${SGX_SDK}/include
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

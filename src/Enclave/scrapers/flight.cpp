@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Scraper_lib.h"
+#include "scrapers/scraper_lib.h"
 #include "Debug.h"
 #include "Log.h"
 #include <stdint.h>
 
-#include "dispatcher.h"
+#include "scrapers.h"
 #include <cstring>
 #include "Constants.h"
 

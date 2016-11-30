@@ -1,6 +1,6 @@
 #include <Debug.h>
-#include "SSLClient.h"
-#include "Scraper_lib.h"
+#include "tls_client.h"
+#include "scrapers/scraper_lib.h"
 #include "Log.h"
 
 #define BUFFER_LENGTH (1024*sizeof(char))

@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include "eth_abi.h"
-#include "Commons.h"
-#include "keccak.h"
+#include "commons.h"
+#include "external/keccak.h"
 #include "Debug.h"
 
 

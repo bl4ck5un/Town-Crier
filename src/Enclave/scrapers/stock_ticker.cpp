@@ -1,7 +1,7 @@
 #include <string>
 
-#include "Scraper_lib.h"
-#include "dispatcher.h"
+#include "scraper_lib.h"
+#include "scrapers.h"
 #include "stdio.h"
 #include "Log.h"
 

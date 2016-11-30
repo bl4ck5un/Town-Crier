@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <vector>
 #include "Log.h"
-#include "Encoding.h"
+#include "encoding.h"
 
 // home-made Big-endian long int
 // NOTE: no leading zeros. Starts with useful bytes.

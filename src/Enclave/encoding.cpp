@@ -2,8 +2,8 @@
 // Created by fanz on 10/14/16.
 //
 
-#include "Encoding.h"
-#include "Commons.h"
+#include "encoding.h"
+#include "commons.h"
 
 uint8_t get_n_th_byte (uint64_t in, int n)
 {

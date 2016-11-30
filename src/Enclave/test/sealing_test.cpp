@@ -1,6 +1,6 @@
 #include <sgx_tseal.h>
 #include "../Enclave_t.h"
-#include "../Commons.h"
+#include "commons.h"
 #include "Debug.h"
 #include "mbedtls/ecdsa.h"
 

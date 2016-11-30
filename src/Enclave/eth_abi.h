@@ -5,8 +5,8 @@
  * This file is part of Town Crier
  */
 #pragma once
-#include "Commons.h"
-#include "Encoding.h"
+#include "commons.h"
+#include "encoding.h"
 #include <cstddef>
 #include <vector>
 

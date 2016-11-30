@@ -1,9 +1,9 @@
 #include <stdint.h>
 #include <vector>
 
-#include "Transaction.h"
+#include "eth_transaction.h"
 #include "Debug.h"
-#include "Encoding.h"
+#include "encoding.h"
 #include "Constants.h"
 
 extern "C" int transaction_rlp_test();

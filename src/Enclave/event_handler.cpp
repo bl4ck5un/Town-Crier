@@ -1,13 +1,13 @@
 #include "stdint.h"
-#include "EventHandler.h"
+#include "event_handler.h"
 #include <string>
 #include <Log.h>
-#include "dispatcher.h"
+#include "scrapers.h"
 #include "time.h"
-#include "Transaction.h"
+#include "eth_transaction.h"
 #include "eth_abi.h"
 #include "Enclave_t.h"
-#include "keccak.h"
+#include "external/keccak.h"
 #include <Debug.h>
 #include "Constants.h"
 

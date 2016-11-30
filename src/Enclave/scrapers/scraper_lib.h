@@ -1,7 +1,7 @@
 #ifndef SCRAPER_LIB_H
 #define SCRAPER_LIB_H
 
-#include "SSLClient.h"
+#include "tls_client.h"
 
 #define SSL_MAX_CONTENT_LEN 16384
 

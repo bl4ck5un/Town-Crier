@@ -1,4 +1,4 @@
-#include "Transaction.h"
+#include "eth_transaction.h"
 
 extern "C" int RLP_self_test();
 int RLP_self_test()

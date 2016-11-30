@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Scraper_lib.h"
-#include "dispatcher.h"
+#include "scraper_lib.h"
+#include "scrapers.h"
 #include <Log.h>
 #include "Enclave_t.h"
 

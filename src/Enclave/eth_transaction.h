@@ -1,7 +1,7 @@
 #include <sgx_tseal.h>
 #include "stdint.h"
-#include "Commons.h"
-#include "Encoding.h"
+#include "commons.h"
+#include "encoding.h"
 
 #ifndef TX_H
 #define TX_H

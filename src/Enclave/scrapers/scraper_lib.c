@@ -1,5 +1,5 @@
-#include "SSLClient.h"
-#include "Scraper_lib.h"
+#include "tls_client.h"
+#include "scraper_lib.h"
 
 void client_opt_init(client_opt_t* opt) {
     opt->server_name         = DFL_SERVER_NAME;

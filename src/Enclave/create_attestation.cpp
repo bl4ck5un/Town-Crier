@@ -2,7 +2,7 @@
 #include "sgx_report.h"
 #include "string.h"
 #include "time.h"
-#include "keccak.h"
+#include "external/keccak.h"
 #include "eth_ecdsa.h"
 #include "Log.h"
 #include "Enclave_t.h"

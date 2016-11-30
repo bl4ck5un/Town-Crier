@@ -1,5 +1,5 @@
 #include "eth_ecdsa.h"
-#include "keccak.h"
+#include "external/keccak.h"
 #include "Debug.h"
 #include "Log.h"
 #include "glue.h"
