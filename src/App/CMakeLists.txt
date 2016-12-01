@@ -61,8 +61,9 @@ include_directories(
         ../Common
         ${SGX_SDK}/include
         ${MBEDTLS_LIB_DIR}/include
-        /usr/include/jsoncpp)
-
+        /usr/include/jsoncpp
+        ../vendor/gtest/include
+)
 
 if (SGX_DEBUG STREQUAL 1)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG -UNDEBUG -UEDEBUG")
@@ -89,6 +90,9 @@ target_link_libraries(tc
         -ljsonrpccpp-common
         -ljsonrpccpp-client)
 
+set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
+set(TEST_PROGRAM_LDFLAGS " ${LIBGTEST}/libgtest_main.a")
+
 target_link_libraries(TestMain
         -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB}
         -lsqlite3
@@ -96,10 +100,10 @@ target_link_libraries(TestMain
         -lcurl
         -ljsonrpccpp-common
         -ljsonrpccpp-client
-        -lgtest
-        -lgtest_main
+        ${LIBGTEST}/libgtest.a
+        ${LIBGTEST}/libgtest_main.a
         -lpthread)
 
 
 add_dependencies(tc enclave)
-add_dependencies(TestMain tc)
+add_dependencies(TestMain enclave)

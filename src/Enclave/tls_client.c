@@ -253,10 +253,8 @@ int ssl_client(client_opt_t opt, const char* headers[], int n_header, unsigned c
         goto exit;
     }
 
-    /*
     if( opt.debug_level > 0 )
         mbedtls_ssl_conf_verify( &conf, my_verify, NULL );
-    */
 
     if( opt.auth_mode != DFL_AUTH_MODE )
         mbedtls_ssl_conf_authmode( &conf, opt.auth_mode );
@@ -455,10 +453,6 @@ send_request:
      * 7. Read the HTTP response
      */
 
-    /*
-     * TLS and DTLS need different reading styles (stream vs datagram)
-     */
-
     // create a HTTP parser
     http_parser* parser = (http_parser*) malloc(sizeof(http_parser));
     if (parser == NULL) {
@@ -549,14 +543,14 @@ send_request:
                 ret = ERR_ENCLAVE_SSL_CLIENT;
                 goto exit;
             } else if (nparsed != len) {
-                LL_CRITICAL("Error happend");
+                LL_CRITICAL("Error: received %d bytes and parsed %d of them", len, nparsed);
                 ret = ERR_ENCLAVE_SSL_CLIENT;
                 goto exit;
             }
 
-
             if (p_cb_data->eof == 1) {
                 LL_LOG("EOF");
+                LL_CRITICAL("status code %d", parser->status_code);
                 break;
             }
         }

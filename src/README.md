@@ -1,24 +1,37 @@
 PREREQUISITE
 ----------------
 
-**Be sure to have SGX SDK installed and properly configured.**
+SGX Software
+============
 
-Please refer to [linux-sgx](https://github.com/01org/linux-sgx) 
-for installation and configuration instructions.
+## Run Town Crier in the simulation mode
 
-Third party dependencies
-============================
+Any system, not matter it has SGX hardware or not, can be used to develop Town Crier and test it in the simulation mode,
+where no protection is indeed conferred. Simulation actually makes debugging and profiling easier and can be run on
+almost any Linux system.
 
-- `CMake`: Town Crier uses CMake as the building tool. Please obtain it from your distributor.
+To compile and run Town Crier in the simulation mode, one only needs to install the SGX SDK, which can be obtained from
+[here](https://01.org/intel-software-guard-extensions/downloads).
+
+## Run Town Crier in **hardware** Mode
+
+To run TC on real SGX hardware, some dependency (SGX driver, SGX PSW, SGX SDK) has to be installed and configured.
+Please refer to [linux-sgx](https://github.com/01org/linux-sgx) for instructions.
+
+
+Dependencies
+============
+
+- `cmake`: Town Crier uses CMake as the building tool. Please obtain it from your distributor.
 - `libjsoncpp`: In ubuntu 16.04: `sudo apt-get install libjsoncpp-dev`
 - [`libjson-rpc-cpp`](https://github.com/cinemast/libjson-rpc-cpp)
 - sqlite3: `sudo apt-get install libsqlite3-0 libsqlite3-dev`
-- google-test: see https://www.eriksmistad.no/getting-started-with-google-test-on-ubuntu/ for a reference.
+
 
 Build
 -----
 
-Build the SGX library first:
+Build the TLS library first:
 
 ```
 cd Enclave/mbedtls-SGX
@@ -27,19 +40,32 @@ make
 
 Then build the Town Crier with CMake:
 
+```
+mkdir build
+cd build
+cmake ..
+make tc
+```
+
+The compiled binary will be `build/tc`.
+
+Test
+----
+
+To build tests, one needs to build vendored `gtest`
+
+```
+./utils/build_gtest.sh
+```
+
+Then build self tests with CMake the same as building Town Crier
 
 ```
 mkdir build
 cd build
 cmake ..
-make
-make install
+make TestMain
 ```
 
-Then the compiled binary will be installed at `build/tc`.
 
-Test
-----
-
-After you build and install Town Crier, run `build/test_main`
-to launch test (powered by GTest).
+After you build and install Town Crier, run `build/TestMain` to test (powered by GTest).
