@@ -36,12 +36,3 @@ TEST_F (TLSSuiteTest, SSLSuite) {
     ssl_self_test(eid, &ret);
     ASSERT_EQ(0, ret);
 }
-
-TEST_F (TLSSuiteTest, Https) {
-    //Added by Oscar:
-    int ret;
-    sgx_status_t ocall_ret;
-    ocall_ret = get_page_on_ssl_self_test(eid, &ret);
-    ASSERT_EQ(0, ocall_ret);
-    ASSERT_EQ(0, ret);
-}

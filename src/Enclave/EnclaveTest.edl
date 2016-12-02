@@ -10,7 +10,6 @@ enclave {
         public int yahoo_self_test();
         public int bloomberg_self_test();
         public int regex_self_test();
-        public int get_page_on_ssl_self_test();
         public int steam_self_test();
     };
 

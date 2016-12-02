@@ -1,8 +1,5 @@
-#pragma once
-
-#if defined(__cplusplus)
-extern "C" {
-#endif
+#ifndef TOWN_CRIER_SCRAPERS_H
+#define TOWN_CRIER_SCRAPERS_H
 
 #include <stdint.h>
 double get_closing_price (int month, int day, int year, const char* code);
@@ -17,7 +14,4 @@ int google_current(const char* symbol, double* r);
 int yahoo_current(const char* symbol, double* r);
 int bloomberg_current(const char* symbol, double* r);
 
-
-#if defined(__cplusplus)
-}
 #endif

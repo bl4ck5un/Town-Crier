@@ -1,22 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "scraper_lib.h"
 #include "scrapers.h"
 #include <string>
 #include <Log.h>
 
-static int construct_query(const char* symbol, std::string& query) {
-    query += "/finance?q=";
-    query += symbol;
-    return query.size();
-}
+#include "tls_client.h"
 
-
-static double parse_response(char* resp) {
+static double parse_response(const char* resp) {
     double ret = 0;
-    char * end;
-    char * temp = resp;
+    const char * end;
+    const char * temp = resp;
 
     std::string buf_string(resp);
     std::size_t pos = buf_string.find("itemprop=\"price\"");
@@ -36,7 +30,6 @@ static double parse_response(char* resp) {
     while (*end != '"') {
         end += 1;
     }
-    *end = 0;
 
     ret = std::strtod(temp, NULL);
     return ret;
@@ -49,19 +42,22 @@ int google_current(const char* symbol, double* r) {
         return -1;
     }
     int ret = 0;
-    char* buf = (char*) malloc(300*1024);
-    memset(buf, 0, 300*1024);
 
     std::string query = "/finance?q=" + std::string(symbol);
-    ret = get_page_on_ssl("google.com", query.c_str(), NULL, 0, (unsigned char*)buf, 300*1024);
-    if (ret < 0)
-    {
-        LL_CRITICAL("%s returned %d", "get_page_on_ssl", ret);
-        return -1;
+    HttpRequest httpRequest("google.com", query);
+    HttpClient httpClient(httpRequest);
+
+    try {
+        HttpResponse response = httpClient.getResponse();
+        *r = parse_response(response.getContent().c_str());
+        return 0;
+    }
+    catch (std::runtime_error& e){
+        LL_CRITICAL("Https error: %s", e.what());
+        LL_CRITICAL("Details: %s", httpClient.getError());
+        httpClient.close();
     }
 
-    *r = parse_response(buf);
-    free(buf);
     return 0;
 }
 

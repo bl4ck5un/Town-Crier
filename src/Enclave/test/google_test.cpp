@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <Debug.h>
 #include "tls_client.h"
-#include "scrapers/scraper_lib.h"
 #include "scrapers.h"
 #include "Log.h"
 

@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <Debug.h>
-#include "scrapers/scraper_lib.h"
 #include "scrapers.h"
 #include "Log.h"
 #include "external/slre.h"
@@ -48,6 +47,7 @@ static char *slre_replace(const char *regex, const char *buf,
   return s;
 }
 
+extern "C" int regex_self_test();
 int regex_self_test() {
   struct slre_cap caps[10];
 
@@ -231,7 +231,7 @@ int regex_self_test() {
 
     if (slre_match("^\\s*(\\S+)\\s+(\\S+)\\s+HTTP/(\\d)\\.(\\d)",
                    request, strlen(request), caps, 4, 0) > 0) {
-      LL_NOTICE("Method: [%.*s], URI: [%.*s]\n",
+      LL_NOTICE("Method: [%.*s], URI: [%.*s]",
              caps[0].len, caps[0].ptr,
              caps[1].len, caps[1].ptr);
     } else {

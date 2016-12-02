@@ -12,7 +12,6 @@ set(SOURCE_FILES
         scrapers/flight.cpp
         external/keccak.c
         trusted_ca_certs.c
-        scrapers/scraper_lib.cpp
         tls_client.cpp
         scrapers/steam2.cpp
         scrapers/stock_ticker.cpp
