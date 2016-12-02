@@ -19,10 +19,6 @@ int c99_vsnprintf(char *outBuf, size_t size, const char *format, va_list ap);
 int c99_snprintf(char *outBuf, size_t size, const char *format, ...);
 #endif
 
-
-void dump_buf( const char *title, unsigned char *buf, size_t len );
-
-
 #if defined(__cplusplus)
 }
 #endif

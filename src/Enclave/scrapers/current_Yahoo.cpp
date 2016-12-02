@@ -41,7 +41,7 @@ static double parse_response(char* resp) {
 int yahoo_current(const char* symbol, double* r) {
 
     if (symbol == NULL || r == NULL){
-        LL_CRITICAL("Error: Passed in NULL pointer args\n");
+        LL_CRITICAL("Error: Passed in NULL pointer args");
         return -1;
     }
     /***** VARIABLE DECLARATIONS */
@@ -58,13 +58,12 @@ int yahoo_current(const char* symbol, double* r) {
     /*printf("%s\n", query);*/
 
     /***** EXECUTE THE QUERY */
-    ret = get_page_on_ssl("download.finance.yahoo.com", query, headers, 1, (unsigned char*)buf, 16384); 
+    ret = get_page_on_ssl("download.finance.yahoo.com", query, headers, 1, (unsigned char*)buf, 16384);
     free(query);
     /*printf("%s\n", buf);*/
     //LL_CRITICAL("%s\n", buf);
     /***** PARSE THE RESPONSE */
     *r = parse_response(buf);
-
     return 0;
 }
 

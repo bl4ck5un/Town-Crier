@@ -12,15 +12,16 @@ set(SOURCE_FILES
         scrapers/flight.cpp
         external/keccak.c
         trusted_ca_certs.c
-        scrapers/scraper_lib.c
-        tls_client.c
+        scrapers/scraper_lib.cpp
+        tls_client.cpp
         scrapers/steam2.cpp
         scrapers/stock_ticker.cpp
         eth_transaction.cpp
         enclave_exception_hdlr.c
         encoding.cpp
         external/slre.c
-        external/http_parser.c)
+        external/http_parser.c
+        https_client.cpp)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
 SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES})

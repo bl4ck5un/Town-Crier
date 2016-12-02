@@ -31,12 +31,17 @@ protected:
     }
 };
 
-TEST_F (TLSSuiteTest, client) {
+TEST_F (TLSSuiteTest, SSLSuite) {
     int ret;
     ssl_self_test(eid, &ret);
     ASSERT_EQ(0, ret);
+}
+
+TEST_F (TLSSuiteTest, Https) {
     //Added by Oscar:
-    get_page_on_ssl_self_test(eid, &ret);
+    int ret;
+    sgx_status_t ocall_ret;
+    ocall_ret = get_page_on_ssl_self_test(eid, &ret);
+    ASSERT_EQ(0, ocall_ret);
     ASSERT_EQ(0, ret);
-    
 }

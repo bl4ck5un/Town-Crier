@@ -4,9 +4,11 @@
 
 #define MIN(x,y) (x < y ? x : y)
 
-void dump_buf( const char *title, unsigned char *buf, size_t len )
+
+void dump_buf( const char *title, const unsigned char *buf, size_t len )
 {
-    hexdump(title, buf, len);
+    if (log_run_level >= LOG_LVL_DEBUG)
+        hexdump(title, buf, len);
 }
 
 void print_str_dbg(const char* title, const unsigned char* data, size_t len)
@@ -36,7 +38,7 @@ void print_str_dbg(const char* title, const unsigned char* data, size_t len)
 	printf_sgx("\n");
 }
 
-void hexdump(const char* title, void const * data, unsigned int len)
+void hexdump(const char* title, void const * data, size_t len)
 {
     unsigned int i;
     unsigned int r,c;

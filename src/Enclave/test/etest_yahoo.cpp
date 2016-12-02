@@ -14,6 +14,7 @@ int yahoo_self_test(){
 	
 	//Null Checker
 	double r = 0.0;
+
 	if (yahoo_current(NULL, &r) != -1 || yahoo_current("GOOG", NULL) != -1 ||\
 		yahoo_current(NULL, NULL) != -1){
 		return -1;
@@ -24,22 +25,22 @@ int yahoo_self_test(){
 	if(yahoo_current("GOOG", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[Yahoo]Goog returns: %f\n", r);
+	LL_NOTICE("[Yahoo]Goog returns: %f", r);
 	
 	if (r == 0 || yahoo_current("AAPL", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[Yahoo]AAPL returns: %f\n", r);
+	LL_NOTICE("[Yahoo]AAPL returns: %f", r);
 
 	if (r == 0 || yahoo_current("ORCL", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[Yahoo]ORCL returns: %f\n", r);
+	LL_NOTICE("[Yahoo]ORCL returns: %f", r);
 
 	if (r == 0 || yahoo_current("YHOO", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[Yahoo]YHOO returns: %f\n", r);
+	LL_NOTICE("[Yahoo]YHOO returns: %f", r);
 
 
 	//Null check

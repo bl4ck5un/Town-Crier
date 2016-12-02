@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "Enclave_t.h"
 
 #ifndef SSL_CLIENT_H
 #define SSL_CLIENT_H
+
 
 #define DFL_SERVER_NAME         "localhost"
 #define DFL_SERVER_ADDR         NULL
@@ -98,7 +100,7 @@ typedef struct options
 extern "C" {
 #endif
 
-int ssl_client(client_opt_t opt, const char* headers[], int n_header, unsigned char* buf, int len, int* copied);
+int ssl_client(client_opt_t opt, const char* headers[], int n_header, unsigned char* buf, int len, size_t* copied);
 
 #if defined(__cplusplus)
 }
