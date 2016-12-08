@@ -1,29 +1,26 @@
 #include <cstdio>
 #include <cstdlib>
+#include <stdexcept>
+#include <iomanip>
+#include <sstream>
+#include <string>
 
 #include "App.h"
 #include "Enclave_u.h"
 #include "Log.h"
 #include "EthRPC.h"
 
-#include <stdexcept>
-#include <iomanip>
-#include <sstream>
-#include <string>
 
 #include "Converter.h"
 #include "Constants.h"
 
-#include "ethrpcclient.h"
 #include "Utils.h"
-#include <jsonrpccpp/client/connectors/httpclient.h>
 
 #include <sstream>
 
 using namespace jsonrpc;
 
-HttpClient httpclient("http://localhost:8200");
-ethRPCClient c(httpclient);
+ethRPCClient *c;
 
 int send_transaction(std::string hostname, unsigned port, char* raw)
 {
@@ -32,7 +29,8 @@ int send_transaction(std::string hostname, unsigned port, char* raw)
     std::string res;
     std::string param1(raw);
     try{
-        res = c.eth_sendRawTransaction(param1);
+        if (!c) return -1;
+        res = c->eth_sendRawTransaction(param1);
 
         LL_CRITICAL("Response recorded in the blockchain.");
         LL_CRITICAL("TX: %s", res.c_str());
@@ -105,7 +103,8 @@ int eth_new_filter(std::string hostname, unsigned port, std::string& id, int fro
         filter_opt["fromBlock"] = from;
         filter_opt["toBlock"] = to;
 
-        id = c.eth_newFilter(filter_opt);
+        if (!c) return -1;
+        id = c->eth_newFilter(filter_opt);
         return 0;
     }
     catch (JsonRpcException e) {
@@ -144,7 +143,8 @@ int eth_getfilterlogs(std::string hostname, unsigned port, std::string filter_id
 
 int eth_getfilterlogs(std::string hostname, unsigned port, std::string filter_id, Json::Value& result) {
     try {
-        result = c.eth_getFilterLogs(filter_id);
+        if (!c) return -1;
+        result = c->eth_getFilterLogs(filter_id);
         return 0;
     }
     catch (JsonRpcException e) {
@@ -182,7 +182,8 @@ long eth_blockNumber(std::string hostname, unsigned port)
 {
     try {
         unsigned long ret;
-        std::string blk = c.eth_blockNumber();
+        if (!c) return -1;
+        std::string blk = c->eth_blockNumber();
         std::stringstream ss;
         ss << std::hex << blk;
         ss >> ret;

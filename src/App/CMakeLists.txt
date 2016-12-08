@@ -83,6 +83,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
 
 target_link_libraries(tc
         -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB}
+        -L/usr/local/lib
+        -lcfgparser
         -lsqlite3
         -ljsoncpp
         -lcurl
