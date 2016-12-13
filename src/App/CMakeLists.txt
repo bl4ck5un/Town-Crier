@@ -21,6 +21,9 @@ set(SOURCE_FILES
 
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
 
+set_directory_properties(PROPERTIES
+    ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
+
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_u.c
         COMMAND ${SGX_EDGER8R} --untrusted ${TC_ROOT_DIR}/Enclave/Enclave.edl

@@ -33,10 +33,10 @@ protected:
 
 TEST_F (TLSSuiteTest, client) {
     int ret;
-    ssl_self_test(eid, &ret);
+    // ssl_self_test(eid, &ret);
     ASSERT_EQ(0, ret);
     //Added by Oscar:
-    get_page_on_ssl_self_test(eid, &ret);
+    // get_page_on_ssl_self_test(eid, &ret);
     ASSERT_EQ(0, ret);
     
 }
