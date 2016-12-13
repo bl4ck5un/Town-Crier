@@ -26,7 +26,7 @@ Dependencies
 - `libjsoncpp`: In ubuntu 16.04: `sudo apt-get install libjsoncpp-dev`
 - [`libjson-rpc-cpp`](https://github.com/cinemast/libjson-rpc-cpp)
 - sqlite3: `sudo apt-get install libsqlite3-0 libsqlite3-dev`
-
+- `cfgparser`: In http://cfgparser.sourceforge.net/
 
 Build
 -----
@@ -69,3 +69,17 @@ make TestMain
 
 
 After you build and install Town Crier, run `build/TestMain` to test (powered by GTest).
+
+Run
+----
+
+A configuration is needed to run tc.
+
+We need to specify RPChost in this configuration.
+
+```
+cd build
+echo "[RPC]" >> config
+echo "RPChost = http://localhost:8200" >> config
+./tc config
+```
