@@ -1,5 +1,12 @@
-#include "App.h"
+/* App.cpp is main function that is in charge of initializing the 
+   Enclave and calling the main monitor loop
+ */ 
+#include <stdlib.h>
+#include <stdio.h>
+#include <iostream>
+#include <syslog.h>
 
+#include "App.h"
 #include "sgx_urts.h"
 #include "sgx_uae_service.h"
 #include "Enclave_u.h"
@@ -9,19 +16,21 @@
 #include "sqlite3.h"
 #include "Bookkeeping.h"
 #include "Init.h"
-
-#include "Log.h"
 #include "Monitor.h"
 #include "Utils.h"
 #include "Constants.h"
 
-#include <stdio.h>
-#include <iostream>
-
+#define DAEMON_NAME "TownCrierDaemon"
 sqlite3* db = NULL;
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]){
+    //Set Logging Mask and open log
+    setlogmask(LOG_UPTO(LOG_NOTICE));
+    openlog(DAEMON_NAME, LOG_CONS | LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_USER);
+
+    syslog(LOG_INFO, "Entering Town Crier Daemon");
+
+
     int ret;
     sgx_enclave_id_t eid;
     sgx_status_t st;
@@ -49,17 +58,17 @@ int main(int argc, char* argv[])
     ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
 
     if (ret != 0) {
-        LL_CRITICAL("Failed to initialize the enclave");
-        goto exit;
+        syslog(LOG_CRIT,"Failed to initialize the enclave");
+        exit(EXIT_FAILURE);
     }
-    else {
-        LL_NOTICE("enclave %lu created", eid);
+    else{
+        syslog(LOG_INFO, "enclave %lu created", eid);
     }
 
     st = register_exception_handlers(eid, &ret);
     if (st != SGX_SUCCESS || ret )
     {
-        LL_CRITICAL("Failed to register exception handlers");
+        syslog(LOG_INFO, "Failed to register exception handlers");
     }
 
 /*
@@ -68,8 +77,34 @@ int main(int argc, char* argv[])
  */
 //  remote_att_init(eid);
 
+    pid_t pid, sid;
+    pid = fork();
+    //Failed to initialize for some reason, exit
+    if(pid < 0){
+        syslog(LOG_CRIT, "Fork Failed");
+        exit(EXIT_FAILURE);
+    } 
+
+    if(pid > 0){
+        exit(EXIT_SUCCESS);
+    }
+
+    sid = setsid();
+    if(sid < 0) { 
+        syslog(LOG_CRIT, "setsid Failed");
+        exit(EXIT_FAILURE);
+    }
+
+    //Since this is a Daemon, close Standard File Descriptors
+    close(STDIN_FILENO);
+    close(STDOUT_FILENO);
+    close(STDERR_FILENO);
+
+    //Begin the main process
     monitor_loop(eid, nonce);
 
+    closelog();
+
 exit:
-    LL_CRITICAL("Info: all enclave closed successfully.");
+    syslog(LOG_CRIT, "all enclave closed successfully.");
 }
