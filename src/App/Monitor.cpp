@@ -3,32 +3,40 @@
  * Enclave back to the Town Crier contract. In addition, Monitor.cpp can be run in various modes
  * usefull to debugging and running benchmarks it contains various flags:
  *      VERBOSE: Debugging flag that allows outputs various variable values
+ *      E2E_BENCHMARK: Run a benchmark test on the enclave, to determing the
+ *                     time it tries to run an handle_request enclave call
+ *                     Note: The monitor loops terminates after one call to Handle Request
  *
  */
 
 #include <iostream>
 #include <math.h>
 #include <unistd.h>
-#include <iomanip>
-#include <Constants.h>
-#include <syslog.h>
 
 #include "Monitor.h"
 #include "EthRPC.h"
-#include "Enclave_u.h"
-#include "App.h"
-#include "Utils.h"
-#include "RemoteAtt.h"
-#include "Constants.h"
-#include "Bookkeeping.h"
+#include "Log.h"
 
 #ifdef _WIN32
 #define _WINSOCKAPI_
 #include "windows.h"
 #endif
 
+
+#include "Enclave_u.h"
+#include "App.h"
+#include "Utils.h"
+#include <Constants.h>
+#include "RemoteAtt.h"
+#include "Constants.h"
+#include "Bookkeeping.h"
+#include <iomanip>
+
+
+
 #define RPC_HOSTNAME    "localhost"
 #define RPC_PORT        8545
+
 
 #define VERBOSE
 
@@ -76,74 +84,81 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
     uint8_t raw_tx[TX_BUF_SIZE] = {0};
     int raw_tx_len = 0;
 
-    /* Begin the main system loop */
-    while(true){
+    do //Begin REPL loops
+    {
 
-        if (retry_n >= 50){
-            syslog(LOG_CRIT,"Failed after %d retries", retry_n);
-            retry_n = 0;
-            continue;
+        if (retry_n >= 50)
+        {
+            LL_CRITICAL("Exit after %d retries", retry_n);
+            ret = -1;
+            break;
         }
 
-        if (retry_n > 0){
+        if (retry_n > 0)
+        {
             //Increase timeout everytime we retry
             sleep_sec = 1; // 2^retry_n
 
-            syslog(LOG_INFO,"retry in %d seconds", sleep_sec);
+            LL_CRITICAL("retry in %d seconds", sleep_sec);
             sleep(sleep_sec);
         }
 
-        try{
+        try {
             // how many blocks do we have now?
             highest_block = eth_blockNumber();
 
-            if (highest_block < 0){
-                syslog(LOG_CRIT,"eth_blockNumber returns %ld", highest_block);
+            if (highest_block < 0)
+            {
+                LL_CRITICAL("eth_blockNumber returns %ld", highest_block);
                 throw EX_GET_BLOCK_NUM;
             }
 
             // if we've scanned all of them
-            if (next_wanted > highest_block){
-                syslog(LOG_CRIT,"Highest block is %ld, waiting for block %ld...", highest_block, next_wanted);
+            if (next_wanted > highest_block)
+            {
+                LL_NOTICE("Highest block is %ld, waiting for block %ld...", highest_block, next_wanted);
                 throw EX_NOTHING_TO_DO;
             }
 
             // fetch up to the latest block
-            for (; next_wanted <= highest_block; next_wanted++){
+            for (; next_wanted <= highest_block; next_wanted++)
+            {
                 // create a new filter for next_wanted
                 ret = eth_new_filter(filter_id, next_wanted, next_wanted);
 
-                if (ret < 0){
-                    syslog(LOG_CRIT,"Error: can't create new filter!");
+                if (ret < 0)
+                {
+                    LL_CRITICAL("Error: can't create new filter!");
                     throw EX_CREATE_FILTER;
                 }
-                syslog(LOG_INFO,"detected block %ld", next_wanted);
+
+                LL_NOTICE("detected block %ld", next_wanted);
 
                 // get events of interest
                 ret = eth_getfilterlogs(filter_id, transaction);
                 if (ret != 0) {
-                    syslog(LOG_CRIT,"Error: can't get filter logs");
+                    LL_CRITICAL("Error: can't get filter logs");
                     throw EX_GET_FILTER_LOG;
                 }
 
-                if (transaction.isArray() && transaction.size() > 0){
+                if (transaction.isArray() && transaction.size() > 0)
+                {
                     //Loop over all transactions in the block
-                    for (int i = 0; i < transaction.size(); i++){
+                    for (int i = 0; i < transaction.size(); i++)
+                    {
                         //Parse the request
                         std::vector<uint8_t> data;
                         const char* data_c = transaction[i]["data"].asCString();
                         fromHex(data_c, data);
                         Request request(&data[0]);//take vector of uint8
-                        syslog(LOG_INFO,"find an request (id=%lu)", request.id);
-                        syslog(LOG_INFO,"find an request (type=%lu)", request.type);
+                        LL_NOTICE("find an request (id=%lu)", request.id);
+                        LL_NOTICE("find an request (type=%lu)", request.type);
 
 #ifdef VERBOSE
-                        syslog(LOG_INFO, "REQDATA BINARY %s", data_c);
-                        //std::cout << "REQDATA BINARY " << data_c << std::endl;
+                        std::cout << "REQDATA BINARY " << data_c << std::endl;
 #endif
 
                         get_last_nonce(db, &nonce);
-
                         //Enclave call to parse the given request
                         handle_request(eid, &ret, nonce,
                                        request.id,
@@ -152,13 +167,14 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
                                        request.data_len,
                                        raw_tx,
                                        &raw_tx_len);
-                        if (ret != 0){
-                            syslog(LOG_CRIT,"%s returned %d, INVALID", "handle_request", ret);
+
+                        if (ret != 0)
+                        {
+                            LL_CRITICAL("%s returned %d, INVALID", "handle_request", ret);
                             throw EX_HANDLE_REQ;
                         }
                         //TODO: get rid of malloc
-                        // char* tx_str = static_cast<char*>( malloc(raw_tx_len * 2 + 1));
-                        char tx_str[raw_tx_len * 2 + 1];
+                        char* tx_str = static_cast<char*>( malloc(raw_tx_len * 2 + 1));
                         char2hex(raw_tx, raw_tx_len, tx_str);
 #ifdef VERBOSE
                         std::cout << "REQDATA BINARY " << data_c << std::endl;
@@ -166,18 +182,19 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
                         std::cout << "TX BINARY " << tx_str << std::endl;
 
                         ret = send_transaction(tx_str);
-                        if (ret != 0){
-                            syslog(LOG_CRIT,"send_raw_tx returned %d", ret);
+                        if (ret != 0)
+                        {
+                            LL_CRITICAL("send_raw_tx returned %d", ret);
                             throw EX_SEND_TRANSACTION;
                         }
 
-                        syslog(LOG_INFO,"Response sent");
-                        syslog(LOG_INFO,"new nonce being dumped: %d", nonce);
+                        LL_NOTICE("Response sent");
+                        LL_LOG("new nonce being dumped: %d", nonce);
                         nonce++;
                         record_nonce(db, nonce);
                     }
                 }
-                syslog(LOG_INFO,"Done processing block %ld", next_wanted);
+                LL_NOTICE("Done processing block %ld", next_wanted);
                 record_scan(db, next_wanted);
                 retry_n = 0;
             } // for (next_wanted <= highest_block)
@@ -190,22 +207,22 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
                 case EX_HANDLE_REQ:
                 case EX_SEND_TRANSACTION:
                     retry_n++;
+                    break;
                 case EX_NOTHING_TO_DO:
-                    syslog(LOG_CRIT,"Nothing to do. Sleep for 5 seconds");
+                    LL_CRITICAL("Nothing to do. Sleep for 5 seconds");
                     sleep(5);
-                    continue;
+                    break;
                 default:
-                    syslog(LOG_CRIT,"Unknown exception: %d", e);
-                    continue;
+                    LL_CRITICAL("Unknown exception: %d", e);
+                    return -1;
             }
         }
         catch (std::exception ex) {
-            syslog(LOG_CRIT,"Unexpected exception %s", ex.what());
+            LL_CRITICAL("Unexpected exception %s", ex.what());
         }
         catch (...) {
-            syslog(LOG_CRIT,"Unexpected exception!");
+            LL_CRITICAL("Unexpected exception!");
             retry_n++;
         }
-        sleep(60);//Sleep for 60 seconds
-    }
+    } while (true); // this loop never ends;
 }
