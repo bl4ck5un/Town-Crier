@@ -1,4 +1,4 @@
-set(CMAKE_VERBOSE_MAKEFILE False)
+set(CMAKE_VERBOSE_MAKEFILE True)
 
 set(SOURCE_FILES
         App.cpp
@@ -52,8 +52,7 @@ add_executable(TestMain
         mbedtls_sgx_net.c
         ../Common/Converter.cpp
         ../Common/Debug.c
-        ../Common/Log.c
-        test/seal_data.cpp)
+        ../Common/Log.c)
 
 if (NOT SGX_MODE STREQUAL HW)
     set(Urts_Library_Name sgx_urts_sim)
@@ -88,13 +87,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
 
 target_link_libraries(tc
         -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB}
-        -L/usr/local/lib
-        -lcfgparser
         -lsqlite3
         -ljsoncpp
         -lcurl
         -ljsonrpccpp-common
-        -ljsonrpccpp-client)
+        -ljsonrpccpp-client
+        -lcfgparser
+        )
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
 set(TEST_PROGRAM_LDFLAGS " ${LIBGTEST}/libgtest_main.a")
