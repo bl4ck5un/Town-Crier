@@ -55,6 +55,7 @@ int eth_new_filter(std::string& id, int from, int to)
     if(id.empty() || from < 0 || to < 0){
     	return -1;
     }
+
     Json::Value filter_opt;
     filter_opt["address"] = TC_ADDRESS;
     filter_opt["topics"][0] = "0x8d2b45c22f17e6631529a8fb8f4b17f4f336d01b6db32584ec554476dbbf2af0";
@@ -104,7 +105,6 @@ Request::Request(uint8_t *input) {
     memcpy(this->param_hash, input + 0xa0, 32);
 
     //timestamp
-    this->timestamp = u32_from_b(input + 0xe0 - sizeof(this->timestamp));
     this->data_len = u32_from_b(input + 0x100 - sizeof(this->data_len)) * 32;
     this->data = (uint8_t*) malloc(this->data_len);
 
@@ -113,7 +113,7 @@ Request::Request(uint8_t *input) {
         throw std::runtime_error("failed to malloc");
     }
     else {
-        memcpy(this->data, input + 0x120, this->data_len);
+        memcpy(this->data, input + 0x100, this->data_len);
     }
 }
 /*Destructor */
