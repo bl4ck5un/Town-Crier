@@ -24,8 +24,9 @@ class Request {
 // 0x80 - 0xa0       : cb
 // 0xa0 - 0xc0       : hash
 // 0xc0 - 0xe0       : offset of requestData
-// 0xe0 - 0x100      : reqLen (in bytes32)
-// 0x100 - ...       : reqData
+// 0xe0 - 0x100      : timestamp 
+// 0x100 - 0x120     : reqLen (in bytes32)
+// 0x120 - ...       : reqData
 public:
     uint64_t id;
     uint64_t type;
@@ -33,6 +34,7 @@ public:
     uint32_t fee;
     uint8_t callback[20];
     uint8_t param_hash[32];
+    uint32_t timestamp;
     uint32_t data_len;
     uint8_t* data;
 public:
