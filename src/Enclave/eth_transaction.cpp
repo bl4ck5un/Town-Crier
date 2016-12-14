@@ -123,7 +123,7 @@ void TX::rlp_list(bytes& out, bool withSig) {
 int get_raw_signed_tx(int nonce, int nonce_len, 
                       uint64_t request_id, uint8_t request_type,
                       const uint8_t* req_data, int req_len,
-                      uint8_t* resp_data, int resp_len,
+                      bytes resp_data,
                       uint8_t* serialized_tx, int* o_len)
 {
     if (serialized_tx == NULL || o_len == NULL) {
@@ -168,8 +168,8 @@ int get_raw_signed_tx(int nonce, int nonce_len,
     ABI_Bytes32 c(&param_hash);
 
     bytes32 resp_b32;
-    assert (resp_len == 32);
-    memcpy(&resp_b32[0], resp_data, resp_len);
+    assert (resp_data.size() == 32);
+    memcpy(&resp_b32[0], &resp_data[0], 32);
 
     ABI_Bytes32 d(&resp_b32);
 

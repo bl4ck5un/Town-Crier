@@ -18,14 +18,12 @@
 #include "EthRPC.h"
 #include "Converter.h"
 #include "Constants.h"
-#include "ethrpcclient.h"
 #include "Utils.h"
 
 
 using namespace jsonrpc;
 
-HttpClient httpclient("http://localhost:8200");
-ethRPCClient c(httpclient);						/* The Etherium HTTP client */ 
+ethRPCClient *c;
 
 /* send_transaction [raw] sends data [raw] to remote host httpclient
  * listenign in on port [port]
@@ -66,6 +64,7 @@ int eth_new_filter(std::string& id, int from, int to)
     filter_opt["toBlock"] = to;
 
     id = c.eth_newFilter(filter_opt);
+        id = c->eth_newFilter(filter_opt);
     return 0;
 
 }
@@ -79,6 +78,7 @@ int eth_getfilterlogs(std::string filter_id, Json::Value& result) {
     	return -1;
     }
     result = c.eth_getFilterLogs(filter_id);
+        result = c->eth_getFilterLogs(filter_id);
     return 0;
 }
 
@@ -88,7 +88,7 @@ int eth_getfilterlogs(std::string filter_id, Json::Value& result) {
 long eth_blockNumber()
 {
     unsigned long ret;
-    std::string blk = c.eth_blockNumber();
+    std::string blk = c->eth_blockNumber();
     std::stringstream ss;
     ss << std::hex << blk;
     ss >> ret;

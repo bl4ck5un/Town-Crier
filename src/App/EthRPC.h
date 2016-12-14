@@ -1,6 +1,8 @@
 #include <iostream>
 #include <map>
 #include "json/json.h"
+#include "ethrpcclient.h"
+#include <jsonrpccpp/client/connectors/httpclient.h>
 
 #include "Converter.h"
 #include "vector"
@@ -9,6 +11,8 @@
 #define ETH_RPC_H
 
 using namespace std;
+
+
 
 class Request {
 // RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, byte32 hash, bytes32[] requestData);
