@@ -37,8 +37,7 @@ void init(int argc, char* argv[])
         exit(-1);
     }
 
-    std::string st = string("localhost");
-    /*
+    std::string st;
     if (cfg.readFile(argv[1]))
     {
         std::cout << "Error: Cannot open config file " << argv[1] << std::endl;
@@ -48,7 +47,6 @@ void init(int argc, char* argv[])
         std::cout << "Error: Cannot open RPC host!" << std::endl;
         exit(-1);
     }
-    */
 
     std::cout << st << std::endl;
     httpclient = new jsonrpc::HttpClient(st);
