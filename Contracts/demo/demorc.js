@@ -128,6 +128,8 @@ function SteamPurchase(contract, steamId, delay) {
   // var timeoutSecs = Math.floor((new Date((new Date()).getTime() + (delay * 1000))).getTime() / 1000);
   // to simplify, delay is the time for SGX to wait before fetching
   // delay = 60, typically
+
+  personal.unlockAccount(buyerAddr, '000000');
   contract.purchase.sendTransaction( steamId, delay, {
       from: buyerAddr, 
       value: 1e+18 + TC_FEE, 
@@ -135,6 +137,12 @@ function SteamPurchase(contract, steamId, delay) {
   });
   mineBlocks(1);
   return "Purchased!"
+}
+
+function TestSteam(contract, steamId, delay) {
+    for (var i = 0; i < 1000; ++i) {
+        SteamPurchase(contract, steamId, delay);
+    }
 }
 
 function FlightInsure(contract, flightID, fee) {
