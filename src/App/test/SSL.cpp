@@ -7,15 +7,36 @@
 #include "Converter.h"
 #include <vector>
 
-TEST (SSL, client) {
+class TLSSuiteTest: public ::testing::Test
+{
+protected:
     sgx_enclave_id_t eid;
-    int ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
-    ASSERT_EQ(SGX_SUCCESS, ret);
+    TLSSuiteTest()
+    {
+        ;
+    }
+    ~TLSSuiteTest()
+    {
+        ;
+    }
 
-    ssl_self_test(eid, &ret);
+    virtual void SetUp()
+    {
+        initialize_enclave(ENCLAVE_FILENAME, &eid);
+    }
+
+    virtual void TearDown()
+    {
+        sgx_destroy_enclave(eid);
+    }
+};
+
+TEST_F (TLSSuiteTest, client) {
+    int ret;
+    // ssl_self_test(eid, &ret);
     ASSERT_EQ(0, ret);
     //Added by Oscar:
-    get_page_on_ssl_self_test(eid, &ret);
+    // get_page_on_ssl_self_test(eid, &ret);
     ASSERT_EQ(0, ret);
     
 }

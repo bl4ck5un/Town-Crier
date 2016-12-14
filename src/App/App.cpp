@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <iostream>
 #include <syslog.h>
+#include <cfgparser.h>
+
 
 #include "App.h"
 #include "sgx_urts.h"
@@ -21,19 +23,54 @@
 #include "Constants.h"
 
 #define DAEMON_NAME "TownCrierDaemon"
+
+
+
+#include <stdio.h>
+#include <iostream>
+#include <fstream>
+
 sqlite3* db = NULL;
+extern ethRPCClient *c;
+jsonrpc::HttpClient *httpclient;
+ConfigParser_t cfg;
+
+void init(int argc, char* argv[])
+{
+    if (argc < 2)
+    {
+        std::cout << "please specify the path to the configuration" << std::endl;
+        exit(-1);
+    }
+
+    std::string st = string("localhost");
+    /*
+    if (cfg.readFile(argv[1]))
+    {
+        std::cout << "Error: Cannot open config file " << argv[1] << std::endl;
+        exit(-1);
+    }
+    if (!cfg.getValue("RPC", "RPChost", &st)) {
+        std::cout << "Error: Cannot open RPC host!" << std::endl;
+        exit(-1);
+    }
+    */
+
+    std::cout << st << std::endl;
+    httpclient = new jsonrpc::HttpClient(st);
+    c = new ethRPCClient(*httpclient);
+}
 
 int main(int argc, char* argv[]){
     //Set Logging Mask and open log
+    init(argc, argv);
+    int ret;
+    sgx_enclave_id_t eid;
+    sgx_status_t st;
     setlogmask(LOG_UPTO(LOG_NOTICE));
     openlog(DAEMON_NAME, LOG_CONS | LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_USER);
 
     syslog(LOG_INFO, "Entering Town Crier Daemon");
-
-
-    int ret;
-    sgx_enclave_id_t eid;
-    sgx_status_t st;
 
 
     std::cout << "Do you want to clean up the database? y/[n] ";

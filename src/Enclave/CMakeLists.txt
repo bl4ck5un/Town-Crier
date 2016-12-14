@@ -1,36 +1,39 @@
+set(CMAKE_VERBOSE_MAKEFILE False)
+
 set(SOURCE_FILES
         ../Common/Debug.c
         ../Common/Log.c
-        ABI.cpp
-        Attestation_Enc.c
-        Current_bloomberg.cpp
-        Current_Google.cpp
-        Current_Yahoo.cpp
-        dispatcher.cpp
-        ECDSA.c
+        eth_abi.cpp
+        create_attestation.cpp
+        scrapers/current_bloomberg.cpp
+        scrapers/current_Google.cpp
+        scrapers/current_Yahoo.cpp
+        eth_ecdsa.c
         Enclave_t.c
-        EventHandler.cpp
-        Flight.cpp
-        keccak.c
-        RootCerts.c
-        Scraper_lib.c
-        SSLClient.c
-        Steam2.cpp
-        StockTicker.cpp
-        Transaction.cpp
-        Exception.c
-        Encoding.cpp
-        slre.c
-	http_parser.c)
+        event_handler.cpp
+        scrapers/flight.cpp
+        external/keccak.c
+        trusted_ca_certs.c
+        scrapers/scraper_lib.c
+        tls_client.c
+        scrapers/steam2.cpp
+        scrapers/stock_ticker.cpp
+        eth_transaction.cpp
+        enclave_exception_hdlr.c
+        encoding.cpp
+        external/slre.c
+        external/http_parser.c)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
+
 SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES})
 
-set(CMAKE_VERBOSE_MAKEFILE False)
+set_directory_properties(PROPERTIES
+    ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_t.c
-        COMMAND ${SGX_EDGER8R} --trusted ${TC_ROOT_DIR}/Enclave/Enclave.edl
+        COMMAND ${SGX_EDGER8R} --trusted ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.edl
         --search-path ${TC_ROOT_DIR}/Enclave
         --search-path ${SGX_SDK}/include
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
@@ -41,10 +44,10 @@ add_library(enclave SHARED ${SOURCE_FILES})
 if (NOT SGX_MODE STREQUAL HW)
     set(TRTS_LIB_NAME sgx_trts_sim)
     set(SERVICE_LIB_NAME sgx_tservice_sim)
-else()
+else ()
     set(TRTS_LIB_NAME sgx_trts)
     set(SERVICE_LIB_NAME sgx_tservice)
-endif()
+endif ()
 
 set(CRYPTO_LIB_NAME sgx_tcrypto)
 
@@ -76,10 +79,8 @@ target_link_libraries(enclave "${SGX_COMMON_CFLAGS} \
 add_custom_command(TARGET enclave
         POST_BUILD
         COMMAND ${SGX_ENCLAVE_SIGNER} sign
-            -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
-            -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
-            -enclave enclave.so
-            -out ${CMAKE_BINARY_DIR}/enclave.signed.so
+        -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
+        -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
+        -enclave ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.so
+        -out ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so
         COMMENT "Signing the enclave. Written to ${CMAKE_BINARY_DIR}")
-
-install(TARGETS enclave DESTINATION ${PROJECT_BINARY_DIR})
