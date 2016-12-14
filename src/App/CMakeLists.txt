@@ -1,5 +1,3 @@
-set(CMAKE_VERBOSE_MAKEFILE True)
-
 set(SOURCE_FILES
         App.cpp
         Bookkeeping.cpp

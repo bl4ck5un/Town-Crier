@@ -1,5 +1,3 @@
-set(CMAKE_VERBOSE_MAKEFILE False)
-
 set(SOURCE_FILES
         ../Common/Debug.c
         ../Common/Log.c
