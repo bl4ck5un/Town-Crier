@@ -2,11 +2,11 @@
    Enclave and calling the main monitor loop
  */ 
 #include <stdlib.h>
-#include <stdio.h>
-#include <iostream>
 #include <syslog.h>
-#include <cfgparser.h>
+#include <iostream>
+#include <fstream>
 
+#include <cfgparser.h>
 
 #include "App.h"
 #include "sgx_urts.h"
@@ -24,12 +24,6 @@
 
 #define DAEMON_NAME "TownCrierDaemon"
 
-
-
-#include <stdio.h>
-#include <iostream>
-#include <fstream>
-
 sqlite3* db = NULL;
 extern ethRPCClient *c;
 jsonrpc::HttpClient *httpclient;
@@ -42,9 +36,7 @@ void init(int argc, char* argv[])
         std::cout << "please specify the path to the configuration" << std::endl;
         exit(-1);
     }
-
     std::string st = string("localhost");
-    /*
     if (cfg.readFile(argv[1]))
     {
         std::cout << "Error: Cannot open config file " << argv[1] << std::endl;
@@ -54,7 +46,6 @@ void init(int argc, char* argv[])
         std::cout << "Error: Cannot open RPC host!" << std::endl;
         exit(-1);
     }
-    */
 
     std::cout << st << std::endl;
     httpclient = new jsonrpc::HttpClient(st);
@@ -62,11 +53,8 @@ void init(int argc, char* argv[])
 }
 
 int main(int argc, char* argv[]){
-    //Set Logging Mask and open log
     init(argc, argv);
-    int ret;
-    sgx_enclave_id_t eid;
-    sgx_status_t st;
+    //Set Logging Mask and open log
     setlogmask(LOG_UPTO(LOG_NOTICE));
     openlog(DAEMON_NAME, LOG_CONS | LOG_NDELAY | LOG_PERROR | LOG_PID, LOG_USER);
 
@@ -92,6 +80,9 @@ int main(int argc, char* argv[]){
     if (nonce > 0)
         dump_nonce((uint8_t*)&nonce);
 
+    int ret;
+    sgx_enclave_id_t eid;
+    sgx_status_t st;
     ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
 
     if (ret != 0) {
@@ -108,11 +99,11 @@ int main(int argc, char* argv[]){
         syslog(LOG_INFO, "Failed to register exception handlers");
     }
 
-/*
- *  We don't care about the attestation at the moment.
- *  Revisit after we have the official attestation service.
- */
-//  remote_att_init(eid);
+    /*
+    *  We don't care about the attestation at the moment.
+    *  Revisit after we have the official attestation service.
+    */
+    //  remote_att_init(eid);
 
     pid_t pid, sid;
     pid = fork();
@@ -141,7 +132,5 @@ int main(int argc, char* argv[]){
     monitor_loop(eid, nonce);
 
     closelog();
-
-exit:
     syslog(LOG_CRIT, "all enclave closed successfully.");
 }
