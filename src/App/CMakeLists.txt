@@ -107,6 +107,11 @@ target_link_libraries(TestMain
         ${LIBGTEST}/libgtest_main.a
         -lpthread)
 
+add_custom_command(TARGET tc
+        POST_BUILD
+        COMMAND cp
+        -f ${CMAKE_SOURCE_DIR}/config ${CMAKE_BINARY_DIR}
+        COMMENT "Testing command")
 
 add_dependencies(tc enclave)
 add_dependencies(TestMain enclave)
