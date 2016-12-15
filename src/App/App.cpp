@@ -1,6 +1,7 @@
 #include "App.h"
 
-#include "cfgparser.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 
 #include "sgx_urts.h"
 #include "sgx_uae_service.h"
@@ -27,30 +28,31 @@ extern ethRPCClient *c;
 
 jsonrpc::HttpClient *httpclient;
 
-ConfigParser_t cfg;
+boost::property_tree::ptree pt;
 
 void init(int argc, char* argv[])
 {
+    std::string filepath;
     if (argc < 2)
     {
-        std::cout << "please specify the path to the configuration" << std::endl;
-        exit(-1);
+        filepath = "config";
+    } else {
+        filepath = argv[1];
     }
 
-    std::string st;
-    if (cfg.readFile(argv[1]))
-    {
-        std::cout << "Error: Cannot open config file " << argv[1] << std::endl;
-        exit(-1);
-    }
-    if (!cfg.getValue("RPC", "RPChost", &st)) {
-        std::cout << "Error: Cannot open RPC host!" << std::endl;
-        exit(-1);
-    }
+    try {
 
-    std::cout << st << std::endl;
-    httpclient = new jsonrpc::HttpClient(st);
-    c = new ethRPCClient(*httpclient);
+        boost::property_tree::ini_parser::read_ini(filepath, pt);
+        std::string st = pt.get<std::string>("RPC.RPChost");
+        
+        std::cout << st << std::endl;
+        httpclient = new jsonrpc::HttpClient(st);
+        c = new ethRPCClient(*httpclient);
+
+    } catch (const std::exception &e) {
+        std::cout << e.what() << std::endl;
+        exit(-1);
+    }
 }
 
 int main(int argc, char* argv[])

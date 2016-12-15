@@ -52,7 +52,7 @@ int send_transaction(char* raw)
  */
 int eth_new_filter(std::string& id, int from, int to)
 {
-    if(id.empty() || from < 0 || to < 0){
+    if(from < 0 || to < 0){
     	return -1;
     }
 
@@ -64,7 +64,6 @@ int eth_new_filter(std::string& id, int from, int to)
 
     id = c->eth_newFilter(filter_opt);
     return 0;
-
 }
 
 
@@ -72,7 +71,7 @@ int eth_new_filter(std::string& id, int from, int to)
  * Given the [filter_id] writes to [result] an array containing the required data
  */
 int eth_getfilterlogs(std::string filter_id, Json::Value& result) {
-    if(filter_id.empty() || result.empty()){
+    if(filter_id.empty()){
     	return -1;
     }
     result = c->eth_getFilterLogs(filter_id);
