@@ -13,21 +13,15 @@ static double parse_response(const char* resp) {
     const char * temp = resp;
 
     std::string buf_string(resp);
-    std::size_t pos = buf_string.find("itemprop=\"price\"");
+    std::size_t pos = buf_string.find("temp\":");
 
     if (pos == std::string::npos)
     {
         return 0.0;
     }
-
-    temp += pos;
-    temp += 17;
-    while (*temp != '"') {
-        temp += 1;
-    }
-    temp += 1;
+    temp += (pos + 6);
     end = temp;
-    while (*end != '"') {
+    while (*end != ',') {
         end += 1;
     }
 
@@ -35,15 +29,20 @@ static double parse_response(const char* resp) {
     return ret;
 }
 
-int google_current(const char* symbol, double* r) {
+int weather_current(unsigned int zipcode, double* r) {
     /* Null Checker */
-    if (symbol == NULL || r == NULL){
+    if (zipcode > 99999 || r == NULL){
         LL_CRITICAL("Error: Passed null pointers");
         return -1;
     }
+    char tmp_zip[10];
+    snprintf(tmp_zip, sizeof(tmp_zip), "%u", zipcode);
 
-    std::string query = "/finance?q=" + std::string(symbol);
-    HttpRequest httpRequest("google.com", query);
+    std::string query = "/data/2.5/weather?zip=" +\
+                        std::string(tmp_zip) +\
+                        ",us";
+
+    HttpRequest httpRequest("api.openweathermap.org", query);
     HttpClient httpClient(httpRequest);
 
     try {

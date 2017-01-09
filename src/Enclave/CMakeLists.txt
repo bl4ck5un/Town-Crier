@@ -6,7 +6,10 @@ set(SOURCE_FILES
         scrapers/current_bloomberg.cpp
         scrapers/current_Google.cpp
         scrapers/current_Yahoo.cpp
-        eth_ecdsa.c
+	scrapers/UPS_Tracking.cpp
+        scrapers/current_coinmarket.cpp
+	scrapers/current_weather.cpp
+	eth_ecdsa.c
         Enclave_t.c
         event_handler.cpp
         scrapers/flight.cpp

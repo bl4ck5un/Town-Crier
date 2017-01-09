@@ -11,6 +11,7 @@ enclave {
         public int bloomberg_self_test();
         public int regex_self_test();
         public int steam_self_test();
+        public int coin_self_test();
     };
 
 };

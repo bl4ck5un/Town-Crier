@@ -168,8 +168,7 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
                                        raw_tx,
                                        &raw_tx_len);
 
-                        if (ret != 0)
-                        {
+                        if (ret != 0){
                             LL_CRITICAL("%s returned %d, INVALID", "handle_request", ret);
                             throw EX_HANDLE_REQ;
                         }
@@ -217,7 +216,8 @@ int monitor_loop(sgx_enclave_id_t eid, int nonce)
                     return -1;
             }
         }
-        catch (std::exception ex) {
+        //TODO:Handle JSON Stuff what is (...) catch JSON rpc explicityly 
+        catch (std::exception ex){
             LL_CRITICAL("Unexpected exception %s", ex.what());
         }
         catch (...) {

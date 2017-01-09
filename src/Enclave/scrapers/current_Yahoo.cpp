@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "scrapers.h"
 #include <string>
 #include <Log.h>
 
 #include "tls_client.h"
+#include "scrapers.h"
 
 static int construct_query(const char* symbol, char** buf) {
     int len;
