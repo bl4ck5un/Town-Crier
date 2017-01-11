@@ -92,12 +92,6 @@ int main(int argc, char* argv[])
         LL_NOTICE("enclave %lu created", eid);
     }
 
-    st = register_exception_handlers(eid, &ret);
-    if (st != SGX_SUCCESS || ret )
-    {
-        LL_CRITICAL("Failed to register exception handlers");
-    }
-
 /*
  *  We don't care about the attestation at the moment.
  *  Revisit after we have the official attestation service.

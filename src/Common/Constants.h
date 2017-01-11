@@ -30,9 +30,20 @@
 #define ERR_ENCLAVE_SSL_CLIENT 0x1001 
 
 //Define flight status constants 
+#define INVALID -1
 #define DEPARTURED 0
 #define DELAYED 1
 #define CANCELLED 2
 #define NOT_DEPARTURED 3
 #define NOT_FOUND 4
+
+//Define UPS Tracking Constant
+#define PACKAGE_NOT_FOUND 0
+#define ORDER_PROCESSED 1
+#define SHIPPED 2
+#define IN_TRANSIT 3
+#define OUT_FOR_DELIVERY 4
+#define DELIVERED 5
+
+typedef int pkgstatus_t;
 

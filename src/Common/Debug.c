@@ -4,39 +4,20 @@
 
 #define MIN(x,y) (x < y ? x : y)
 
-void dump_buf( const char *title, unsigned char *buf, size_t len )
+
+#define DEBUG_LIMIT 2048
+
+void dump_buf(const char *title, const unsigned char *buf, size_t len)
 {
-    hexdump(title, buf, len);
+    if (log_run_level >= LOG_LVL_DEBUG) {
+        hexdump(title, buf, MIN(DEBUG_LIMIT, len));
+        if (DEBUG_LIMIT < len) {
+            printf_sgx("...\n");
+        }
+    }
 }
 
-void print_str_dbg(const char* title, const unsigned char* data, size_t len)
-{
-    unsigned char buf[1024 + 1] = {0};
-    if (!data) {
-        return;
-    }
-    if (len == 0) {
-        LL_CRITICAL("zero length");
-        return;
-    }
-
-    long remaining = len, tp = 0;
-
-    printf_sgx("%s: ", title);
-
-    while (remaining > 0) {
-        tp = MIN(1024, remaining);
-
-        memcpy(buf, data, tp);
-        buf[tp] = '\0'; // just to make sure
-        printf_sgx("%s", buf);
-        remaining -= 1024;
-        data += 1024;
-    }
-	printf_sgx("\n");
-}
-
-void hexdump(const char* title, void const * data, unsigned int len)
+void hexdump(const char* title, void const * data, size_t len)
 {
     unsigned int i;
     unsigned int r,c;

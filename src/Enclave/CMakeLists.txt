@@ -6,21 +6,24 @@ set(SOURCE_FILES
         scrapers/current_bloomberg.cpp
         scrapers/current_Google.cpp
         scrapers/current_Yahoo.cpp
-        eth_ecdsa.c
+	scrapers/UPS_Tracking.cpp
+        scrapers/current_coinmarket.cpp
+	scrapers/current_weather.cpp
+	eth_ecdsa.c
         Enclave_t.c
         event_handler.cpp
         scrapers/flight.cpp
         external/keccak.c
         trusted_ca_certs.c
-        scrapers/scraper_lib.c
-        tls_client.c
+        tls_client.cpp
         scrapers/steam2.cpp
         scrapers/stock_ticker.cpp
         eth_transaction.cpp
         enclave_exception_hdlr.c
         encoding.cpp
         external/slre.c
-        external/http_parser.c)
+        external/http_parser.c
+        https_client.cpp)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
 

@@ -13,19 +13,13 @@ static double parse_response(const char* resp) {
     const char * temp = resp;
 
     std::string buf_string(resp);
-    std::size_t pos = buf_string.find("itemprop=\"price\"");
+    std::size_t pos = buf_string.find("price_usd\": \"");
 
     if (pos == std::string::npos)
     {
         return 0.0;
     }
-
-    temp += pos;
-    temp += 17;
-    while (*temp != '"') {
-        temp += 1;
-    }
-    temp += 1;
+    temp += (pos + 13);
     end = temp;
     while (*end != '"') {
         end += 1;
@@ -35,15 +29,15 @@ static double parse_response(const char* resp) {
     return ret;
 }
 
-int google_current(const char* symbol, double* r) {
+int coinmarketcap_current(const char* symbol, double* r) {
     /* Null Checker */
     if (symbol == NULL || r == NULL){
         LL_CRITICAL("Error: Passed null pointers");
         return -1;
     }
 
-    std::string query = "/finance?q=" + std::string(symbol);
-    HttpRequest httpRequest("google.com", query);
+    std::string query = "/ticker/" + std::string(symbol) + "/";
+    HttpRequest httpRequest("api.coinmarketcap.com", query);
     HttpClient httpClient(httpRequest);
 
     try {
