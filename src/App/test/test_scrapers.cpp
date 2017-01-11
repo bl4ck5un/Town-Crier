@@ -29,12 +29,12 @@ public:
     }
 };
 
-TEST_F(ScraperTest, yahoo) {
-    int ocall_status, ret;
-    ocall_status = yahoo_self_test(eid, &ret);
-    ASSERT_EQ(0, ocall_status);
-    ASSERT_EQ(0, ret);
-}
+//TEST_F(ScraperTest, yahoo) {
+//    int ocall_status, ret;
+//    ocall_status = yahoo_self_test(eid, &ret);
+//    ASSERT_EQ(0, ocall_status);
+//    ASSERT_EQ(0, ret);
+//}
 
 TEST_F(ScraperTest, google) {
     int ocall_status, ret;
