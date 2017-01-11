@@ -18,14 +18,12 @@
 #include "EthRPC.h"
 #include "Converter.h"
 #include "Constants.h"
-#include "ethrpcclient.h"
 #include "Utils.h"
 
 
 using namespace jsonrpc;
 
-HttpClient httpclient("http://localhost:8200");
-ethRPCClient c(httpclient);						/* The Etherium HTTP client */ 
+ethRPCClient *c;
 
 /* send_transaction [raw] sends data [raw] to remote host httpclient
  * listenign in on port [port]
@@ -36,12 +34,11 @@ int send_transaction(char* raw)
     if(raw == NULL){ 
     	return -1;
     }
-    //Casting used to suppress compiler warnings
-    std::string res;
-    std::string param1(raw);
 
-	//Send [raw] to [c]
-    res = c.eth_sendRawTransaction(param1);
+    std::string res;
+    std::string param(raw);
+
+    res = c->eth_sendRawTransaction(param);
 
     LL_CRITICAL("Response recorded in the blockchain.");
     LL_CRITICAL("TX: %s", res.c_str());
@@ -55,7 +52,7 @@ int send_transaction(char* raw)
  */
 int eth_new_filter(std::string& id, int from, int to)
 {
-    if(&id == NULL || from < 0 || to < 0){
+    if(from < 0 || to < 0){
     	return -1;
     }
 
@@ -65,9 +62,8 @@ int eth_new_filter(std::string& id, int from, int to)
     filter_opt["fromBlock"] = from;
     filter_opt["toBlock"] = to;
 
-    id = c.eth_newFilter(filter_opt);
+    id = c->eth_newFilter(filter_opt);
     return 0;
-
 }
 
 
@@ -75,10 +71,10 @@ int eth_new_filter(std::string& id, int from, int to)
  * Given the [filter_id] writes to [result] an array containing the required data
  */
 int eth_getfilterlogs(std::string filter_id, Json::Value& result) {
-    if(&filter_id == NULL || &result == NULL){
+    if(filter_id.empty()){
     	return -1;
     }
-    result = c.eth_getFilterLogs(filter_id);
+    result = c->eth_getFilterLogs(filter_id);
     return 0;
 }
 
@@ -88,7 +84,7 @@ int eth_getfilterlogs(std::string filter_id, Json::Value& result) {
 long eth_blockNumber()
 {
     unsigned long ret;
-    std::string blk = c.eth_blockNumber();
+    std::string blk = c->eth_blockNumber();
     std::stringstream ss;
     ss << std::hex << blk;
     ss >> ret;

@@ -1,5 +1,8 @@
 #include "App.h"
 
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+
 #include "sgx_urts.h"
 #include "sgx_uae_service.h"
 #include "Enclave_u.h"
@@ -17,11 +20,44 @@
 
 #include <stdio.h>
 #include <iostream>
+#include <fstream>
 
 sqlite3* db = NULL;
 
+extern ethRPCClient *c;
+
+jsonrpc::HttpClient *httpclient;
+
+boost::property_tree::ptree pt;
+
+void init(int argc, char* argv[])
+{
+    std::string filepath;
+    if (argc < 2)
+    {
+        filepath = "config";
+    } else {
+        filepath = argv[1];
+    }
+
+    try {
+
+        boost::property_tree::ini_parser::read_ini(filepath, pt);
+        std::string st = pt.get<std::string>("RPC.RPChost");
+        
+        std::cout << st << std::endl;
+        httpclient = new jsonrpc::HttpClient(st);
+        c = new ethRPCClient(*httpclient);
+
+    } catch (const std::exception &e) {
+        std::cout << e.what() << std::endl;
+        exit(-1);
+    }
+}
+
 int main(int argc, char* argv[])
 {
+    init(argc, argv);
     int ret;
     sgx_enclave_id_t eid;
     sgx_status_t st;

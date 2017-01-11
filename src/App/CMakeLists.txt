@@ -1,5 +1,3 @@
-set(CMAKE_VERBOSE_MAKEFILE False)
-
 set(SOURCE_FILES
         App.cpp
         Bookkeeping.cpp
@@ -20,6 +18,9 @@ set(SOURCE_FILES
         )
 
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
+
+set_directory_properties(PROPERTIES
+    ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_u.c
@@ -49,7 +50,7 @@ add_executable(TestMain
         mbedtls_sgx_net.c
         ../Common/Converter.cpp
         ../Common/Debug.c
-        ../Common/Log.c test/Sealing.cpp)
+        ../Common/Log.c)
 
 if (NOT SGX_MODE STREQUAL HW)
     set(Urts_Library_Name sgx_urts_sim)
@@ -88,7 +89,9 @@ target_link_libraries(tc
         -ljsoncpp
         -lcurl
         -ljsonrpccpp-common
-        -ljsonrpccpp-client)
+        -ljsonrpccpp-client
+        -lcfgparser
+        )
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
 set(TEST_PROGRAM_LDFLAGS " ${LIBGTEST}/libgtest_main.a")
@@ -104,6 +107,11 @@ target_link_libraries(TestMain
         ${LIBGTEST}/libgtest_main.a
         -lpthread)
 
+add_custom_command(TARGET tc
+        POST_BUILD
+        COMMAND cp
+        -f ${CMAKE_SOURCE_DIR}/config ${CMAKE_BINARY_DIR}
+        COMMENT "Testing command")
 
 add_dependencies(tc enclave)
 add_dependencies(TestMain enclave)

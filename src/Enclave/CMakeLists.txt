@@ -26,9 +26,11 @@ set(SOURCE_FILES
         https_client.cpp)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
+
 SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES})
 
-set(CMAKE_VERBOSE_MAKEFILE False)
+set_directory_properties(PROPERTIES
+    ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_t.c
