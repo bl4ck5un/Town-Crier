@@ -1,5 +1,5 @@
-PREREQUISITE
-----------------
+Installation
+------------
 
 SGX Software
 ============
@@ -27,6 +27,7 @@ Dependencies
 - [`libjson-rpc-cpp`](https://github.com/cinemast/libjson-rpc-cpp)
 - sqlite3: `sudo apt-get install libsqlite3-0 libsqlite3-dev`
 - `cfgparser`: In http://cfgparser.sourceforge.net/
+- `boost`: We used a few Boost utility functions. `sudo apt-get install libboost-all-dev`
 
 Build
 -----
