@@ -76,7 +76,7 @@ The compiled binary will be `build/tc`.
 To build tests, build vendored `gtest` first
 
 ```
-build_gtest.sh
+./utils/build_gtest.sh
 ```
 
 Then build self tests with CMake the same as building Town Crier
