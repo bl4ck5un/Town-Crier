@@ -90,7 +90,6 @@ target_link_libraries(tc
         -lcurl
         -ljsonrpccpp-common
         -ljsonrpccpp-client
-        -lcfgparser
         )
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")

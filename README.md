@@ -1,42 +1,62 @@
-Installation
-------------
+# Prerequisites 
 
-SGX Software
-============
+## Intel Software Guardian eXtension (SGX)
 
-## Run Town Crier in the simulation mode
+Town Crier makes use of Intel SGX to provide security guarantees. Compiling TC
+requires shared libraries provided by the SGX Software Development Kit (SDK),
+which is freely available from Intel. SGX SDK provides two sets of SGX
+libraries, a _hardware_ one and a _simulation_ one, with the only difference
+(yet a significant one) being that the hardware libraries implement APIs with
+real SGX hardware instructions while the simulation libraries just simulate
+them in the user space. TC can be linked against either set of APIs.
 
-Any system, not matter it has SGX hardware or not, can be used to develop Town Crier and test it in the simulation mode,
-where no protection is indeed conferred. Simulation actually makes debugging and profiling easier and can be run on
-almost any Linux system.
+If linked with the hardware libraries, the executable will run in the _hardware_
+mode, which requires a SGX-enabled CPU to run.  If linked with the simulation
+libraries, the executable will run as if it's an ordinary userspace program,
+providing ABSOLUTELY NO SECURITY GUARANTEE. Therefore the simulation mode is
+only meant for development and test purpose.
 
-To compile and run Town Crier in the simulation mode, one only needs to install the SGX SDK, which can be obtained from
+### Requisites for the simulation mode
+
+Any system, not matter it has SGX hardware or not, can be used to develop Town
+Crier and test it in the simulation mode Simulation actually makes debugging and
+profiling easier and can be run on almost any Linux system.
+
+To compile and run Town Crier in the simulation mode, one only needs to install
+the SGX SDK, which can be obtained from
 [here](https://01.org/intel-software-guard-extensions/downloads).
 
-## Run Town Crier in **hardware** Mode
+### Requisites for the hardware mode
 
-To run TC on real SGX hardware, some dependency (SGX driver, SGX PSW, SGX SDK) has to be installed and configured.
-Please refer to [linux-sgx](https://github.com/01org/linux-sgx) for instructions.
+To run TC on real SGX hardware, some dependency (SGX driver, SGX PSW, SGX SDK)
+has to be installed and configured. Please refer to
+[linux-sgx](https://github.com/01org/linux-sgx) for instructions.
 
 
-Dependencies
-============
+## Libraries 
 
-- `cmake`: Town Crier uses CMake as the building tool. Please obtain it from your distributor.
-- `libjsoncpp`: In ubuntu 16.04: `sudo apt-get install libjsoncpp-dev`
+- `cmake`: >= 3.0
+- `libjsoncpp` 
 - [`libjson-rpc-cpp`](https://github.com/cinemast/libjson-rpc-cpp)
-- sqlite3: `sudo apt-get install libsqlite3-0 libsqlite3-dev`
-- `cfgparser`: In http://cfgparser.sourceforge.net/
-- `boost`: We used a few Boost utility functions. `sudo apt-get install libboost-all-dev`
+- sqlite3: 
+- `boost`
 
-Build
------
+On Ubuntu 16.04 LTS: 
+
+```
+sudo apt-get install cmake libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools libsqlite3-0 libsqlite3-dev libboost-all-dev 
+```
+
+Other platforms have yet to be tested.
+
+# Build
+
+## Build without testing
 
 Build the TLS library first:
 
 ```
-cd Enclave/mbedtls-SGX
-make
+make -C Enclave/mbedtls-SGX
 ```
 
 Then build the Town Crier with CMake:
@@ -50,13 +70,13 @@ make tc
 
 The compiled binary will be `build/tc`.
 
-Test
+## Build with Tests (gtest)
 ----
 
-To build tests, one needs to build vendored `gtest`
+To build tests, build vendored `gtest` first
 
 ```
-./utils/build_gtest.sh
+build_gtest.sh
 ```
 
 Then build self tests with CMake the same as building Town Crier
@@ -70,6 +90,8 @@ make TestMain
 
 
 After you build and install Town Crier, run `build/TestMain` to test (powered by GTest).
+
+
 
 Run
 ----
