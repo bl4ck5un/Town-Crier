@@ -4,17 +4,16 @@
 
 Town Crier makes use of Intel SGX to provide security guarantees. Compiling TC
 requires shared libraries provided by the SGX Software Development Kit (SDK),
-which is freely available from Intel. SGX SDK provides two sets of SGX
-libraries, a _hardware_ one and a _simulation_ one, with the only difference
-(yet a significant one) being that the hardware libraries implement APIs with
-real SGX hardware instructions while the simulation libraries just simulate
-them in the user space. TC can be linked against either set of APIs.
+which is freely available from Intel. SGX SDK provides two versions of SGX
+libraries, the**hardware** version and the **simulation** version, with the
+only difference (yet a significant one) being that the hardware libraries
+implement APIs with real SGX hardware instructions while the simulation libraries
+just simulate them in the user space. 
 
-If linked with the hardware libraries, the executable will run in the _hardware_
-mode, which requires a SGX-enabled CPU to run.  If linked with the simulation
-libraries, the executable will run as if it's an ordinary userspace program,
-providing ABSOLUTELY NO SECURITY GUARANTEE. Therefore the simulation mode is
-only meant for development and test purpose.
+TC can be linked against either set of APIs:
+
+- If linked with the hardware libraries, the executable will run in the _hardware_ mode, which requires a SGX-enabled CPU to run.
+- If linked with the simulation libraries, the executable will run as if it's an ordinary userspace program, providing ABSOLUTELY NO SECURITY GUARANTEE. Therefore the simulation mode is only meant for development and test purpose.
 
 ### Requisites for the simulation mode
 
