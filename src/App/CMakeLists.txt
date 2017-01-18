@@ -30,17 +30,10 @@ add_custom_command(
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_custom_command(
-        OUTPUT ethrpcclient.h
-        COMMAND jsonrpcstub ${TC_ROOT_DIR}/App/eth_api.json --cpp-client ethRPCClient
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-
 add_executable(tc ${SOURCE_FILES})
 
 # Tests
-add_executable(TestMain
+add_executable(TestMain EXCLUDE_FROM_ALL
         ${TEST_SRC_FILES}
         Init.cpp
         Enclave_u.c
