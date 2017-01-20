@@ -151,8 +151,8 @@ function SteamPurchase(contract, steamId, delay) {
   return "Purchased!"
 }
 
-function FlightInsure(contract, flightID, fee) {
-    contract.insure.sendTransaction(flightID, fee, {
+function FlightInsure(contract, flightID, time, fee) {
+contract.insure.sendTransaction([web3.fromAscii(flightID, 32), web3.fromAscii(time, 32)], fee, {
         from: buyerAddr,
         value: fee * 1e+18 + TC_FEE,
         gas: gasCnt
@@ -160,6 +160,13 @@ function FlightInsure(contract, flightID, fee) {
     mineBlocks(1);
     return "Insured!"
 }
+
+function TestSteam(contract, steamId, delay) {
+    for (var i = 0; i < 1000; ++i) {
+        SteamPurchase(contract, steamId, delay);
+    }
+}
+
 
 function check_balance(){
     var before = Number(eth.getBalance(sellerAddr));
@@ -183,9 +190,10 @@ function check_balance(){
 
 
 /* =========== The following should be run line-by-line as a demo =========== */
-
+// loadScript("demorc.js");
 // tc = setup_tc();
 // var tradeContract = createSteamTrade(encryptedApiKey, 'Portal', 1e+18);
-// purchase(tradeContract, buyerSteamId, 60);
-// check_balance();
+// TestSteam(tradeContract, buyerSteamId, 60);
+// var insContract = createFlightIns();
+// FlightInsure(insContract, "fightID", "epochtime", 5);
 EOF

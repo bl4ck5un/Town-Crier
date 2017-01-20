@@ -10,7 +10,7 @@ contract TownCrier {
     }
 
     event RequestLog(address self, int16 flag);
-    event RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, bytes32 paramsHash, bytes32[] requestData);
+    event RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, bytes32 paramsHash, bytes32 timestamp, bytes32[] requestData);
     event DeliverLog(uint gasLeft, int flag);
     event DeliverInfo(uint64 requestId, uint fee, uint gasPrice, uint gasLeft, uint callbackGas, bytes32 paramsHash, bytes32 response);
 //    event DeliverSig(uint8 v, bytes32 r, bytes32 s, address recoveredAddr);
@@ -49,7 +49,7 @@ contract TownCrier {
     function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, bytes32[] requestData) public payable returns (uint64) {
         RequestLog(this, 0);
         if (msg.value < MIN_FEE || msg.value > MAX_FEE) {
-            RequestInfo(0, requestType, msg.sender, msg.value, callbackAddr, 0, requestData);
+            RequestInfo(0, requestType, msg.sender, msg.value, callbackAddr, 0, 0, requestData);
             RequestLog(this, -1);
             return 0;
         } else {
@@ -62,7 +62,7 @@ contract TownCrier {
             requests[requestId].callbackAddr = callbackAddr;
             requests[requestId].callbackFID = callbackFID;
             requests[requestId].paramsHash = paramsHash;
-            RequestInfo(requestId, requestType, msg.sender, msg.value, callbackAddr, paramsHash, requestData);
+            RequestInfo(requestId, requestType, msg.sender, msg.value, callbackAddr, paramsHash, 0, requestData);
             RequestLog(this, 1);
             return requestId;
         }
