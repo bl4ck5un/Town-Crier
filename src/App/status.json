@@ -1,0 +1,12 @@
+[
+  {
+    "method": "attest",
+    "returns": "0xaabb"
+  },
+  {
+    "method": "status",
+    "returns": {
+      "num_of_tx": 123
+    }
+  }
+]

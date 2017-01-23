@@ -15,7 +15,7 @@ set(SOURCE_FILES
         ../Common/Debug.c
         ../Common/Log.c
         mbedtls_sgx_net.c
-        )
+        StatusRpcServer.cpp StatusRpcServer.h)
 
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
 
@@ -83,6 +83,9 @@ target_link_libraries(tc
         -lcurl
         -ljsonrpccpp-common
         -ljsonrpccpp-client
+        -ljsonrpccpp-server
+        -lmicrohttpd
+        -lpthread
         )
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
