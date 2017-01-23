@@ -77,7 +77,7 @@ int parse_response(const char* resp, int* delay, uint64_t unix_epoch_time) {
 	//Handle Flight not found
     if(strlen(resp)< 31){
     	*delay = -1; //flight not found
-    	LL_NOTICE("Flight not found!\n");
+      LL_NOTICE("Flight not found!");
     	return NOT_FOUND;
     }	
 
@@ -197,7 +197,6 @@ int parse_response(const char* resp, int* delay, uint64_t unix_epoch_time) {
 //    - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
 //*/
 int get_flight_delay(uint64_t unix_epoch_time, const char* flight, int* resp) {
-    /***** VARIABLE DECLARATIONS */
     int ret;
     int delay;
 
@@ -206,8 +205,7 @@ int get_flight_delay(uint64_t unix_epoch_time, const char* flight, int* resp) {
     header.push_back(HOST);
 
     //Construct the query
-    std::string query = "/json/FlightXML2/FlightInfoEx?ident=" + std::string(query) +\
-                        "&howMany=30&offset=0 HTTP/1.1";
+  std::string query = "/json/FlightXML2/FlightInfoEx?ident=" + std::string(flight) + "&howMany=30&offset=0 HTTP/1.1";
 
     HttpRequest httpRequest("flightxml.flightaware.com", query, header);
     HttpClient httpClient(httpRequest);
@@ -224,7 +222,7 @@ int get_flight_delay(uint64_t unix_epoch_time, const char* flight, int* resp) {
     }
 
     //Handle result of parse_response
-    if (ret == INVALID || ret == NOT_FOUND){
+  if (ret == INVALID) {
         *resp = ret;
         return -1;
     }
@@ -253,27 +251,5 @@ int get_flight_delay(uint64_t unix_epoch_time, const char* flight, int* resp) {
         }
         return 0;
     }
-    //cleanup:
-    //    return ret;
     return 0;
 }
-//#ifdef MAIN
-//int main(int argc, char* argv[]) {
-//    // int rc, delay;
-//    // printf("USAGE: get_flight_delay(YYYYMMDD, HHmm, flight#, return_variable)\n");
-//    // printf("\tdate/time in Zulu/UTC, flight in ICAO\n");
-//    // rc = get_flight_delay("20160129", "1450", "DAL900", &delay);
-//    // if (rc < 0)
-//    //     printf("Could not find flight info for DAL900 at specified departure time\n");
-//    // else
-//    //     printf("Delta Airlines flight 900 is %d minutes late on 26 January 2016 (should be 2 minutes late)\n", delay);
-//
-//
-//    // rc = get_flight_delay("20160204", "0310", "SWA450", &delay);
-//    // printf("%d, %d (should be 11)\n", rc, delay);
-//    // rc = get_flight_delay("20160202", "0650", "UAL1183", &delay);
-//    // printf("%d, %d (should be -12)\n", rc, delay);
-//
-//    return 0;
-//}
-//#endif

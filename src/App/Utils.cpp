@@ -41,8 +41,6 @@ void print_error_message(sgx_status_t ret)
 //    
 //}
 
-
-
 static uint8_t hex2int(char input)
 {
   if(input >= '0' && input <= '9')

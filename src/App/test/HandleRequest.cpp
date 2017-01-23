@@ -1,64 +1,36 @@
-//
-// Created by fanz on 6/11/16.
-//
-
 #include <gtest/gtest.h>
 
-#include "../Init.h"
-#include "../Enclave_u.h"
-
 #include "../EthRPC.h"
-#include "Converter.h"
-#include <vector>
 
-TEST (RequestHandling, hex_to_bytes) {
-    int ret;
-    uint8_t b[4];
-    uint8_t b_ref[4] = {0xaa, 0xbb, 0xcc, 0xdd};
-    hex_to_bytes("0xaabbccdd", b);
+TEST (RequestHandling, hex_and_unhex) {
+  uint8_t b[4];
+  uint8_t b_ref[4] = {0xaa, 0xbb, 0xcc, 0xdd};
 
-    for (int i = 0; i < 4; i++) {
-        ASSERT_EQ(b_ref[i], b[i]);
-    }
+  string hex = bufferToHex(b_ref, sizeof b_ref, false);
+  ASSERT_EQ(0, hex.compare("AABBCCDD"));
 
-    memset(b, 0x8a, 4);
-    ret = hex_to_bytes("", b);
-    ASSERT_EQ(0, ret);
-    for (int i = 0; i < 4; i++) {
-        ASSERT_EQ(0x8a, b[i]);
-    }
+  string hexString = "0x00aabbccdd";
+  uint8_t buffer[5];
+  uint8_t buffer_ref[5]{00, 0xaa, 0xbb, 0xcc, 0xdd};
+  hexToBuffer(hexString, buffer, sizeof buffer);
+  ASSERT_EQ(0, memcmp(buffer, buffer_ref, sizeof buffer));
 
-    ret = hex_to_bytes(NULL, NULL);
-    ASSERT_EQ(-1, ret);
-
-    ret = hex_to_bytes("0xa", NULL);
-    ASSERT_EQ(-1, ret);
-
-    long len = calc_b_size("");
-    ASSERT_EQ(0, len);
-
-    len = calc_b_size("0x");
-    ASSERT_EQ(0, len);
+  memset(b, 0x8a, 4);
+  hexToBuffer("", b, sizeof b);
+  for (int i = 0; i < 4; i++) {
+    ASSERT_EQ(0x8a, b[i]);
+  }
 }
 
-// Byte code of ABI encoding:
-// 0x00 - 0x20 bytes : id
-// 0x20 - 0x40 bytes : requestType
-// 0x40 - 0x60 bytes : requester
-// 0x60 - 0x80       : fee
-// 0x80 - 0xa0       : cb
-// 0xa0 - 0xc0       : hash
-// 0xc0 - 0xe0       : offset of requestData
-// 0xe0 - 0x100      : reqLen (in bytes32)
-// 0x100 - ...       : reqData
 
 #define RAW_DATA \
     "0000000000000000000000000000000000000000000000000000000002340abc" \
     "0000000000000000000000000000000000000000000000000000000000000002" \
     "00000000000000000000FF00000000000000000000000000000000000FFFFFFF" \
     "0000000000000000000000000000000000000000000000000000000002340abc" \
-    "00000000000000000000EE00000000000000000000000000000000000EEEEEEE" \
+    "000000000000000000000000CCCCAAAA11111111BBBBAAAACCCC555512312312" \
     "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB" \
+    "00000000000000000000000000000000000000000000000000000000000BA9C0" \
     "00000000000000000000000000000000000000000000000000000000000000E0" \
     "0000000000000000000000000000000000000000000000000000000000000006" \
     "0000000000000000000000000000000000000000000000000000000000000001" \
@@ -68,38 +40,42 @@ TEST (RequestHandling, hex_to_bytes) {
     "0000000000000000000000000000000000000000000000000000000000000001" \
     "0000000000000000000000000000000000000000000000000000000000000006"
 
+// Byte code of ABI encoding:
+// 0x00 - 0x20 bytes : id
+// 0x20 - 0x40 bytes : requestType
+// 0x40 - 0x60 bytes : requester
+// 0x60 - 0x80       : fee
+// 0x80 - 0xa0       : cb
+// 0xa0 - 0xc0       : hash
+// 0xc0 - 0xe0       : timestamp
+// 0xe0 - 0x100       : offset of requestData
+// 0x100 - 0x120      : reqLen (in bytes32)
+// 0x120 - ...       : reqData
+
 TEST (RequestHandling, parsing) {
-    int ret;
-    uint8_t* raw_data = (uint8_t*) malloc(calc_b_size(RAW_DATA));
-    hex_to_bytes(RAW_DATA, raw_data);
-    Request r(raw_data);
+  std::string raw = std::string(RAW_DATA);
+  Request r(raw);
 
-    EXPECT_EQ(0x2340abc, r.id);
-    EXPECT_EQ(2, r.type);
-    EXPECT_EQ(0x2340abc, r.fee);
-    EXPECT_EQ(6 * 32, r.data_len);
+  EXPECT_EQ(0x2340abc, r.id);
+  EXPECT_EQ(2, r.type);
 
-    EXPECT_EQ(1, r.data[0x20 - 1]);
-    EXPECT_EQ(2, r.data[0x40 - 1]);
-    EXPECT_EQ(3, r.data[0x60 - 1]);
-    EXPECT_EQ(4, r.data[0x80 - 1]);
-    EXPECT_EQ(1, r.data[0xa0 - 1]);
-    EXPECT_EQ(6, r.data[0xc0 - 1]);
-}
+  bool eq = bufferToHex(r.requester, sizeof r.requester, false) == "000000000000000000000000000000000FFFFFFF";
+  ASSERT_EQ(true, eq);
 
+  EXPECT_EQ(0x2340abc, r.fee);
 
-TEST (RequestHandling, general) {
-    /*
-    sgx_enclave_id_t eid;
-    int ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
-    ASSERT_EQ(SGX_SUCCESS, ret);
+  ASSERT_EQ(0, bufferToHex(r.callback, sizeof r.callback, false).compare("CCCCAAAA11111111BBBBAAAACCCC555512312312"));
+  ASSERT_EQ(0, bufferToHex(r.param_hash,
+                           sizeof r.param_hash,
+                           false).compare("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"));
 
-    uint8_t* raw_data = (uint8_t*) malloc(calc_b_size(RAW_DATA));
-    hex_to_bytes(RAW_DATA, raw_data);
-    Request r(raw_data);
-    uint8_t raw_tx[2048];
-    int raw_tx_len;
-    handle_request(eid, &ret, 0, r.id, r.type, r.data, r.data_len, raw_tx, &raw_tx_len);
-    ASSERT_EQ(0, ret);
-    */
+  EXPECT_EQ(0xBA9C0, r.timestamp);
+  EXPECT_EQ(6 * 32, r.data_len);
+
+  EXPECT_EQ(1, r.data[0x20 - 1]);
+  EXPECT_EQ(2, r.data[0x40 - 1]);
+  EXPECT_EQ(3, r.data[0x60 - 1]);
+  EXPECT_EQ(4, r.data[0x80 - 1]);
+  EXPECT_EQ(1, r.data[0xa0 - 1]);
+  EXPECT_EQ(6, r.data[0xc0 - 1]);
 }

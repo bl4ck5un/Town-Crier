@@ -3,10 +3,17 @@
 #include <vector>
 #include "sgx_error.h"
 
+#ifdef __GNUC__
+#define DEPRECATED(func) func __attribute__ ((deprecated))
+#elif defined(_MSC_VER)
+#define DEPRECATED(func) __declspec(deprecated) func
+#else
+#pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+#define DEPRECATED(func) func
+#endif
 
-
-void fromHex(const char* src, uint8_t* target, unsigned* len);
-void fromHex(const char* src, std::vector<uint8_t> & out);
+DEPRECATED(void fromHex(const char *src, uint8_t *target, unsigned *len));
+DEPRECATED(void fromHex(const char *src, std::vector<uint8_t> &out));
 
 //#if defined(__cplusplus)
 //extern "C" {

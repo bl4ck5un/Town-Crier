@@ -11,14 +11,24 @@ uint8_t get_n_th_byte (uint64_t in, int n)
     return (in >> (8*n)) & 0xff;
 }
 
+/*!
+ * encode in in big-endian order. Prepend zeros to make the result of 32-byte aligned.
+ * @param out
+ * @param in input int
+ * @param len length of int in byte
+ * @return
+ */
 int enc_int(bytes& out, uint64_t in, int len)
 {
-    if (len > 32) {printf_sgx("Error: too big\n"); return -1; }
-    // padding with 0
-    for (int i = 0; i < 32 - len; i++)  {out.push_back(0); }
-    // push big-endian int
-    for (int i = len - 1; i >= 0; i--) {out.push_back(get_n_th_byte(in, i));}
-    return 0;
+  if (len > 32) {
+    printf_sgx("Error: too big\n");
+    return -1;
+  }
+  // padding with 0
+  for (int i = 0; i < 32 - len; i++) { out.push_back(0); }
+  // push big-endian int
+  for (int i = len - 1; i >= 0; i--) { out.push_back(get_n_th_byte(in, i)); }
+  return 0;
 }
 
 uint8_t bytesRequired(int _i)

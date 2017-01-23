@@ -212,7 +212,6 @@ int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int dat
                 return ret;
             }
             enc_int(resp_data, found, sizeof ( found ));
-            resp_data_len = 32;
             break;
         }
     case TYPE_STEAM_EX:

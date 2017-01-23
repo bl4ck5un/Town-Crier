@@ -1,6 +1,9 @@
-/* EthRPC is a wrapper function around etherium Blockchain calls
+/*!
+ * @file: EthRPC.cpp
+ * @brief: This file provides wrapper functions around Etherium RPC calls
+ *
  * It provides functionality for talking to the blockchain and checking specific state
- * Additionally, the Request object parses the data recieved from the blockchain
+ * Additionally, the Request object parses the data received from the blockchain
  */
 
 #include <cstdio>
@@ -8,78 +11,66 @@
 #include <stdexcept>
 #include <iomanip>
 #include <sstream>
-#include <string>
-#include <sstream>
 #include <jsonrpccpp/client/connectors/httpclient.h>
 
-#include "App.h"
 #include "Enclave_u.h"
 #include "Log.h"
 #include "EthRPC.h"
-#include "Converter.h"
 #include "Constants.h"
-#include "Utils.h"
-
 
 using namespace jsonrpc;
 
 ethRPCClient *c;
 
-/* send_transaction [raw] sends data [raw] to remote host httpclient
- * listenign in on port [port]
- * Note: [hostname] and [port] are unsed parameters for now
- */ 
-int send_transaction(char* raw)
-{
-    if(raw == NULL){ 
-    	return -1;
-    }
+/*!
+ * Send raw transactions to geth
+ * @param raw encoded transaction
+ */
+void send_transaction(const std::string &rawTransaction) {
+  std::string res;
+  std::string param(rawTransaction);
 
-    std::string res;
-    std::string param(raw);
-
-    res = c->eth_sendRawTransaction(param);
-
-    LL_CRITICAL("Response recorded in the blockchain.");
-    LL_CRITICAL("TX: %s", res.c_str());
-
-    return 0;
-
+  res = c->eth_sendRawTransaction(param);
+  LL_CRITICAL("Response recorded in the blockchain.");
+  LL_CRITICAL("TX: %s", res.c_str());
 }
 
-/* Returns a filter from block [from] to block [to], writes the value of the filter into [id]
+/*!
+ * @remark How to get topic id?
+ *  > https://asecuritysite.com/encryption/sha3
+ *  > https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
+ *  $ sha3(RequestInfo(uint64,uint8,address,uint256,address,bytes32,bytes32,bytes32[]))
+ * Returns a filter from block [from] to block [to], writes the value of the filter into [id]
  * Postcondition: [id] is a valid id that can be used with eth_get_filter_logs
  */
-int eth_new_filter(std::string& id, int from, int to)
-{
-    if(from < 0 || to < 0){
-    	return -1;
-    }
+string eth_new_filter(int from, int to) {
+  if (from < 0 || to < 0) {
+    throw invalid_argument("from or to is smaller than 0");
+  }
 
-    Json::Value filter_opt;
-    filter_opt["address"] = TC_ADDRESS;
-    filter_opt["topics"][0] = "0x8d2b45c22f17e6631529a8fb8f4b17f4f336d01b6db32584ec554476dbbf2af0";
-    filter_opt["fromBlock"] = from;
-    filter_opt["toBlock"] = to;
+  Json::Value filter_opt;
+  filter_opt["address"] = TC_ADDRESS;
 
-    id = c->eth_newFilter(filter_opt);
-    return 0;
+  filter_opt["topics"][0] = "0xc8d1123dbf500dfdf606f7ec68a0e5f51c3a0112d0d433a442a9664266a8cc41";
+  filter_opt["fromBlock"] = from;
+  filter_opt["toBlock"] = to;
+
+  return c->eth_newFilter(filter_opt);
 }
 
 
 /* eth_getfilterlogs [hostname] [port] [filter_id] [result] returns the logged events of [filter_id]
  * Given the [filter_id] writes to [result] an array containing the required data
  */
-int eth_getfilterlogs(std::string filter_id, Json::Value& result) {
+void eth_getfilterlogs(const string &filter_id, Json::Value &txnContainer) {
     if(filter_id.empty()){
-    	return -1;
+      throw invalid_argument("filter_id is empty");
     }
-    result = c->eth_getFilterLogs(filter_id);
-    return 0;
+  txnContainer = c->eth_getFilterLogs(filter_id);
 }
 
-/* eth_blockNumber [hostname] [port] returns the block number of C
- * Postcondition: ret is the hights block number that we have seen so far
+/*!
+ * @return the highest block number that geth has seen so far
  */
 long eth_blockNumber()
 {
@@ -90,31 +81,72 @@ long eth_blockNumber()
     ss >> ret;
     return ret;
 }
-/*Creates a Request block, from inputer data this is used to parse the data from the block
-*/ 
-Request::Request(uint8_t *input) {
-    this->id = u64_from_b(input + 0x20 - sizeof(this->id));
-    this->type = u64_from_b(input + 0x40 - sizeof(this->type));
 
-    memcpy(this->requester, input + 0x40 + 16, 20);
-
-    this->fee = u32_from_b(input + 0x80 - sizeof(this->fee));
-    memcpy(this->callback, input + 0x80 + 16, 20);
-
-    memcpy(this->param_hash, input + 0xa0, 32);
-
-    //timestamp
-    this->data_len = u32_from_b(input + 0x100 - sizeof(this->data_len)) * 32;
-    this->data = (uint8_t*) malloc(this->data_len);
-
-    if (this->data == NULL) {
-        LL_CRITICAL("Failed to allocate memory. RID=%ld", this->id);
-        throw std::runtime_error("failed to malloc");
-    }
-    else {
-        memcpy(this->data, input + 0x100, this->data_len);
-    }
+inline static unsigned int __hextoi(const string &str) {
+  try {
+    return static_cast<unsigned int> (std::stoi(str, nullptr, 16));
+  }
+  catch (std::out_of_range &ex) {
+    throw invalid_argument("Exception happen when calling stoi(" + str + ")");
+  }
 }
+
+inline static unsigned long __hextol(const string &str) {
+  return std::stoul(str, nullptr, 16);
+}
+
+Request::Request(const std::string &input) {
+  LL_LOG("input is %s", input.c_str());
+  if (input.size() < Request::REQUEST_MIN_LEN) {
+    throw std::invalid_argument("input string is too short");
+  }
+  // 0x00 - 0x20 bytes : id
+  size_t offset = (input.compare(0, 2, "0x") == 0) ? 2 : 0;
+  this->id = __hextol(input.substr(offset, ENTRY_LEN));
+  offset += ENTRY_LEN;
+
+  // 0x20 - 0x40 bytes : requestType
+  this->type = __hextol(input.substr(offset, ENTRY_LEN));
+  offset += ENTRY_LEN;
+
+  // 0x40 - 0x60 bytes : requester
+  offset += ADDRESS_LEADING_ZERO; //skipping leading zeroes
+  hexToBuffer(input.substr(offset, ADDRESS_LEN), this->requester, sizeof this->requester);
+  offset += ADDRESS_LEN;
+
+  // 0x60 - 0x80       : fee
+  this->fee = __hextol(input.substr(offset, ENTRY_LEN));
+  offset += ENTRY_LEN;
+
+  // 0x80 - 0xa0       : cb
+  offset += ADDRESS_LEADING_ZERO; //skipping leading zeroes
+  hexToBuffer(input.substr(offset, ADDRESS_LEN), this->callback, sizeof this->callback);
+  offset += ADDRESS_LEN;
+
+  // 0xa0 - 0xc0       : hash
+  hexToBuffer(input.substr(offset, ENTRY_LEN), this->param_hash, sizeof this->param_hash);
+  offset += ENTRY_LEN;
+
+  // 0xc0 - 0xe0       : timestamp
+  this->timestamp = __hextol(input.substr(offset, ENTRY_LEN));
+  offset += ENTRY_LEN;
+
+  // 0xe0 - 0x100       : offset of requestData
+  offset += ENTRY_LEN; // skipping offset
+
+  // 0x100 - 0x120      : reqLen (in bytes32)
+  this->data_len = __hextoi(input.substr(offset, ENTRY_LEN)) * 32;
+  offset += ENTRY_LEN;
+
+  // 0x120 - ...       : reqData
+  if (this->data_len > 102400) {
+    throw std::invalid_argument("request data is too large");
+  }
+
+  this->data = static_cast<uint8_t *>(malloc(this->data_len));
+  hexToBuffer(input.substr(offset), this->data, this->data_len);
+}
+
 /*Destructor */
 Request::~Request() {
     if (this->data != NULL) {
