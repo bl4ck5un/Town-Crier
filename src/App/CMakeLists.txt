@@ -15,9 +15,8 @@ set(SOURCE_FILES
         ../Common/Debug.c
         ../Common/Log.c
         mbedtls_sgx_net.c
-        StatusRpcServer.cpp StatusRpcServer.h)
+        StatusRpcServer.cpp StatusRpcServer.h types.cpp types.hxx)
 
-FILE(GLOB TEST_SRC_FILES "test/*.cpp")
 
 set_directory_properties(PROPERTIES
     ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
@@ -33,6 +32,7 @@ add_custom_command(
 add_executable(tc ${SOURCE_FILES})
 
 # Tests
+FILE(GLOB TEST_SRC_FILES "test/*.cpp")
 add_executable(TestMain EXCLUDE_FROM_ALL
         ${TEST_SRC_FILES}
         Init.cpp
@@ -40,10 +40,13 @@ add_executable(TestMain EXCLUDE_FROM_ALL
         Utils.cpp
         ocalls.cpp
         EthRPC.cpp
+        bookkeeping/database.cpp
+        bookkeeping/transaction-record.hxx
+        bookkeeping/transaction-record-odb.cxx
         mbedtls_sgx_net.c
         ../Common/Converter.cpp
         ../Common/Debug.c
-        ../Common/Log.c)
+        ../Common/Log.c types.cpp types.hxx)
 
 if (NOT SGX_MODE STREQUAL HW)
     set(Urts_Library_Name sgx_urts_sim)
@@ -52,6 +55,7 @@ else ()
 endif ()
 
 include_directories(
+        /usr/local/include
         ../Common
         ${SGX_SDK}/include
         ${MBEDTLS_LIB_DIR}/include
@@ -98,9 +102,12 @@ target_link_libraries(TestMain
         -lcurl
         -ljsonrpccpp-common
         -ljsonrpccpp-client
+        -lpthread
+        -lodb-sqlite
+        -lodb
         ${LIBGTEST}/libgtest.a
         ${LIBGTEST}/libgtest_main.a
-        -lpthread)
+        )
 
 add_custom_command(TARGET tc
         POST_BUILD
