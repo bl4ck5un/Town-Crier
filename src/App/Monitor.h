@@ -1,7 +1,10 @@
 #pragma once
 #include "stdint.h"
+#include "bookkeeping/database.hxx"
 #include <sgx_edger8r.h>
+#include <atomic>
 
+#include "Constants.h"
 
 enum EX_REASONS {
     EX_GET_BLOCK_NUM,
@@ -12,5 +15,19 @@ enum EX_REASONS {
     EX_HANDLE_REQ,
 };
 
-void monitor_loop(sgx_enclave_id_t eid, int nonce);
-int demo_test_loop(sgx_enclave_id_t eid, uint8_t* nonce);
+class Monitor {
+ private:
+  OdbDriver &driver;
+  const sgx_enclave_id_t eid;
+  const int nonceOffset;
+
+  const std::atomic_bool &quit;
+
+  const static int kRetryAllowed = 8;
+
+ public:
+  Monitor(OdbDriver &driver, sgx_enclave_id_t eid, int nonceOffset, std::atomic_bool &quit) :
+      driver(driver), eid(eid), nonceOffset(nonceOffset), quit(quit) {}
+
+  void loop();
+};

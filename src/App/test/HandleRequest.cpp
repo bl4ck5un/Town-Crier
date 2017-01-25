@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 
-#include "../EthRPC.h"
+#include "../request-parser.hxx"
+#include "Converter.h"
 
 TEST (RequestHandling, hex_and_unhex) {
   uint8_t b[4];
@@ -56,26 +57,29 @@ TEST (RequestHandling, parsing) {
   std::string raw = std::string(RAW_DATA);
   Request r(raw);
 
-  EXPECT_EQ(0x2340abc, r.id);
-  EXPECT_EQ(2, r.type);
+  EXPECT_EQ(0x2340abc, r.getId());
+  EXPECT_EQ(2, r.getType());
 
-  bool eq = bufferToHex(r.requester, sizeof r.requester, false) == "000000000000000000000000000000000FFFFFFF";
+  bool eq = bufferToHex(r.getRequester(), r.getRequesterLen(), false) == "000000000000000000000000000000000FFFFFFF";
   ASSERT_EQ(true, eq);
 
-  EXPECT_EQ(0x2340abc, r.fee);
+  EXPECT_EQ(0x2340abc, r.getFee());
 
-  ASSERT_EQ(0, bufferToHex(r.callback, sizeof r.callback, false).compare("CCCCAAAA11111111BBBBAAAACCCC555512312312"));
-  ASSERT_EQ(0, bufferToHex(r.param_hash,
-                           sizeof r.param_hash,
+  ASSERT_EQ(0,
+            bufferToHex(r.getCallback(),
+                        r.getCallbackLen(),
+                        false).compare("CCCCAAAA11111111BBBBAAAACCCC555512312312"));
+  ASSERT_EQ(0, bufferToHex(r.getParamHash(),
+                           r.getParamHashLen(),
                            false).compare("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"));
 
-  EXPECT_EQ(0xBA9C0, r.timestamp);
-  EXPECT_EQ(6 * 32, r.data_len);
+  EXPECT_EQ(0xBA9C0, r.getTimestamp());
+  EXPECT_EQ(6 * 32, r.getDataLen());
 
-  EXPECT_EQ(1, r.data[0x20 - 1]);
-  EXPECT_EQ(2, r.data[0x40 - 1]);
-  EXPECT_EQ(3, r.data[0x60 - 1]);
-  EXPECT_EQ(4, r.data[0x80 - 1]);
-  EXPECT_EQ(1, r.data[0xa0 - 1]);
-  EXPECT_EQ(6, r.data[0xc0 - 1]);
+  EXPECT_EQ(1, r.getData()[0x20 - 1]);
+  EXPECT_EQ(2, r.getData()[0x40 - 1]);
+  EXPECT_EQ(3, r.getData()[0x60 - 1]);
+  EXPECT_EQ(4, r.getData()[0x80 - 1]);
+  EXPECT_EQ(1, r.getData()[0xa0 - 1]);
+  EXPECT_EQ(6, r.getData()[0xc0 - 1]);
 }

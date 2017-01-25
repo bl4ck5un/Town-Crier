@@ -11,8 +11,8 @@
 #include <Debug.h>
 #include "Constants.h"
 
-static int stock_ticker_handler(int nonce, uint64_t request_id, uint8_t request_type, 
-                   const uint8_t* req, int req_len, uint8_t* raw_tx, int* raw_tx_len)
+static int stock_ticker_handler(int nonce, uint64_t request_id, uint8_t request_type,
+                                const uint8_t *req, int req_len, uint8_t *raw_tx, size_t *raw_tx_len)
 {
     int ret;
 #ifdef E2E_BENCHMARK
@@ -176,7 +176,13 @@ static int handler_steam_exchange(uint8_t *req, int len, int *resp_data)
     return 0;
 }
 
-int handle_request(int nonce, uint64_t id, uint64_t type, uint8_t* data, int data_len, uint8_t* raw_tx, int* raw_tx_len)
+int handle_request(int nonce,
+                   uint64_t id,
+                   uint64_t type,
+                   uint8_t *data,
+                   int data_len,
+                   uint8_t *raw_tx,
+                   size_t *raw_tx_len)
 {
     int ret;
     bytes resp_data;

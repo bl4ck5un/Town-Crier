@@ -10,6 +10,7 @@
 #include "RemoteAtt.h"
 #include "stdint.h"
 #include "EthRPC.h"
+#include "request-parser.hxx"
 #include "sqlite3.h"
 #include "Bookkeeping.h"
 #include "Init.h"
@@ -20,19 +21,28 @@
 #include "Constants.h"
 
 #include "StatusRpcServer.h"
+#include "bookkeeping/database.hxx"
 
 #include <stdio.h>
 #include <iostream>
 #include <fstream>
 #include <thread>
+#include <atomic>
+#include <csignal>
+
+#include <boost/filesystem.hpp>
 
 sqlite3 *db = NULL;
 
 extern ethRPCClient *c;
-
 jsonrpc::HttpClient *httpclient;
-
 boost::property_tree::ptree pt;
+
+std::atomic<bool> quit(false);
+
+void exitGraceful(int) {
+  quit.store(true);
+}
 
 void init(int argc, char *argv[]) {
   std::string filepath;
@@ -56,49 +66,44 @@ void init(int argc, char *argv[]) {
   }
 }
 
-struct StatusServerThread {
-  int port;
-  StatusServerThread(int port) : port(port) {}
-  void operator()() {
-    jsonrpc::HttpServer httpServer(port);
-    StatusRpcServer statusRpcServer(httpServer);
-    statusRpcServer.StartListening();
-  }
-};
-
 int main(int argc, char *argv[]) {
   init(argc, argv);
   int ret;
   sgx_enclave_id_t eid;
   sgx_status_t st;
 
+  //! register Ctrl-C handler
+  std::signal(SIGINT, exitGraceful);
+
+
   jsonrpc::HttpServer httpServer(8123);
   StatusRpcServer statusRpcServer(httpServer);
   statusRpcServer.StartListening();
 
-  std::cout << "Do you want to clean up the database? y/[n] ";
-  std::string new_db;
-  std::cin >> new_db;
-  if (new_db == "y") {
-    sqlite3_drop();
-    std::cout << "TC.db cleaned" << std::endl;
+  const static string db_name = "TC.db";
+  bool create_db = false;
+  if (boost::filesystem::exists(db_name)) {
+    std::cout << "Do you want to clean up the database? y/[n] ";
+    std::string new_db;
+    std::cin >> new_db;
+    create_db = new_db == "y";
+  } else {
+    create_db = true;
   }
+  OdbDriver driver("TC.db", create_db);
 
-  sqlite3_init(&db);
+  int nonce_offset = 0;
+//  if (argc == 2) {
+//    nonce = atoi(argv[1]);
+//  }
 
-  int nonce = 0;
-  if (argc == 2) {
-    nonce = atoi(argv[1]);
-  }
+//  if (nonce > 0)
+//    dump_nonce((uint8_t *) &nonce);
 
-  if (nonce > 0)
-    dump_nonce((uint8_t *) &nonce);
-
-  ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
-
+  ret = initialize_tc_enclave(&eid);
   if (ret != 0) {
     LL_CRITICAL("Failed to initialize the enclave");
-    goto exit;
+    std::exit(-1);
   } else {
     LL_NOTICE("enclave %lu created", eid);
   }
@@ -109,8 +114,9 @@ int main(int argc, char *argv[]) {
  */
 //  remote_att_init(eid);
 
-  monitor_loop(eid, nonce);
+  Monitor monitor(driver, eid, nonce_offset, quit);
+  monitor.loop();
 
-  exit:
+  sgx_destroy_enclave(eid);
   LL_CRITICAL("Info: all enclave closed successfully.");
 }

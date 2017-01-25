@@ -25,15 +25,10 @@
 #ifndef TC_LINUX_INIT_H
 #define TC_LINUX_INIT_H
 
-#if defined(_MSC_VER)
-#define TOKEN_FILENAME   "Enclave.token"
-#define ENCLAVE_FILENAME "Enclave.signed.dll"
-#elif defined(__GNUC__)
-# define TOKEN_FILENAME   "enclave.token"
-# define ENCLAVE_FILENAME "enclave.signed.so"
-#endif
+#define TOKEN_FILENAME   "towncrier.enclave.token"
+#define ENCLAVE_FILENAME "enclave.signed.so"
 
-
+int initialize_tc_enclave(sgx_enclave_id_t *eid);
 int initialize_enclave(const char* name, sgx_enclave_id_t* eid);
 
 #endif //TC_LINUX_INIT_H

@@ -22,9 +22,12 @@
 #include "Log.h"
 
 #include "Enclave_u.h"
-#include <Constants.h>
+#include "Constants.h"
 #include "Bookkeeping.h"
+#include "bookkeeping/database.hxx"
 #include <iomanip>
+#include "request-parser.hxx"
+#include "Converter.h"
 
 /*!
  * @param eid
@@ -36,57 +39,135 @@
  * If a request succeeds, the result will sent back to the blockchain
  */
 
-void processOne(long nextBlockIndex, int nonce, sgx_enclave_id_t eid);
 
-// TX_BUF_SIZE is defined in Enclave.edl
-uint8_t raw_tx[TX_BUF_SIZE] = {0};
-int raw_tx_len = 0;
+uint8_t resp_buffer[TX_BUF_SIZE] = {0};  //! TX_BUF_SIZE is defined in Constants.h
+size_t resp_data_len = 0;
 
-void monitor_loop(sgx_enclave_id_t eid, int nonce) {
-  long nextBlockIndex = 0; //!< @next_wanted keeps track of the blocks that have been processed
-  get_last_scan(db, &nextBlockIndex);
-  nextBlockIndex++;
+void Monitor::loop() {
+  blocknum_t next_block_num = 0; //!< @next_wanted keeps track of the blocks that have been processed
+  next_block_num = driver.getLastBlock();
+  next_block_num++;
+
+  // get nonce
+//  size_t nonce = driver.getNumOfResponse();
 
   int ret = 0;
   Json::Value transaction;
-  unsigned retryCounter = 0;       //Number of retries
-  unsigned int sleepTimeInSec = 1;
-  std::string filterID;
-  long highestBlock;
+  unsigned retry_counter = 0;       //Number of retries
+  unsigned int sleep_time_sec = 1;
 
   while (true) {
-    if (retryCounter >= 8) {
-      LL_CRITICAL("Exit after %d retries", retryCounter);
+    if (quit.load()) {
+      LL_NOTICE("Ctrl-C pressed, cleaning up...");
+      ret = 1;
+      break;
+    }
+    if (retry_counter >= kRetryAllowed) {
+      LL_CRITICAL("Exit after %d retries", retry_counter);
       ret = -1;
       break;
     }
 
-    if (retryCounter > 0) {
-      //Increase timeout everytime we retry
-      sleepTimeInSec *= 2;
-      LL_CRITICAL("retry in %d seconds", sleepTimeInSec);
-      sleep(sleepTimeInSec);
+    if (retry_counter > 0) {
+      sleep_time_sec *= 2;
+      LL_CRITICAL("retry in %d seconds", sleep_time_sec);
+      sleep(sleep_time_sec);
     }
 
     try {
-      highestBlock = eth_blockNumber();
-      LL_LOG("highest block = %d", highestBlock);
+      long current_highest_block = eth_blockNumber();
+      LL_LOG("highest block = %d", current_highest_block);
 
-      if (highestBlock < 0) {
-        LL_CRITICAL("eth_blockNumber returns %ld", highestBlock);
-        throw runtime_error("eth_blockNumber returns " + highestBlock);
+      if (current_highest_block < 0) {
+        LL_CRITICAL("eth_blockNumber returns %ld", current_highest_block);
+        throw runtime_error("eth_blockNumber returns " + current_highest_block);
       }
 
       // if we've scanned all of them
-      if (nextBlockIndex > highestBlock) {
-        LL_NOTICE("Highest block is %ld, waiting for block %ld...", highestBlock, nextBlockIndex);
+      if (next_block_num > current_highest_block) {
+        LL_NOTICE("Highest block is %ld, waiting for block %ld...", current_highest_block, next_block_num);
         throw EX_NOTHING_TO_DO;
       }
 
       // fetch up to the latest block
-      for (; nextBlockIndex <= highestBlock; nextBlockIndex++) {
-        processOne(nextBlockIndex, nonce, eid);
-        retryCounter = 0; //! reset retryCounter upon each success
+      for (; next_block_num <= current_highest_block; next_block_num++) {
+        LL_LOG("processing block %d", next_block_num);
+
+        Json::Value txn_list;
+        string filter_id = eth_new_filter(next_block_num, next_block_num);
+
+        LL_NOTICE("detected block %ld", next_block_num);
+
+        eth_getfilterlogs(filter_id, txn_list);
+
+        LL_LOG("get filter logs returned");
+
+        if (txn_list.isArray()) {
+          if (txn_list.empty()) {
+            //!< log an empty entry to note that we've scanned this block albeit empty
+            TransactionRecord __tr(next_block_num, "no_tx_in_" + std::to_string(next_block_num), "");
+            driver.logTransaction(__tr);
+          }
+//          for (int i = 0; i < txn_list.size(); i++) {
+          for (auto __tx : txn_list) {
+            /*!
+             * process each request
+             */
+            const string dataField = "data";
+            const string txHashField = "transactionHash";
+
+            LL_DEBUG("raw_request: %s", __tx.toStyledString().c_str());
+            if (!(__tx.isMember(dataField) && __tx.isMember(txHashField))) {
+              LL_CRITICAL("get bad RPC data, skipping");
+              continue;
+            }
+
+            Request request(__tx[dataField].asString());
+            LL_NOTICE("%s", request.toString().c_str());
+
+            //!< try to get txn from the database
+            OdbDriver::record_ptr __tr = driver.getLogByHash(__tx[txHashField].asString());
+            if (__tr) {
+              // TODO: 5 is chosen arbitarily
+              if (!__tr->getResponse().empty() || __tr->getNumOfRetrial() > 5) {
+                LL_NOTICE("this request has fulfilled (or can't be fulfilled), skipping");
+                continue;
+              }
+            } else {
+              //!< if no record found, create a new one
+              __tr.reset(new TransactionRecord(next_block_num, __tx[txHashField].asString(), request.getRawRequest()));
+              driver.logTransaction(*__tr);
+            }
+
+            sgx_status_t ecall_ret;
+            long nonce = eth_getTransactionCount();
+            LL_LOG("nonce obtained %d\n", nonce);
+            ecall_ret = handle_request(eid, &ret, nonce, request.getId(), request.getType(),
+                                       request.getData(), request.getDataLen(),
+                                       resp_buffer, &resp_data_len);
+
+            if (ecall_ret != SGX_SUCCESS || ret != 0) {
+              //!< if ecall fails, increment the number and skip
+              LL_CRITICAL("%s returned %d, INVALID", "handle_request", ret);
+              __tr->incrementNumOfRetrial();
+              continue;
+            } else {
+              //!< if ecall succeeds, try to send transaction and record
+              string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
+              std::cout << "TX BINARY " << resp_txn << std::endl;
+
+              string resp_txn_hash = send_transaction(resp_txn);
+              LL_NOTICE("Response sent");
+
+              __tr->incrementNumOfRetrial();
+              __tr->setResponse(resp_txn);
+              __tr->setResponseTime(std::time(0));
+              driver.updateLog(*__tr);
+            }
+          }
+        }
+        LL_NOTICE("Done processing block %ld", next_block_num);
+        retry_counter = 0; //! reset retry_counter upon each success
       }
     }
     catch (EX_REASONS e) {
@@ -95,7 +176,7 @@ void monitor_loop(sgx_enclave_id_t eid, int nonce) {
         case EX_CREATE_FILTER:
         case EX_GET_FILTER_LOG:
         case EX_HANDLE_REQ:
-        case EX_SEND_TRANSACTION:retryCounter++;
+        case EX_SEND_TRANSACTION:retry_counter++;
           break;
         case EX_NOTHING_TO_DO:LL_CRITICAL("Nothing to do. Sleep for 5 seconds");
           sleep(5);
@@ -106,80 +187,20 @@ void monitor_loop(sgx_enclave_id_t eid, int nonce) {
     }
     catch (const jsonrpc::JsonRpcException &ex) {
       LL_CRITICAL("RPC error: %s", ex.what());
-      retryCounter++;
+      retry_counter++;
     }
     catch (const std::invalid_argument &ex) {
       LL_CRITICAL("%s", ex.what());
-      retryCounter++;
+      retry_counter++;
     }
     catch (const std::exception &ex) {
       LL_CRITICAL("Unexpected exception %s", ex.what());
-      retryCounter++;
+      retry_counter++;
     }
     catch (...) {
       LL_CRITICAL("Unexpected exception!");
-      retryCounter++;
+      retry_counter++;
     }
   } // while (true)
 }
 
-void processOne(long nextBlockIndex, int nonce, sgx_enclave_id_t eid) {
-  LL_LOG("processing block %d", nextBlockIndex);
-  Json::Value txnContainer;
-
-  string filterId = eth_new_filter(nextBlockIndex, nextBlockIndex);
-
-  LL_NOTICE("detected block %ld", nextBlockIndex);
-
-  eth_getfilterlogs(filterId, txnContainer);
-
-  LL_LOG("get filter logs returned");
-
-  if (txnContainer.isArray()) {
-    for (int i = 0; i < txnContainer.size(); i++) {
-      Request request(txnContainer[i]["data"].asString());
-      LL_NOTICE("find an request (id=%lu)", request.id);
-      LL_NOTICE("find an request (type=%lu)", request.type);
-
-#ifdef VERBOSE
-      std::cout << "REQDATA BINARY " << data_c << std::endl;
-#endif
-
-      get_last_nonce(db, &nonce);
-
-      int ret = 0;
-      sgx_status_t ecall_status;
-      //Enclave call to parse the given request
-      ecall_status = handle_request(eid, &ret, nonce,
-                                    request.id,
-                                    request.type,
-                                    request.data,
-                                    request.data_len,
-                                    raw_tx,
-                                    &raw_tx_len);
-
-      if (ecall_status != SGX_SUCCESS || ret != 0) {
-        LL_CRITICAL("%s returned %d, INVALID", "handle_request", ret);
-        throw runtime_error("ecall returned " + ret);
-      }
-      //TODO: get rid of malloc
-      // TODO: use bufferToHex instead
-//      char *tx_str = static_cast<char *>( malloc(raw_tx_len * 2 + 1));
-//      char2hex(raw_tx, raw_tx_len, tx_str);
-      string txn = bufferToHex(raw_tx, raw_tx_len, true);
-#ifdef VERBOSE
-      std::cout << "REQDATA BINARY " << data_c << std::endl;
-#endif
-      std::cout << "TX BINARY " << txn << std::endl;
-
-      send_transaction(txn);
-
-      LL_NOTICE("Response sent");
-      LL_LOG("new nonce being dumped: %d", nonce);
-      nonce++;
-      record_nonce(db, nonce);
-    }
-  }
-  LL_NOTICE("Done processing block %ld", nextBlockIndex);
-  record_scan(db, nextBlockIndex);
-}

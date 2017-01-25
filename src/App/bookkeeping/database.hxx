@@ -62,9 +62,9 @@ class OdbDriver {
     return tc;
   }
 
-  record_ptr getLogById(string txId) const {
+  record_ptr getLogByHash(const string &txHash) const {
     transaction t(db->begin());
-    record_ptr rc(db->query_one<TransactionRecord>(query_record::tx == txId));
+    record_ptr rc(db->query_one<TransactionRecord>(query_record::tx_hash == txHash));
     t.commit();
 
     return rc;
@@ -72,7 +72,7 @@ class OdbDriver {
 
   void updateLog(const TransactionRecord &tr) {
     transaction t(db->begin());
-    record_ptr rc(db->query_one<TransactionRecord>(query_record::tx == tr.getTx()));
+    record_ptr rc(db->query_one<TransactionRecord>(query_record::tx_hash == tr.getTxHash()));
 
     if (rc.get() != 0) {
       rc->setResponse(tr.getResponse());

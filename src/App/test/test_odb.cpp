@@ -15,8 +15,15 @@ using namespace odb::core;
 typedef odb::query<TransactionRecord> Query;
 typedef odb::result<TransactionRecord> Result;
 
+string db_name = "test.db";
+
+TEST(OdbTest, basic) {
+  OdbDriver driver(db_name, true);
+  OdbDriver::record_ptr p = driver.getLogByHash("nonexistentHash");
+  ASSERT_FALSE(p);
+}
+
 TEST(OdbTest, newDB) {
-  string db_name = "test.db";
   try {
     OdbDriver driver(db_name, true);
     TransactionRecord r1(1, "0xaaa1", "0xbbb", time(0));
@@ -34,8 +41,8 @@ TEST(OdbTest, newDB) {
     driver.logTransaction(r4);
     driver.logTransaction(r5);
 
-    OdbDriver::record_ptr r4_ = driver.getLogById("0xaaa4");
-    OdbDriver::record_ptr r5_ = driver.getLogById("0xaaa5");
+    OdbDriver::record_ptr r4_ = driver.getLogByHash("0xaaa4");
+    OdbDriver::record_ptr r5_ = driver.getLogByHash("0xaaa5");
 
     r4_->setResponse("0xresponse");
     r5_->setResponse("0xresponse");
@@ -58,6 +65,6 @@ TEST(OdbTest, newDB) {
   vector<TransactionRecord> rc = driver.getAllLogs();
   ASSERT_EQ(5, rc.size());
   for (vector<TransactionRecord>::iterator it = rc.begin(); it != rc.end(); it++) {
-    cerr << it->getTx() << endl;
+    cerr << it->getTxHash() << endl;
   }
 }

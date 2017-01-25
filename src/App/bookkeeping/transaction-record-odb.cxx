@@ -88,14 +88,14 @@ grow(image_type &i,
   //
   t[0UL] = false;
 
-  // blockNumber
+  // block_number
   //
   t[1UL] = false;
 
-  // tx
+  // tx_hash
   //
   if (t[2UL]) {
-    i.tx_value.capacity(i.tx_size);
+    i.tx_hash_value.capacity(i.tx_hash_size);
     grew = true;
   }
 
@@ -106,7 +106,7 @@ grow(image_type &i,
     grew = true;
   }
 
-  // requestTime
+  // request_time
   //
   t[4UL] = false;
 
@@ -117,11 +117,11 @@ grow(image_type &i,
     grew = true;
   }
 
-  // responseTime
+  // response_time
   //
   t[6UL] = false;
 
-  // numOfRetrial
+  // n_retrial
   //
   t[7UL] = false;
 
@@ -147,22 +147,22 @@ bind(sqlite::bind *b,
     n++;
   }
 
-  // blockNumber
+  // block_number
   //
   b[n].type = sqlite::bind::integer;
-  b[n].buffer = &i.blockNumber_value;
-  b[n].is_null = &i.blockNumber_null;
+  b[n].buffer = &i.block_number_value;
+  b[n].is_null = &i.block_number_null;
   n++;
 
-  // tx
+  // tx_hash
   //
   b[n].type = sqlite::image_traits<
       ::std::string,
       sqlite::id_text>::bind_value;
-  b[n].buffer = i.tx_value.data();
-  b[n].size = &i.tx_size;
-  b[n].capacity = i.tx_value.capacity();
-  b[n].is_null = &i.tx_null;
+  b[n].buffer = i.tx_hash_value.data();
+  b[n].size = &i.tx_hash_size;
+  b[n].capacity = i.tx_hash_value.capacity();
+  b[n].is_null = &i.tx_hash_null;
   n++;
 
   // request
@@ -176,11 +176,11 @@ bind(sqlite::bind *b,
   b[n].is_null = &i.request_null;
   n++;
 
-  // requestTime
+  // request_time
   //
   b[n].type = sqlite::bind::integer;
-  b[n].buffer = &i.requestTime_value;
-  b[n].is_null = &i.requestTime_null;
+  b[n].buffer = &i.request_time_value;
+  b[n].is_null = &i.request_time_null;
   n++;
 
   // response
@@ -194,18 +194,18 @@ bind(sqlite::bind *b,
   b[n].is_null = &i.response_null;
   n++;
 
-  // responseTime
+  // response_time
   //
   b[n].type = sqlite::bind::integer;
-  b[n].buffer = &i.responseTime_value;
-  b[n].is_null = &i.responseTime_null;
+  b[n].buffer = &i.response_time_value;
+  b[n].is_null = &i.response_time_null;
   n++;
 
-  // numOfRetrial
+  // n_retrial
   //
   b[n].type = sqlite::bind::integer;
-  b[n].buffer = &i.numOfRetrial_value;
-  b[n].is_null = &i.numOfRetrial_null;
+  b[n].buffer = &i.n_retrial_value;
+  b[n].is_null = &i.n_retrial_null;
   n++;
 }
 
@@ -245,39 +245,39 @@ init(image_type &i,
     i.__id_null = is_null;
   }
 
-  // blockNumber
+  // block_number
   //
   {
     ::blocknum_t const &v =
-        o.blockNumber;
+        o.block_number;
 
     bool is_null(false);
     sqlite::value_traits<
         ::blocknum_t,
         sqlite::id_integer>::set_image(
-        i.blockNumber_value,
+        i.block_number_value,
         is_null,
         v);
-    i.blockNumber_null = is_null;
+    i.block_number_null = is_null;
   }
 
-  // tx
+  // tx_hash
   //
   {
     ::std::string const &v =
-        o.tx;
+        o.tx_hash;
 
     bool is_null(false);
-    std::size_t cap(i.tx_value.capacity());
+    std::size_t cap(i.tx_hash_value.capacity());
     sqlite::value_traits<
         ::std::string,
         sqlite::id_text>::set_image(
-        i.tx_value,
-        i.tx_size,
+        i.tx_hash_value,
+        i.tx_hash_size,
         is_null,
         v);
-    i.tx_null = is_null;
-    grew = grew || (cap != i.tx_value.capacity());
+    i.tx_hash_null = is_null;
+    grew = grew || (cap != i.tx_hash_value.capacity());
   }
 
   // request
@@ -299,20 +299,20 @@ init(image_type &i,
     grew = grew || (cap != i.request_value.capacity());
   }
 
-  // requestTime
+  // request_time
   //
   {
     ::time_t const &v =
-        o.requestTime;
+        o.request_time;
 
     bool is_null(false);
     sqlite::value_traits<
         ::time_t,
         sqlite::id_integer>::set_image(
-        i.requestTime_value,
+        i.request_time_value,
         is_null,
         v);
-    i.requestTime_null = is_null;
+    i.request_time_null = is_null;
   }
 
   // response
@@ -334,36 +334,36 @@ init(image_type &i,
     grew = grew || (cap != i.response_value.capacity());
   }
 
-  // responseTime
+  // response_time
   //
   {
     ::time_t const &v =
-        o.responseTime;
+        o.response_time;
 
     bool is_null(false);
     sqlite::value_traits<
         ::time_t,
         sqlite::id_integer>::set_image(
-        i.responseTime_value,
+        i.response_time_value,
         is_null,
         v);
-    i.responseTime_null = is_null;
+    i.response_time_null = is_null;
   }
 
-  // numOfRetrial
+  // n_retrial
   //
   {
     unsigned int const &v =
-        o.numOfRetrial;
+        o.n_retrial;
 
     bool is_null(false);
     sqlite::value_traits<
         unsigned int,
         sqlite::id_integer>::set_image(
-        i.numOfRetrial_value,
+        i.n_retrial_value,
         is_null,
         v);
-    i.numOfRetrial_null = is_null;
+    i.n_retrial_null = is_null;
   }
 
   return grew;
@@ -391,33 +391,33 @@ init(object_type &o,
         i.__id_null);
   }
 
-  // blockNumber
+  // block_number
   //
   {
     ::blocknum_t &v =
-        o.blockNumber;
+        o.block_number;
 
     sqlite::value_traits<
         ::blocknum_t,
         sqlite::id_integer>::set_value(
         v,
-        i.blockNumber_value,
-        i.blockNumber_null);
+        i.block_number_value,
+        i.block_number_null);
   }
 
-  // tx
+  // tx_hash
   //
   {
     ::std::string &v =
-        o.tx;
+        o.tx_hash;
 
     sqlite::value_traits<
         ::std::string,
         sqlite::id_text>::set_value(
         v,
-        i.tx_value,
-        i.tx_size,
-        i.tx_null);
+        i.tx_hash_value,
+        i.tx_hash_size,
+        i.tx_hash_null);
   }
 
   // request
@@ -435,18 +435,18 @@ init(object_type &o,
         i.request_null);
   }
 
-  // requestTime
+  // request_time
   //
   {
     ::time_t &v =
-        o.requestTime;
+        o.request_time;
 
     sqlite::value_traits<
         ::time_t,
         sqlite::id_integer>::set_value(
         v,
-        i.requestTime_value,
-        i.requestTime_null);
+        i.request_time_value,
+        i.request_time_null);
   }
 
   // response
@@ -464,85 +464,86 @@ init(object_type &o,
         i.response_null);
   }
 
-  // responseTime
+  // response_time
   //
   {
     ::time_t &v =
-        o.responseTime;
+        o.response_time;
 
     sqlite::value_traits<
         ::time_t,
         sqlite::id_integer>::set_value(
         v,
-        i.responseTime_value,
-        i.responseTime_null);
+        i.response_time_value,
+        i.response_time_null);
   }
 
-  // numOfRetrial
+  // n_retrial
   //
   {
     unsigned int &v =
-        o.numOfRetrial;
+        o.n_retrial;
 
     sqlite::value_traits<
         unsigned int,
         sqlite::id_integer>::set_value(
         v,
-        i.numOfRetrial_value,
-        i.numOfRetrial_null);
+        i.n_retrial_value,
+        i.n_retrial_null);
   }
 }
 
 void access::object_traits_impl<::TransactionRecord, id_sqlite>::
-init(id_image_type &i, const id_type &id) {
+init(id_image_type &i, const id_type &id)
   {
-    bool is_null(false);
-    sqlite::value_traits<
-        long unsigned int,
-        sqlite::id_integer>::set_image(
+    {
+      bool is_null(false);
+      sqlite::value_traits<
+          long unsigned int,
+          sqlite::id_integer>::set_image(
         i.id_value,
         is_null,
         id);
-    i.id_null = is_null;
+      i.id_null = is_null;
+    }
   }
-}
 
 const char access::object_traits_impl<::TransactionRecord, id_sqlite>::persist_statement[] =
     "INSERT INTO \"TransactionRecord\" "
         "(\"id\", "
-        "\"blockNumber\", "
-        "\"tx\", "
+        "\"block_number\", "
+        "\"tx_hash\", "
         "\"request\", "
-        "\"requestTime\", "
+        "\"request_time\", "
         "\"response\", "
-        "\"responseTime\", "
-        "\"numOfRetrial\") "
+        "\"response_time\", "
+        "\"n_retrial\") "
         "VALUES "
         "(?, ?, ?, ?, ?, ?, ?, ?)";
 
 const char access::object_traits_impl<::TransactionRecord, id_sqlite>::find_statement[] =
     "SELECT "
         "\"TransactionRecord\".\"id\", "
-        "\"TransactionRecord\".\"blockNumber\", "
-        "\"TransactionRecord\".\"tx\", "
+        "\"TransactionRecord\".\"block_number\", "
+        "\"TransactionRecord\".\"tx_hash\", "
         "\"TransactionRecord\".\"request\", "
-        "\"TransactionRecord\".\"requestTime\", "
+        "\"TransactionRecord\".\"request_time\", "
         "\"TransactionRecord\".\"response\", "
-        "\"TransactionRecord\".\"responseTime\", "
-        "\"TransactionRecord\".\"numOfRetrial\" "
+        "\"TransactionRecord\".\"response_time\", "
+        "\"TransactionRecord\".\"n_retrial\" "
         "FROM \"TransactionRecord\" "
         "WHERE \"TransactionRecord\".\"id\"=?";
 
 const char access::object_traits_impl<::TransactionRecord, id_sqlite>::update_statement[] =
     "UPDATE \"TransactionRecord\" "
         "SET "
-        "\"blockNumber\"=?, "
-        "\"tx\"=?, "
+        "\"block_number\"=?, "
+        "\"tx_hash\"=?, "
         "\"request\"=?, "
-        "\"requestTime\"=?, "
+        "\"request_time\"=?, "
         "\"response\"=?, "
-        "\"responseTime\"=?, "
-        "\"numOfRetrial\"=? "
+        "\"response_time\"=?, "
+        "\"n_retrial\"=? "
         "WHERE \"id\"=?";
 
 const char access::object_traits_impl<::TransactionRecord, id_sqlite>::erase_statement[] =
@@ -552,13 +553,13 @@ const char access::object_traits_impl<::TransactionRecord, id_sqlite>::erase_sta
 const char access::object_traits_impl<::TransactionRecord, id_sqlite>::query_statement[] =
     "SELECT "
         "\"TransactionRecord\".\"id\", "
-        "\"TransactionRecord\".\"blockNumber\", "
-        "\"TransactionRecord\".\"tx\", "
+        "\"TransactionRecord\".\"block_number\", "
+        "\"TransactionRecord\".\"tx_hash\", "
         "\"TransactionRecord\".\"request\", "
-        "\"TransactionRecord\".\"requestTime\", "
+        "\"TransactionRecord\".\"request_time\", "
         "\"TransactionRecord\".\"response\", "
-        "\"TransactionRecord\".\"responseTime\", "
-        "\"TransactionRecord\".\"numOfRetrial\" "
+        "\"TransactionRecord\".\"response_time\", "
+        "\"TransactionRecord\".\"n_retrial\" "
         "FROM \"TransactionRecord\"";
 
 const char access::object_traits_impl<::TransactionRecord, id_sqlite>::erase_query_statement[] =
@@ -1021,7 +1022,7 @@ query_statement(const query_base_type &q) {
   query_base_type r(
       "SELECT "
           "count(\"TransactionRecord\".\"id\"), "
-          "max(\"TransactionRecord\".\"blockNumber\") ");
+          "max(\"TransactionRecord\".\"block_number\") ");
 
   r += "FROM \"TransactionRecord\"";
 
@@ -1092,19 +1093,21 @@ create_schema(database &db, unsigned short pass, bool drop) {
         db.execute("DROP TABLE IF EXISTS \"TransactionRecord\"");
         return false;
       }
-    }
-  } else {
+      }
+    } else {
     switch (pass) {
       case 1: {
         db.execute("CREATE TABLE \"TransactionRecord\" (\n"
                        "  \"id\" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n"
-                       "  \"blockNumber\" INTEGER NOT NULL,\n"
-                       "  \"tx\" TEXT NOT NULL,\n"
+                       "  \"block_number\" INTEGER NOT NULL,\n"
+                       "  \"tx_hash\" TEXT NOT NULL,\n"
                        "  \"request\" TEXT NOT NULL,\n"
-                       "  \"requestTime\" INTEGER NOT NULL,\n"
+                       "  \"request_time\" INTEGER NOT NULL,\n"
                        "  \"response\" TEXT NOT NULL,\n"
-                       "  \"responseTime\" INTEGER NOT NULL,\n"
-                       "  \"numOfRetrial\" INTEGER NOT NULL)");
+                       "  \"response_time\" INTEGER NOT NULL,\n"
+                       "  \"n_retrial\" INTEGER NOT NULL)");
+        db.execute("CREATE UNIQUE INDEX \"TransactionRecord_tx_hash_i\"\n"
+                       "  ON \"TransactionRecord\" (\"tx_hash\")");
         return false;
       }
     }

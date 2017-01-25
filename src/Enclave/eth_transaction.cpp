@@ -120,11 +120,11 @@ void TX::rlp_list(bytes& out, bool withSig) {
 
 #define ABI_STR "deliver(uint64,bytes32,bytes32)"
 
-int get_raw_signed_tx(int nonce, int nonce_len, 
+int get_raw_signed_tx(int nonce, int nonce_len,
                       uint64_t request_id, uint8_t request_type,
                       const uint8_t* req_data, int req_len,
                       bytes resp_data,
-                      uint8_t* serialized_tx, int* o_len)
+                      uint8_t *serialized_tx, size_t *o_len)
 {
     if (serialized_tx == NULL || o_len == NULL) {
         LL_CRITICAL("Error: get_raw_tx gets NULL input\n"); 

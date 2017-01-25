@@ -1,6 +1,6 @@
 set(SOURCE_FILES
         App.cpp
-        Bookkeeping.cpp
+        #        Bookkeeping.cpp
         ../Common/Converter.cpp
         Enclave_u.c
         EthRPC.cpp
@@ -15,7 +15,10 @@ set(SOURCE_FILES
         ../Common/Debug.c
         ../Common/Log.c
         mbedtls_sgx_net.c
-        StatusRpcServer.cpp StatusRpcServer.h types.cpp types.hxx)
+        bookkeeping/database.cpp
+        bookkeeping/transaction-record.hxx
+        bookkeeping/transaction-record-odb.cxx
+        StatusRpcServer.cpp StatusRpcServer.h types.cpp types.hxx request-parser.cpp request-parser.hxx)
 
 
 set_directory_properties(PROPERTIES
@@ -46,7 +49,7 @@ add_executable(TestMain EXCLUDE_FROM_ALL
         mbedtls_sgx_net.c
         ../Common/Converter.cpp
         ../Common/Debug.c
-        ../Common/Log.c types.cpp types.hxx)
+        ../Common/Log.c types.cpp types.hxx request-parser.cpp request-parser.hxx)
 
 if (NOT SGX_MODE STREQUAL HW)
     set(Urts_Library_Name sgx_urts_sim)
@@ -90,6 +93,10 @@ target_link_libraries(tc
         -ljsonrpccpp-server
         -lmicrohttpd
         -lpthread
+        -lodb-sqlite
+        -lodb
+        -lboost_system
+        -lboost_filesystem
         )
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")

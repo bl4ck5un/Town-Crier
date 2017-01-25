@@ -117,7 +117,7 @@ struct query_columns<::TransactionRecord, id_sqlite, A> {
 
   static const id_type_ id;
 
-  // blockNumber
+  // block_number
   //
   typedef
   sqlite::query_column<
@@ -125,11 +125,11 @@ struct query_columns<::TransactionRecord, id_sqlite, A> {
           ::blocknum_t,
           sqlite::id_integer>::query_type,
       sqlite::id_integer>
-      blockNumber_type_;
+      block_number_type_;
 
-  static const blockNumber_type_ blockNumber;
+  static const block_number_type_ block_number;
 
-  // tx
+  // tx_hash
   //
   typedef
   sqlite::query_column<
@@ -137,9 +137,9 @@ struct query_columns<::TransactionRecord, id_sqlite, A> {
           ::std::string,
           sqlite::id_text>::query_type,
       sqlite::id_text>
-      tx_type_;
+      tx_hash_type_;
 
-  static const tx_type_ tx;
+  static const tx_hash_type_ tx_hash;
 
   // request
   //
@@ -153,7 +153,7 @@ struct query_columns<::TransactionRecord, id_sqlite, A> {
 
   static const request_type_ request;
 
-  // requestTime
+  // request_time
   //
   typedef
   sqlite::query_column<
@@ -161,9 +161,9 @@ struct query_columns<::TransactionRecord, id_sqlite, A> {
           ::time_t,
           sqlite::id_integer>::query_type,
       sqlite::id_integer>
-      requestTime_type_;
+      request_time_type_;
 
-  static const requestTime_type_ requestTime;
+  static const request_time_type_ request_time;
 
   // response
   //
@@ -177,7 +177,7 @@ struct query_columns<::TransactionRecord, id_sqlite, A> {
 
   static const response_type_ response;
 
-  // responseTime
+  // response_time
   //
   typedef
   sqlite::query_column<
@@ -185,11 +185,11 @@ struct query_columns<::TransactionRecord, id_sqlite, A> {
           ::time_t,
           sqlite::id_integer>::query_type,
       sqlite::id_integer>
-      responseTime_type_;
+      response_time_type_;
 
-  static const responseTime_type_ responseTime;
+  static const response_time_type_ response_time;
 
-  // numOfRetrial
+  // n_retrial
   //
   typedef
   sqlite::query_column<
@@ -197,9 +197,9 @@ struct query_columns<::TransactionRecord, id_sqlite, A> {
           unsigned int,
           sqlite::id_integer>::query_type,
       sqlite::id_integer>
-      numOfRetrial_type_;
+      n_retrial_type_;
 
-  static const numOfRetrial_type_ numOfRetrial;
+  static const n_retrial_type_ n_retrial;
 };
 
 template<typename A>
@@ -209,16 +209,16 @@ id(A::table_name,
 "\"id\"", 0);
 
 template<typename A>
-const typename query_columns<::TransactionRecord, id_sqlite, A>::blockNumber_type_
+const typename query_columns<::TransactionRecord, id_sqlite, A>::block_number_type_
 query_columns<::TransactionRecord, id_sqlite, A>::
-blockNumber(A::table_name,
-"\"blockNumber\"", 0);
+block_number(A::table_name,
+"\"block_number\"", 0);
 
 template<typename A>
-const typename query_columns<::TransactionRecord, id_sqlite, A>::tx_type_
+const typename query_columns<::TransactionRecord, id_sqlite, A>::tx_hash_type_
 query_columns<::TransactionRecord, id_sqlite, A>::
-tx(A::table_name,
-"\"tx\"", 0);
+tx_hash(A::table_name,
+"\"tx_hash\"", 0);
 
 template<typename A>
 const typename query_columns<::TransactionRecord, id_sqlite, A>::request_type_
@@ -227,10 +227,10 @@ request(A::table_name,
 "\"request\"", 0);
 
 template<typename A>
-const typename query_columns<::TransactionRecord, id_sqlite, A>::requestTime_type_
+const typename query_columns<::TransactionRecord, id_sqlite, A>::request_time_type_
 query_columns<::TransactionRecord, id_sqlite, A>::
-requestTime(A::table_name,
-"\"requestTime\"", 0);
+request_time(A::table_name,
+"\"request_time\"", 0);
 
 template<typename A>
 const typename query_columns<::TransactionRecord, id_sqlite, A>::response_type_
@@ -239,16 +239,16 @@ response(A::table_name,
 "\"response\"", 0);
 
 template<typename A>
-const typename query_columns<::TransactionRecord, id_sqlite, A>::responseTime_type_
+const typename query_columns<::TransactionRecord, id_sqlite, A>::response_time_type_
 query_columns<::TransactionRecord, id_sqlite, A>::
-responseTime(A::table_name,
-"\"responseTime\"", 0);
+response_time(A::table_name,
+"\"response_time\"", 0);
 
 template<typename A>
-const typename query_columns<::TransactionRecord, id_sqlite, A>::numOfRetrial_type_
+const typename query_columns<::TransactionRecord, id_sqlite, A>::n_retrial_type_
 query_columns<::TransactionRecord, id_sqlite, A>::
-numOfRetrial(A::table_name,
-"\"numOfRetrial\"", 0);
+n_retrial(A::table_name,
+"\"n_retrial\"", 0);
 
 template<typename A>
 struct pointer_query_columns<::TransactionRecord, id_sqlite, A> :
@@ -272,16 +272,16 @@ class access::object_traits_impl<::TransactionRecord, id_sqlite> :
     long long __id_value;
     bool __id_null;
 
-    // blockNumber
+    // block_number
     //
-    long long blockNumber_value;
-    bool blockNumber_null;
+    long long block_number_value;
+    bool block_number_null;
 
-    // tx
+    // tx_hash
     //
-    details::buffer tx_value;
-    std::size_t tx_size;
-    bool tx_null;
+    details::buffer tx_hash_value;
+    std::size_t tx_hash_size;
+    bool tx_hash_null;
 
     // request
     //
@@ -289,10 +289,10 @@ class access::object_traits_impl<::TransactionRecord, id_sqlite> :
     std::size_t request_size;
     bool request_null;
 
-    // requestTime
+    // request_time
     //
-    long long requestTime_value;
-    bool requestTime_null;
+    long long request_time_value;
+    bool request_time_null;
 
     // response
     //
@@ -300,15 +300,15 @@ class access::object_traits_impl<::TransactionRecord, id_sqlite> :
     std::size_t response_size;
     bool response_null;
 
-    // responseTime
+    // response_time
     //
-    long long responseTime_value;
-    bool responseTime_null;
+    long long response_time_value;
+    bool response_time_null;
 
-    // numOfRetrial
+    // n_retrial
     //
-    long long numOfRetrial_value;
-    bool numOfRetrial_null;
+    long long n_retrial_value;
+    bool n_retrial_null;
 
     std::size_t version;
   };

@@ -25,7 +25,7 @@
 #define TYPE_STEAM_EX       0x2
 #define TYPE_FINANCE_INFO   0x3
 
-#define FREQ 2500000.0
+#define SGX_ADDRESS "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 
 #define ERR_ENCLAVE_SSL_CLIENT 0x1001 
 
