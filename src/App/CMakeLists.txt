@@ -91,6 +91,7 @@ target_link_libraries(tc
         -ljsonrpccpp-server
         -lmicrohttpd
         -lpthread
+        -L/usr/lib/odb
         -lodb-sqlite
         -lodb
         -lboost_system
@@ -112,6 +113,7 @@ target_link_libraries(TestMain
         -ljsonrpccpp-common
         -ljsonrpccpp-client
         -lpthread
+        -L/usr/lib/odb
         -lodb-sqlite
         -lodb
         ${LIBGTEST}/libgtest.a
