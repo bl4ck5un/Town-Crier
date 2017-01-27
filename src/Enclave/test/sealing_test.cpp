@@ -31,7 +31,7 @@ int seal_data_test()
         if (decrypted_text_length != sizeof(x)) return -1;
         if (memcmp(x, y, sizeof(x))) {
             hexdump("x:", x, sizeof(x));
-            hexdump("y: ", y, sizeof(x));
+          hexdump("y:", y, sizeof(x));
             return -5;
         }
     }

@@ -1,20 +1,21 @@
-//
-// Created by fanz on 6/11/16.
-//
+#include <boost/algorithm/hex.hpp>
+#include "Converter.h"
+#include "sgx_urts.h"
+#include "utils.h"
 
-#include "Init.h"
-#include "Utils.h"
-
-/* Initialize the enclave:
- *   Step 1: try to retrieve the launch token saved by last transaction
- *   Step 2: call sgx_create_enclave to initialize an enclave instance
- *   Step 3: save the launch token if it is updated
+/*!
+ * \brief   Initialize the enclave:
+ *      Step 1: try to retrieve the launch token saved by last transaction
+ *      Step 2: call sgx_create_enclave to initialize an enclave instance
+ *      Step 3: save the launch token if it is updated
+ * \param enclave_name full path to the enclave binary
+ * \param eid [out] place to hold enclave id
  */
 int initialize_enclave(const char *enclave_name, sgx_enclave_id_t *eid) {
   char token_path[MAX_PATH] = {'\0'};
   sgx_launch_token_t token = {0};
   sgx_status_t ret = SGX_ERROR_UNEXPECTED;
-  int updated = 0;
+  int updated = false;
 
   /*! Step 1: try to retrieve the launch token saved by last transaction
    *         if there is no token, then create a new one.
@@ -56,7 +57,7 @@ int initialize_enclave(const char *enclave_name, sgx_enclave_id_t *eid) {
   }
 
   /* Step 3: save the launch token if it is updated */
-  if (updated == FALSE || fp == NULL) {
+  if (updated == -1 || fp == NULL) {
     /* if the token is not updated, or file handler is invalid, do not perform saving */
     if (fp != NULL) fclose(fp);
     return 0;
@@ -74,4 +75,21 @@ int initialize_enclave(const char *enclave_name, sgx_enclave_id_t *eid) {
 
 int initialize_tc_enclave(sgx_enclave_id_t *eid) {
   return initialize_enclave(ENCLAVE_FILENAME, eid);
+}
+
+void print_error_message(sgx_status_t ret) {
+  size_t idx = 0;
+  size_t ttl = sizeof sgx_errlist / sizeof sgx_errlist[0];
+
+  for (idx = 0; idx < ttl; idx++) {
+    if (ret == sgx_errlist[idx].err) {
+      if (NULL != sgx_errlist[idx].sug)
+        printf("Info: %s\n", sgx_errlist[idx].sug);
+      printf("Error: %s\n", sgx_errlist[idx].msg);
+      break;
+    }
+  }
+
+  if (idx == ttl)
+    printf("Error: returned %x\n", ret);
 }

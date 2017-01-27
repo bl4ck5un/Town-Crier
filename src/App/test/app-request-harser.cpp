@@ -1,7 +1,8 @@
 #include <gtest/gtest.h>
 
 #include "../request-parser.hxx"
-#include "Converter.h"
+#include "../utils.h"
+#include "../Converter.h"
 
 TEST (RequestHandling, hex_and_unhex) {
   uint8_t b[4];
@@ -15,6 +16,10 @@ TEST (RequestHandling, hex_and_unhex) {
   uint8_t buffer_ref[5]{00, 0xaa, 0xbb, 0xcc, 0xdd};
   hexToBuffer(hexString, buffer, sizeof buffer);
   ASSERT_EQ(0, memcmp(buffer, buffer_ref, sizeof buffer));
+
+  vector<uint8_t> bufferVec;
+  hexToBuffer(hexString, bufferVec);
+  for (auto i = 0; i < bufferVec.size(); i++) { ASSERT_EQ(buffer_ref[i], bufferVec.at(i)); }
 
   memset(b, 0x8a, 4);
   hexToBuffer("", b, sizeof b);

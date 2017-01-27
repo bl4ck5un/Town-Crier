@@ -9,12 +9,10 @@
 
 void dump_buf(const char *title, const unsigned char *buf, size_t len)
 {
-    if (log_run_level >= LOG_LVL_DEBUG) {
-        hexdump(title, buf, MIN(DEBUG_LIMIT, len));
-        if (DEBUG_LIMIT < len) {
-            printf_sgx("...\n");
-        }
-    }
+  hexdump(title, buf, MIN(DEBUG_LIMIT, len));
+  if (DEBUG_LIMIT < len) {
+    printf_sgx("...\n");
+  }
 }
 
 void hexdump(const char* title, void const * data, size_t len)

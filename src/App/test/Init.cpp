@@ -4,7 +4,7 @@
 
 #include "gtest/gtest.h"
 
-#include "../Init.h"
+#include "../utils.h"
 
 TEST(BasicTest, Initialization) {
     sgx_enclave_id_t eid;

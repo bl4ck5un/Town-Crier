@@ -1,0 +1,2 @@
+LOG - detailed human-readable tracing information
+DEBUG - more detailed tracing information may even include human-unreadable stuff such as the memory content etc.

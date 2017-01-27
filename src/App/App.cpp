@@ -13,11 +13,11 @@
 #include "request-parser.hxx"
 #include "sqlite3.h"
 #include "Bookkeeping.h"
-#include "Init.h"
+#include "utils.h"
 
 #include "Log.h"
 #include "Monitor.h"
-#include "Utils.h"
+#include "utils.h"
 #include "Constants.h"
 
 #include "StatusRpcServer.h"

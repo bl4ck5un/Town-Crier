@@ -1,11 +1,12 @@
 #include <gtest/gtest.h>
 #include "Debug.h"
-#include "../Init.h"
+#include "../utils.h"
 #include "../Enclave_u.h"
-#include "../Utils.h"
 #include "../../Common/Constants.h"
+#include "../utils.h"
+#include "../Converter.h"
 
-TEST (EventHandler, Steam) {
+TEST (EnclaveHandleEvent, Steam) {
     sgx_enclave_id_t eid;
     sgx_status_t ecall_ret;
     int ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
@@ -22,7 +23,7 @@ TEST (EventHandler, Steam) {
 
 
     std::vector<uint8_t> tcAddress;
-    fromHex(TC_ADDRESS, tcAddress);
+  hexToBuffer(TC_ADDRESS, tcAddress);
 
     for (auto i = 14; i < 14 + 20; i++)
     {

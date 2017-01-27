@@ -1,7 +1,6 @@
 set(SOURCE_FILES
         App.cpp
-        #        Bookkeeping.cpp
-        ../Common/Converter.cpp
+        Converter.cpp
         Enclave_u.c
         EthRPC.cpp
         ethrpcclient.h
@@ -10,8 +9,7 @@ set(SOURCE_FILES
         printf.c
         RemoteAtt.cpp
         snprintf.c
-        Init.cpp
-        Utils.cpp
+        utils.cpp
         ../Common/Debug.c
         ../Common/Log.c
         mbedtls_sgx_net.c
@@ -33,21 +31,21 @@ add_custom_command(
 )
 
 add_executable(tc ${SOURCE_FILES})
+add_executable(keygen keygen.cpp ../Common/Log.c utils.cpp Converter.cpp Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 
 # Tests
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
 add_executable(TestMain EXCLUDE_FROM_ALL
         ${TEST_SRC_FILES}
-        Init.cpp
+        utils.cpp
         Enclave_u.c
-        Utils.cpp
         ocalls.cpp
         EthRPC.cpp
         bookkeeping/database.cpp
         bookkeeping/transaction-record.hxx
         bookkeeping/transaction-record-odb.cxx
         mbedtls_sgx_net.c
-        ../Common/Converter.cpp
+        Converter.cpp
         ../Common/Debug.c
         ../Common/Log.c types.cpp types.hxx request-parser.cpp request-parser.hxx)
 
@@ -97,6 +95,10 @@ target_link_libraries(tc
         -lodb
         -lboost_system
         -lboost_filesystem
+        )
+
+target_link_libraries(keygen
+        -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB} -lpthread
         )
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")

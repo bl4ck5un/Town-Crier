@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include "../Init.h"
+#include "../utils.h"
 #include "../Enclave_u.h"
 
 

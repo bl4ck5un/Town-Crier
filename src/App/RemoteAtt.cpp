@@ -10,7 +10,8 @@
 #include <Log.h>
 #include "Constants.h"
 #include <Debug.h>
-#include "Utils.h"
+#include "utils.h"
+#include "utils.h"
 
 int time_calibrate(sgx_enclave_id_t eid)
 {

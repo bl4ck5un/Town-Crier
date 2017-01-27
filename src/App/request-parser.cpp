@@ -4,6 +4,7 @@
 #include "request-parser.hxx"
 #include "Log.h"
 #include "Converter.h"
+#include "utils.h"
 
 inline static unsigned int __hextoi(const string &str) {
   try {

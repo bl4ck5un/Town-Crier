@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "../Init.h"
+#include "../utils.h"
 #include "../Enclave_u.h"
 
 #include "../EthRPC.h"
-#include "Converter.h"
+#include "../Converter.h"
 #include <vector>
 
 TEST(RegEx, regex){
