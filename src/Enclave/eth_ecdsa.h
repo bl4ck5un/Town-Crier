@@ -1,5 +1,7 @@
-#include "stdint.h"
+#include <stdint.h>
 #include <mbedtls/bignum.h>
+
+#include "macros.h"
 
 #ifndef ENCLAVE_ECDSA_H
 #define ENCLAVE_ECDSA_H
@@ -12,8 +14,8 @@
 extern "C" {
 #endif
 int sign(uint8_t* data, int in_len, uint8_t* rr, uint8_t *ss, uint8_t* vv);
-int ecdsa_keygen(unsigned char *pubkey, unsigned char *address);
-int __ecdsa_keygen(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigned char *address);
+DEPRECATED(int ecdsa_keygen(unsigned char *pubkey, unsigned char *address));
+DEPRECATED(int __ecdsa_keygen(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigned char *address));
 #if defined(__cplusplus)
 }
 #endif

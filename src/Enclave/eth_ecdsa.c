@@ -60,7 +60,7 @@ ADR: 89b44e4d3c81ede05d0f5de8d1a68f754d73d997
 */
 
 #define FROM_PRIVATE_KEY "cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8"
-
+// TODO delete this interface, replacing with ecdsa_keygen_seal()
 int ecdsa_keygen(unsigned char *pubkey, unsigned char *address) {
   return __ecdsa_keygen(NULL, pubkey, address);
 }
@@ -73,6 +73,7 @@ int ecdsa_keygen(unsigned char *pubkey, unsigned char *address) {
  * @param address [out,size=20] output buffer for the address
  * @return 0 if succeed
  */
+ // TODO: loose the random sampling part
 int __ecdsa_keygen(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigned char *address) {
   mbedtls_ecdsa_context ctx;
   unsigned char __pubkey[65];
@@ -172,7 +173,8 @@ int ecdsa_keygen_seal(unsigned char *sealed, size_t *olen, unsigned char *pubkey
   return 0;
 }
 
-DEPRECATED(void keygen(mbedtls_ecdsa_context *ctx)) {
+DEPRECATED(void keygen(mbedtls_ecdsa_context *ctx));
+void keygen(mbedtls_ecdsa_context *ctx) {
   int ret;
   mbedtls_ecp_group_load(&ctx->grp, ECPARAMS);
   ret = mbedtls_mpi_read_string(&ctx->d, 16, FROM_PRIVATE_KEY);
