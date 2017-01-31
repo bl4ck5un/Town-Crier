@@ -31,12 +31,6 @@ string bufferToHex(const unsigned char *buffer, size_t bufSize, bool prefix) {
   if (prefix) {
     hex += "0x";
   }
-  try {
-    boost::algorithm::hex(buffer, buffer + bufSize, back_inserter(hex));
-    return hex;
-  }
-  catch (boost::algorithm::hex_decode_error &e) {
-    cerr << diagnostic_information(e) << endl;
-    throw invalid_argument(diagnostic_information(e, false));
-  }
+  boost::algorithm::hex(buffer, buffer + bufSize, back_inserter(hex));
+  return hex;
 }

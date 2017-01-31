@@ -5,7 +5,6 @@
 *.db
 
 # generated files
-App/ethrpcclient.h
 App/Enclave_u.c
 App/Enclave_u.h
 Enclave/Enclave_t.c
