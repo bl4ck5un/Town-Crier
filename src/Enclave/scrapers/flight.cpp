@@ -204,7 +204,7 @@ int get_flight_delay(uint64_t unix_epoch_time, const char* flight, int* resp) {
     header.push_back(AUTH_CODE);
     header.push_back(HOST);
 
-    //Construct the query
+    //Constretruct the query
   std::string query = "/json/FlightXML2/FlightInfoEx?ident=" + std::string(flight) + "&howMany=30&offset=0 HTTP/1.1";
 
     HttpRequest httpRequest("flightxml.flightaware.com", query, header);

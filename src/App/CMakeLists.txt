@@ -1,13 +1,12 @@
 set(SOURCE_FILES
-        App.cpp
+        tc.cpp
         Converter.cpp
         Enclave_u.c
         EthRPC.cpp
         ethrpcclient.h
         Monitor.cpp
         ocalls.cpp
-        printf.c
-        RemoteAtt.cpp
+        attestation.cpp
         snprintf.c
         utils.cpp
         ../Common/Debug.c
@@ -32,6 +31,7 @@ add_custom_command(
 
 add_executable(tc ${SOURCE_FILES})
 add_executable(keygen keygen.cpp ../Common/Log.c utils.cpp Converter.cpp Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
+add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp ../Common/Debug.c utils.cpp ../Common/Log.c Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 
 # Tests
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
@@ -98,9 +98,9 @@ target_link_libraries(tc
         -lboost_filesystem
         )
 
-target_link_libraries(keygen
-        -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB} -lpthread
-        )
+target_link_libraries(keygen -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB} -lpthread)
+
+target_link_libraries(tc-att -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB} -lpthread)
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
 set(TEST_PROGRAM_LDFLAGS " ${LIBGTEST}/libgtest_main.a")

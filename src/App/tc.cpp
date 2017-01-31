@@ -1,5 +1,3 @@
-#include "App.h"
-
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <jsonrpccpp/server/connectors/httpserver.h>
@@ -7,12 +5,10 @@
 #include "sgx_urts.h"
 #include "sgx_uae_service.h"
 #include "Enclave_u.h"
-#include "RemoteAtt.h"
+#include "attestation.h"
 #include "stdint.h"
 #include "EthRPC.h"
 #include "request-parser.hxx"
-#include "sqlite3.h"
-#include "Bookkeeping.h"
 #include "utils.h"
 
 #include "Log.h"
@@ -31,8 +27,6 @@
 #include <csignal>
 
 #include <boost/filesystem.hpp>
-
-sqlite3 *db = NULL;
 
 extern ethRPCClient *c;
 jsonrpc::HttpClient *httpclient;

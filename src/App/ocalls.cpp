@@ -7,17 +7,19 @@
 #include "windows.h"
 #endif
 
-#include "ocalls.h"
 #include <Log.h>
 #include <unistd.h>
 
-std::string current_datetime()
+int ocall_print_string(const char *str)
 {
-    time_t now = time(0);
-    char buf[sizeof "2011-10-08T07:07:09Z"];
-    strftime(buf, sizeof buf, "%Y-%m-%dT%H:%M:%SZ", gmtime(&now));
-    return buf;
+    /* Proxy/Bridge will check the length and null-terminate
+     * the input string to prevent buffer overflow.
+     */
+    int ret = printf("%s", str);
+    fflush(stdout);
+    return ret;
 }
+
 
 long long rdtsc()
 {

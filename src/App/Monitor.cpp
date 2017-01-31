@@ -23,7 +23,6 @@
 
 #include "Enclave_u.h"
 #include "Constants.h"
-#include "Bookkeeping.h"
 #include "bookkeeping/database.hxx"
 #include <iomanip>
 #include "request-parser.hxx"

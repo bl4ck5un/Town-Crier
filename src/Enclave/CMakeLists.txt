@@ -2,7 +2,7 @@ set(SOURCE_FILES
         ../Common/Debug.c
         ../Common/Log.c
         eth_abi.cpp
-        create_attestation.cpp
+        create_report.cpp
         scrapers/current_bloomberg.cpp
         scrapers/current_Google.cpp
         scrapers/current_Yahoo.cpp

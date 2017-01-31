@@ -45,6 +45,10 @@ has to be installed and configured. Please refer to
 - [`libjson-rpc-cpp`](https://github.com/cinemast/libjson-rpc-cpp)
 - sqlite3: 
 - `boost`
+- `odb`: **DON'T USE APT VERSION. Manually install the following libraries from the upstream.** [upstream](http://www.codesynthesis.com/products/odb)
+    - odb-2.4.0
+    - libodb-2.4.0
+    - libodb-sqlite-2.4.0
 
 On Ubuntu 16.04 LTS: 
 
