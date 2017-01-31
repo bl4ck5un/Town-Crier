@@ -5,6 +5,7 @@ enclave {
     include "sgx_report.h"
     include "time.h"
     include "stddef.h"
+    include "sgx_tseal.h"
 
     trusted {
         public int handle_request(
@@ -16,7 +17,17 @@ enclave {
         public int ecall_time_calibrate (time_t wall_clock, [out] uint8_t wtc_rsv[65]);
 
         public int register_exception_handlers();
-        public int ecdsa_keygen([user_check] unsigned char* pubkey, [user_check] unsigned char* address);
+        public int ecdsa_keygen_seal(
+                    [user_check] unsigned char *o_sealed,
+                    [in,out] size_t *olen,
+                    [user_check] unsigned char *o_pubkey,
+                    [user_check] unsigned char *o_address);
+
+        public int ecdsa_keygen_unseal(
+                    [in,size=secret_len] const sgx_sealed_data_t *secret,
+                    size_t secret_len,
+                    [user_check] unsigned char* pubkey,
+                    [user_check] unsigned char *address);
     };
 
     untrusted {

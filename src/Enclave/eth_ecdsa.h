@@ -6,16 +6,12 @@
 #ifndef ENCLAVE_ECDSA_H
 #define ENCLAVE_ECDSA_H
 
-#define SECKEY_LEN  32
-#define PUBKEY_LEN  64
-#define ADDRESS_LEN 20
-
 #if defined(__cplusplus)
 extern "C" {
 #endif
-int sign(uint8_t* data, int in_len, uint8_t* rr, uint8_t *ss, uint8_t* vv);
+int sign(uint8_t *data, size_t in_len, uint8_t *rr, uint8_t *ss, uint8_t *vv);
 DEPRECATED(int ecdsa_keygen(unsigned char *pubkey, unsigned char *address));
-DEPRECATED(int __ecdsa_keygen(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigned char *address));
+DEPRECATED(int __ecdsa_sec_to_pub(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigned char *address));
 #if defined(__cplusplus)
 }
 #endif

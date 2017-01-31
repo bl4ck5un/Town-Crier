@@ -364,7 +364,7 @@ HttpResponse HttpClient::getResponse() {
         */
         ret = mbedtls_ssl_read(&ssl, buf.buf + buf.length, buf.cap - buf.length);
 
-        LL_LOG("mbedtls_ssl_read returns %d", ret);
+        LL_TRACE("mbedtls_ssl_read returns %d", ret);
 
         if (ret == MBEDTLS_ERR_SSL_WANT_READ ||
             ret == MBEDTLS_ERR_SSL_WANT_WRITE)
@@ -387,7 +387,7 @@ HttpResponse HttpClient::getResponse() {
                 break;
             }
 
-            LL_LOG("%d bytes received.", ret);
+            LL_TRACE("%d bytes received.", ret);
             buf.length += ret;
 
             n_parsed = http_parser_execute(&parser, &settings, reinterpret_cast<const char *>(buf.buf),

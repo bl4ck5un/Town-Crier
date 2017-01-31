@@ -3,6 +3,7 @@
 #include "sgx_uae_service.h"
 #include "Enclave_u.h"
 #include "App.h"
+#include "sgx_error.h"
 
 #include <stdio.h>
 #include <string.h>

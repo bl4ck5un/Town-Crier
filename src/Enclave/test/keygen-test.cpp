@@ -20,7 +20,7 @@ int keygen_test() {
   unsigned char pubkey[64];
   unsigned char address[20];
 
-  ret = __ecdsa_keygen(&seckey, pubkey, address);
+  ret = __ecdsa_sec_to_pub(&seckey, pubkey, address);
   dump_buf("publicKey:", pubkey, 64);
   dump_buf("address:", address, 20);
   printf_sgx("Want: 0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997\n");
