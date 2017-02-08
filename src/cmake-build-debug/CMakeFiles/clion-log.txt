@@ -1,0 +1,22 @@
+/home/sgx/Downloads/clion-2016.3.2/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /home/sgx/Desktop/TC6/Town-Crier/src
+-- SGX_COMMON_CFLAGS: -m64 -O0 -g
+-- SGX_SDK: /opt/intel/sgxsdk
+-- SGX_ARCH: x64
+-- SGX_MODE: SIM
+-- SGX_LIBRARY_PATH: /opt/intel/sgxsdk/lib64
+-- SGX_ENCLAVE_SIGNER: /opt/intel/sgxsdk/bin/x64/sgx_sign
+-- SGX_EDGER8R: /opt/intel/sgxsdk/bin/x64/sgx_edger8r
+-- Configuring done
+CMake Error at Enclave/CMakeLists.txt:43 (add_library):
+  Cannot find source file:
+
+    scrapers/scraper.cpp
+
+  Tried extensions .c .C .c++ .cc .cpp .cxx .m .M .mm .h .hh .h++ .hm .hpp
+  .hxx .in .txx
+
+
+CMake Error: CMake can not determine linker language for target: enclave
+CMake Error: Cannot determine link language for target "enclave".
+-- Generating done
+-- Build files have been written to: /home/sgx/Desktop/TC6/Town-Crier/src/cmake-build-debug

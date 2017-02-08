@@ -261,6 +261,83 @@ int get_steam_transaction(const char** item_name_list, int item_list_len, const 
 	*resp = 0;
     return 0;
 }
+
+
+static int handler(uint8_t *req, int len, int *resp_data)
+{
+    /*
+    format[0] = encAPI[0];
+    format[1] = encAPI[1];
+    format[2] = ID_B;
+    format[3] = T_B;
+    format[4] = bytes32(LIST_I.length);
+    format[5] = LIST_I[0];
+    */
+    int ret;
+    //(void) len;
+
+    /* handling input */
+//    std::string buyer_id;  // buyer_id is 32B, each of byte takes two chars. Plus \0
+    uint32_t wait_time;
+    size_t item_len;
+    vector<char*> items;
+
+#ifdef VERBOSE
+    dump_buf("req dump", req, len);
+#endif
+
+    // 0x00 .. 0x40
+    // - encAPI: TODO: insert dec here
+    unsigned char enc_api_key[64];
+    memcpy(enc_api_key, req, 0x40);
+    dump_buf("API KEY: ", enc_api_key, 64);
+
+    // 0x40 .. 0x60 buyer_id
+    unsigned char buyer_id[33] = {0};
+
+    memcpy(buyer_id, req+0x40, 0x20);
+    //LL_NOTICE("buyer id: %s", buyer_id);
+    dump_buf("buyer id: ", buyer_id, 32);
+
+    // 0x60 .. 0x80
+    // get last 4 bytes
+    memcpy(&wait_time, req + 0x80 - sizeof(uint32_t), sizeof(uint32_t));
+    wait_time = swap_uint32(wait_time);
+
+    // 0x80 .. 0xa0 - item_len
+    memcpy(&item_len, req + 0xa0 - sizeof(size_t), sizeof(size_t));
+    item_len = swap_uint32(item_len);//?
+
+    // 0xa0 .. 0xc0
+    for (size_t i = 0; i < item_len; i++)
+    {
+        items.push_back((char*) req + 0xa0 + 0x20 * i);
+        LL_NOTICE("item: %s", items[i]);
+    }
+
+    if (wait_time > 3600)
+        wait_time = 59;
+    LL_NOTICE("waiting time: %d", wait_time);
+
+    const char * listB[1] = {"Portal"};
+    // XXX: set wait time to 1 for test purpose
+//    wait_time = 1;
+
+    int result = 0;
+    ret = get_steam_transaction(listB, 1, "32884794", wait_time, "7978F8EDEF9695B57E72EC468E5781AD", &result);
+    if (ret == 0 && result == 1) {
+        LL_NOTICE("Found a trade");
+        *resp_data = result;
+        return 0;
+    }
+
+//    uncomment to simulate an real trade
+//    *resp_data = 1;
+
+    return 0;
+}
+
+
 //
 ///*
 //int main(int argc, char* argv[]) {

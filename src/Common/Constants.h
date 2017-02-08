@@ -27,15 +27,7 @@
 
 #define SGX_ADDRESS "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 
-#define ERR_ENCLAVE_SSL_CLIENT 0x1001 
-
-//Define flight status constants 
-#define INVALID -1
-#define DEPARTURED 0
-#define DELAYED 1
-#define CANCELLED 2
-#define NOT_DEPARTURED 3
-#define NOT_FOUND 4
+#define ERR_ENCLAVE_SSL_CLIENT 0x1001
 
 //Define UPS Tracking Constant
 #define PACKAGE_NOT_FOUND 0

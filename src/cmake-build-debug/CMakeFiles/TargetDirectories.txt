@@ -1,0 +1,11 @@
+/home/sgx/Desktop/TC6/Town-Crier/src/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/sgx/Desktop/TC6/Town-Crier/src/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/sgx/Desktop/TC6/Town-Crier/src/cmake-build-debug/App/CMakeFiles/rebuild_cache.dir
+/home/sgx/Desktop/TC6/Town-Crier/src/cmake-build-debug/App/CMakeFiles/TestMain.dir
+/home/sgx/Desktop/TC6/Town-Crier/src/cmake-build-debug/App/CMakeFiles/tc-att.dir
+/home/sgx/Desktop/TC6/Town-Crier/src/cmake-build-debug/App/CMakeFiles/edit_cache.dir
+/home/sgx/Desktop/TC6/Town-Crier/src/cmake-build-debug/App/CMakeFiles/keygen.dir
+/home/sgx/Desktop/TC6/Town-Crier/src/cmake-build-debug/App/CMakeFiles/tc.dir
+/home/sgx/Desktop/TC6/Town-Crier/src/cmake-build-debug/Enclave/CMakeFiles/edit_cache.dir
+/home/sgx/Desktop/TC6/Town-Crier/src/cmake-build-debug/Enclave/CMakeFiles/rebuild_cache.dir
+/home/sgx/Desktop/TC6/Town-Crier/src/cmake-build-debug/Enclave/CMakeFiles/enclave.dir

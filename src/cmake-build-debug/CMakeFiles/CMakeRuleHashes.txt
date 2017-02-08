@@ -1,0 +1,3 @@
+# Hashes of file build rules.
+401dd2a9fe9f1ad2e538a6f217491d1a ../App/Enclave_u.c
+bd8933affac16bb760c5824118829fd8 ../Enclave/Enclave_t.c
