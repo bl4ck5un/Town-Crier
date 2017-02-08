@@ -1,21 +1,29 @@
-set(SOURCE_FILES
-        tc.cpp
-        Converter.cpp
-        Enclave_u.c
-        EthRPC.cpp
-        ethrpcclient.h
-        Monitor.cpp
-        ocalls.cpp
-        attestation.cpp
-        snprintf.c
-        utils.cpp
-        ../Common/Debug.c
-        ../Common/Log.c
-        mbedtls_sgx_net.c
+if (SGX_DEBUG STREQUAL 1)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG -UNDEBUG -UEDEBUG")
+elseif (SGX_PRERELEASE STREQUAL 1)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -DEDEBUG")
+else ()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -UEDEBUG")
+endif ()
+
+if (SGX_MODE STREQUAL HW)
+    set(UAE_SERVICE_LIB sgx_uae_service)
+else ()
+    set(UAE_SERVICE_LIB sgx_uae_service_sim)
+endif ()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wno-attributes")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
+
+set(TC_SRC_FILES tc.cpp Monitor.cpp attestation.cpp request-parser.cpp
+        mbedtls_sgx_net.c Enclave_u.c ocalls.cpp
         bookkeeping/database.cpp
         bookkeeping/transaction-record.hxx
         bookkeeping/transaction-record-odb.cxx
-        StatusRpcServer.cpp StatusRpcServer.h types.cpp types.hxx request-parser.cpp request-parser.hxx)
+        Converter.cpp utils.cpp types.cpp
+        EthRPC.cpp StatusRpcServer.cpp StatusRpcServer.h
+        ../Common/Debug.c
+        ../Common/Log.c)
 
 
 set_directory_properties(PROPERTIES
@@ -29,8 +37,8 @@ add_custom_command(
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_executable(tc ${SOURCE_FILES})
-add_executable(keygen keygen.cpp ../Common/Log.c utils.cpp Converter.cpp Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
+add_executable(tc ${TC_SRC_FILES})
+add_executable(keygen tc-keygen.cpp ../Common/Log.c utils.cpp Converter.cpp Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp ../Common/Debug.c utils.cpp ../Common/Log.c Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 
 # Tests
@@ -64,38 +72,14 @@ include_directories(
         ../vendor/gtest/include
 )
 
-if (SGX_DEBUG STREQUAL 1)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG -UNDEBUG -UEDEBUG")
-elseif (SGX_PRERELEASE STREQUAL 1)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -DEDEBUG")
-else ()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -UEDEBUG")
-endif ()
 
-if (SGX_MODE STREQUAL HW)
-    set(UAE_SERVICE_LIB sgx_uae_service)
-else ()
-    set(UAE_SERVICE_LIB sgx_uae_service_sim)
-endif ()
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wno-attributes")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
 
 target_link_libraries(tc
         -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB}
-        -lsqlite3
-        -ljsoncpp
-        -lcurl
-        -ljsonrpccpp-common
-        -ljsonrpccpp-client
-        -ljsonrpccpp-server
-        -lmicrohttpd
+        -ljsoncpp -lcurl -ljsonrpccpp-common -ljsonrpccpp-client -ljsonrpccpp-server -lmicrohttpd
+        -lsqlite3 -L/usr/lib/odb -lodb-sqlite -lodb
+        -lboost_system -lboost_filesystem -lboost_program_options
         -lpthread
-        -L/usr/lib/odb
-        -lodb-sqlite
-        -lodb
-        -lboost_system
-        -lboost_filesystem
         )
 
 target_link_libraries(keygen -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB} -lpthread)
