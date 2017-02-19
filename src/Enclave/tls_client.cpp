@@ -440,8 +440,8 @@ string HttpClient::getError() {
         mbedtls_strerror(ret, error_buf, 100);
         return string(error_buf);
     }
-    return "";
 #endif
+    return "";
 }
 
 HttpClient::~HttpClient() {
