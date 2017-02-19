@@ -16,6 +16,8 @@
 
 #include <iostream>
 #include <unistd.h>
+#include <chrono>
+#include <thread>
 
 #include "Monitor.h"
 #include "EthRPC.h"
@@ -27,17 +29,6 @@
 #include <iomanip>
 #include "request-parser.hxx"
 #include "Converter.h"
-
-/*!
- * @param eid
- * @param nonce
- * Monitor_loop is the main loop that will relay all request from the TC contract
- * to enclave {@param eid}. Then, relay back the results to RPC_HOSTNAME in RPC_PORT
- * When the monitor recieved a request from a block, relay message, the for some reason the
- * request fails, retry up to 5 times.  If the request fails 5 times, the monitor_loop exists
- * If a request succeeds, the result will sent back to the blockchain
- */
-
 
 uint8_t resp_buffer[TX_BUF_SIZE] = {0};  //! TX_BUF_SIZE is defined in Constants.h
 size_t resp_data_len = 0;
@@ -90,6 +81,12 @@ void Monitor::loop() {
 
       // fetch up to the latest block
       for (; next_block_num <= current_highest_block; next_block_num++) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
+        if (quit.load()) {
+            LL_NOTICE("Ctrl-C pressed, cleaning up...");
+            ret = 1;
+            break;
+        }
         LL_LOG("processing block %d", next_block_num);
 
         Json::Value txn_list;
