@@ -32,6 +32,8 @@
 #include <exception>
 #include <vector>
 
+#include "Log.h"
+
 using namespace std;
 
 
@@ -416,11 +418,13 @@ HttpResponse HttpClient::getResponse() {
 
     string response_headers(reinterpret_cast<const char *>(buf.buf),
                             cb_data.header_length == 0 ? buf.length : cb_data.header_length);
-    dump_buf("RESP Headers:", (const unsigned char *) response_headers.c_str(), response_headers.length());
+
 
     string content((const char *) buf.buf + cb_data.header_length, buf.length - cb_data.header_length);
     HttpResponse resp(parser.status_code, response_headers, content);
-    dump_buf("RESP Body: ", (const unsigned char*) content.c_str(), content.length());
+
+    LL_LOG("Response headers\n: %s", response_headers.c_str());
+    LL_DEBUG("Response body:\n", content.c_str());
 
     return resp;
 }
