@@ -1,4 +1,4 @@
-pragma solidity ^0.4.2;
+pragma solidity ^0.4.9;
 
 contract TownCrier {
     struct Request {
@@ -34,9 +34,9 @@ contract TownCrier {
     // an exception, sending back the Ether (this was different before Solidity
     // v0.4.0). So if you want your contract to receive Ether, you have to
     // implement a fallback function.
-    function () { }
+    function () payable { }
 
-    function TownCrier() public {
+    function TownCrier() public payable {
         // Start request IDs at 1 for two reasons:
         //   1. We can use 0 to denote an invalid request (ids are unsigned)
         //   2. Storage is more expensive when changing something from zero to non-zero,

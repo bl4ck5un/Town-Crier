@@ -1,4 +1,4 @@
-pragma solidity ^0.4.2;
+pragma solidity ^0.4.9;
 
 import "TownCrier.sol";
 
@@ -20,7 +20,7 @@ contract FlightIns {
     address[2**64] requesters;
     uint[2**64] premium;
 
-    function() { }
+    function() payable { }
 
     function FlightIns(TownCrier tcCont) public payable{
         TC_CONTRACT = tcCont;
