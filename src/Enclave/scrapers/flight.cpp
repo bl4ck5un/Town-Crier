@@ -4,6 +4,7 @@
 #include <string.h>
 #include <cstring>
 
+#include "Scraper.h"
 #include "Debug.h"
 #include "Log.h"
 #include "utils.h"
@@ -71,7 +72,6 @@ public:
         uint64_t unix_epoch = strtol(flighttime, NULL, 10);
 
 
-
         LL_NOTICE("unix_epoch=%ld, flight_number=%s", unix_epoch, flight_number);
         switch (get_flight_delay(unix_epoch, flight_number, &delay)) {
             case INVALID:
@@ -107,8 +107,6 @@ public:
 
     flight_error parse_response(const char *resp, int *delay, uint64_t unix_epoch_time) {
         
-        
-        LL_NOTICE("HELLO!\n");
         //Find the scheduled departure time
         std::string buff(resp);
         std::string delimeter = "\"filed_departuretime\":" + uint64_to_string(unix_epoch_time);
@@ -116,7 +114,6 @@ public:
 
         //Corner Case: Flight was not found
         if (pos > buff.length()){
-            LL_NOTICE("Flight not found!\n");
             return INVALID;
         }
 
@@ -125,30 +122,24 @@ public:
         std::size_t pos2 = buff.find(delimeter2, pos);
         std::string token = buff.substr(pos2 + delimeter2.length(),pos2 + delimeter2.length() + 10);
         
-        LL_NOTICE("%s\n", token.c_str());
         uint64_t actual_depart_time = atoi(token.c_str());
-        LL_NOTICE("actual depart time: %llu\n", actual_depart_time);
 
         //Case: Flight has not yet departed
         if (actual_depart_time == 0){
-            LL_NOTICE("flight has not departed\n");
             return NOT_DEPARTED;
         }
         //Case: Flight was cancelled
         if( actual_depart_time == -1){
-            LL_NOTICE("flight has been cancelled\n");
             return CANCELLED;
         }
         //Case: Flight Departed but delayed
         if(actual_depart_time - unix_epoch_time >= MAX_DELAY_MIN*SECOND_PER_MIN){
             *delay = actual_depart_time - unix_epoch_time;
-            LL_NOTICE("flight delayed\n");
             return DELAYED;
         }
         //Case: Flight was not delayed
         else{
             *delay = 0;
-            LL_NOTICE("FLIGHT dEPARTED NORMALLY\n");
             return DEPARTED;
         }
     }
@@ -163,8 +154,6 @@ public:
 //
 //    date and time in Zulu/UTC
 //*/
-
-
     flight_error get_flight_delay(uint64_t unix_epoch_time, const char *flight, int *resp) {
 
         /* Invalid user input */

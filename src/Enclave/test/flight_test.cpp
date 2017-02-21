@@ -8,8 +8,6 @@
 /* Test updated on 2/21/17 */
 int flight_self_test(){
 
-
-
   	//LL_NOTICE("USAGE: get_flight_delay(YYYYMMDD, HHmm, flight#, return_variable)\n");
     //LL_NOTICE("\tdate/time in Zulu/UTC, flight in ICAO\n");
     int rc, delay, status;
