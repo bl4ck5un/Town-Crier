@@ -38,11 +38,11 @@
               <th>Receipt</th>
             </tr>
             <tr ng-repeat="event in policyDetails">
-              <td ng-if="event.args.delay == 0">Paid Big Red {{event.args.payeeBalance}} USD for premium.</td>
-              <td ng-if="event.args.delay == 1">Received compensation of 5x{{event.args.payeeBalance}} USD from Big Red.</td>
-              <td ng-if="event.args.delay == 2">Received compensation of 5x{{event.args.payeeBalance}} USD from Big Red.</td>
-              <td ng-if="event.args.delay == 3">Partially refunded {{event.args.payeeBalance}} USD by Big Red.</td>
-              <td ng-if="event.args.delay == 4">Partially refunded {{event.args.payeeBalance}} USD by Big Red.</td>
+              <td ng-if="event.args.delay == 0">Paid Big Red {{event.args.payeeBalance}} ETH for premium.</td>
+              <td ng-if="event.args.delay == 1">Received compensation of 5x{{event.args.payeeBalance}} ETH from Big Red.</td>
+              <td ng-if="event.args.delay == 2">Received compensation of 5x{{event.args.payeeBalance}} ETH from Big Red.</td>
+              <td ng-if="event.args.delay == 3">Partially refunded {{event.args.payeeBalance}} ETH by Big Red.</td>
+              <td ng-if="event.args.delay == 4">Partially refunded {{event.args.payeeBalance}} ETH by Big Red.</td>
               <td>{{event.transactionHash}}</td>
             </tr>
             <tr>
