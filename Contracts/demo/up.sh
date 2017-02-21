@@ -13,15 +13,12 @@ esac
 
 $GETH --datadir=$datadir removedb
 
-coinbase=$($GETH --datadir=$datadir account list | head -n 1 | sed 's/.*{\([a-z0-9]*\)}.*/\1/g') 
-
 localip=127.0.0.1
 
 $GETH --datadir=$datadir init genesis.json
 $GETH --datadir=$datadir \
   --identity="00" \
   --networkid="93819023" \
-  --etherbase="$coinbase" \
   --port=30000 \
   --rpc \
   --rpcaddr=$localip\
@@ -31,4 +28,4 @@ $GETH --datadir=$datadir \
   --nodiscover \
   --rpcapi="db,eth,ne,web3,personal" \
   --ipcpath=$IPC \
-  console 
+  $@

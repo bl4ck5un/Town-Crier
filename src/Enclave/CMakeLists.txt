@@ -6,10 +6,10 @@ set(SOURCE_FILES
         scrapers/current_bloomberg.cpp
         scrapers/current_Google.cpp
         scrapers/current_Yahoo.cpp
-	scrapers/UPS_Tracking.cpp
+        scrapers/UPS_Tracking.cpp
         scrapers/current_coinmarket.cpp
-	scrapers/current_weather.cpp
-	eth_ecdsa.c
+        scrapers/current_weather.cpp
+        eth_ecdsa.c
         Enclave_t.c
         event_handler.cpp
         scrapers/flight.cpp
@@ -22,15 +22,14 @@ set(SOURCE_FILES
         enclave_exception_hdlr.c
         encoding.cpp
         external/slre.c
-        external/http_parser.c
-        https_client.cpp)
+        external/http_parser.c)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
 
 SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES})
 
 set_directory_properties(PROPERTIES
-    ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
+        ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_t.c
