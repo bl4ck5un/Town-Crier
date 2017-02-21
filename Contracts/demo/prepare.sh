@@ -13,9 +13,9 @@ var sgxAddr = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 var gasCnt = 3e+6
 var TC_FEE = 55 * 5e+13
 
-personal.unlockAccount(minerAddr, '123')
-personal.unlockAccount(sellerAddr, 'qwe')
-personal.unlockAccount(buyerAddr, 'asd')
+personal.unlockAccount(minerAddr, '123123')
+personal.unlockAccount(sellerAddr, '123123')
+personal.unlockAccount(buyerAddr, '123123')
 // personal.unlockAccount(sgxAddr)
 
 
@@ -39,9 +39,9 @@ EOF
 
 cat <<EOF
 var contracts = eth.compile.solidity(source)
-var TownCrier = eth.contract(contracts.TownCrier.info.abiDefinition)
-var SteamTrade = eth.contract(contracts.SteamTrade.info.abiDefinition)
-var FlightIns = eth.contract(contracts.FlightIns.info.abiDefinition)
+var TownCrier = eth.contract(contracts["<stdin>:TownCrier"].info.abiDefinition)
+var SteamTrade = eth.contract(contracts["<stdin>:SteamTrade"].info.abiDefinition)
+var FlightIns = eth.contract(contracts["<stdin>:FlightIns"].info.abiDefinition)
 
 function checkWork(){
     if (eth.getBlock("pending").transactions.length > 0) {
@@ -88,7 +88,7 @@ function setup_log(tc, tradeContract) {
 function setup_tc() {
     var tc = TownCrier.new({
         from: minerAddr, 
-        data: contracts.TownCrier.code, 
+        data: contracts["<stdin>:TownCrier"].code, 
         gas: gasCnt}, function(e, c) {
             if (!e){
                 if (c.address) {
@@ -105,7 +105,7 @@ function createSteamTrade(apiKey, item, price) {
   var tradeContract = SteamTrade.new(
           tc.address, apiKey[0], apiKey[1], item, price, {
               from: sellerAddr, 
-              data: contracts.SteamTrade.code, 
+              data: contracts["<stdin>:SteamTrade"].code, 
               gas: gasCnt}, 
               function(e, c) { 
                   if (!e) {
@@ -122,9 +122,9 @@ function createSteamTrade(apiKey, item, price) {
 function createFlightIns() {
     var tradeContract = FlightIns.new(
             tc.address, {
-                value: 200e+18,
+                value: 10e+18,
                 from: sellerAddr,
-                data: contracts.FlightIns.code,
+                data: contracts["<stdin>:FlightIns"].code,
                 gas: gasCnt},
                 function(e, c) {
                     if (!e) {

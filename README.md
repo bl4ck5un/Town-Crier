@@ -53,7 +53,8 @@ has to be installed and configured. Please refer to
 On Ubuntu 16.04 LTS: 
 
 ```
-sudo apt-get install cmake libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools libsqlite3-0 libsqlite3-dev libboost-all-dev 
+sudo apt-get install cmake libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools \ 
+    libsqlite3-0 libsqlite3-dev libboost-all-dev libmicrohttpd-dev
 ```
 
 Other platforms have yet to be tested.

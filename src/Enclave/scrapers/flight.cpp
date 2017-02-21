@@ -182,7 +182,7 @@ public:
         }catch (std::runtime_error &e){
             /* An HTTPS error has occured */
             LL_CRITICAL("Https error: %s", e.what());
-            LL_CRITICAL("Details: %s", httpClient.getError());
+        LL_CRITICAL("Details: %s", httpClient.getError().c_str());
             httpClient.close();
             return HTTP_ERROR;
         }

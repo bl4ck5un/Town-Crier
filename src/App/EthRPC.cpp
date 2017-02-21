@@ -25,7 +25,7 @@
 using namespace jsonrpc;
 using namespace std;
 
-ethRPCClient *c;
+ethRPCClient *rpc_client;
 
 /*!
  * Send raw transactions to geth
@@ -36,7 +36,7 @@ ethRPCClient *c;
 string send_transaction(const std::string &rawTransaction) {
   std::string param(rawTransaction);
 
-  std::string res = c->eth_sendRawTransaction(param);
+  std::string res = rpc_client->eth_sendRawTransaction(param);
   LL_CRITICAL("Response recorded in the blockchain.");
   LL_CRITICAL("TX: %s", res.c_str());
 
@@ -63,7 +63,7 @@ string eth_new_filter(int from, int to) {
   filter_opt["fromBlock"] = from;
   filter_opt["toBlock"] = to;
 
-  return c->eth_newFilter(filter_opt);
+  return rpc_client->eth_newFilter(filter_opt);
 }
 
 
@@ -74,7 +74,7 @@ void eth_getfilterlogs(const string &filter_id, Json::Value &txnContainer) {
     if(filter_id.empty()){
       throw invalid_argument("filter_id is empty");
     }
-  txnContainer = c->eth_getFilterLogs(filter_id);
+  txnContainer = rpc_client->eth_getFilterLogs(filter_id);
 }
 
 /*!
@@ -83,7 +83,7 @@ void eth_getfilterlogs(const string &filter_id, Json::Value &txnContainer) {
 long eth_blockNumber()
 {
     unsigned long ret;
-    std::string blk = c->eth_blockNumber();
+    std::string blk = rpc_client->eth_blockNumber();
     std::stringstream ss;
     ss << std::hex << blk;
     ss >> ret;
@@ -92,7 +92,7 @@ long eth_blockNumber()
 
 long eth_getTransactionCount() {
   unsigned long ret;
-  std::string txn_count = c->eth_getTransactionCount(SGX_ADDRESS, "pending");
+  std::string txn_count = rpc_client->eth_getTransactionCount(SGX_ADDRESS, "pending");
   std::stringstream ss;
   ss << std::hex << txn_count;
   ss >> ret;

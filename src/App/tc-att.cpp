@@ -15,7 +15,7 @@ int main() {
   } else {
     LL_NOTICE("enclave %lu created", eid);
   }
-  std::vector<unsigned char> quote = remote_att_init(eid);
+  std::vector<unsigned char> quote = get_attestation(eid);
 
   std::cout << bufferToHex(quote, false) << std::endl;
 }

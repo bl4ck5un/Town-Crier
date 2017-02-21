@@ -1,34 +1,35 @@
+#include <boost/filesystem.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+#include <boost/program_options.hpp>
 #include <jsonrpccpp/server/connectors/httpserver.h>
 
-#include "sgx_urts.h"
-#include "sgx_uae_service.h"
-#include "Enclave_u.h"
-#include "attestation.h"
-#include "stdint.h"
-#include "EthRPC.h"
-#include "request-parser.hxx"
-#include "utils.h"
-
-#include "Log.h"
-#include "Monitor.h"
-#include "utils.h"
-#include "Constants.h"
-
-#include "StatusRpcServer.h"
-#include "bookkeeping/database.hxx"
-
-#include <stdio.h>
 #include <iostream>
 #include <fstream>
 #include <thread>
 #include <atomic>
 #include <csignal>
 
-#include <boost/filesystem.hpp>
+#include "sgx_urts.h"
+#include "sgx_uae_service.h"
 
-extern ethRPCClient *c;
+#include "Enclave_u.h"
+#include "attestation.h"
+#include "stdint.h"
+#include "EthRPC.h"
+#include "request-parser.hxx"
+#include "utils.h"
+#include "Log.h"
+#include "Monitor.h"
+#include "utils.h"
+#include "Constants.h"
+#include "StatusRpcServer.h"
+#include "bookkeeping/database.hxx"
+
+
+namespace po = boost::program_options;
+
+extern ethRPCClient *rpc_client;
 jsonrpc::HttpClient *httpclient;
 boost::property_tree::ptree pt;
 
@@ -38,21 +39,14 @@ void exitGraceful(int) {
   quit.store(true);
 }
 
-void init(int argc, char *argv[]) {
-  std::string filepath;
-  if (argc < 2) {
-    filepath = "config";
-  } else {
-    filepath = argv[1];
-  }
-
+void init(const string filepath) {
   try {
     boost::property_tree::ini_parser::read_ini(filepath, pt);
     std::string st = pt.get<std::string>("RPC.RPChost");
 
     std::cout << st << std::endl;
     httpclient = new jsonrpc::HttpClient(st);
-    c = new ethRPCClient(*httpclient);
+    rpc_client = new ethRPCClient(*httpclient);
 
   } catch (const std::exception &e) {
     std::cout << e.what() << std::endl;
@@ -60,8 +54,43 @@ void init(int argc, char *argv[]) {
   }
 }
 
-int main(int argc, char *argv[]) {
-  init(argc, argv);
+int main(int argc, const char *argv[]) {
+  bool options_rpc = false;
+  string options_config = "config";
+
+  try {
+    po::options_description desc("Allowed options");
+    desc.add_options()
+        ("help,h", "print this message")
+        ("rpc", po::bool_switch(&options_rpc)->default_value(false), "Launch RPC server")
+        ("config,c", po::value(&options_config)->default_value("config"), "Path to a config file");
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+
+    if (vm.count("help")) {
+      cerr << desc << endl;
+      return -1;
+    }
+
+    po::notify(vm);
+  }
+
+  catch (po::required_option &e) {
+    cerr << e.what() << endl;
+    return -1;
+  }
+  catch (std::exception &e) {
+    cerr << e.what() << endl;
+    return -1;
+  }
+  catch (...) {
+    cerr << "Unknown error!" << endl;
+    return -1;
+  }
+
+  init(options_config);
+
   int ret;
   sgx_enclave_id_t eid;
   sgx_status_t st;
@@ -69,10 +98,12 @@ int main(int argc, char *argv[]) {
   //! register Ctrl-C handler
   std::signal(SIGINT, exitGraceful);
 
-
+  LL_NOTICE("Setting up RPC Server");
   jsonrpc::HttpServer httpServer(8123);
-  StatusRpcServer statusRpcServer(httpServer);
-  statusRpcServer.StartListening();
+  StatusRpcServer statusRpcServer(httpServer, eid);
+  if (options_rpc) {
+    statusRpcServer.StartListening();
+  }
 
   const static string db_name = "TC.db";
   bool create_db = false;
@@ -87,12 +118,6 @@ int main(int argc, char *argv[]) {
   OdbDriver driver("TC.db", create_db);
 
   int nonce_offset = 0;
-//  if (argc == 2) {
-//    nonce = atoi(argv[1]);
-//  }
-
-//  if (nonce > 0)
-//    dump_nonce((uint8_t *) &nonce);
 
   ret = initialize_tc_enclave(&eid);
   if (ret != 0) {
@@ -102,15 +127,12 @@ int main(int argc, char *argv[]) {
     LL_NOTICE("enclave %lu created", eid);
   }
 
-/*
- *  We don't care about the attestation at the moment.
- *  Revisit after we have the official attestation service.
- */
-//  remote_att_init(eid);
-
   Monitor monitor(driver, eid, nonce_offset, quit);
   monitor.loop();
 
+  if (options_rpc) {
+    statusRpcServer.StopListening();
+  }
   sgx_destroy_enclave(eid);
   LL_CRITICAL("Info: all enclave closed successfully.");
 }

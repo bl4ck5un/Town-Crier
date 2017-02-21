@@ -26,7 +26,7 @@ int time_calibrate(sgx_enclave_id_t eid)
     return ret;
 }
 
-vector<uint8_t> remote_att_init(sgx_enclave_id_t eid)
+vector<uint8_t> get_attestation(sgx_enclave_id_t eid) throw(runtime_error)
 {
     sgx_target_info_t quote_enc_info;
     sgx_epid_group_id_t p_gid;
@@ -51,7 +51,7 @@ vector<uint8_t> remote_att_init(sgx_enclave_id_t eid)
     if (ret != SGX_SUCCESS)
     {
         print_error_message((sgx_status_t) ret);
-        throw runtime_error("sgx_get_quote returned %d" + to_string(ret));
+        throw runtime_error("sgx_get_quote returned " + to_string(ret));
     }
     vector<uint8_t > quote_binary;
     quote_binary.insert(quote_binary.begin(), (uint8_t *) quote, (uint8_t *) quote + quote_size);

@@ -57,7 +57,7 @@ angular.module('Flight Insurance App')
                         for (var j = 0; j < 2; ++j) {
                             $scope.allPolicies[i].args.data[j] = Web3Service.toAscii($scope.allPolicies[i].args.data[j]);
                         }
-                        $scope.allPolicies[i].args.data[1] = new Date(parseInt($scope.allPolicies[i].args.data[1]));
+                        $scope.allPolicies[i].args.data[1] = new Date(parseInt($scope.allPolicies[i].args.data[1]) * 1000);
                         console.log("time:" + $scope.allPolicies[i].args.data[1]);
                     }
                 });

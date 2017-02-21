@@ -9,7 +9,6 @@
  */
 angular.module('Flight Insurance App')
   .controller('InsureCtrl', function ($scope, Web3Service, $state, FI_ABI_ARRAY, FI_CONTRACT_ADDRESS) {
-    $scope.accountName = ["Bank of America", "Chase Bank"];
     $scope.accounts = [];
     $scope.flightData = {code: '', date: '', time: '', zone:''};
     $scope.policy = {amount: ''};
@@ -28,7 +27,7 @@ angular.module('Flight Insurance App')
       else {
         var i;
         for (i = 0; i < result.length; ++i) {
-          $scope.accounts.push({address: result[i], name: $scope.accountName[i], balance: Math.floor(Web3Service.eth.getBalance(result[i]) / Math.pow(10, 18))});
+          $scope.accounts.push({address: result[i], balance: Math.floor(Web3Service.eth.getBalance(result[i]) / Math.pow(10, 18))});
         }
         $scope.selectAccount($scope.accounts[0].address);
       }

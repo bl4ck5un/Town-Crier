@@ -65,7 +65,7 @@ int yahoo_current(const char* symbol, double* r) {
     }
     catch (std::runtime_error& e){
         LL_CRITICAL("Https error: %s", e.what());
-        LL_CRITICAL("Details: %s", httpClient.getError());
+        LL_CRITICAL("Details: %s", httpClient.getError().c_str());
         httpClient.close();
     }
 
