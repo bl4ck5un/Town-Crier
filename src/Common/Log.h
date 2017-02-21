@@ -43,7 +43,8 @@ extern const char * log_level_strings [];
  
 #define LOG_SHOULD_I( level ) ( level <= LOG_BUILD_LEVEL && level <= log_run_level )
 
-#define LOG(level, fmt, arg...) do {	\
+#define LOG(level, fmt, arg...) \
+do {	\
 	if ( LOG_SHOULD_I(level) ) { \
 		printf_sgx("[%s] %s:%d: " fmt "\n", log_level_strings[level], __FILENAME__,__LINE__, ##arg); \
 	} \

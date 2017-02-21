@@ -2,61 +2,60 @@
 #include <stdlib.h>
 #include <Debug.h>
 #include "tls_client.h"
-#include "scrapers.h"
+#include "../scrapers/flight.cpp"
 #include "Log.h"
 
-//extern "C" int flight_self_test();
-
+/* Test updated on 2/21/17 */
 int flight_self_test(){
 
-  	//printf("USAGE: get_flight_delay(YYYYMMDD, HHmm, flight#, return_variable)\n");
-    //printf("\tdate/time in Zulu/UTC, flight in ICAO\n");
+  	//LL_NOTICE("USAGE: get_flight_delay(YYYYMMDD, HHmm, flight#, return_variable)\n");
+    //LL_NOTICE("\tdate/time in Zulu/UTC, flight in ICAO\n");
     int rc, delay, status;
-    rc = get_flight_delay(1477114200, "SOL361", &delay);
-    if (rc < 0){
-        //printf("Could not find flight info for DAL900 at specified departure time\n");
-    	return -1;
+    
+    /* Test1: Test a flight that already departed */
+    FlightScraper testScraper;
+    flight_error ret = testScraper.get_flight_delay(1487691000, "N800GA", &delay);
+    switch(ret){
+        case DEPARTED:
+            LL_NOTICE("N800GA departed as desired\n");
+            break; 
+        default:
+            LL_NOTICE("N800GA Error, returned %i\n",ret);
+            return -1;
     }
     
-    if(delay != 2147483647){
-    	LL_NOTICE("canceled failed\n");
-    	return -1;
-        //printf("Delta Airlines flight 900 is %d minutes late on 26 January 2016 (should be 2 minutes late)\n", delay);
+    /* Test2: Test scraper on a departed flight */
+    switch(testScraper.get_flight_delay(1487685600, "UAL124", &delay)){
+        case DELAYED:
+            LL_NOTICE("UAL124 delayed by %d seconds\n", delay);
+            break;
+        default:
+            LL_NOTICE("UAL124 error\n");
+            return -1;
     }
 
-
-    //rc = get_flight_delay("20160204", "0310", "SWA450", &delay);
-    //printf("%d, %d (should be 11)\n", rc, delay);
-    //rc = get_flight_delay("20160202", "0650", "UAL1183", &delay);
-    //printf("%d, %d (should be -12)\n", rc, delay);
-
-
-    //Test2: Test on jargon/dummy inputs
-    rc = get_flight_delay(1477101654960, "SOL", &delay);
-    if (status != 2){
-    	LL_NOTICE("jargon failed");
-    	return -1;
-    }
-    //if (delay != -1){
-    //	return -1;
-    //}
-    
-    //Test3: Test on departured flight
-    rc = get_flight_delay(1477226100, "ASH6110", &delay);
-    if (status != 0){
-    	LL_NOTICE("departured failed\n");
-    	return -1;
-    }
-    //Test4: Test on valid, not departured flight
-    rc = get_flight_delay(1477398900, "ASH6110", &delay);
-    if (status != 1){
-    	LL_NOTICE("not departured failed\n");
-    	return -1;
+    /* Test3: Test on invalid input */
+    switch(testScraper.get_flight_delay(1477101654960, "UAL124", &delay)){
+        case INVALID:
+            LL_NOTICE("Invalid Test passed\n");
+            break; 
+        default:
+            LL_NOTICE("Invalid test failed\n");
+            return -1;
     }
 
-	return 0;
+    /* Test4: Test on a cancelled flight */
+    switch(testScraper.get_flight_delay(1487739600, "GCR7531", &delay)){
+        case CANCELLED:
+            LL_NOTICE("CANCELLED Test passed\n");
+            break; 
+        default:
+            LL_NOTICE("CANCELLED test failed with return code");
+            return -1;
+    }
+    return 0;
 
-
+    /* Test5: Test on flight that has not departed yet */
 }
 //1477276620,
 //filed_departuretime":1477276620
