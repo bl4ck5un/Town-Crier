@@ -49,3 +49,9 @@ TEST_F(ScraperTest, bloomberg) {
     ASSERT_EQ(0, ocall_status);
     ASSERT_EQ(0, ret);
 }
+TEST_F(ScraperTest, flight){
+    int ocall_status, ret;
+    ocall_status = flight_self_test(eid, &ret);
+    ASSERT_EQ(0, ocall_status);
+    ASSERT_EQ(0, ret);
+}

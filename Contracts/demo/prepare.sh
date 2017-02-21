@@ -13,9 +13,9 @@ var sgxAddr = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 var gasCnt = 3e+6
 var TC_FEE = 55 * 5e+13
 
-personal.unlockAccount(minerAddr, '000000')
-personal.unlockAccount(sellerAddr, '000000')
-personal.unlockAccount(buyerAddr, '000000')
+personal.unlockAccount(minerAddr, '123')
+personal.unlockAccount(sellerAddr, 'qwe')
+personal.unlockAccount(buyerAddr, 'asd')
 // personal.unlockAccount(sgxAddr)
 
 

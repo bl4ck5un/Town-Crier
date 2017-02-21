@@ -1,19 +1,24 @@
+
+#include <Log.h>
+#include <string>
+#include <Debug.h>
+
 #include "stdint.h"
 #include "event_handler.h"
-#include <string>
-#include <Log.h>
 #include "scrapers.h"
+#include "scrapers/flight.cpp"
+#include "scrapers/utils.h"
 #include "time.h"
 #include "eth_transaction.h"
 #include "eth_abi.h"
 #include "Enclave_t.h"
 #include "external/keccak.h"
-#include <Debug.h>
 #include "Constants.h"
 
 static int stock_ticker_handler(int nonce, uint64_t request_id, uint8_t request_type,
                                 const uint8_t *req, int req_len, uint8_t *raw_tx, size_t *raw_tx_len)
 {
+    /*
     int ret;
     if (req_len != 64)
     {
@@ -44,6 +49,8 @@ static int stock_ticker_handler(int nonce, uint64_t request_id, uint8_t request_
         raw_tx, raw_tx_len);
 
     return ret;
+    */
+    return 0; 
 }
 
 
@@ -77,38 +84,39 @@ int handle_request(int nonce,
         break;
     case TYPE_FLIGHT_INS:
         {
-            int found = 0;
-            if (data_len != 2 * 32)
+            FlightScraper flightHandler;
+
+            int found;
+            switch (flightHandler.handler(data,data_len, &found))
             {
-                LL_CRITICAL("data_len %d*32 is not 2*32", data_len / 32);
-                return -1;
-            }
-            ret = flight_insurance_handler(data, data_len, &found);
-            if (ret != 0)
-            {
-                LL_CRITICAL("%s returns %d", "handler_flight_insurance", ret);
-                return ret;
-            }
-            enc_int(resp_data, found, sizeof ( found ));
-            break;
+                case INVALID_PARAMS:
+                    return -1; //TODO
+                case WEB_ERROR:
+                    return -1; //TODO
+                case NO_ERROR:
+                    enc_int(resp_data, found, sizeof(found));
+                    break;
+            };
+
         }
     case TYPE_STEAM_EX:
         {
-            int found = 0;
-            if (data_len != 6 * 32)
-            {
-                LL_CRITICAL("data_len %d*32 is not 6*32", data_len / 32);
-                return -1;
-            }
-            ret = handler_steam_exchange(data, data_len, &found);
-            if (ret == -1)
-            {
-                LL_CRITICAL("%s returns %d", "handler_steam_exchange", ret);
-                return -1;
-            }
-//            found = 1;
-            enc_int(resp_data, found, sizeof ( found ));
-            resp_data_len = 32;
+            //TODO
+//             int found = 0;
+//             if (data_len != 6 * 32)
+//             {
+//                 LL_CRITICAL("data_len %d*32 is not 6*32", data_len / 32);
+//                 return -1;
+//             }
+//             ret = handler_steam_exchange(data, data_len, &found);
+//             if (ret == -1)
+//             {
+//                 LL_CRITICAL("%s returns %d", "handler_steam_exchange", ret);
+//                 return -1;
+//             }
+// //            found = 1;
+//             enc_int(resp_data, found, sizeof ( found ));
+//             resp_data_len = 32;
             break;
         }
     case TYPE_CURRENT_VOTE:

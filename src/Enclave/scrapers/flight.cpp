@@ -7,173 +7,151 @@
 #include "Debug.h"
 #include "Log.h"
 #include "utils.h"
-#include "scrapers.h"
 #include "../../Common/Constants.h"
+#include "../external/slre.h"
 #include "tls_client.h"
+
+
+/* Define flight scraper specific constants */
+
+///*
+//    A few notes on integration
+//    - username & password should be passed as an Authorization header field, with Base64(user:password)
+//      as its content.
+//    - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
+//*/
+#define STR1(x)  #x
+#define STR(x)  STR1(x)
 
 #define AUTH_CODE "Authorization: Basic Y3JvbWFrNDoyYzNiODZiOGM3N2VlYTBjMjRmZjA4OGEyZjU2ZGEyYjk4ZDQwNTQ3"
 #define HOST "Host: flightxml.flightaware.com"
+#define SECOND_PER_MIN 60       
+#define MAX_DELAY_MIN 30
+#define NUM_ENTRY 30 
+#define HOW_MANY "&howMany=" STR(NUM_ENTRY) 
+
 
 /* Define flight scraper specific errors */
 enum flight_error{
-    INVALID=0,      /* Invalid Parameters passed to the function*/
-    DEPARTED,       /* The Flight has departed */
-    DELAYED,        /* The flight is delayed */
-    CANCELLED,      /* The flight has been cancelled */
-    NOT_DEPARTED,   /* The flight has not departed */
-    NOT_FOUND,       /* The flight was not found */
-    HTTP_ERROR,      /* HTTP request failed */
+    INVALID=0,          /* Invalid Parameters passed to the function*/
+    DEPARTED,           /* The Flight has departed with no delays */
+    DELAYED,            /* The flight is delayed */
+    CANCELLED,          /* The flight has been cancelled */
+    NOT_DEPARTED,       /* The flight has not departed */
+    NOT_FOUND,          /* The flight was not found */
+    HTTP_ERROR,         /* HTTP request failed */
 };
 
-class FlightScraper : public Scraper {
+class FlightScraper{
 public:
-    /*Class used to handle a flight insurance */
-/*
- *  0x00 - 0x20 string flight_number
- *  ox20 - 0x40 uint64 unix_epoch
- */
-    virtual err_code handler(uint8_t *req, int len, int *resp_data) {
+
+    /*Class used to handle the flight insurance */
+    
+    /*  The Data is structured as follows:
+     *      0x00 - 0x20 string flight_number
+     *      0x20 - 0x40 uint64 unix_epoch
+     */
+    virtual err_code handler(uint8_t *req, int data_len, int *resp_data) {
 
         //TODO: What does this do?
-        dump_buf("Request", req, len);
+        if(data_len  != 2*32){
+            LL_CRITICAL("Data_len %d*32 is not 2*32", data_len/32);
+            return INVALID_PARAMS;
+        }
+        dump_buf("Request", req, data_len);
 
+        //Parse raw data into valid parameters
+        //Can this be done in a more C++ way?
         int ret, delay;
         char flight_number[35] = {0};
         memcpy(flight_number, req, 0x20);
 
+
         char *flighttime = (char *) req + 0x20;
         uint64_t unix_epoch = strtol(flighttime, NULL, 10);
+
+
 
         LL_NOTICE("unix_epoch=%ld, flight_number=%s", unix_epoch, flight_number);
         switch (get_flight_delay(unix_epoch, flight_number, &delay)) {
             case INVALID:
+                *resp_data = -1;
                 return INVALID_PARAMS;
-            case HTTP_ERROR:
-                return WEB_ERROR;
-            case DEPARTED:
-                return NO_ERROR;
-            case DELAYED:
-                return NO_ERROR;
-            case CANCELLED:
-                return NO_ERROR;
-            case NOT_DEPARTED:
-                return NO_ERROR;
+
             case NOT_FOUND:
+                *resp_data = -1; 
+                return INVALID_PARAMS;
+
+            case HTTP_ERROR:
+                *resp_data = -1;
+                return WEB_ERROR;
+
+            case DEPARTED:
+                *resp_data = delay;
                 return NO_ERROR;
+            
+            case DELAYED:
+                *resp_data = delay;
+                return NO_ERROR;
+
+            case CANCELLED:
+                *resp_data = delay;
+                return NO_ERROR;
+
+            case NOT_DEPARTED:
+                *resp_data = delay;
+                return NO_ERROR;
+
         }
-
-        LL_NOTICE("delay is %d", delay);
-
-        *resp_data = delay;
-        return ret;
     }
 
-private:
-    /* Helper class used to parse responses return the delay of the thing*/
     flight_error parse_response(const char *resp, int *delay, uint64_t unix_epoch_time) {
+        
+        
+        LL_NOTICE("HELLO!\n");
+        //Find the scheduled departure time
+        std::string buff(resp);
+        std::string delimeter = "\"filed_departuretime\":" + uint64_to_string(unix_epoch_time);
+        std::size_t pos = buff.find(delimeter);
 
-        //Handle Flight not found
-        if (strlen(resp) < 31) {
-            *delay = -1; //flight not found
-            LL_NOTICE("Flight not found!");
-            return NOT_FOUND;
-        }
-
-        const char *temp = strchr(resp, '{');
-        const char *end;
-        const char *sd;
-
-        if (!temp) {
-            LL_CRITICAL("Error: buf2 is NULL");
-            //*status = INVALID;
+        //Corner Case: Flight was not found
+        if (pos > buff.length()){
+            LL_NOTICE("Flight not found!\n");
             return INVALID;
         }
 
-        int i;
-        uint64_t t = unix_epoch_time;
+        //Find the actual departure time
+        std::string delimeter2 = "actualdeparturetime\":";
+        std::size_t pos2 = buff.find(delimeter2, pos);
+        std::string token = buff.substr(pos2 + delimeter2.length(),pos2 + delimeter2.length() + 10);
+        
+        LL_NOTICE("%s\n", token.c_str());
+        uint64_t actual_depart_time = atoi(token.c_str());
+        LL_NOTICE("actual depart time: %llu\n", actual_depart_time);
 
-        char tempbuff[100] = {0};
-        char tstamp[11] = {0};
-        char scheduled[11];
-        char actual[11];
-        int len, tactual, tscheduled, hours, minutes, seconds, diff;
-
-        snprintf(tstamp, 11, "%llu", t);
-        strncpy(tempbuff, "filed_departuretime\":\0", 22);
-        strncat(tempbuff, tstamp, sizeof tempbuff);
-
-        len = strlen(resp);
-
-        while (strncmp(temp, tempbuff, sizeof(tempbuff)) != 0) {
-            temp += 1;
-            if (temp == resp + len - 32) {
-                LL_CRITICAL("did not find flight");
-                return NOT_FOUND;
-            }
-        }
-
-        sd = temp;
-
-        for (i = 0; i < 5; i++) {
-            while (*temp != ',') {
-                temp += 1;
-            }
-            temp += 1;
-        }
-        temp += 22; //only get up to the next ","
-        end = temp;
-        while (*end != ',') {
-            end += 1;
-        }
-
-        //end = temp+10;
-        len = end - temp;
-
-        scheduled[len] = 0;
-        actual[len] = 0;
-
-        memcpy(actual, temp, len);
-
-        actual[len] = 0;
-        tactual = atoi(actual);
-
-//	LL_NOTICE("tactual %d", tactual);
-
-        if (tactual == 0) {//Not departured
-            LL_NOTICE("Flight not departured");
+        //Case: Flight has not yet departed
+        if (actual_depart_time == 0){
+            LL_NOTICE("flight has not departed\n");
             return NOT_DEPARTED;
-        } else if (tactual == -1) {
-            LL_NOTICE("Flight Cancelled!");
+        }
+        //Case: Flight was cancelled
+        if( actual_depart_time == -1){
+            LL_NOTICE("flight has been cancelled\n");
             return CANCELLED;
         }
-        temp = sd;
-        for (i = 0; i < 2; i++) {
-            while (*temp != ',') {
-                temp -= 1;
-            }
-            temp -= 1;
+        //Case: Flight Departed but delayed
+        if(actual_depart_time - unix_epoch_time >= MAX_DELAY_MIN*SECOND_PER_MIN){
+            *delay = actual_depart_time - unix_epoch_time;
+            LL_NOTICE("flight delayed\n");
+            return DELAYED;
         }
-        temp -= 8;
-        len = 8;
-
-        memcpy(scheduled, temp, len);
-        scheduled[len] = 0;
-        /*printf("%s\n", scheduled);*/
-        scheduled[2] = 0;
-        scheduled[5] = 0;
-        hours = atoi(scheduled);
-        minutes = atoi(scheduled + 3);
-        seconds = atoi(scheduled + 6);
-        tscheduled = t + (hours * 60 * 60) + (minutes * 60) + seconds;
-
-        diff = (tactual - tscheduled) / 60;
-        if (diff < 0) diff = 0;
-
-        *delay = diff;
-        return DEPARTED;
+        //Case: Flight was not delayed
+        else{
+            *delay = 0;
+            LL_NOTICE("FLIGHT dEPARTED NORMALLY\n");
+            return DEPARTED;
+        }
     }
-
-
 //
 ///*
 //    date:   YYYYMMDD
@@ -187,12 +165,6 @@ private:
 //*/
 
 
-///*
-//    A few notes on integration
-//    - username & password should be passed as an Authorization header field, with Base64(user:password)
-//      as its content.
-//    - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
-//*/
     flight_error get_flight_delay(uint64_t unix_epoch_time, const char *flight, int *resp) {
 
         /* Invalid user input */
@@ -208,14 +180,16 @@ private:
 
         //Construct the query
         std::string query =
-                "/json/FlightXML2/FlightInfoEx?ident=" + std::string(flight) + "&howMany=30&offset=0 HTTP/1.1";
+                "/json/FlightXML2/FlightInfoEx?ident=" + std::string(flight) + 
+                HOW_MANY + 
+                "&offset=0 HTTP/1.1";
 
         HttpRequest httpRequest("flightxml.flightaware.com", query, header);
         HttpClient httpClient(httpRequest);
-        int ret, delay;
+        flight_error ret;
         try {
             HttpResponse response = httpClient.getResponse();
-            ret = parse_response(response.getContent().c_str(), &delay, unix_epoch_time);
+            ret = parse_response(response.getContent().c_str(), resp, unix_epoch_time);
         }catch (std::runtime_error &e){
             /* An HTTPS error has occured */
             LL_CRITICAL("Https error: %s", e.what());
@@ -223,46 +197,15 @@ private:
             httpClient.close();
             return HTTP_ERROR;
         }
+        return ret;
+    }
 
-        switch (ret){
-            case INVALID:
-                return -1;
-            case NOT_DEPARTED:
-                return -1;
-            case DEPARTED:
-                return -1;
-            case CANCELLED:
-                return -1;
-            case NOT_FOUND:
-                return -1;
-        }
-        //Handle result of parse_response
-        if (ret == INVALID) {
-            *resp = ret;
-            return -1;
-        }
-        if (ret == NOT_DEPARTED) {//Indicates that flight has not departured
-            LL_CRITICAL("flight not departured");
-            *resp = NOT_DEPARTED;
-            return 0;
-        } else if (ret == NOT_FOUND) {
-            LL_CRITICAL("no data/bad request");
-            *resp = NOT_FOUND;
-            return 0;
-        } else if (ret == CANCELLED) {
-            LL_CRITICAL("flight cancelled");
-            *resp = CANCELLED;
-            return 0;
-        } else if (ret == DEPARTED) {
-            LL_CRITICAL("flight departured");
-            if (delay <= 30) {
-                *resp = DEPARTED;
-            } else {
-                *resp = DELAYED;
-            }
-            return 0;
-        }
-        return 0;
+    std::string uint64_to_string(uint64_t value ){
+        // length of 2**64 - 1, +1 for nul.
+        char buf[21];
+        snprintf(buf, sizeof buf, "%"PRIu64, value);
+        std::string str(buf);
+        return str;
     }
 };
 

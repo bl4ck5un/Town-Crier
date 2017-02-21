@@ -1,5 +1,5 @@
 #!/bin/sh
-cd vendor/gtest
+cd ../vendor/gtest
 autoreconf -i
 ./configure
 
