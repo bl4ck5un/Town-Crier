@@ -126,8 +126,9 @@ static int my_verify(void *data, mbedtls_x509_crt *crt, int depth, uint32_t *fla
     mbedtls_x509_crt_info(buf, sizeof(buf) - 1, "", crt);
     LL_LOG("%s", buf);
 
-    if ((*flags) == 0)
+    if ((*flags) == 0) {
         LL_LOG("  This certificate has no flags");
+    }
     else {
         mbedtls_x509_crt_verify_info(buf, sizeof(buf), "  ! ", *flags);
         LL_LOG("%s", buf);
@@ -262,8 +263,9 @@ HttpClient::HttpClient(HttpRequest &httpRequest) : httpRequest(httpRequest) {
 
     LL_LOG("Hand shake succeeds: [%s, %s]", mbedtls_ssl_get_version(&ssl), mbedtls_ssl_get_ciphersuite(&ssl));
 
-    if ((ret = mbedtls_ssl_get_record_expansion(&ssl)) >= 0)
+    if ((ret = mbedtls_ssl_get_record_expansion(&ssl)) >= 0) {
         LL_DEBUG("Record expansion is [%d]", ret);
+    }
     else
         LL_DEBUG("Record expansion is [unknown (compression)]");
 

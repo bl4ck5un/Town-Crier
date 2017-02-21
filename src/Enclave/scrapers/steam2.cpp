@@ -1,12 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <Log.h>
 #include <vector>
 
 #include "scrapers.h"
 #include "tls_client.h"
 #include "utils.h"
+#include "Log.h"
 
 /*
    - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
@@ -141,7 +141,7 @@ public:
 		   	}
 		   	catch (std::runtime_error& e){
 		        LL_CRITICAL("Https error: %s", e.what());
-		        LL_CRITICAL("Details: %s", httpClient.getError());
+		        LL_CRITICAL("Details: %s", httpClient.getError().c_str());
 		        httpClient.close();	   		
 		   		return -1;
 		   	}
@@ -342,8 +342,6 @@ private:
 	}
 
 };
-
-	        LL_CRITICAL("Details: %s", httpClient.getError().c_str());
 
 //
 ///*
