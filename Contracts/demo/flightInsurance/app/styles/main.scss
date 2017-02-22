@@ -12,6 +12,7 @@ $icon-font-path: "../bower_components/bootstrap-sass-official/assets/fonts/boots
 
 body {
   padding: 0;
+  zoom: 1.5;
 }
 
 /* Everything but the jumbotron gets side spacing for mobile first views */
@@ -88,4 +89,16 @@ body {
   .jumbotron {
     border-bottom: 0;
   }
+}
+
+table.uib-timepicker {
+    margin: auto;
+}
+
+div.fancy-datepicker {
+    text-align: center;
+    > div.uib-datepicker {
+        display: inline-block;
+        margin-bottom: 0;
+    }
 }
