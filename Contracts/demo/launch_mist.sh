@@ -1,4 +1,4 @@
-MIST=~/mist/Mist
+MIST=mist
 IPC=~/.ethereum/geth.ipc
 datadir=./chain0
 networkid="93819023"

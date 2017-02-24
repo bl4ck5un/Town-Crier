@@ -28,4 +28,4 @@ $GETH --datadir=$datadir \
   --nodiscover \
   --rpcapi="db,eth,ne,web3,personal" \
   --ipcpath=$IPC \
-  $@
+  console

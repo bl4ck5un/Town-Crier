@@ -110,7 +110,7 @@ int main(int argc, const char *argv[]) {
   if (boost::filesystem::exists(db_name)) {
     std::cout << "Do you want to clean up the database? y/[n] ";
     std::string new_db;
-    std::cin >> new_db;
+    std::getline(std::cin, new_db);
     create_db = new_db == "y";
   } else {
     create_db = true;
