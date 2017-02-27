@@ -21,7 +21,6 @@
 #include <map>
 #include "json/json.h"
 
-
 using namespace jsonrpc;
 using namespace std;
 

@@ -1,5 +1,5 @@
 #ifndef APP_REMOTE_ATT_H
-#define APP_REMOET_ATT_H
+#define APP_REMOTE_ATT_H
 
 #include <sgx_eid.h>
 #include <vector>

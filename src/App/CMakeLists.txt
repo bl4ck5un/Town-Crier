@@ -1,17 +1,3 @@
-if (SGX_DEBUG STREQUAL 1)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG -UNDEBUG -UEDEBUG")
-elseif (SGX_PRERELEASE STREQUAL 1)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -DEDEBUG")
-else ()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -UEDEBUG")
-endif ()
-
-if (SGX_MODE STREQUAL HW)
-    set(UAE_SERVICE_LIB sgx_uae_service)
-else ()
-    set(UAE_SERVICE_LIB sgx_uae_service_sim)
-endif ()
-
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wno-attributes")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
 
@@ -24,7 +10,6 @@ set(TC_SRC_FILES tc.cpp Monitor.cpp attestation.cpp request-parser.cpp
         EthRPC.cpp StatusRpcServer.cpp StatusRpcServer.h
         ../Common/Debug.c
         ../Common/Log.c)
-
 
 set_directory_properties(PROPERTIES
     ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
@@ -63,6 +48,13 @@ else ()
     set(Urts_Library_Name sgx_urts)
 endif ()
 
+
+find_package(CURL REQUIRED)
+if (CURL_FOUND)
+    message(${CURL_INCLUDE_DIRS})
+    message(${CURL_LIBRARIES})
+endif(CURL_FOUND)
+
 include_directories(
         /usr/local/include
         ../Common
@@ -72,14 +64,17 @@ include_directories(
         ../vendor/gtest/include
 )
 
-
+add_definitions(-DBOOST_LOG_DYN_LINK)
 
 target_link_libraries(tc
         -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB}
         -ljsoncpp -lcurl -ljsonrpccpp-common -ljsonrpccpp-client -ljsonrpccpp-server -lmicrohttpd
+        -Wl,-rpath -Wl,/usr/local/lib
+        -Wl,-rpath -Wl,${SGX_LIBRARY_PATH}
         -lsqlite3 -L/usr/lib/odb -lodb-sqlite -lodb
         -lboost_system -lboost_filesystem -lboost_program_options
         -lpthread
+        -lboost_log
         )
 
 target_link_libraries(keygen -L${SGX_LIBRARY_PATH} -l${Urts_Library_Name} -l${UAE_SERVICE_LIB} -lpthread)
@@ -102,6 +97,8 @@ target_link_libraries(TestMain
         -lodb
         ${LIBGTEST}/libgtest.a
         ${LIBGTEST}/libgtest_main.a
+        -Wl,-rpath -Wl,/usr/local/lib
+        -Wl,-rpath -Wl,${SGX_LIBRARY_PATH}
         )
 
 add_custom_command(TARGET tc

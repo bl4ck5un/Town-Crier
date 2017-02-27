@@ -8,20 +8,18 @@ set(SGX_SDK /opt/intel/sgxsdk)
 set(SGX_MODE SIM)
 set(SGX_ARCH x64)
 set(SGX_DEBUG 1)
-set(SGX_PRERELEASE 1)
+set(SGX_PRERELEASE 0)
 
 set(TC_ROOT_DIR ${CMAKE_SOURCE_DIR})
 set(MBEDTLS_LIB_DIR ${TC_ROOT_DIR}/Enclave/mbedtls-SGX)
 
-set(CMAKE_VERBOSE_MAKEFILE FALSE)
-
+# get arch information
 execute_process(COMMAND getconf LONG_BIT OUTPUT_VARIABLE VAR_LONG_BIT)
 if (VAR_LONG_BIT STREQUAL 32)
     set(SGX_ARCH x86)
 elseif(CMAKE_CXX_FLAGS MATCHES -m32)
     set(SGX_ARCH x86)
 endif()
-
 
 if (SGX_ARCH STREQUAL x86)
     set(SGX_COMMON_CFLAGS -m32)
@@ -35,8 +33,9 @@ else()
     set(SGX_EDGER8R ${SGX_SDK}/bin/x64/sgx_edger8r)
 endif()
 
-if (SGX_DEBUG STREQUAL 1 AND SGX_PRERELEASE STREQUAL 1)
-    message(error Cannot set SGX_DEBUG and SGX_PRERELEASE at the same time!!)
+# set debug flags properly
+if (SGX_DEBUG EQUAL 1 AND SGX_PRERELEASE EQUAL 1)
+    message(FATAL_ERROR "Cannot set SGX_DEBUG and SGX_PRERELEASE at the same time!!")
 endif()
 
 if (SGX_DEBUG EQUAL 1)
@@ -44,6 +43,20 @@ if (SGX_DEBUG EQUAL 1)
 else()
     set(SGX_COMMON_CFLAGS "${SGX_COMMON_CFLAGS} -O2")
 endif()
+
+if (SGX_DEBUG EQUAL 1)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG -UNDEBUG -UEDEBUG")
+elseif (SGX_PRERELEASE STREQUAL 1)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -DEDEBUG")
+else ()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -UEDEBUG")
+endif ()
+
+if (SGX_MODE STREQUAL HW)
+    set(UAE_SERVICE_LIB sgx_uae_service)
+else ()
+    set(UAE_SERVICE_LIB sgx_uae_service_sim)
+endif ()
 
 message(STATUS "SGX_COMMON_CFLAGS: ${SGX_COMMON_CFLAGS}")
 message(STATUS "SGX_SDK: ${SGX_SDK}")

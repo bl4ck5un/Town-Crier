@@ -2,6 +2,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <boost/program_options.hpp>
+#include <boost/log/trivial.hpp>
 #include <jsonrpccpp/server/connectors/httpserver.h>
 
 #include <iostream>
@@ -97,7 +98,8 @@ int main(int argc, const char *argv[]) {
   //! register Ctrl-C handler
   std::signal(SIGINT, exitGraceful);
 
-  LL_NOTICE("Setting up RPC Server");
+  // LL_NOTICE("Setting up RPC Server");
+  BOOST_LOG_TRIVIAL(info) << "Setting up RPC Server";
   jsonrpc::HttpServer httpServer(8123);
   StatusRpcServer statusRpcServer(httpServer, eid);
   if (options_rpc) {
@@ -120,10 +122,10 @@ int main(int argc, const char *argv[]) {
 
   ret = initialize_tc_enclave(&eid);
   if (ret != 0) {
-    LL_CRITICAL("Failed to initialize the enclave");
+    BOOST_LOG_TRIVIAL(fatal) << "Failed to initialize the enclave";
     std::exit(-1);
   } else {
-    LL_NOTICE("enclave %lu created", eid);
+    BOOST_LOG_TRIVIAL(info) << "enclave " << eid << " created";
   }
 
   Monitor monitor(driver, eid, nonce_offset, quit);
@@ -133,5 +135,5 @@ int main(int argc, const char *argv[]) {
     statusRpcServer.StopListening();
   }
   sgx_destroy_enclave(eid);
-  LL_CRITICAL("Info: all enclave closed successfully.");
+  BOOST_LOG_TRIVIAL(info) << "all enclave closed successfully";
 }
