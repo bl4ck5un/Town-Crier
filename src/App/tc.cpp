@@ -26,7 +26,6 @@
 #include "StatusRpcServer.h"
 #include "bookkeeping/database.hxx"
 
-
 namespace po = boost::program_options;
 
 extern ethRPCClient *rpc_client;
