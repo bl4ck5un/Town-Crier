@@ -41,16 +41,6 @@ add_custom_command(
 
 add_library(enclave SHARED ${SOURCE_FILES})
 
-if (NOT SGX_MODE STREQUAL HW)
-    set(TRTS_LIB_NAME sgx_trts_sim)
-    set(SERVICE_LIB_NAME sgx_tservice_sim)
-else ()
-    set(TRTS_LIB_NAME sgx_trts)
-    set(SERVICE_LIB_NAME sgx_tservice)
-endif ()
-
-set(CRYPTO_LIB_NAME sgx_tcrypto)
-
 include_directories(
         $(CMAKE_CURRENT_SOURCE_DIR)
         ${TC_ROOT_DIR}/Common
@@ -71,7 +61,7 @@ set_target_properties(enclave PROPERTIES PREFIX "")
 target_link_libraries(enclave "${SGX_COMMON_CFLAGS} \
     -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles -L${SGX_LIBRARY_PATH} \
     -Wl,--whole-archive -l${TRTS_LIB_NAME} -Wl,--no-whole-archive \
-    -Wl,--start-group ${LIB_MBEDTLS_PATH} -lsgx_tstdc -lsgx_tstdcxx -l${CRYPTO_LIB_NAME} -l${SERVICE_LIB_NAME} -Wl,--end-group \
+    -Wl,--start-group ${LIB_MBEDTLS_PATH} -lsgx_tstdc -lsgx_tstdcxx -lsgx_tcrypto -l${SERVICE_LIB_NAME} -Wl,--end-group \
     -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--no-undefined \
     -Wl,-pie,-eenclave_entry -Wl,--export-dynamic \
     -Wl,--defsym,__ImageBase=0")

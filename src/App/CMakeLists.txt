@@ -42,18 +42,12 @@ add_executable(TestMain EXCLUDE_FROM_ALL
         ../Common/Debug.c
         ../Common/Log.c types.cpp types.hxx request-parser.cpp request-parser.hxx)
 
-if (NOT SGX_MODE STREQUAL HW)
-    set(Urts_Library_Name sgx_urts_sim)
-else ()
-    set(Urts_Library_Name sgx_urts)
-endif ()
-
-
 find_package(CURL REQUIRED)
-if (CURL_FOUND)
-    message(${CURL_INCLUDE_DIRS})
-    message(${CURL_LIBRARIES})
-endif(CURL_FOUND)
+find_package(Boost REQUIRED COMPONENTS program_options filesystem system log)
+find_package(Sqlite REQUIRED)
+find_package(LibODB REQUIRED)
+find_package(Jsoncpp REQUIRED)
+find_package(MHD REQUIRED)
 
 include_directories(
         /usr/local/include
@@ -71,7 +65,8 @@ target_link_libraries(tc
         -ljsoncpp -lcurl -ljsonrpccpp-common -ljsonrpccpp-client -ljsonrpccpp-server -lmicrohttpd
         -Wl,-rpath -Wl,/usr/local/lib
         -Wl,-rpath -Wl,${SGX_LIBRARY_PATH}
-        -lsqlite3 -L/usr/lib/odb -lodb-sqlite -lodb
+        -lsqlite3 
+        -L/usr/lib/odb -lodb-sqlite -lodb
         -lboost_system -lboost_filesystem -lboost_program_options
         -lpthread
         -lboost_log
