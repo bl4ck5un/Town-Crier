@@ -39,15 +39,16 @@ else (SGX_DEBUG)
 endif (SGX_DEBUG)
 
 if (SGX_MODE STREQUAL HW)
-    set(UAE_SERVICE_LIB sgx_uae_service)
-    set(TRTS_LIB_NAME sgx_trts)
-    set(SERVICE_LIB_NAME sgx_tservice)
+    set(SGX_URTS_LIB sgx_urts)
+    set(SGX_USVC_LIB sgx_uae_service)
+    set(SGX_TRTS_LIB sgx_trts)
+    set(SGX_TSVC_LIB sgx_tservice)
 else ()
-    set(UAE_SERVICE_LIB sgx_uae_service_sim)
-    set(TRTS_LIB_NAME sgx_trts_sim)
-    set(SERVICE_LIB_NAME sgx_tservice_sim)
+    set(SGX_URTS_LIB sgx_urts_sim)
+    set(SGX_USVC_LIB sgx_uae_service_sim)
+    set(SGX_TRTS_LIB sgx_trts_sim)
+    set(SGX_TSVC_LIB sgx_tservice_sim)
 endif (SGX_MODE STREQUAL HW)
-
 
 # set SGX_RELEASE if built in HW mode without DEBUG
 # unless SGX_PRERELEASE is set
