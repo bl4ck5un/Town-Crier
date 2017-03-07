@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 project(Town-Crier)
 
 set(SGX_SDK /opt/intel/sgxsdk)
-set(SGX_MODE HW)
+set(SGX_MODE SIM)
 set(SGX_ARCH x64)
 set(SGX_DEBUG 1)
 
