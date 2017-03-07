@@ -2,9 +2,13 @@ language: cpp
 sudo: required
 compiler:
 - gcc
+dist:
+- Ubuntu
 os:
 - linux
 install:
-    ./install-dependencies.sh
-script:
-  
+- ./install-dependencies.sh
+scripts:
+- ./compile-project.sh
+after_sucess:
+- run-tests.sh
