@@ -1,6 +1,6 @@
 enclave {
     trusted {
-        // public int ssl_self_test();
+        public int ssl_self_test();
         // public int get_page_on_ssl_self_test();
         public int ABI_self_test();
         public int RLP_self_test();
