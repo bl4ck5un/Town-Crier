@@ -1,6 +1,7 @@
 #include <Debug.h>
 #include "tls_client.h"
 #include "Log.h"
+#include <stdexcept>
 
 #define TEMPLATE \
 "<!DOCTYPE html>\n"\
@@ -35,7 +36,6 @@ int ssl_self_test(){
         LL_CRITICAL("%s", client.getError().c_str());
         return -1;
     }
-
 
     return 0;
 }

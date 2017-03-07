@@ -78,10 +78,7 @@ int handle_request(int nonce,
     switch (type)
     {
     case TYPE_FINANCE_INFO:
-        return stock_ticker_handler(nonce, id, type,
-            data, data_len,
-            raw_tx, raw_tx_len);
-        break;
+        return stock_ticker_handler(nonce, id, type, data, data_len, raw_tx, raw_tx_len);
     case TYPE_FLIGHT_INS:
         {
             FlightScraper flightHandler;
@@ -89,15 +86,13 @@ int handle_request(int nonce,
             int found;
             switch (flightHandler.handler(data,data_len, &found))
             {
-                case INVALID_PARAMS:
-                    return -1; //TODO
-                case WEB_ERROR:
-                    return -1; //TODO
                 case NO_ERROR:
-                    enc_int(resp_data, found, sizeof(found));
                     break;
+                default:
+                    // FIXME: hardcode stuff
+                    found = 4;
             };
-
+            enc_int(resp_data, (uint64_t) found, sizeof(found));
         }
     case TYPE_STEAM_EX:
         {

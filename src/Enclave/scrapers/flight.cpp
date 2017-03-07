@@ -33,7 +33,7 @@
 
 
 /* Define flight scraper specific errors */
-enum flight_error{
+enum flight_error {
     INVALID=0,          /* Invalid Parameters passed to the function*/
     DEPARTED,           /* The Flight has departed with no delays */
     DELAYED,            /* The flight is delayed */
@@ -43,7 +43,7 @@ enum flight_error{
     HTTP_ERROR,         /* HTTP request failed */
 };
 
-class FlightScraper{
+class FlightScraper {
 public:
 
     /*Class used to handle the flight insurance */
@@ -73,7 +73,10 @@ public:
 
 
         LL_NOTICE("unix_epoch=%ld, flight_number=%s", unix_epoch, flight_number);
-        switch (get_flight_delay(unix_epoch, flight_number, &delay)) {
+        ret = get_flight_delay(unix_epoch, flight_number, &delay);
+        LL_NOTICE("get_flight_delay returns %d, delay=%d", ret, delay);
+
+        switch (ret) {
             case INVALID:
                 *resp_data = -1;
                 return INVALID_PARAMS;
@@ -87,19 +90,17 @@ public:
                 return WEB_ERROR;
 
             case DEPARTED:
-                *resp_data = delay;
-                return NO_ERROR;
-            
             case DELAYED:
-                *resp_data = delay;
+                // delay > 30 return 1
+                *resp_data = delay > 30 * 60 ? 1 : 0;
                 return NO_ERROR;
-
             case CANCELLED:
-                *resp_data = delay;
+                // FIXME: hardcode 2 to denote cancelled
+                *resp_data = 2;
                 return NO_ERROR;
-
             case NOT_DEPARTED:
-                *resp_data = delay;
+                // FIXME: hardcode
+                *resp_data = 3;
                 return NO_ERROR;
 
         }

@@ -97,7 +97,7 @@ function setup_tc() {
             } 
             else {console.log("Failed to create Town Crier contract: " + e)}
         });
-        mineBlocks(1);
+    mineBlocks(1);
     return tc;
 }
 
@@ -122,7 +122,7 @@ function createSteamTrade(apiKey, item, price) {
 function createFlightIns() {
     var tradeContract = FlightIns.new(
             tc.address, {
-                value: 10e+18,
+                value: 100e+18,
                 from: sellerAddr,
                 data: contracts["<stdin>:FlightIns"].code,
                 gas: gasCnt},
