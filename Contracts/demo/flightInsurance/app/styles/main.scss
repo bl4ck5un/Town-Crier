@@ -89,3 +89,15 @@ body {
     border-bottom: 0;
   }
 }
+
+table.uib-timepicker {
+    margin: auto;
+}
+
+div.fancy-datepicker {
+    text-align: center;
+    > div.uib-datepicker {
+        display: inline-block;
+        margin-bottom: 0;
+    }
+}

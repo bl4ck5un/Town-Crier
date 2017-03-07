@@ -42,7 +42,7 @@ function checkWork(){
 }
 
 function mineBlocks(num) {
-    miner.start(1); miner.start(1); admin.sleepBlocks(num); miner.stop();
+    miner.start(1); admin.sleepBlocks(num); miner.stop();
 }
 
 
@@ -80,10 +80,13 @@ function setup_tc() {
                 if (c.address) {
                     console.log("Town Crier created at: " + c.address)
                 }
+                else {
+                    console.log("No address")
+                }
             } 
             else {console.log("Failed to create Town Crier contract: " + e)}
         });
-        mineBlocks(1);
+    mineBlocks(2);
     return tc;
 }
 
@@ -108,7 +111,7 @@ function createSteamTrade(apiKey, item, price) {
 function createFlightIns() {
     var tradeContract = FlightIns.new(
             tc.address, {
-                value: 10e+18,
+                value: 100e+18,
                 from: sellerAddr,
                 data: contracts["<stdin>:FlightIns"].code,
                 gas: gasCnt},

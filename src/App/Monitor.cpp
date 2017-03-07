@@ -66,7 +66,7 @@ void Monitor::loop() {
 
     try {
       long current_highest_block = eth_blockNumber();
-      LL_LOG("highest block = %d", current_highest_block);
+      LL_LOG("highest block = %ld", current_highest_block);
 
       if (current_highest_block < 0) {
         LL_CRITICAL("eth_blockNumber returns %ld", current_highest_block);

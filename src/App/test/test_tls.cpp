@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
+#include <vector>
 
 #include "../utils.h"
 #include "../Enclave_u.h"
 
 #include "../EthRPC.h"
 #include "../Converter.h"
-#include <vector>
 
 class TLSSuiteTest: public ::testing::Test
 {
@@ -32,7 +32,7 @@ protected:
 };
 
 TEST_F (TLSSuiteTest, SSLSuite) {
-    int ret;
-    // ssl_self_test(eid, &ret);
+    int ret = 0;
+    ssl_self_test(eid, &ret);
     ASSERT_EQ(0, ret);
 }
