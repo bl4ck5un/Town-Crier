@@ -1,0 +1,10 @@
+language: cpp
+sudo: required
+compiler:
+- gcc
+os:
+- linux
+install:
+    ./install-dependencies.sh
+script:
+  
