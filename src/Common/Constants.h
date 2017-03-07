@@ -20,10 +20,16 @@
 #define GASPRICE    "0x0BA43B7400"  //50000000000
 #define GASLIMIT    "0x015F90"      // 90000
 
+/* Define any events that Town Crier Supports here */
 #define TYPE_CURRENT_VOTE   0x0
 #define TYPE_FLIGHT_INS     0x1
 #define TYPE_STEAM_EX       0x2
 #define TYPE_FINANCE_INFO   0x3
+
+/* Possible return values to be used in Enclave-Relay Connections */
+#define SUCESS				0x0
+#define INPUT_ERROR 		0x1
+#define SERVER_ERROR 		0x3
 
 #define SGX_ADDRESS "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 

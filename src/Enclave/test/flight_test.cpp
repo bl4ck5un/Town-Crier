@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <Debug.h>
 #include "tls_client.h"
-#include "../scrapers/flight.cpp"
+#include "../scrapers/flight.h"
 #include "Log.h"
 
 /* Test updated on 2/21/17 */
@@ -24,7 +24,7 @@ int flight_self_test(){
             return -1;
     }
     
-    /* Test2: Test scraper on a departed flight */
+    /* Test2: Test scraper on a delayed flight */
     switch(testScraper.get_flight_delay(1487685600, "UAL124", &delay)){
         case DELAYED:
             LL_NOTICE("UAL124 delayed by %d seconds\n", delay);
@@ -53,6 +53,15 @@ int flight_self_test(){
             LL_NOTICE("CANCELLED test failed with return code");
             return -1;
     }
+    /* Test5: Test on a flight that has left early */
+    switch(testScraper.get_flight_delay(1487716380, "JBU2189", &delay)){
+        case DEPARTED:
+            LL_NOTICE("Flight Departed normally\n");
+            break;
+        default:
+            LL_NOTICE("JBU2189 test error\n");
+            return -1;
+    } 
     return 0;
 
     /* Test5: Test on flight that has not departed yet */
