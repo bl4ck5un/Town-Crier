@@ -7,8 +7,8 @@ dist:
 os:
 - linux
 install:
-- ./install-dependencies.sh
+- sudo apt-get install -qq cmake libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools libsqlite3-0 libsqlite3-dev libboost-all-dev libmicrohttpd-dev
 scripts:
 - ./compile-project.sh
 after_sucess:
-- run-tests.sh
+- ./run-tests.sh
