@@ -48,9 +48,9 @@ find_path(
 )
 
 if (${JSONCPP_INCLUDE_PREFIX} MATCHES "jsoncpp")
-	set(JSONCPP_INCLUDE_PREFIX "jsoncpp/json")
+	set(JSONCPP_INCLUDE_PREFIX "jsoncpp")
 else()
-	set(JSONCPP_INCLUDE_PREFIX "json")
+	set(JSONCPP_INCLUDE_PREFIX "")
 endif()
 
 # handle the QUIETLY and REQUIRED arguments and set JSONCPP_FOUND to TRUE
