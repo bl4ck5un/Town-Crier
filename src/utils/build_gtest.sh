@@ -1,4 +1,6 @@
 #!/bin/sh
+set -ex
+
 cd ../vendor/gtest
 autoreconf -i
 ./configure

@@ -6,10 +6,12 @@ dist:
 - Ubuntu
 os:
 - linux
+before_install:
+    - ./src/utils/install_jsonrpccpp.sh
 install:
-- sudo apt-get install -qq cmake libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools libsqlite3-0 libsqlite3-dev libboost-all-dev libmicrohttpd-dev
+    - sudo apt-get install -qq cmake libjsoncpp-dev libsqlite3-0 libsqlite3-dev libboost-all-dev
 scripts:
-- ./src/utils/build_gtest.sh
+- cd src/utils && build_gtest.sh && cd -
 - mkdir -p build && cd build && cmake .. && make all
 after_sucess:
 - ./src/build/TestMain
