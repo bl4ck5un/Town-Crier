@@ -13,6 +13,6 @@ install:
     - sudo apt-get install -qq cmake libjsoncpp-dev libsqlite3-0 libsqlite3-dev libboost-all-dev
     - cd ./src/utils && ./build_gtest.sh && cd -
 script:
-- mkdir -p build && cd build && cmake .. && make all
+    - mkdir -p src/build && cd src/build && cmake .. && make all
 after_sucess:
 - ./src/build/TestMain
