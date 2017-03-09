@@ -6,7 +6,8 @@
 #include "stdint.h"
 #include "event_handler.h"
 #include "scrapers.h"
-#include "scrapers/flight.cpp"
+#include "scrapers/Scraper.h"
+#include "scrapers/flight.h"
 #include "scrapers/utils.h"
 #include "time.h"
 #include "eth_transaction.h"
@@ -75,28 +76,31 @@ int handle_request(int nonce,
         printf_sgx("%u,", data[i]);
     printf_sgx("\n");
 */
-    switch (type)
-    {
+    switch (type){
     case TYPE_FINANCE_INFO:
-        return stock_ticker_handler(nonce, id, type, data, data_len, raw_tx, raw_tx_len);
+    {
+        return stock_ticker_handler(nonce, id, type,
+            data, data_len,
+            raw_tx, raw_tx_len);
+        break;
+    }
     case TYPE_FLIGHT_INS:
-        {
-            FlightScraper flightHandler;
-
-            int found;
-            switch (flightHandler.handler(data,data_len, &found))
-            {
-                case NO_ERROR:
-                    break;
-                default:
-                    // FIXME: hardcode stuff
-                    found = 4;
-            };
-            enc_int(resp_data, (uint64_t) found, sizeof(found));
-        }
+    {
+        FlightScraper flightHandler;
+        int found;
+        switch (flightHandler.handler(data,data_len, &found)){
+            case INVALID_PARAMS:
+                return -1; //TODO
+            case WEB_ERROR:
+                return -1; //TODO
+            case NO_ERROR:
+                enc_int(resp_data, found, sizeof(found));
+                break;
+        };
+        break;
+    }
     case TYPE_STEAM_EX:
-        {
-            //TODO
+        //TODO
 //             int found = 0;
 //             if (data_len != 6 * 32)
 //             {
@@ -112,28 +116,27 @@ int handle_request(int nonce,
 // //            found = 1;
 //             enc_int(resp_data, found, sizeof ( found ));
 //             resp_data_len = 32;
-            break;
-        }
+        break;
     case TYPE_CURRENT_VOTE:
-        {
-            double r1 = 0, r2 = 0, r3 = 0;
-            long long time1, time2;
+    {
+        double r1 = 0, r2 = 0, r3 = 0;
+        long long time1, time2;
 
-            rdtsc(&time1);
-            yahoo_current("GOOG", &r1);
-            rdtsc(&time2);
-            LL_CRITICAL("Yahoo: %llu", time2 - time1);
+        rdtsc(&time1);
+        yahoo_current("GOOG", &r1);
+        rdtsc(&time2);
+        LL_CRITICAL("Yahoo: %llu", time2 - time1);
 
-            google_current("GOOG", &r3);
-            rdtsc(&time1);
-            LL_CRITICAL("Bloomberg: %llu", time1 - time2);
+        google_current("GOOG", &r3);
+        rdtsc(&time1);
+        LL_CRITICAL("Bloomberg: %llu", time1 - time2);
 
-            google_current("GOOG", &r2);
-            rdtsc(&time2);
-            LL_CRITICAL("GOOGLE: %llu", time2 - time1);
+        google_current("GOOG", &r2);
+        rdtsc(&time2);
+        LL_CRITICAL("GOOGLE: %llu", time2 - time1);
 
-            break;
-        }
+        break;
+    }
     default :
         LL_CRITICAL("Unknown request type: %d", type);
         return -1;

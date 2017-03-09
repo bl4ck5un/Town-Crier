@@ -26,7 +26,7 @@ set(SOURCE_FILES
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
 
-SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES}  scrapers/utils.h scrapers/Scraper.cpp scrapers/Scraper.h)
+SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES}  scrapers/utils.h scrapers/Scraper.cpp scrapers/Scraper.h scrapers/flight.h)
 
 set_directory_properties(PROPERTIES
     ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
