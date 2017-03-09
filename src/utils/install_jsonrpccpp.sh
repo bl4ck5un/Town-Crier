@@ -1,7 +1,7 @@
 #/bin/sh
 set -ex
 sudo apt-get update -qq
-sudo apt-get install -qq libcurl4-openssl-dev libjsoncpp-dev libargtable2-dev libgnutls-dev libgcrypt11-dev valgrind wget gcc-5 g++-5
+sudo apt-get install -qq libcurl4-openssl-dev libjsoncpp-dev libargtable2-dev wget
 tmp=$(mktemp -d)
 pushd $tmp
 wget http://ftp.gnu.org/gnu/libmicrohttpd/libmicrohttpd-0.9.52.tar.gz
