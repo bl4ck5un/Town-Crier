@@ -9,6 +9,7 @@ os:
 install:
 - sudo apt-get install -qq cmake libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools libsqlite3-0 libsqlite3-dev libboost-all-dev libmicrohttpd-dev
 scripts:
-- ./compile-project.sh
+- ./src/utils/build_gtest.sh
+- mkdir -p build && cd build && cmake .. && make all
 after_sucess:
-- ./run-tests.sh
+- ./src/build/TestMain
