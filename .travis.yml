@@ -1,11 +1,11 @@
 language: cpp
 sudo: required
 compiler:
-- gcc
+    - gcc
 dist:
-- Ubuntu
+    - Ubuntu
 os:
-- linux
+    - linux
 before_install:
     - src/utils/build_odb.sh
     - src/utils/install_jsonrpccpp.sh
@@ -17,5 +17,4 @@ install:
 script:
     - make -C src/Enclave/mbedtls-SGX
     - mkdir -p src/build && cd src/build && cmake .. && make all
-after_sucess:
-- src/build/TestMain
+    - src/build/TestMain
