@@ -7,7 +7,7 @@ dist:
 os:
 - linux
 before_install:
-    - chmod u+x ./src/utils/install_jsonrpccpp.sh
+    - ./src/utils/build_odb.sh
     - ./src/utils/install_jsonrpccpp.sh
     - wget https://s3.amazonaws.com/tc-travis/sgx-sdk.tar.gz
     - tar xvf sgx-sdk.tar.gz -C /
