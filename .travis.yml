@@ -9,6 +9,8 @@ os:
 before_install:
     - chmod u+x ./src/utils/install_jsonrpccpp.sh
     - ./src/utils/install_jsonrpccpp.sh
+    - wget https://s3.amazonaws.com/tc-travis/sgx-sdk.tar.gz
+    - tar xvf sgx-sdk.tar.gz -C /
 install:
     - sudo apt-get install -qq cmake libjsoncpp-dev libsqlite3-0 libsqlite3-dev libboost-all-dev
     - cd ./src/utils && ./build_gtest.sh && cd -
