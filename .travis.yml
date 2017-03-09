@@ -9,10 +9,10 @@ os:
 before_install:
     - chmod u+x ./src/utils/install_jsonrpccpp.sh
     - ./src/utils/install_jsonrpccpp.sh
+    - cd ./src/utils && ./build_gtests.sh && cd -
 install:
     - sudo apt-get install -qq cmake libjsoncpp-dev libsqlite3-0 libsqlite3-dev libboost-all-dev
 scripts:
-- cd src/utils && build_gtest.sh && cd -
 - mkdir -p build && cd build && cmake .. && make all
 after_sucess:
 - ./src/build/TestMain
