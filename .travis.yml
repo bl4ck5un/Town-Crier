@@ -16,5 +16,4 @@ install:
     - cd src/utils && ./build_gtest.sh && cd -
 script:
     - make -C src/Enclave/mbedtls-SGX
-    - mkdir -p src/build && cd src/build && cmake .. && make all && make TestMain
-    - src/build/TestMain
+    - mkdir -p src/build && cd src/build && cmake .. && make all && make TestMain && ./TestMain
