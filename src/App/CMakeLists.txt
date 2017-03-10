@@ -23,7 +23,11 @@ add_custom_command(
 )
 
 add_executable(tc ${TC_SRC_FILES})
-add_executable(keygen tc-keygen.cpp ../Common/Log.c utils.cpp Converter.cpp Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
+add_executable(keygen
+        tc-keygen.cpp
+        ../Common/Log.c external/base64.cpp
+        utils.cpp Converter.cpp
+        Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp ../Common/Debug.c utils.cpp ../Common/Log.c Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 
 # Tests

@@ -23,7 +23,7 @@ class Monitor {
 
   const std::atomic_bool &quit;
 
-  const static int kRetryAllowed = 8;
+  const static int maxRetry = 8;
 
  public:
   Monitor(OdbDriver &driver, sgx_enclave_id_t eid, int nonceOffset, std::atomic_bool &quit) :

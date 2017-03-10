@@ -34,43 +34,45 @@ uint8_t resp_buffer[TX_BUF_SIZE] = {0};  //! TX_BUF_SIZE is defined in Constants
 size_t resp_data_len = 0;
 
 void Monitor::loop() {
-  blocknum_t next_block_num = 0; //!< @next_wanted keeps track of the blocks that have been processed
+  //! keeps track of the blocks that have been processed
+  blocknum_t next_block_num = 0;
   next_block_num = driver.getLastBlock();
   next_block_num++;
 
-  // get nonce
-//  size_t nonce = driver.getNumOfResponse();
-
   int ret = 0;
   Json::Value transaction;
-  unsigned retry_counter = 0;       //Number of retries
+  //! number of retry for the current tx
+  unsigned retry_counter = 0;
   unsigned int sleep_time_sec = 1;
 
   while (true) {
+    //! handle interrupt nicely
     if (quit.load()) {
       LL_NOTICE("Ctrl-C pressed, cleaning up...");
       ret = 1;
       break;
     }
-    if (retry_counter >= kRetryAllowed) {
+    if (retry_counter >= maxRetry) {
       LL_CRITICAL("Exit after %d retries", retry_counter);
       ret = -1;
       break;
     }
 
     if (retry_counter > 0) {
+      //! doubling the sleeping time
       sleep_time_sec *= 2;
       LL_CRITICAL("retry in %d seconds", sleep_time_sec);
       sleep(sleep_time_sec);
     }
 
     try {
-      long current_highest_block = eth_blockNumber();
+      blocknum_t current_highest_block = eth_blockNumber();
       LL_LOG("highest block = %ld", current_highest_block);
 
       if (current_highest_block < 0) {
         LL_CRITICAL("eth_blockNumber returns %ld", current_highest_block);
-        throw runtime_error("eth_blockNumber returns " + current_highest_block);
+//        throw runtime_error("eth_blockNumber returns " + current_highest_block);
+        throw EX_GET_BLOCK_NUM;
       }
 
       // if we've scanned all of them
@@ -81,6 +83,8 @@ void Monitor::loop() {
 
       // fetch up to the latest block
       for (; next_block_num <= current_highest_block; next_block_num++) {
+        /* when TC is run for the first time, this loop will be executed for millions of time very quickly
+         * so we need to handle interrupt here too. */
         std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
         if (quit.load()) {
             LL_NOTICE("Ctrl-C pressed, cleaning up...");
@@ -91,59 +95,58 @@ void Monitor::loop() {
 
         Json::Value txn_list;
         string filter_id = eth_new_filter(next_block_num, next_block_num);
-
-        LL_NOTICE("detected block %ld", next_block_num);
-
         eth_getfilterlogs(filter_id, txn_list);
-
-        LL_LOG("get filter logs returned");
 
         if (txn_list.isArray()) {
           if (txn_list.empty()) {
-            //!< log an empty entry to note that we've scanned this block albeit empty
+            /* log the empty blocks too */
             TransactionRecord __tr(next_block_num, "no_tx_in_" + std::to_string(next_block_num), "");
             driver.logTransaction(__tr);
           }
-//          for (int i = 0; i < txn_list.size(); i++) {
+
           for (auto __tx : txn_list) {
-            /*!
-             * process each request
-             */
-            const string dataField = "data";
-            const string txHashField = "transactionHash";
+            /* process each request */
+            const string data_field_name = "data";
+            const string tx_hash_field_name = "transactionHash";
 
             LL_DEBUG("raw_request: %s", __tx.toStyledString().c_str());
-            if (!(__tx.isMember(dataField) && __tx.isMember(txHashField))) {
-              LL_CRITICAL("get bad RPC data, skipping");
+
+            if (!(__tx.isMember(data_field_name) && __tx.isMember(tx_hash_field_name))) {
+              LL_CRITICAL("get bad RPC data, skipping this tx");
               continue;
             }
 
-            Request request(__tx[dataField].asString());
-            LL_NOTICE("%s", request.toString().c_str());
+            Request request(__tx[data_field_name].asString());
 
-            //!< try to get txn from the database
-            OdbDriver::record_ptr __tr = driver.getLogByHash(__tx[txHashField].asString());
+            LL_NOTICE("parsed tx: %s", request.toString().c_str());
+
+            /* try to get txn from the database */
+            OdbDriver::record_ptr __tr = driver.getLogByHash(__tx[tx_hash_field_name].asString());
             if (__tr) {
-              // TODO: 5 is chosen arbitarily
+              /* if tr has been processed before */
+              // TODO: 5 is chosen arbitrarily
               if (!__tr->getResponse().empty() || __tr->getNumOfRetrial() > 5) {
                 LL_NOTICE("this request has fulfilled (or can't be fulfilled), skipping");
                 continue;
               }
             } else {
-              //!< if no record found, create a new one
-              __tr.reset(new TransactionRecord(next_block_num, __tx[txHashField].asString(), request.getRawRequest()));
+              // if no record found, create a new one
+              __tr.reset(new TransactionRecord(next_block_num,
+                                               __tx[tx_hash_field_name].asString(),
+                                               request.getRawRequest()));
               driver.logTransaction(*__tr);
             }
 
             sgx_status_t ecall_ret;
             long nonce = eth_getTransactionCount();
             LL_LOG("nonce obtained %d\n", nonce);
+            // TODO: change nonce to have long type
             ecall_ret = handle_request(eid, &ret, nonce, request.getId(), request.getType(),
                                        request.getData(), request.getDataLen(),
                                        resp_buffer, &resp_data_len);
 
-            if (ecall_ret != SGX_SUCCESS || ret != 0) {
-              //!< if ecall fails, increment the number and skip
+            if (ecall_ret != SGX_SUCCESS || ret != SGX_SUCCESS) {
+              // increment the number and skip
               LL_CRITICAL("%s returned %d, INVALID", "handle_request", ret);
               __tr->incrementNumOfRetrial();
               continue;

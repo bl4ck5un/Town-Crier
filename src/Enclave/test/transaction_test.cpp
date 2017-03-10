@@ -31,11 +31,11 @@ int transaction_rlp_test()
   size_t o_len;
 	uint8_t serialized_tx[500];
 	
-	int ret = get_raw_signed_tx(nonce, nonce_len, 
-							request_id, request_type,
-							req_data, req_len,
-							std::vector<uint8_t>(resp_data, resp_data + 32),
-							serialized_tx, &o_len);
+	int ret = form_transaction(nonce, nonce_len,
+                               request_id, request_type,
+                               req_data, req_len,
+                               std::vector<uint8_t>(resp_data, resp_data + 32),
+                               serialized_tx, &o_len);
     if (ret) return ret;
     if (o_len != 204) return 1;
 	uint8_t ans[] = {248, 202, 128, 133, 11, 164, 59, 116, 0, 131, 1, 95, 144, 148, 136, 203, 90, 183, 19, 87, 217, 140, 123, 249, 202, 18, 3, 22, 197, 122, 67, 56, 15, 40, 128, 184, 100, 176, 112, 185, 186, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 18, 120, 47, 194, 110, 22, 175, 204, 97, 158, 123, 124, 230, 84, 174, 112, 89, 153, 10, 80, 130, 49, 109, 143, 251, 41, 135, 225, 230, 105, 64, 202, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 28};

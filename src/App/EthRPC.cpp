@@ -20,6 +20,7 @@
 #include <iostream>
 #include <map>
 #include "json/json.h"
+#include "types.hxx"
 
 using namespace jsonrpc;
 using namespace std;
@@ -50,7 +51,7 @@ string send_transaction(const std::string &rawTransaction) {
  * Returns a filter from block [from] to block [to], writes the value of the filter into [id]
  * Postcondition: [id] is a valid id that can be used with eth_get_filter_logs
  */
-string eth_new_filter(int from, int to) {
+string eth_new_filter(blocknum_t from, blocknum_t to) {
   if (from < 0 || to < 0) {
     throw invalid_argument("from or to is smaller than 0");
   }
@@ -79,7 +80,7 @@ void eth_getfilterlogs(const string &filter_id, Json::Value &txnContainer) {
 /*!
  * @return the highest block number that geth has seen so far
  */
-long eth_blockNumber()
+blocknum_t eth_blockNumber()
 {
     unsigned long ret;
     std::string blk = rpc_client->eth_blockNumber();
