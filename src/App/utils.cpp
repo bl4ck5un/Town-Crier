@@ -1,7 +1,22 @@
 #include <boost/algorithm/hex.hpp>
+#include <boost/log/trivial.hpp>
+#include <boost/filesystem.hpp>
+
 #include "Converter.h"
 #include "sgx_urts.h"
 #include "utils.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <syslog.h>
+#include <signal.h>
+#include <getopt.h>
+#include <string.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
 
 /*!
  * \brief   Initialize the enclave:
@@ -11,8 +26,10 @@
  * \param enclave_name full path to the enclave binary
  * \param eid [out] place to hold enclave id
  */
+
+namespace fs = boost::filesystem;
+
 int initialize_enclave(const char *enclave_name, sgx_enclave_id_t *eid) {
-  char token_path[MAX_PATH] = {'\0'};
   sgx_launch_token_t token = {0};
   sgx_status_t ret = SGX_ERROR_UNEXPECTED;
   int updated = false;
@@ -20,19 +37,7 @@ int initialize_enclave(const char *enclave_name, sgx_enclave_id_t *eid) {
   /*! Step 1: try to retrieve the launch token saved by last transaction
    *         if there is no token, then create a new one.
    */
-  const char *home_dir = getpwuid(getuid())->pw_dir;
-
-  if (home_dir != NULL &&
-      (strlen(home_dir) + strlen("/") + sizeof(TOKEN_FILENAME) + 1) <= MAX_PATH) {
-    /* compose the token path */
-    strncpy(token_path, home_dir, strlen(home_dir));
-    strncat(token_path, "/", strlen("/"));
-    strncat(token_path, TOKEN_FILENAME, sizeof(TOKEN_FILENAME) + 1);
-  } else {
-    /* if token path is too long or $HOME is NULL */
-    strncpy(token_path, TOKEN_FILENAME, sizeof(TOKEN_FILENAME));
-  }
-
+  const char* token_path = TOKEN_FILENAME;
   FILE *fp = fopen(token_path, "rb");
   if (fp == NULL && (fp = fopen(token_path, "wb")) == NULL) {
     printf("Warning: Failed to create/open the launch token file \"%s\".\n", token_path);
@@ -92,4 +97,92 @@ void print_error_message(sgx_status_t ret) {
 
   if (idx == ttl)
     printf("Error: returned %x\n", ret);
+}
+
+/**
+ * \brief This function will daemonize this app
+ */
+void daemonize(string working_dir, string pid_filename)
+{
+    BOOST_LOG_TRIVIAL(info) << "daemonizing Town Crier..";
+	pid_t pid = 0;
+	int fd;
+
+	/* Fork off the parent process */
+	pid = fork();
+
+	/* An error occurred */
+	if (pid < 0) {
+		exit(EXIT_FAILURE);
+	}
+
+	/* Success: Let the parent terminate */
+	if (pid > 0) {
+		exit(EXIT_SUCCESS);
+	}
+
+	/* On success: The child process becomes session leader */
+	if (setsid() < 0) {
+		exit(EXIT_FAILURE);
+	}
+
+	/* Ignore signal sent from child to parent process */
+	signal(SIGCHLD, SIG_IGN);
+
+	/* Fork off for the second time*/
+	pid = fork();
+
+	/* An error occurred */
+	if (pid < 0) {
+		exit(EXIT_FAILURE);
+	}
+
+	/* Success: Let the parent terminate */
+	if (pid > 0) {
+		exit(EXIT_SUCCESS);
+	}
+
+    BOOST_LOG_TRIVIAL(info) << "forked";
+	/* Set new file permissions */
+	umask(0);
+
+	/* Change the working directory to the root directory */
+	/* or another appropriated directory */
+	chdir(working_dir.c_str());
+    BOOST_LOG_TRIVIAL(info) << "cwd changed to " << working_dir;
+    BOOST_LOG_TRIVIAL(info) << "PID " << getpid();
+
+	/* Try to write PID of daemon to lockfile */
+    int pid_fd = 0;
+	if (! pid_filename.empty())
+	{
+		char str[256];
+		pid_fd = open(pid_filename.c_str(), O_RDWR|O_CREAT, 0640);
+		if (pid_fd < 0) {
+			/* Can't open lockfile */
+            BOOST_LOG_TRIVIAL(error) << "can't open lockfile: " << strerror(errno);
+			exit(EXIT_FAILURE);
+		}
+		if (lockf(pid_fd, F_TLOCK, 0) < 0) {
+			/* Can't lock file */
+            BOOST_LOG_TRIVIAL(error) << "can't lock file: " << strerror(errno);
+			exit(EXIT_FAILURE);
+		}
+		/* Get current PID */
+		sprintf(str, "%d\n", getpid());
+		/* Write PID to lockfile */
+		write(pid_fd, str, strlen(str));
+	}
+
+	/* Close all open file descriptors */
+	for (fd = sysconf(_SC_OPEN_MAX); fd > 0 && fd != pid_fd; fd--) {
+		close(fd);
+	}
+
+	/* Reopen stdin (fd = 0), stdout (fd = 1), stderr (fd = 2) */
+    freopen("/dev/null/", "r", stdin);
+    freopen("tc.log", "w", stdout);
+    freopen("tc.log", "w", stderr);
+
+    BOOST_LOG_TRIVIAL(info) << "daemonized!";
 }

@@ -43,20 +43,12 @@ add_executable(TestMain EXCLUDE_FROM_ALL
     ../Common/Log.c types.cpp types.hxx request-parser.cpp request-parser.hxx)
 
 find_package(CURL REQUIRED)
-find_package(Boost REQUIRED COMPONENTS program_options filesystem system log)
+find_package(Boost QUIET REQUIRED COMPONENTS program_options filesystem system log)
 find_package(Sqlite REQUIRED)
 find_package(LibODB REQUIRED)
 find_package(Jsoncpp REQUIRED)
 find_package(MHD REQUIRED)
 find_package(JsonCppRpc REQUIRED)
-
-message(STATUS "${CURL_LIBRARIES} ${CURL_INCLUDE_DIRS}")
-message(STATUS "${Boost_LIBRARIES} ${Boost_INCLUDE_DIRS}")
-message(STATUS "${SQLITE_LIBRARIES} ${SQLITE_INCLUDE_DIRS}")
-message(STATUS "${LIBODB_LIBRARIES} ${LIBODB_INCLUDE_DIRS}")
-message(STATUS "${JSONCPP_LIBRARIES} ${JSONCPP_INCLUDE_DIRS} ${JSONCPP_INCLUDE_PREFIX}")
-message(STATUS "${MHD_LIBRARIES} ${MHD_INCLUDE_DIRS}")
-message(STATUS "${JSONRPCCPP_LIBRARIES} ${JSONRPCCPP_INCLUDE_DIRS}")
 
 include_directories(
     ${CURL_INCLUDE_DIRS}
@@ -82,9 +74,9 @@ target_link_libraries(tc
     -Wl,-rpath -Wl,${SGX_LIBRARY_PATH}
     -lpthread)
 
-target_link_libraries(keygen -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} -lpthread)
+target_link_libraries(keygen -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} ${Boost_LIBRARIES} -lpthread)
 
-target_link_libraries(tc-att -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} -lpthread)
+target_link_libraries(tc-att -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} ${Boost_LIBRARIES} -lpthread)
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
 set(TEST_PROGRAM_LDFLAGS " ${LIBGTEST}/libgtest_main.a")
