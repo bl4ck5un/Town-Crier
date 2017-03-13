@@ -57,7 +57,7 @@ int bloomberg_current(char* symbol, double* r) {
 
    	std::string query = "/quote/" + std::string(symbol) + ":US";
    	HttpRequest httpRequest("bloomberg.com", query);
-    HttpClient httpClient(httpRequest);
+    HttpsClient httpClient(httpRequest);
 
 	/***** CONSTRUCT THE QUERY */
 	try{

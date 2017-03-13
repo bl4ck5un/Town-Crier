@@ -1,7 +1,6 @@
 set(SOURCE_FILES
     ../Common/Debug.c
-    ../Common/Log.c
-    eth_abi.cpp
+        eth_abi.cpp
     create_report.cpp
     scrapers/current_bloomberg.cpp
     scrapers/current_Google.cpp
@@ -22,7 +21,9 @@ set(SOURCE_FILES
     enclave_exception_hdlr.c
     encoding.cpp
     external/slre.c
-    external/http_parser.c)
+    external/http_parser.c utils.c)
+
+add_definitions(-DENCLAVE_STD_ALT)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
 
@@ -51,7 +52,7 @@ include_directories(
     .
 )
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DENCLAVE_STD_ALT ${SGX_COMMON_CFLAGS} -nostdinc -fvisibility=hidden -fpie -fstack-protector")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fvisibility=hidden -fpie -fstack-protector")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++03 -nostdinc++")
 
 set(LIB_MBEDTLS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/mbedtls-SGX/lib/libmbedtls_sgx.a")

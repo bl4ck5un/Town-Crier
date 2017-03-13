@@ -24,7 +24,7 @@ int handle_request(int nonce,
                    uint8_t *raw_tx,
                    size_t *raw_tx_len) {
   bytes resp_data;
-  
+
   switch (type) {
     case TYPE_FINANCE_INFO: {
       // TODO

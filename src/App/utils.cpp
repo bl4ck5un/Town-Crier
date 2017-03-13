@@ -1,5 +1,4 @@
 #include <boost/algorithm/hex.hpp>
-#include <boost/log/trivial.hpp>
 #include <boost/filesystem.hpp>
 
 #include "Converter.h"
@@ -104,7 +103,7 @@ void print_error_message(sgx_status_t ret) {
  */
 void daemonize(string working_dir, string pid_filename)
 {
-    BOOST_LOG_TRIVIAL(info) << "daemonizing Town Crier..";
+  LL_INFO("daemonizing Town Crier..");
 	pid_t pid = 0;
 	int fd;
 
@@ -142,15 +141,15 @@ void daemonize(string working_dir, string pid_filename)
 		exit(EXIT_SUCCESS);
 	}
 
-    BOOST_LOG_TRIVIAL(info) << "forked";
+  LL_INFO("forked");
 	/* Set new file permissions */
 	umask(0);
 
 	/* Change the working directory to the root directory */
 	/* or another appropriated directory */
 	chdir(working_dir.c_str());
-    BOOST_LOG_TRIVIAL(info) << "cwd changed to " << working_dir;
-    BOOST_LOG_TRIVIAL(info) << "PID " << getpid();
+  LL_INFO("cwd changed to %s", working_dir.c_str());
+  LL_INFO("PID %ld", getpid());
 
 	/* Try to write PID of daemon to lockfile */
     int pid_fd = 0;
@@ -160,12 +159,12 @@ void daemonize(string working_dir, string pid_filename)
 		pid_fd = open(pid_filename.c_str(), O_RDWR|O_CREAT, 0640);
 		if (pid_fd < 0) {
 			/* Can't open lockfile */
-            BOOST_LOG_TRIVIAL(error) << "can't open lockfile: " << strerror(errno);
+          LL_ERROR("can't create lockfile: %s", strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 		if (lockf(pid_fd, F_TLOCK, 0) < 0) {
 			/* Can't lock file */
-            BOOST_LOG_TRIVIAL(error) << "can't lock file: " << strerror(errno);
+          LL_ERROR("can't lock flie: %s", strerror(errno));
 			exit(EXIT_FAILURE);
 		}
 		/* Get current PID */
@@ -184,5 +183,5 @@ void daemonize(string working_dir, string pid_filename)
     freopen("tc.log", "w", stdout);
     freopen("tc.log", "w", stderr);
 
-    BOOST_LOG_TRIVIAL(info) << "daemonized!";
+  LL_INFO("daemonized");
 }

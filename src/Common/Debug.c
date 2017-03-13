@@ -1,9 +1,12 @@
+#pragma GCC warning "This file is actually only used by the Enclave. Consider move it to the Enclave folder"
+
+#ifdef ENCLAVE_STD_ALT
+
 #include "Debug.h"
 #include "string.h"
 #include "Log.h"
 
 #define MIN(x,y) (x < y ? x : y)
-
 
 #define DEBUG_LIMIT 2048
 
@@ -57,3 +60,5 @@ void hexdump(const char* title, void const * data, size_t len)
 	printf_sgx("\n");
     }
 }
+
+#endif

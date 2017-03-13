@@ -49,7 +49,7 @@ flight_error FlightScraper::parse_response(const char *resp, int *delay, uint64_
 
   //Corner Case: Flight was not found
   if (pos > buff.length()) {
-    LL_NOTICE("Invalid\n");
+    LL_INFO("Invalid\n");
     return INVALID;
   }
 
@@ -59,30 +59,30 @@ flight_error FlightScraper::parse_response(const char *resp, int *delay, uint64_
   std::string token = buff.substr(pos2 + delimeter2.length(), pos2 + delimeter2.length() + 10);
 
   uint64_t actual_depart_time = atoi(token.c_str());
-  LL_NOTICE("actualdeparturetime: %llu\n", actual_depart_time);
-  LL_NOTICE("filed_departuretime: %llu\n", unix_epoch_time);
-  LL_NOTICE("diff: %llu", actual_depart_time - unix_epoch_time);
+  LL_INFO("actualdeparturetime: %llu\n", actual_depart_time);
+  LL_INFO("filed_departuretime: %llu\n", unix_epoch_time);
+  LL_INFO("diff: %llu", actual_depart_time - unix_epoch_time);
 
   //Case: Flight has not yet departed
   if (actual_depart_time == 0) {
-    LL_NOTICE("NOT_DEPARTED\n");
+    LL_INFO("NOT_DEPARTED\n");
     return NOT_DEPARTED;
   }
   //Case: Flight was cancelled
   if (actual_depart_time == -1) {
-    LL_NOTICE("CANCELLED\n");
+    LL_INFO("CANCELLED\n");
     return CANCELLED;
   }
   //Case: Flight Departed but delayed
   if (actual_depart_time - unix_epoch_time >= MAX_DELAY_MIN * SECOND_PER_MIN) {
-    LL_NOTICE("DELAYED\n");
+    LL_INFO("DELAYED\n");
     *delay = actual_depart_time - unix_epoch_time;
     return DELAYED;
   }
   //Case: Flight was not delayed
   else {
     *delay = 0;
-    LL_NOTICE("DEPARTED\n");
+    LL_INFO("DEPARTED\n");
     return DEPARTED;
   }
 }
@@ -118,7 +118,7 @@ flight_error FlightScraper::get_flight_delay(uint64_t unix_epoch_time, const cha
           "&offset=0 HTTP/1.1";
 
   HttpRequest httpRequest("flightxml.flightaware.com", query, header);
-  HttpClient httpClient(httpRequest);
+  HttpsClient httpClient(httpRequest);
   flight_error ret;
   try {
     HttpResponse response = httpClient.getResponse();
@@ -154,7 +154,7 @@ err_code FlightScraper::handler(uint8_t *req, int data_len, int *resp_data) {
   char *flighttime = (char *) req + 0x20;
   uint64_t unix_epoch = strtol(flighttime, NULL, 10);
 
-  LL_NOTICE("unix_epoch=%ld, flight_number=%s", unix_epoch, flight_number);
+  LL_INFO("unix_epoch=%ld, flight_number=%s", unix_epoch, flight_number);
   switch (get_flight_delay(unix_epoch, flight_number, &delay)) {
     case INVALID:*resp_data = -1;
       return INVALID_PARAMS;

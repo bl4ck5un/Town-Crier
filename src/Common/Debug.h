@@ -1,11 +1,6 @@
 #include "stddef.h"
 
-#ifdef ENCLAVE_STD_ALT
-#include "glue.h"
-#else
-#include <stdio.h>
-#define printf_sgx printf
-#endif
+#define ENCLAVE_HTTPS_DEBUG
 
 #ifndef DEBUG_H_
 #define DEBUG_H_
@@ -38,7 +33,5 @@ void print_str_dbg(const char* title, const unsigned char* data, size_t len);
 #if defined(__cplusplus)
 }
 #endif
-
-
 
 #endif

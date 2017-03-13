@@ -44,7 +44,7 @@ int google_current(const char* symbol, double* r) {
 
     std::string query = "/finance?q=" + std::string(symbol);
     HttpRequest httpRequest("google.com", query);
-    HttpClient httpClient(httpRequest);
+    HttpsClient httpClient(httpRequest);
 
     try {
         HttpResponse response = httpClient.getResponse();

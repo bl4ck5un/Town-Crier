@@ -1,7 +1,7 @@
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wno-attributes")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
 
-set(TC_SRC_FILES tc.cpp Monitor.cpp attestation.cpp request-parser.cpp
+set(TC_SRC_FILES tc.cpp monitor.cpp attestation.cpp request-parser.cpp
     mbedtls_sgx_net.c Enclave_u.c ocalls.cpp
     bookkeeping/database.cpp
     bookkeeping/transaction-record.hxx
@@ -9,7 +9,7 @@ set(TC_SRC_FILES tc.cpp Monitor.cpp attestation.cpp request-parser.cpp
     Converter.cpp utils.cpp types.cpp
     EthRPC.cpp StatusRpcServer.cpp StatusRpcServer.h
     ../Common/Debug.c
-    ../Common/Log.c)
+        )
 
 set_directory_properties(PROPERTIES
     ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
@@ -25,10 +25,10 @@ add_custom_command(
 add_executable(tc ${TC_SRC_FILES})
 add_executable(keygen
         tc-keygen.cpp
-        ../Common/Log.c external/base64.cpp
+        external/base64.cpp
         utils.cpp Converter.cpp
         Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
-add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp ../Common/Debug.c utils.cpp ../Common/Log.c Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
+add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp ../Common/Debug.c utils.cpp Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 
 # Tests
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
@@ -44,7 +44,7 @@ add_executable(TestMain EXCLUDE_FROM_ALL
     mbedtls_sgx_net.c
     Converter.cpp
     ../Common/Debug.c
-    ../Common/Log.c types.cpp types.hxx request-parser.cpp request-parser.hxx)
+        types.cpp types.hxx request-parser.cpp request-parser.hxx)
 
 find_package(CURL REQUIRED)
 find_package(Boost QUIET REQUIRED COMPONENTS program_options filesystem system log)
@@ -68,19 +68,21 @@ include_directories(
     ../Common
 )
 
-add_definitions(-DBOOST_LOG_DYN_LINK)
-
 target_link_libraries(tc
     ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
     ${LIBODB_LIBRARIES} ${MHD_LIBRARIES} ${SQLITE_LIBRARIES} ${Boost_LIBRARIES}
     -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB}
     -Wl,-rpath -Wl,/usr/local/lib
     -Wl,-rpath -Wl,${SGX_LIBRARY_PATH}
-    -lpthread)
+    -lpthread -ldl)
 
-target_link_libraries(keygen -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} ${Boost_LIBRARIES} -lpthread)
+target_link_libraries(keygen
+    -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} ${Boost_LIBRARIES}
+    -lpthread -ldl)
 
-target_link_libraries(tc-att -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} ${Boost_LIBRARIES} -lpthread)
+target_link_libraries(tc-att
+    -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} ${Boost_LIBRARIES}
+    -lpthread -ldl)
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
 set(TEST_PROGRAM_LDFLAGS " ${LIBGTEST}/libgtest_main.a")

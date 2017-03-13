@@ -44,7 +44,7 @@ public:
 		std::string query = "/ShippingAPI.dll?API=TrackV2&XML=<TrackRequest USERID=063CORNE4274><TrackID ID=\"" + std::string(tracking_num) + "\"></TrackID></TrackRequest>";
 
 		HttpRequest httpRequest(USPS_API, query);
-		HttpClient httpClient(httpRequest);
+		HttpsClient httpClient(httpRequest);
 		std::string result; 
 		try{
 			HttpResponse response = httpClient.getResponse();

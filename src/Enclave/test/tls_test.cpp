@@ -21,7 +21,7 @@
 
 int ssl_self_test(){
     HttpRequest request("httpbin.org", "/html", true);
-    HttpClient client(request);
+    HttpsClient client(request);
 
     try {
         HttpResponse response = client.getResponse();

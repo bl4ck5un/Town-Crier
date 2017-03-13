@@ -10,7 +10,7 @@ static int static_total_tests = 0;
 static int static_failed_tests = 0;
 
 #define FAIL(str, line) do {                      \
-  LL_NOTICE("Fail on line %d: [%s]", line, str);   \
+  LL_INFO("Fail on line %d: [%s]", line, str);   \
   static_failed_tests++;                          \
 } while (0)
 
@@ -231,11 +231,11 @@ int regex_self_test() {
 
     if (slre_match("^\\s*(\\S+)\\s+(\\S+)\\s+HTTP/(\\d)\\.(\\d)",
                    request, strlen(request), caps, 4, 0) > 0) {
-      LL_NOTICE("Method: [%.*s], URI: [%.*s]",
+      LL_INFO("Method: [%.*s], URI: [%.*s]",
              caps[0].len, caps[0].ptr,
              caps[1].len, caps[1].ptr);
     } else {
-      LL_NOTICE("Error parsing [%s]\n", request);
+      LL_INFO("Error parsing [%s]\n", request);
     }
 
     ASSERT(caps[1].len == 11);
@@ -247,7 +247,7 @@ int regex_self_test() {
     char *s = slre_replace("({{.+?}})",
                            "Good morning, {{foo}}. How are you, {{bar}}?",
                            "Bob");
-    LL_NOTICE("%s", s);
+    LL_INFO("%s", s);
     ASSERT(strcmp(s, "Good morning, Bob. How are you, Bob?") == 0);
     free(s);
   }
@@ -264,7 +264,7 @@ int regex_self_test() {
 
     while (j < str_len &&
            (i = slre_match(regex, str + j, str_len - j, caps, 2, SLRE_IGNORE_CASE)) > 0) {
-      LL_NOTICE("Found URL: [%.*s]", caps[0].len, caps[0].ptr);
+      LL_INFO("Found URL: [%.*s]", caps[0].len, caps[0].ptr);
       j += i;
     }
   }
@@ -281,7 +281,7 @@ int regex_self_test() {
     ASSERT(caps[2].ptr[0] == 'z');
   }
 
-  LL_NOTICE("Unit test %s (total test: %d, failed tests: %d)",
+  LL_INFO("Unit test %s (total test: %d, failed tests: %d)",
          static_failed_tests > 0 ? "FAILED" : "PASSED",
          static_total_tests, static_failed_tests);
 

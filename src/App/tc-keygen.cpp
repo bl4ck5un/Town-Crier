@@ -1,3 +1,5 @@
+#define LOGURU_IMPLEMENTATION 1
+
 #include <iostream>
 
 #include "Converter.h"
@@ -17,7 +19,7 @@ int main(int argc, char *argv[]) {
     LL_CRITICAL("Failed to initialize the enclave");
     std::exit(-1);
   } else {
-    LL_NOTICE("enclave %lu created", eid);
+    LL_INFO("enclave %lu created", eid);
   }
 
   unsigned char secret_sealed[SECRETKEY_SEALED_LEN];
