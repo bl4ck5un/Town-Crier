@@ -35,4 +35,8 @@
 
 #define ERR_ENCLAVE_SSL_CLIENT 0x1001
 
+/* flags for enclave debugging and logging */
+// #define TRACE_TLS_CLIENT
+// #define HEXDUMP_TLS_TRANSCRIPT
+
 typedef int pkgstatus_t;

@@ -20,10 +20,13 @@ extern "C" {
 #endif
 
 #ifdef ENCLAVE_STD_ALT
+// macros for use in the enclave
+#define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
+
 #define LOG(level,fmt,arg... ) \
 do { \
   char __log_buf[BUFSIZ] = {'\0'};\
-  snprintf(__log_buf, BUFSIZ, fmt, ##arg);\
+  snprintf(__log_buf, BUFSIZ, "[%s:%d] " fmt, __FILENAME__, __LINE__, ##arg);\
   ocall_log_##level(__log_buf);\
 } while(0)
 #else
@@ -33,6 +36,9 @@ do { \
 } while(0)
 #endif
 
+#define LOG_LEVEL_TRACE 3
+#define LOG_LEVEL_DEBUG 2
+#define LOG_LEVEL_LOG 1
 
 #define LL_TRACE( fmt, arg... )     LOG(3, fmt, ##arg )
 #define LL_DEBUG( fmt, arg... )     LOG(2, fmt, ##arg )

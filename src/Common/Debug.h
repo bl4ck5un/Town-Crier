@@ -1,7 +1,5 @@
 #include "stddef.h"
 
-#define ENCLAVE_HTTPS_DEBUG
-
 #ifndef DEBUG_H_
 #define DEBUG_H_
 

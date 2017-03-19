@@ -5,7 +5,7 @@
  * the main monitor loop that receives requests from the Town Crier
  * contract, relays the request to the Enclave, and then relays the response from the
  * Enclave back to the Town Crier contract. In addition, Monitor.cpp can be run in various modes
- * usefull to debugging and running benchmarks it contains various flags:
+ * useful to debugging and running benchmarks it contains various flags:
  *      VERBOSE: Debugging flag that allows outputs various variable values
  *      E2E_BENCHMARK: Run a benchmark test on the enclave, to determing the
  *                     time it tries to run an handle_request enclave call
@@ -89,77 +89,75 @@ void Monitor::loop() {
         string filter_id = eth_new_filter(next_block_num, next_block_num);
         eth_getfilterlogs(filter_id, txn_list);
 
-        if (txn_list.isArray()) {
-          if (txn_list.empty()) {
-            /* log the empty blocks too */
-            TransactionRecord __tr(next_block_num, "no_tx_in_" + std::to_string(next_block_num), "");
-            driver.logTransaction(__tr);
+        if (txn_list.empty()) {
+          /* log the empty blocks too */
+          TransactionRecord __tr(next_block_num, "no_tx_in_" + std::to_string(next_block_num), "");
+          driver.logTransaction(__tr);
+        }
+
+        for (auto _current_tx : txn_list) {
+          /* process each request transaction */
+          const string DATA_FIELD_NAME = "data";
+          const string TX_HASH_FIELD_NAME = "transactionHash";
+
+          LL_DEBUG("raw_request: %s", _current_tx.toStyledString().c_str());
+
+          if (!(_current_tx.isMember(DATA_FIELD_NAME) && _current_tx.isMember(TX_HASH_FIELD_NAME))) {
+            LL_ERROR("get bad RPC data, skipping this tx");
+            continue;
           }
 
-          for (auto _current_tx : txn_list) {
-            /* process each request */
-            const string data_field_name = "data";
-            const string tx_hash_field_name = "transactionHash";
+          tc::RequestParser request(_current_tx[DATA_FIELD_NAME].asString());
 
-            LL_DEBUG("raw_request: %s", _current_tx.toStyledString().c_str());
+          LL_INFO("parsed tx: %s", request.toString().c_str());
 
-            if (!(_current_tx.isMember(data_field_name) && _current_tx.isMember(tx_hash_field_name))) {
-              LL_ERROR("get bad RPC data, skipping this tx");
+          /* try to get txn from the database */
+          OdbDriver::record_ptr _tx_record = driver.getLogByHash(_current_tx[TX_HASH_FIELD_NAME].asString());
+          if (_tx_record) {
+            /* if tr has been processed before */
+            if (!_tx_record->getResponse().empty() || _tx_record->getNumOfRetrial() > maxRetry) {
+              LL_INFO("this request has fulfilled (or can't be fulfilled), skipping");
               continue;
             }
+          } else {
+            // if no record found, create a new one
+            _tx_record.reset(new TransactionRecord(next_block_num,
+                                             _current_tx[TX_HASH_FIELD_NAME].asString(),
+                                             request.getRawRequest()));
+            driver.logTransaction(*_tx_record);
+          }
 
-            Request request(_current_tx[data_field_name].asString());
+          sgx_status_t ecall_ret;
+          long nonce = eth_getTransactionCount();
+          LL_LOG("nonce obtained %d\n", nonce);
+          // TODO: change nonce to have long type
+          ecall_ret = handle_request(eid, &ret, nonce, request.getId(), request.getType(),
+                                     request.getData(), request.getDataLen(),
+                                     resp_buffer, &resp_data_len);
 
-            LL_INFO("parsed tx: %s", request.toString().c_str());
+          if (ecall_ret != SGX_SUCCESS || ret != TC_SUCCESS) {
+            // increment the number and skip
+            LL_ERROR("%s returned %d, INVALID", "handle_request", ret);
+            _tx_record->incrementNumOfRetrial();
+            continue;
+          } else {
+            string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
+            LL_LOG("resp bin %s", resp_txn.c_str());
 
-            /* try to get txn from the database */
-            OdbDriver::record_ptr _tx_record = driver.getLogByHash(_current_tx[tx_hash_field_name].asString());
-            if (_tx_record) {
-              /* if tr has been processed before */
-              if (!_tx_record->getResponse().empty() || _tx_record->getNumOfRetrial() > maxRetry) {
-                LL_INFO("this request has fulfilled (or can't be fulfilled), skipping");
-                continue;
-              }
-            } else {
-              // if no record found, create a new one
-              _tx_record.reset(new TransactionRecord(next_block_num,
-                                               _current_tx[tx_hash_field_name].asString(),
-                                               request.getRawRequest()));
-              driver.logTransaction(*_tx_record);
-            }
+            string resp_txn_hash = send_transaction(resp_txn);
+            LL_INFO("Response sent");
 
-            sgx_status_t ecall_ret;
-            long nonce = eth_getTransactionCount();
-            LL_LOG("nonce obtained %d\n", nonce);
-            // TODO: change nonce to have long type
-            ecall_ret = handle_request(eid, &ret, nonce, request.getId(), request.getType(),
-                                       request.getData(), request.getDataLen(),
-                                       resp_buffer, &resp_data_len);
-
-            if (ecall_ret != SGX_SUCCESS || ret != TC_SUCCESS) {
-              // increment the number and skip
-              LL_ERROR("%s returned %d, INVALID", "handle_request", ret);
-              _tx_record->incrementNumOfRetrial();
-              continue;
-            } else {
-              string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
-              LL_LOG("resp bin %s", resp_txn.c_str());
-
-              string resp_txn_hash = send_transaction(resp_txn);
-              LL_INFO("Response sent");
-
-              _tx_record->incrementNumOfRetrial();
-              _tx_record->setResponse(resp_txn);
-              _tx_record->setResponseTime(std::time(0));
-              driver.updateLog(*_tx_record);
-            }
+            _tx_record->incrementNumOfRetrial();
+            _tx_record->setResponse(resp_txn);
+            _tx_record->setResponseTime(std::time(0));
+            driver.updateLog(*_tx_record);
           }
         }
         LL_INFO("Done processing block %ld", next_block_num);
         monitor_retry_counter = 0; //! reset retry_counter upon each success
       }
     }
-    catch (EX_REASONS e) {
+    catch (MONITOR_EXCEPTION e) {
       switch (e) {
         case EX_GET_BLOCK_NUM:
         case EX_CREATE_FILTER:
@@ -169,10 +167,11 @@ void Monitor::loop() {
           monitor_retry_counter++;
           break;
         case EX_NOTHING_TO_DO:
-          LL_ERROR("Nothing to do. Sleep for 5 seconds");
-          sleep(5);
+          LL_ERROR("Nothing to do. Sleep for %d seconds", Monitor::nothingToDoSleepSec);
+          sleep(Monitor::nothingToDoSleepSec);
           break;
-        default:LL_ERROR("Unknown exception: %d", e);
+        default:
+          LL_ERROR("Unknown exception: %d", e);
           break;
       }
     }
@@ -181,11 +180,11 @@ void Monitor::loop() {
       monitor_retry_counter++;
     }
     catch (const std::invalid_argument &ex) {
-      LL_ERROR("%s", ex.what());
+      LL_ERROR("Invalid Argument: %s", ex.what());
       monitor_retry_counter++;
     }
     catch (const std::exception &ex) {
-      LL_ERROR("Unexpected exception %s", ex.what());
+      LL_ERROR("Unexpected std exception %s", ex.what());
       monitor_retry_counter++;
     }
     catch (...) {

@@ -49,7 +49,8 @@ flight_error FlightScraper::parse_response(const char *resp, int *delay, uint64_
 
   //Corner Case: Flight was not found
   if (pos > buff.length()) {
-    LL_INFO("Invalid\n");
+    // TODO: ask oscar: why invalid? (See current test)
+    LL_INFO("Invalid");
     return INVALID;
   }
 

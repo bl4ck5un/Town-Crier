@@ -23,7 +23,7 @@ add_custom_command(
 )
 
 add_executable(tc ${TC_SRC_FILES})
-add_executable(keygen
+add_executable(tc-keygen
         tc-keygen.cpp
         external/base64.cpp
         utils.cpp Converter.cpp
@@ -76,7 +76,7 @@ target_link_libraries(tc
     -Wl,-rpath -Wl,${SGX_LIBRARY_PATH}
     -lpthread -ldl)
 
-target_link_libraries(keygen
+target_link_libraries(tc-keygen
     -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} ${Boost_LIBRARIES}
     -lpthread -ldl)
 
@@ -91,7 +91,7 @@ target_link_libraries(TestMain
     -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB}
     ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
     ${LIBODB_LIBRARIES} ${MHD_LIBRARIES} ${SQLITE_LIBRARIES} ${Boost_LIBRARIES}
-    -lpthread
+    -lpthread -ldl
     ${LIBGTEST}/libgtest.a
     ${LIBGTEST}/libgtest_main.a
     -Wl,-rpath -Wl,/usr/local/lib

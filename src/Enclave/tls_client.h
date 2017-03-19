@@ -114,8 +114,8 @@ class HttpsClient {
   // errno
   int ret;
 
-  // debug level
-  int debug_level;
+  // how many chars to log
+  static const int responseLogLimit = 200;
 
   static const char *pers;
   static const string GET_END;

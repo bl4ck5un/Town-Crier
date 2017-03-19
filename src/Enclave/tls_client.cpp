@@ -43,14 +43,14 @@ typedef struct {
 } cb_data_t;
 
 int cb_on_message_complete(http_parser *parser) {
-  LL_LOG("message_complete called");
+  LL_TRACE("message_complete called");
   cb_data_t *d = (cb_data_t *) parser->data;
   d->eof = 1;
   return 0;
 }
 
 int cb_on_body(http_parser *parser, const char *at, size_t len) {
-  LL_LOG("On body called with at=%p and len=%d", at, len);
+  LL_TRACE("On body called with at=%p and len=%d", at, len);
   cb_data_t *p = (cb_data_t *) parser->data;
 
   return 0;
@@ -59,7 +59,7 @@ int cb_on_body(http_parser *parser, const char *at, size_t len) {
 int cb_on_header_complete(http_parser *parser) {
   cb_data_t *p = (cb_data_t *) parser->data;
   p->header_length = parser->nread;
-  LL_LOG("header_complete called after reading %d", p->header_length);
+  LL_TRACE("header_complete called after reading %d", p->header_length);
 
   return 0;
 }
@@ -121,15 +121,15 @@ static int my_verify(void *data, mbedtls_x509_crt *crt, int depth, uint32_t *fla
   char buf[1024];
   ((void) data);
 
-  LL_LOG("\nVerify requested for (Depth %d):", depth);
+  LL_TRACE("\nVerify requested for (Depth %d):", depth);
   mbedtls_x509_crt_info(buf, sizeof(buf) - 1, "", crt);
-  LL_LOG("%s", buf);
+  LL_TRACE("%s", buf);
 
   if ((*flags) == 0) {
-    LL_LOG("  This certificate has no flags");
+    LL_TRACE("  This certificate has no flags");
   } else {
     mbedtls_x509_crt_verify_info(buf, sizeof(buf), "  ! ", *flags);
-    LL_LOG("%s", buf);
+    LL_TRACE("%s", buf);
   }
 
   return (0);
@@ -203,6 +203,13 @@ string HttpsClient::buildRequestMessage() {
 
 void HttpsClient::sendRequest() {
   string requestMessage = buildRequestMessage();
+
+#ifdef HEXDUMP_TLS_TRANSCRIPT
+  dump_buf("Request: ", (const unsigned char *) requestMessage.c_str(), requestMessage.length());
+#else
+  LL_DEBUG("\nRequest:\n%s", requestMessage.c_str());
+#endif
+
   for (int written = 0, frags = 0; written < requestMessage.size(); written += ret, frags++) {
     while ((ret = mbedtls_ssl_write(&ssl,
                                     reinterpret_cast<const unsigned char *>(requestMessage.c_str()) + written,
@@ -214,14 +221,13 @@ void HttpsClient::sendRequest() {
       }
     }
   }
-  dump_buf("Request: ", (const unsigned char *) requestMessage.c_str(), requestMessage.length());
 }
 
 HttpResponse HttpsClient::getResponse() {
   /*
    * 2. Start the connection
    */
-  LL_LOG("connecting over TCP: %s:%s...", httpRequest.getHost().c_str(), httpRequest.getPort().c_str());
+  LL_TRACE("connecting over TCP: %s:%s...", httpRequest.getHost().c_str(), httpRequest.getPort().c_str());
 
   if ((ret = mbedtls_net_connect(&server_fd, httpRequest.getHost().c_str(), httpRequest.getPort().c_str(),
                                  MBEDTLS_NET_PROTO_TCP)) != 0) {
@@ -236,7 +242,7 @@ HttpResponse HttpsClient::getResponse() {
   /*
    * 3. Setup stuff
    */
-  LL_LOG("Setting up the SSL/TLS structure...");
+  LL_TRACE("Setting up the SSL/TLS structure...");
 
   if ((ret = mbedtls_ssl_config_defaults(&conf,
                                          MBEDTLS_SSL_IS_CLIENT,
@@ -245,8 +251,8 @@ HttpResponse HttpsClient::getResponse() {
     throw runtime_error("mbedtls_ssl_config_defaults");
   }
 
-#if defined(ENCLAVE_HTTPS_DEBUG)
-    mbedtls_ssl_conf_verify(&conf, my_verify, NULL);
+#if defined(TRACE_TLS_CLIENT)
+  mbedtls_ssl_conf_verify(&conf, my_verify, NULL);
 #endif
 
 #if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
@@ -284,59 +290,49 @@ HttpResponse HttpsClient::getResponse() {
   /*
    * 4. Handshake
    */
-  LL_LOG("Performing the SSL/TLS handshake");
+  LL_TRACE("Performing the SSL/TLS handshake");
 
   while ((ret = mbedtls_ssl_handshake(&ssl)) != 0) {
     if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+
+#if defined(MBEDTLS_X509_CRT_PARSE_C)
+      LL_TRACE("Verifying peer X.509 certificate...");
+      if ((flags = mbedtls_ssl_get_verify_result(&ssl)) != 0) {
+        LL_CRITICAL("X.509 certificate failed to verify");
+        char temp_buf[1024];
+        if (mbedtls_ssl_get_peer_cert(&ssl) != NULL) {
+          LL_CRITICAL("Peer certificate information");
+          mbedtls_x509_crt_info((char *) temp_buf, sizeof(temp_buf) - 1, "|-", mbedtls_ssl_get_peer_cert(&ssl));
+          mbedtls_printf("%s\n", temp_buf);
+        }
+        else{
+          LL_CRITICAL("mbedtls_ssl_get_peer_cert returns NULL");
+        }
+      } else {
+        LL_TRACE("X.509 Verifies");
+      }
+#endif /* MBEDTLS_X509_CRT_PARSE_C */
       LL_CRITICAL("mbedtls_ssl_handshake returned -%#x", -ret);
-      if (ret == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED)
-        LL_CRITICAL(
-            "Unable to verify the server's certificate. "
-                "Either it is invalid,"
-                "or you didn't set ca_file or ca_path "
-                "to an appropriate value."
-                "Alternatively, you may want to use "
-                "auth_mode=optional for testing purposes.");
+
+      if (ret == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED) {
+        LL_CRITICAL("Unable to verify the server's certificate.");
+      }
+
       throw runtime_error("mbedtls_ssl_handshake");
     }
   }
 
-  LL_LOG("Hand shake succeeds: [%s, %s]", mbedtls_ssl_get_version(&ssl), mbedtls_ssl_get_ciphersuite(&ssl));
+  LL_TRACE("Hand shake succeeds: [%s, %s]", mbedtls_ssl_get_version(&ssl), mbedtls_ssl_get_ciphersuite(&ssl));
 
   if ((ret = mbedtls_ssl_get_record_expansion(&ssl)) >= 0) {
-    LL_DEBUG("Record expansion is [%d]", ret);
+    LL_TRACE("Record expansion is [%d]", ret);
   } else
-    LL_DEBUG("Record expansion is [unknown (compression)]");
+    LL_TRACE("Record expansion is [unknown (compression)]");
 
 #if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
-  LL_LOG("Maximum fragment length is [%u]",
-         (unsigned int) mbedtls_ssl_get_max_frag_len(&ssl));
+  LL_TRACE("Maximum fragment length is [%u]",
+           (unsigned int) mbedtls_ssl_get_max_frag_len(&ssl));
 #endif
-
-#if defined(MBEDTLS_X509_CRT_PARSE_C)
-  /*
-   * 5. Verify the server certificate
-   */
-  LL_LOG("Verifying peer X.509 certificate...");
-
-  if ((flags = mbedtls_ssl_get_verify_result(&ssl)) != 0) {
-    char vrfy_buf[512];
-    mbedtls_printf(" failed\n");
-    mbedtls_x509_crt_verify_info(vrfy_buf, sizeof(vrfy_buf), "  ! ", flags);
-    mbedtls_printf("%s\n", vrfy_buf);
-  } else {
-    LL_LOG("X.509 Verifies");
-  }
-
-  if (mbedtls_ssl_get_peer_cert(&ssl) != NULL) {
-#if defined(ENCLAVE_HTTPS_DEBUG)
-      LL_DEBUG("Peer certificate information");
-      char temp_buf[1024];
-      mbedtls_x509_crt_info((char *) temp_buf, sizeof(temp_buf) - 1, "|-", mbedtls_ssl_get_peer_cert(&ssl));
-      LL_DEBUG("%s\n", temp_buf);
-#endif
-  }
-#endif /* MBEDTLS_X509_CRT_PARSE_C */
 
   sendRequest();
 
@@ -400,7 +396,7 @@ HttpResponse HttpsClient::getResponse() {
       }
 
       if (cb_data.eof == 1) {
-        LL_LOG("EOF");
+        LL_TRACE("EOF");
         LL_CRITICAL("status code %d", parser.status_code);
         break;
       }
@@ -417,8 +413,8 @@ HttpResponse HttpsClient::getResponse() {
   string content((const char *) buf.buf + cb_data.header_length, buf.length - cb_data.header_length);
   HttpResponse resp(parser.status_code, response_headers, content);
 
-  LL_LOG("Response headers\n: %s", response_headers.c_str());
-  LL_DEBUG("Response body:\n", content.c_str());
+  LL_DEBUG("\nResponse header:\n%s", response_headers.c_str());
+  LL_DEBUG("\nResponse body:\n%s", content.substr(0, HttpsClient::responseLogLimit).c_str());
 
   return resp;
 }
@@ -428,7 +424,7 @@ void HttpsClient::close() {
   while (ret == MBEDTLS_ERR_SSL_WANT_WRITE);
   ret = 0;
 
-  LL_LOG("closed %s:%s", httpRequest.getHost().c_str(), httpRequest.getPort().c_str());
+  LL_TRACE("closed %s:%s", httpRequest.getHost().c_str(), httpRequest.getPort().c_str());
 }
 
 string HttpsClient::getError() {
