@@ -8,7 +8,6 @@ set(TC_SRC_FILES tc.cpp monitor.cpp attestation.cpp request-parser.cpp
     bookkeeping/transaction-record-odb.cxx
     Converter.cpp utils.cpp types.cpp
     EthRPC.cpp StatusRpcServer.cpp StatusRpcServer.h
-    ../Common/Debug.c
         )
 
 set_directory_properties(PROPERTIES
@@ -28,7 +27,7 @@ add_executable(tc-keygen
         external/base64.cpp
         utils.cpp Converter.cpp
         Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
-add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp ../Common/Debug.c utils.cpp Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
+add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp utils.cpp Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 
 # Tests
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
@@ -43,8 +42,7 @@ add_executable(TestMain EXCLUDE_FROM_ALL
     bookkeeping/transaction-record-odb.cxx
     mbedtls_sgx_net.c
     Converter.cpp
-    ../Common/Debug.c
-        types.cpp types.hxx request-parser.cpp request-parser.hxx)
+    types.cpp types.hxx request-parser.cpp request-parser.hxx)
 
 find_package(CURL REQUIRED)
 find_package(Boost QUIET REQUIRED COMPONENTS program_options filesystem system log)

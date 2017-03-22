@@ -34,11 +34,16 @@ extern "C" {
 #endif
 
 void rlp_item(const uint8_t*, const int, bytes&);
-int form_transaction(int nonce, int nonce_len,
-                     uint64_t request_id, uint8_t request_type,
-                     const uint8_t *request_data, size_t request_data_len,
+int form_transaction(int nonce,
+                     int nonce_len,
+                     uint64_t request_id,
+                     uint8_t request_type,
+                     const uint8_t *request_data,
+                     size_t request_data_len,
+                     uint64_t resp_error,
                      bytes resp_data,
-                     uint8_t *tx_output_bf, size_t *o_len);
+                     uint8_t *tx_output_bf,
+                     size_t *o_len);
 
 #if defined(__cplusplus)
 }

@@ -100,11 +100,13 @@ flight_error FlightScraper::parse_response(const char *resp, int *delay, uint64_
 //    date and time in Zulu/UTC
 //*/
 flight_error FlightScraper::get_flight_delay(uint64_t unix_epoch_time, const char *flight, int *resp) {
-
   /* Invalid user input */
   if (flight == NULL || resp == NULL) {
     return INVALID;
   }
+
+  // TODO: if unix_epoch_time < now
+  // TODO: return error
 
 
   //Build header for https request
@@ -169,12 +171,9 @@ err_code FlightScraper::handler(uint8_t *req, int data_len, int *resp_data) {
     case DEPARTED:
     case DELAYED:
     case CANCELLED:
+      //TODO: why?
     case NOT_DEPARTED:*resp_data = delay;
       return NO_ERROR;
     default:return UNKNOWN_ERROR;
   }
 }
-
-
-
-

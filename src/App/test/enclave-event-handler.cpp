@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "Debug.h"
+#include "../../Enclave/Debug.h"
 #include "../utils.h"
 #include "../Enclave_u.h"
 #include "../../Common/Constants.h"

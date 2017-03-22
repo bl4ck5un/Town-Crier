@@ -11,6 +11,7 @@
 
 #include "eth_abi.h"
 #include "commons.h"
+#include "Debug.h"
 
 #include "eth_transaction.h"
 
@@ -112,14 +113,18 @@ void TX::rlp_list(bytes &out, bool withSig) {
 
 #include "Constants.h"
 
-#define DELIVER_CALL_SIGNATURE "deliver(uint64,bytes32,bytes32)"
+#define DELIVER_CALL_SIGNATURE "deliver(uint64,bytes32,uint64,bytes32)"
 
-int form_transaction(int nonce, int nonce_len,
-                     uint64_t request_id, uint8_t request_type,
+int form_transaction(int nonce,
+                     int nonce_len,
+                     uint64_t request_id,
+                     uint8_t request_type,
                      const uint8_t *request_data,
                      size_t request_data_len,
+                     uint64_t resp_error,
                      bytes resp_data,
-                     uint8_t *tx_output_bf, size_t *o_len) {
+                     uint8_t *tx_output_bf,
+                     size_t *o_len) {
   if (tx_output_bf == NULL || o_len == NULL) {
     LL_CRITICAL("Error: tx_output_bf or o_len gets NULL input\n");
     return TC_INTERNAL_ERROR;
@@ -154,9 +159,11 @@ int form_transaction(int nonce, int nonce_len,
   // prepare for ABI encoding
   vector<ABI_serializable *> args;
   ABI_UInt64 a(request_id);
-  ABI_Bytes32 c(&param_hash);
+  ABI_Bytes32 b(&param_hash);
+  ABI_UInt64 c(resp_error);
   ABI_Bytes32 d(&resp_b32);
   args.push_back(&a);
+  args.push_back(&b);
   args.push_back(&c);
   args.push_back(&d);
   ABI_Generic_Array _abi_array(args);
@@ -219,6 +226,10 @@ int form_transaction(int nonce, int nonce_len,
     tx.r.set_size(32);
     tx.s.set_size(32);
   }
+
+//  print_str_dbg("r", &tx.r[0], 32);
+//  print_str_dbg("s", &tx.s[0], 32);
+//  print_str_dbg("v", &tx.v, 1);
 
   // RLP encode the final output with signature
   out.clear();

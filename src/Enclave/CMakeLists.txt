@@ -1,6 +1,5 @@
 set(SOURCE_FILES
-    ../Common/Debug.c
-        eth_abi.cpp
+    Debug.c
     create_report.cpp
     scrapers/current_bloomberg.cpp
     scrapers/current_Google.cpp
@@ -19,6 +18,7 @@ set(SOURCE_FILES
     scrapers/stock_ticker.cpp
     eth_transaction.cpp
     enclave_exception_hdlr.c
+    eth_abi.cpp
     encoding.cpp
     external/slre.c
     external/http_parser.c utils.c)

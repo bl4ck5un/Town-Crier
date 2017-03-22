@@ -89,7 +89,7 @@ int handle_request(int nonce,
       break;
   }
 
-  return form_transaction(nonce, 32, id, type, data, data_len, resp_data, raw_tx, raw_tx_len);
+  return form_transaction(nonce, 32, id, type, data, data_len, 0, resp_data, raw_tx, raw_tx_len);
 }
 
 //static int stock_ticker_handler(int nonce, uint64_t request_id, uint8_t request_type,

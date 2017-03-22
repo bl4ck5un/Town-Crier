@@ -1,10 +1,6 @@
-#pragma GCC warning "This file is actually only used by the Enclave. Consider move it to the Enclave folder"
-
-#ifdef ENCLAVE_STD_ALT
-
 #include "Debug.h"
 #include "string.h"
-#include "Log.h"
+#include "glue.h"
 
 #define MIN(x,y) (x < y ? x : y)
 
@@ -61,4 +57,35 @@ void hexdump(const char* title, void const * data, size_t len)
     }
 }
 
+static void bin_to_strhex(const unsigned char *bin, size_t binsz, char *result)
+{
+  char          hex_str[]= "0123456789abcdef";
+  unsigned int  i;
+
+  result[binsz * 2] = 0;
+
+  if (!binsz)
+    return;
+
+  for (i = 0; i < binsz; i++)
+  {
+    result[i * 2 + 0] = hex_str[(bin[i] >> 4) & 0x0F];
+    result[i * 2 + 1] = hex_str[(bin[i]     ) & 0x0F];
+  }
+}
+
+void print_str_dbg(const char* title, const unsigned char* data, size_t len) {
+#ifdef DEBUG
+  size_t PRINT_WIDTH = 64;
+
+  char buf[len*2];
+  bin_to_strhex(data, len, buf);
+  printf_sgx("%s\n", title);
+
+  size_t printed = 0;
+  while (printed < strlen(buf)) {
+    printf_sgx("%.64s\n", buf + printed);
+    printed += MIN(PRINT_WIDTH, strlen(buf + printed));
+  }
 #endif
+}
