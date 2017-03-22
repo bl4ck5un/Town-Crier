@@ -5,5 +5,3 @@ To add a new scraper:
 	3) Add the new scraper object to the /src/Enclave/scrapers folder and make sure that it is a subclass of the Scraper.h interface
 	4) Add unit tests for this scraper in the /src/Enclave/test folder
 	5) Compile and Run
-
-	
