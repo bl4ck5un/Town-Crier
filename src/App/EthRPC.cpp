@@ -60,8 +60,8 @@ string eth_new_filter(blocknum_t from, blocknum_t to) {
   filter_opt["address"] = TC_ADDRESS;
 
   filter_opt["topics"][0] = "0xc8d1123dbf500dfdf606f7ec68a0e5f51c3a0112d0d433a442a9664266a8cc41";
-  filter_opt["fromBlock"] = from;
-  filter_opt["toBlock"] = to;
+  filter_opt["fromBlock"] = static_cast<Json::Value::UInt64 >(from);
+  filter_opt["toBlock"] = static_cast<Json::Value::UInt64 >(to);
 
   return rpc_client->eth_newFilter(filter_opt);
 }
