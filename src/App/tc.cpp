@@ -62,10 +62,8 @@ int main(int argc, const char *argv[]) {
       cerr << desc << endl;
       return -1;
     }
-
     po::notify(vm);
   }
-
   catch (po::required_option &e) {
     cerr << e.what() << endl;
     return -1;
@@ -76,6 +74,10 @@ int main(int argc, const char *argv[]) {
     cerr << "Unknown error!" << endl;
     return -1;
   }
+
+  // report the result of po parsing
+  LL_INFO("input argument: rpc: %d", options_rpc);
+  LL_INFO("input argument: daemon: %d", options_daemon);
 
   //!
   string working_dir;
@@ -94,7 +96,7 @@ int main(int argc, const char *argv[]) {
     pid_filename = pt.get<string>("daemon.pid_file");
     status_rpc_port = pt.get<int>("status.port");
 
-    LOG_F(INFO, "Config file: %s", options_config.c_str());
+    LOG_F(INFO, "Using config file: %s", options_config.c_str());
     LOG_F(INFO, "cwd: %s", working_dir.c_str());
     LOG_F(INFO, "PID file: %s", pid_filename.c_str());
   } catch (const std::exception &e) {
@@ -117,10 +119,13 @@ int main(int argc, const char *argv[]) {
     LOG_F(INFO, "RPC server started");
   }
 
+  // create working dir if not existed
+  boost::filesystem::create_directory(boost::filesystem::path(working_dir));
+
   if (options_daemon) {
-    boost::filesystem::create_directory(boost::filesystem::path(working_dir));
     daemonize(working_dir, pid_filename);
   }
+
   const static string db_name = (boost::filesystem::path(working_dir) / "tc.db").string();
   LOG_F(INFO, "using db %s", db_name.c_str());
   bool create_db = false;
@@ -132,7 +137,8 @@ int main(int argc, const char *argv[]) {
   } else {
     create_db = true;
   }
-  OdbDriver driver("TC.db", create_db);
+  LL_INFO("using new db: %d", create_db);
+  OdbDriver driver(db_name, create_db);
 
   int nonce_offset = 0;
 

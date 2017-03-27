@@ -11,6 +11,7 @@
 #include "../types.hxx"
 #include "transaction-record.hxx"
 #include "transaction-record-odb.hxx"
+#include "Log.h"
 
 #include <string>
 
@@ -26,6 +27,8 @@ class OdbDriver {
 
  public:
   typedef unique_ptr<TransactionRecord> record_ptr;
+  typedef odb::result<TransactionRecord> transaction_record;
+
   OdbDriver(string filename, bool isOverwrite = false) {
     if (filename.empty()) {
       throw invalid_argument("invalid filename");
@@ -55,11 +58,28 @@ class OdbDriver {
         db->query<TransactionRecord>()
     );
     vector<TransactionRecord> tc;
-    for (odb::result<TransactionRecord>::iterator it = r.begin(); it != r.end(); it++) {
+    for (odb::result<TransactionRecord>::iterator it = r.begin(); ! it.equal(r.end()); it++) {
       tc.push_back(*it);
     }
 
+    t.commit();
     return tc;
+  }
+
+  vector<TransactionRecord> getUnfulfilledRequest() {
+    transaction t(db->begin());
+    transaction_record r(db->query<TransactionRecord>(query_record::response == ""));
+
+    vector<TransactionRecord> unfulfilled_tx;
+
+    if (r.empty()) return unfulfilled_tx;
+
+    for (auto it = r.begin(); it != r.end(); it++) {
+      unfulfilled_tx.push_back(*it);
+    }
+
+    t.commit();
+    return unfulfilled_tx;
   }
 
   record_ptr getLogByHash(const string &txHash) const {

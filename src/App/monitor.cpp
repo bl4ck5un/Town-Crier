@@ -91,8 +91,9 @@ void Monitor::loop() {
 
         if (txn_list.empty()) {
           /* log the empty blocks too */
-          TransactionRecord __tr(next_block_num, "no_tx_in_" + std::to_string(next_block_num), "");
-          driver.logTransaction(__tr);
+          TransactionRecord _dummy_tr(next_block_num, "no_tx_in_" + std::to_string(next_block_num), "");
+          _dummy_tr.setResponse("no_tx_in_" + std::to_string(next_block_num));
+          driver.logTransaction(_dummy_tr);
         }
 
         for (auto _current_tx : txn_list) {
@@ -125,6 +126,7 @@ void Monitor::loop() {
                                              _current_tx[TX_HASH_FIELD_NAME].asString(),
                                              request.getRawRequest()));
             driver.logTransaction(*_tx_record);
+            LL_INFO("request %s logged", _tx_record.get()->getTxHash().c_str());
           }
 
           sgx_status_t ecall_ret;
@@ -167,9 +169,23 @@ void Monitor::loop() {
           monitor_retry_counter++;
           break;
         case EX_NOTHING_TO_DO:
+        {
+          LL_INFO("caught up with the latest block. Not checking old tx");
+          /*
+          vector<TransactionRecord> _unfulfilled = driver.getUnfulfilledRequest();
+          if (_unfulfilled.empty()) {
+            LL_ERROR("Nothing to do. Sleep for %d seconds", Monitor::nothingToDoSleepSec);
+            sleep(Monitor::nothingToDoSleepSec);
+            break;
+          }
+          for (auto it (_unfulfilled.begin()); it != _unfulfilled.end(); it++) {
+            LL_INFO("Find unfulfilled tx %s", it->getTxHash().c_str());
+          }
+           */
           LL_ERROR("Nothing to do. Sleep for %d seconds", Monitor::nothingToDoSleepSec);
           sleep(Monitor::nothingToDoSleepSec);
           break;
+        }
         default:
           LL_ERROR("Unknown exception: %d", e);
           break;
