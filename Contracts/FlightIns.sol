@@ -5,7 +5,7 @@ import "TownCrier.sol";
 contract FlightIns {
     event Insure(address beneficiary, uint dataLength, bytes32[] data, int72 requestId);
     event PaymentLog(int flag);
-    event PaymentInfo(address payee, uint payeeBalance, uint gasRemaining, uint64 requestId, uint delay);
+    event PaymentInfo(address payee, uint payeeBalance, uint gasRemaining, uint64 requestId, uint64 error, uint256 delay);
     event FlightCancel(address canceller, address requester, bool success);
 
     uint constant TC_FEE = (35000 + 20000) * 5 * 10**10;
@@ -13,14 +13,14 @@ contract FlightIns {
     uint constant PAYOUT = 2 * 10**19;
     uint32 constant PAYOUT_DELAY = 30;
 
-    bytes4 constant TC_CALLBACK_FID = 0x3d622256; // bytes4(sha3("pay(uint64,bytes32)"));
+    bytes4 constant TC_CALLBACK_FID = bytes4(sha3("pay(uint64, uint64, bytes32)"));
 
     TownCrier public TC_CONTRACT;
     address owner;
     address[2**64] requesters;
     uint[2**64] premium;
 
-    function() payable { }
+    function() payable {} // must be payable
 
     function FlightIns(TownCrier tcCont) public payable{
         TC_CONTRACT = tcCont;
@@ -39,7 +39,7 @@ contract FlightIns {
         Insure(msg.sender, encryptedFlightInfo.length, encryptedFlightInfo, int72(requestId));
     }
 
-    function pay(uint64 requestId, bytes32 delay) public {
+    function pay(uint64 requestId, uint64 error, bytes32 respData) public {
         address requester = requesters[requestId];
         if (msg.sender != address(TC_CONTRACT)) {
             PaymentLog(-1);
@@ -51,15 +51,31 @@ contract FlightIns {
 
         PaymentLog(1);
 
-        if (uint(delay) == 0) {
-            PaymentInfo(requester, premium[requestId], msg.gas, requestId, uint(delay));
-        } else if (uint(delay) == 1 || uint(delay) == 2) {
-            address(requester).send(premium[requestId] * 5 * FEE);
-            PaymentInfo(requester, premium[requestId], msg.gas, requestId, uint(delay));
-        } else if (uint(delay) == 3 || uint(delay) == 4) {
-            address(requester).send(premium[requestId] * FEE);
-            PaymentInfo(requester, premium[requestId], msg.gas, requestId, uint(delay));
-        }
+        uint delay = uint(respData);
+
+/*        if (error == 0){ // no problem
+        } else if (error == 1) {  // delayed
+            requester.send(premium[requestId] * 5 * FEE))
+            {
+                throw;
+            }
+        } else if (error == 2) {  // cancelled
+            if (!requester.send(premium[requestId] * 5 * FEE))
+            {
+                throw;
+            }
+        } else if (error == 3) {    // not departed
+            if (!requester.send(premium[requestId] * FEE))
+            {
+                throw;
+            }
+        } else if (error == 4) {    // flight not found
+            if (!requester.send(premium[requestId] * FEE))
+            {
+                throw;
+            }
+        }*/
+        PaymentInfo(requester, premium[requestId], msg.gas, requestId, error, delay);
         requesters[requestId] = 0;
         PaymentLog(2);
     }

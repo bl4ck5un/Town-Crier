@@ -12,7 +12,7 @@ contract TownCrier {
     event RequestLog(address self, int16 flag);
     event RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, bytes32 paramsHash, bytes32 timestamp, bytes32[] requestData);
     event DeliverLog(uint gasLeft, int flag);
-    event DeliverInfo(uint64 requestId, uint fee, uint gasPrice, uint gasLeft, uint callbackGas, bytes32 paramsHash, bytes32 response);
+    event DeliverInfo(uint64 requestId, uint fee, uint gasPrice, uint gasLeft, uint callbackGas, bytes32 paramsHash, uint64 error, bytes32 respData);
 //    event DeliverSig(uint8 v, bytes32 r, bytes32 s, address recoveredAddr);
     event Cancel(uint64 requestId, address canceller, address requester, int flag);
 
@@ -51,7 +51,10 @@ contract TownCrier {
         if (msg.value < MIN_FEE || msg.value > MAX_FEE) {
             RequestInfo(0, requestType, msg.sender, msg.value, callbackAddr, 0, 0, requestData);
             RequestLog(this, -1);
-            msg.sender.send(msg.value);
+            if (!msg.sender.send(msg.value)) {
+                RequestLog(this, -2);
+                throw;
+            }
             return 0;
         } else {
             uint64 requestId = requestCnt;
@@ -69,16 +72,16 @@ contract TownCrier {
         }
     }
 
-    function deliver(uint64 requestId, bytes32 paramsHash, bytes32 respData) public {
+    function deliver(uint64 requestId, bytes32 paramsHash, uint64 error, bytes32 respData) public {
         uint fee = requests[requestId].fee;
-        if (msg.sender != SGX_ADDRESS
-                || requests[requestId].requester == 0
+        if (//msg.sender != SGX_ADDRESS ||
+                requests[requestId].requester == 0
                 || fee == DELIVERED_FEE_FLAG) {
-            DeliverInfo(requestId, fee, tx.gasprice, msg.gas, 0, paramsHash, respData);
+            DeliverInfo(requestId, fee, tx.gasprice, msg.gas, 0, paramsHash, error, respData);
             DeliverLog(msg.gas, -1);
             return;
         } else if (requests[requestId].paramsHash != paramsHash) {
-            DeliverInfo(requestId, fee, tx.gasprice, msg.gas, 0, paramsHash, respData);
+            DeliverInfo(requestId, fee, tx.gasprice, msg.gas, 0, paramsHash, error, respData);
             DeliverLog(msg.gas, -4);
             return;
         } else if (requests[requestId].fee == CANCELLED_FEE_FLAG) {
@@ -99,8 +102,8 @@ contract TownCrier {
         DeliverLog(msg.gas, 16);
 
         uint callbackGas = (fee - MIN_FEE) / tx.gasprice;
-        DeliverInfo(requestId, fee, tx.gasprice, msg.gas, callbackGas, paramsHash, respData);
-        bool deliverSuccess = requests[requestId].callbackAddr.call.gas(callbackGas)(requests[requestId].callbackFID, requestId, respData);
+        DeliverInfo(requestId, fee, tx.gasprice, msg.gas, callbackGas, paramsHash, error, respData);
+        bool deliverSuccess = requests[requestId].callbackAddr.call.gas(callbackGas)(requests[requestId].callbackFID, requestId, error, respData);
         if (deliverSuccess) {
             DeliverLog(msg.gas, 32);
         } else {
