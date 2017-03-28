@@ -55,3 +55,9 @@ TEST_F(ScraperTest, flight){
     ASSERT_EQ(0, ocall_status);
     ASSERT_EQ(0, ret);
 }
+TEST_F(ScraperTest, stock){
+    int ocall_status, ret;
+    ocall_status =stockticker_self_test(eid, &ret);
+    ASSERT_EQ(0, ocall_status);
+    ASSERT_EQ(0,ret);
+}
