@@ -37,8 +37,7 @@ string send_transaction(const std::string &rawTransaction) {
   std::string param(rawTransaction);
 
   std::string res = rpc_client->eth_sendRawTransaction(param);
-  LL_CRITICAL("Response recorded in the blockchain.");
-  LL_CRITICAL("TX: %s", res.c_str());
+  LL_INFO("Response recorded in the blockchain (txHash = %s)", res.c_str());
 
   return res;
 }
@@ -83,9 +82,7 @@ void eth_getfilterlogs(const string &filter_id, Json::Value &txnContainer) {
 blocknum_t eth_blockNumber()
 {
     unsigned long ret;
-  std::cout << "before" << std::endl;
     std::string blk = rpc_client->eth_blockNumber();
-  std::cout << blk << std::endl;
     std::stringstream ss;
     ss << std::hex << blk;
     ss >> ret;

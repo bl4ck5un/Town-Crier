@@ -90,7 +90,20 @@ class OdbDriver {
     return rc;
   }
 
-  void updateLog(const TransactionRecord &tr) {
+  bool isProcessed(const string &tx_hash, int retryThreshold) const {
+    bool ret = false;
+    transaction t(db->begin());
+    record_ptr tr(db->query_one<TransactionRecord>(query_record::tx_hash == tx_hash));
+    if (!tr) {
+      ret = false;
+    }
+    else {
+      ret = tr->getNumOfRetrial() >= retryThreshold || ! tr->getResponse().empty();
+    }
+    t.commit();
+  }
+
+  void updateLog(TransactionRecord tr) {
     transaction t(db->begin());
     record_ptr rc(db->query_one<TransactionRecord>(query_record::tx_hash == tr.getTxHash()));
 
@@ -99,6 +112,9 @@ class OdbDriver {
       rc->setResponseTime(tr.getResponseTime());
       rc->setNumOfRetrial(tr.getNumOfRetrial());
       db->update(*rc);
+    }
+    else {
+      db->persist(tr);
     }
     t.commit();
   }

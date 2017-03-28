@@ -6,6 +6,7 @@
 #define JSONRPC_CPP_STUB_ETHRPCCLIENT_H_
 
 #include <jsonrpccpp/client.h>
+#include <iostream>
 
 class ethRPCClient : public jsonrpc::Client
 {
