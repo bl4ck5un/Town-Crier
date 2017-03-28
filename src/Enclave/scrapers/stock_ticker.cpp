@@ -67,16 +67,16 @@ err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data)
         return INVALID_PARAMS;
     }
 
-    char symbol[35] = {0};
-    memcpy(symbol, req, 0x20);
-    string str(symbol);
+    // char symbol[35] = {0};
+    // memcpy(symbol, req, 0x20);
+    // string str(symbol);
 
-    int month = strtol((char *) req + 0x20, NULL, 10);
-    int day = strtol((char *) req + 0x28, NULL, 10);
-    int year = strtol((char *) req + 0x30, NULL, 10);
+    // int month = strtol((char *) req + 0x20, NULL, 10);
+    // int day = strtol((char *) req + 0x28, NULL, 10);
+    // int year = strtol((char *) req + 0x30, NULL, 10);
 
     
-    CreateQuery(day, month, year, str);
+    CreateQuery(12, 3, 2010, "GOOG");
     StockTickerParser parser = QueryWebsite();
     if(parser.GetErrorCode() == WEB_ERROR){
         return WEB_ERROR;
