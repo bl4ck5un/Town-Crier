@@ -4,10 +4,16 @@
 #  LIBODB_LIBRARIES - Link these to use sqlite
 #
 
-FIND_PATH(LIBODB_INCLUDE_DIRS odb/core.hxx )
-FIND_PATH(LIBODB_INCLUDE_DIRS odb/sqlite/database.hxx)
-FIND_LIBRARY(LIBODB_LIBRARY libodb.so)
-FIND_LIBRARY(LIBODB_SQLITE_LIBRARY libodb-sqlite-2.4.so)
+FIND_PATH(LIBODB_INCLUDE_DIRS
+        odb/core.hxx
+        PATHS /usr/include/)
+FIND_PATH(LIBODB_INCLUDE_DIRS
+        odb/sqlite/database.hxx
+        PATHS /usr/include/)
+FIND_LIBRARY(LIBODB_LIBRARY libodb.so
+        PATHS /usr/lib/odb)
+FIND_LIBRARY(LIBODB_SQLITE_LIBRARY libodb-sqlite-2.4.so
+        PATHS /usr/lib/odb)
 
 
 # handle the QUIETLY and REQUIRED arguments and set LibODB_FOUND to TRUE
