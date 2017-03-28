@@ -60,10 +60,12 @@ int handle_request(int nonce,
       FlightScraper flightHandler;
       int delay;
       switch (flightHandler.handler(data, data_len, &delay)) {
-        case INVALID_PARAMS:
         case UNKNOWN_ERROR:
         case WEB_ERROR:
           return TC_INTERNAL_ERROR;
+        // treat invalid_params as no_error
+        case INVALID_PARAMS:
+          error_flag = 1;
         case NO_ERROR:
           append_as_uint256(resp_data, delay, sizeof(delay));
           break;
@@ -112,7 +114,7 @@ int handle_request(int nonce,
       break;
   }
 
-  return form_transaction(nonce, 32, id, type, data, data_len, 0, resp_data, raw_tx, raw_tx_len);
+  return form_transaction(nonce, 32, id, type, data, data_len, error_flag, resp_data, raw_tx, raw_tx_len);
 }
 
 //static int stock_ticker_handler(int nonce, uint64_t request_id, uint8_t request_type,

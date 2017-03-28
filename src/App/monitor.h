@@ -32,3 +32,10 @@ class Monitor {
 
   void loop();
 };
+
+class NothingTodoException : public std::exception {
+ public:
+  virtual char const * what() const noexcept {
+    return "Nothing to do";
+  }
+};

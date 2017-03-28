@@ -63,15 +63,10 @@ void Monitor::loop() {
       blocknum_t current_highest_block = eth_blockNumber();
       LL_LOG("highest block = %ld", current_highest_block);
 
-      if (current_highest_block < 0) {
-        LL_ERROR("eth_blockNumber returns %ld", current_highest_block);
-        throw EX_GET_BLOCK_NUM;
-      }
-
       // if we've scanned all of them
       if (next_block_num > current_highest_block) {
         LL_INFO("Highest block is %ld, waiting for block %ld...", current_highest_block, next_block_num);
-        throw EX_NOTHING_TO_DO;
+        throw NothingTodoException();
       }
 
       for (; next_block_num <= current_highest_block; next_block_num++) {
@@ -91,8 +86,9 @@ void Monitor::loop() {
 
         if (txn_list.empty()) {
           /* log the empty blocks too */
-          TransactionRecord __tr(next_block_num, "no_tx_in_" + std::to_string(next_block_num), "");
-          driver.logTransaction(__tr);
+          TransactionRecord _dummy_tr(next_block_num, "no_tx_in_" + std::to_string(next_block_num), "");
+          _dummy_tr.setResponse("no_tx_in_" + std::to_string(next_block_num));
+          driver.logTransaction(_dummy_tr);
         }
 
         for (auto _current_tx : txn_list) {
@@ -108,24 +104,20 @@ void Monitor::loop() {
           }
 
           tc::RequestParser request(_current_tx[DATA_FIELD_NAME].asString());
+          string _current_tx_hash = _current_tx[TX_HASH_FIELD_NAME].asString();
 
           LL_INFO("parsed tx: %s", request.toString().c_str());
 
           /* try to get txn from the database */
-          OdbDriver::record_ptr _tx_record = driver.getLogByHash(_current_tx[TX_HASH_FIELD_NAME].asString());
-          if (_tx_record) {
-            /* if tr has been processed before */
-            if (!_tx_record->getResponse().empty() || _tx_record->getNumOfRetrial() > maxRetry) {
+          if (driver.isProcessed(_current_tx_hash, maxRetry)) {
               LL_INFO("this request has fulfilled (or can't be fulfilled), skipping");
               continue;
-            }
-          } else {
-            // if no record found, create a new one
-            _tx_record.reset(new TransactionRecord(next_block_num,
-                                             _current_tx[TX_HASH_FIELD_NAME].asString(),
-                                             request.getRawRequest()));
-            driver.logTransaction(*_tx_record);
           }
+            // if no record found, create a new one
+          TransactionRecord log_entry(next_block_num, _current_tx_hash, request.getRawRequest());
+          driver.logTransaction(log_entry);
+          LL_INFO("request %s logged", _current_tx_hash.c_str());
+
 
           sgx_status_t ecall_ret;
           long nonce = eth_getTransactionCount();
@@ -137,8 +129,8 @@ void Monitor::loop() {
 
           if (ecall_ret != SGX_SUCCESS || ret != TC_SUCCESS) {
             // increment the number and skip
-            LL_ERROR("%s returned %d, INVALID", "handle_request", ret);
-            _tx_record->incrementNumOfRetrial();
+            LL_ERROR("handle_request returned %d", ret);
+            log_entry.incrementNumOfRetrial();
             continue;
           } else {
             string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
@@ -147,33 +139,19 @@ void Monitor::loop() {
             string resp_txn_hash = send_transaction(resp_txn);
             LL_INFO("Response sent");
 
-            _tx_record->incrementNumOfRetrial();
-            _tx_record->setResponse(resp_txn);
-            _tx_record->setResponseTime(std::time(0));
-            driver.updateLog(*_tx_record);
+            log_entry.incrementNumOfRetrial();
+            log_entry.setResponse(resp_txn);
+            log_entry.setResponseTime(std::time(0));
+            driver.updateLog(log_entry);
           }
         }
         LL_INFO("Done processing block %ld", next_block_num);
         monitor_retry_counter = 0; //! reset retry_counter upon each success
       }
     }
-    catch (MONITOR_EXCEPTION e) {
-      switch (e) {
-        case EX_GET_BLOCK_NUM:
-        case EX_CREATE_FILTER:
-        case EX_GET_FILTER_LOG:
-        case EX_HANDLE_REQ:
-        case EX_SEND_TRANSACTION:
-          monitor_retry_counter++;
-          break;
-        case EX_NOTHING_TO_DO:
-          LL_ERROR("Nothing to do. Sleep for %d seconds", Monitor::nothingToDoSleepSec);
-          sleep(Monitor::nothingToDoSleepSec);
-          break;
-        default:
-          LL_ERROR("Unknown exception: %d", e);
-          break;
-      }
+    catch (const NothingTodoException& e) {
+      LL_INFO("Nothing to do. Sleep for %d seconds", Monitor::nothingToDoSleepSec);
+      sleep(Monitor::nothingToDoSleepSec);
     }
     catch (const jsonrpc::JsonRpcException &ex) {
       LL_ERROR("RPC error: %s", ex.what());

@@ -84,7 +84,7 @@ const string &RequestParser::getRawRequest() const {
 
 const string RequestParser::toString() const {
   stringstream ss;
-  ss << "request id=" << this->id << " type=" << this->type << " with date " << this->data_len << "B\n";
+  ss << "request id=" << this->id << " type=" << this->type << " with date " << this->data_len << "B";
   return ss.str();
 }
 unsigned long RequestParser::getId() const {
