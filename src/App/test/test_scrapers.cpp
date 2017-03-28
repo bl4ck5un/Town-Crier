@@ -36,6 +36,13 @@ public:
 //    ASSERT_EQ(0, ret);
 //}
 
+TEST_F(ScraperTest, steam) {
+    int ocall_status, ret;
+    ocall_status = steam_self_test(eid, &ret); 
+    ASSERT_EQ(0, ocall_status);
+    ASSERT_EQ(0, ret);
+}
+
 TEST_F(ScraperTest, google) {
     int ocall_status, ret;
     ocall_status = google_self_test(eid, &ret);

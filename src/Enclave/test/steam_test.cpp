@@ -2,8 +2,7 @@
 #include <stdlib.h>
 #include <Debug.h>
 #include "tls_client.h"
-#include "scrapers.h"
-#include "../scrapers/steam2.cpp"
+#include "../scrapers/steam2.h"
 #include "Log.h"
 
 int steam_self_test() {
