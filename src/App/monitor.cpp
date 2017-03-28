@@ -44,10 +44,10 @@ void Monitor::loop() {
   unsigned int sleep_time_sec = 1;
 
   while (true) {
+    LL_INFO("top of while true: monitor_retry_counter %d", monitor_retry_counter);
     // handle interrupt nicely
     if (quit.load()) {
       LL_INFO("Ctrl-C pressed, cleaning up...");
-      ret = 1;
       break;
     }
 
@@ -60,13 +60,9 @@ void Monitor::loop() {
     }
 
     try {
+      LL_INFO("getting blockNumber (current block num = %ld", next_block_num);
       blocknum_t current_highest_block = eth_blockNumber();
-      LL_LOG("highest block = %ld", current_highest_block);
-
-      if (current_highest_block < 0) {
-        LL_ERROR("eth_blockNumber returns %ld", current_highest_block);
-        throw EX_GET_BLOCK_NUM;
-      }
+      LL_INFO("highest block = %ld", current_highest_block);
 
       // if we've scanned all of them
       if (next_block_num > current_highest_block) {
@@ -80,10 +76,9 @@ void Monitor::loop() {
         std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
         if (quit.load()) {
             LL_INFO("Ctrl-C pressed, cleaning up...");
-            ret = 1;
             break;
         }
-        LL_LOG("processing block %d", next_block_num);
+        LL_INFO("processing block %d", next_block_num);
 
         Json::Value txn_list;
         string filter_id = eth_new_filter(next_block_num, next_block_num);
@@ -113,47 +108,23 @@ void Monitor::loop() {
           LL_INFO("parsed tx: %s", request.toString().c_str());
 
           /* try to get txn from the database */
-          OdbDriver::record_ptr _tx_record = driver.getLogByHash(_current_tx[TX_HASH_FIELD_NAME].asString());
-          if (_tx_record) {
+          OdbDriver::record_ptr _log_ptr = driver.getLogByHash(_current_tx[TX_HASH_FIELD_NAME].asString());
+          if (_log_ptr) {
             /* if tr has been processed before */
-            if (!_tx_record->getResponse().empty() || _tx_record->getNumOfRetrial() > maxRetry) {
+            if (!_log_ptr->getResponse().empty() || _log_ptr->getNumOfRetrial() >= maxRetry) {
               LL_INFO("this request has fulfilled (or can't be fulfilled), skipping");
               continue;
             }
           } else {
             // if no record found, create a new one
-            _tx_record.reset(new TransactionRecord(next_block_num,
+            _log_ptr.reset(new TransactionRecord(next_block_num,
                                              _current_tx[TX_HASH_FIELD_NAME].asString(),
                                              request.getRawRequest()));
-            driver.logTransaction(*_tx_record);
-            LL_INFO("request %s logged", _tx_record.get()->getTxHash().c_str());
+            driver.logTransaction(*_log_ptr);
+            LL_INFO("request %s logged", _log_ptr.get()->getTxHash().c_str());
           }
 
-          sgx_status_t ecall_ret;
-          long nonce = eth_getTransactionCount();
-          LL_LOG("nonce obtained %d\n", nonce);
-          // TODO: change nonce to have long type
-          ecall_ret = handle_request(eid, &ret, nonce, request.getId(), request.getType(),
-                                     request.getData(), request.getDataLen(),
-                                     resp_buffer, &resp_data_len);
-
-          if (ecall_ret != SGX_SUCCESS || ret != TC_SUCCESS) {
-            // increment the number and skip
-            LL_ERROR("%s returned %d, INVALID", "handle_request", ret);
-            _tx_record->incrementNumOfRetrial();
-            continue;
-          } else {
-            string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
-            LL_LOG("resp bin %s", resp_txn.c_str());
-
-            string resp_txn_hash = send_transaction(resp_txn);
-            LL_INFO("Response sent");
-
-            _tx_record->incrementNumOfRetrial();
-            _tx_record->setResponse(resp_txn);
-            _tx_record->setResponseTime(std::time(0));
-            driver.updateLog(*_tx_record);
-          }
+          besteffort_fulfill(request, *_log_ptr);
         }
         LL_INFO("Done processing block %ld", next_block_num);
         monitor_retry_counter = 0; //! reset retry_counter upon each success
@@ -161,17 +132,10 @@ void Monitor::loop() {
     }
     catch (MONITOR_EXCEPTION e) {
       switch (e) {
-        case EX_GET_BLOCK_NUM:
-        case EX_CREATE_FILTER:
-        case EX_GET_FILTER_LOG:
-        case EX_HANDLE_REQ:
-        case EX_SEND_TRANSACTION:
-          monitor_retry_counter++;
-          break;
         case EX_NOTHING_TO_DO:
         {
-          LL_INFO("caught up with the latest block. Not checking old tx");
           /*
+          LL_INFO("caught up with the latest block. Not checking old tx");
           vector<TransactionRecord> _unfulfilled = driver.getUnfulfilledRequest();
           if (_unfulfilled.empty()) {
             LL_ERROR("Nothing to do. Sleep for %d seconds", Monitor::nothingToDoSleepSec);
@@ -208,4 +172,36 @@ void Monitor::loop() {
       monitor_retry_counter++;
     }
   } // while (true)
+}
+
+void Monitor::besteffort_fulfill(tc::RequestParser request, TransactionRecord& log_entry) {
+  int ret;
+  sgx_status_t ecall_ret;
+  long nonce = eth_getTransactionCount();
+  LL_LOG("nonce obtained %d\n", nonce);
+
+  for (auto counter = log_entry.getNumOfRetrial(); counter < maxRetry; counter++) {
+    // TODO: change nonce to have long type
+    ecall_ret = handle_request(eid, &ret, nonce, request.getId(), request.getType(),
+                               request.getData(), request.getDataLen(),
+                               resp_buffer, &resp_data_len);
+
+    if (ecall_ret != SGX_SUCCESS || ret != TC_SUCCESS) {
+      LL_ERROR("failed to process tx (%s) returned %d. Retrying", log_entry.getTxHash().c_str(), ret);
+      log_entry.incrementNumOfRetrial();
+      driver.updateLog(log_entry);
+    } else {
+      string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
+      LL_LOG("resp bin %s", resp_txn.c_str());
+
+      string resp_txn_hash = send_transaction(resp_txn);
+      LL_INFO("Response sent");
+
+      log_entry.incrementNumOfRetrial();
+      log_entry.setResponse(resp_txn);
+      log_entry.setResponseTime(std::time(0));
+      driver.updateLog(log_entry);
+      break;
+    }
+  }
 }

@@ -397,7 +397,11 @@ HttpResponse HttpsClient::getResponse() {
 
       if (cb_data.eof == 1) {
         LL_TRACE("EOF");
-        LL_CRITICAL("status code %d", parser.status_code);
+        if (parser.status_code != 200) {
+          LL_CRITICAL("status code %d", parser.status_code);
+        }
+        else
+          LL_LOG("status code %d", parser.status_code);
         break;
       }
     }

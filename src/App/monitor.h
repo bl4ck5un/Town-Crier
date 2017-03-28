@@ -1,10 +1,12 @@
 #pragma once
 #include "stdint.h"
 #include "bookkeeping/database.hxx"
+#include "request-parser.hxx"
+#include "Constants.h"
+
 #include <sgx_edger8r.h>
 #include <atomic>
 
-#include "Constants.h"
 
 enum MONITOR_EXCEPTION {
     EX_GET_BLOCK_NUM,
@@ -31,4 +33,5 @@ class Monitor {
       driver(driver), eid(eid), nonceOffset(nonceOffset), quit(quit) {}
 
   void loop();
+  void besteffort_fulfill(tc::RequestParser request, TransactionRecord& log_entry);
 };

@@ -83,7 +83,9 @@ void eth_getfilterlogs(const string &filter_id, Json::Value &txnContainer) {
 blocknum_t eth_blockNumber()
 {
     unsigned long ret;
+  std::cout << "before" << std::endl;
     std::string blk = rpc_client->eth_blockNumber();
+  std::cout << blk << std::endl;
     std::stringstream ss;
     ss << std::hex << blk;
     ss >> ret;
