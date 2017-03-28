@@ -118,38 +118,3 @@ int handle_request(int nonce,
 
   return form_transaction(nonce, 32, id, type, data, data_len, error_flag, resp_data, raw_tx, raw_tx_len);
 }
-
-//static int stock_ticker_handler(int nonce, uint64_t request_id, uint8_t request_type,
-//                                const uint8_t *req, int req_len, uint8_t *raw_tx, size_t *raw_tx_len)
-//{
-//    int ret;
-//    if (req_len != 64)
-//    {
-//        LL_CRITICAL("req_len is not 64");
-//        return -1;
-//    }
-//
-//    char* code = (char*)(req);
-//    uint32_t date;
-//    time_t epoch;
-//    memcpy(&date, req + 64 - sizeof (uint32_t), sizeof (uint32_t));
-//    date = swap_uint32(date);
-//
-//    epoch = date;
-//    LL_NOTICE("Looking for %s at %lld", code, epoch);
-//
-//    int price = (int) get_closing_price(12, 3, 2014, "BABA");
-//
-//    LL_NOTICE("Closing pricing is %d", price);
-//
-//    bytes rr;
-//    append_as_uint256(rr, price, sizeof (price));;
-//
-//    ret = form_transaction(nonce, 32,
-//        request_id, request_type,
-//        req, req_len,
-//        rr,
-//        raw_tx, raw_tx_len);
-//
-//    return ret;
-//}
