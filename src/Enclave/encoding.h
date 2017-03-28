@@ -7,6 +7,7 @@
 
 #include <vector>
 #include "Log.h"
+
 class bytes : public std::vector<uint8_t> {
 protected:
 	void rlp(bytes& out, unsigned len);
@@ -16,6 +17,8 @@ public:
     bytes(std::vector<uint8_t> data):std::vector<uint8_t>(data){}
     virtual void fromHex(const char* src);
 	virtual void rlp(bytes& out);
+
+    void appendInt(uint64_t in, uint8_t byteLen);
 };
 
 class bytes32 : public bytes{
@@ -29,7 +32,7 @@ public:
 };
 
 uint8_t get_n_th_byte (uint64_t in, int n);
-int enc_int(bytes& out, uint64_t in, int len);
+int append_as_uint256(bytes &out, uint64_t in, int len);
 uint8_t bytesRequired(int _i);
 
 #endif //TOWN_CRIER_ENCODING_H

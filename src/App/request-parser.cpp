@@ -6,6 +6,8 @@
 #include "Converter.h"
 #include "utils.h"
 
+using namespace tc;
+
 inline static unsigned int __hextoi(const string &str) {
   try {
     return static_cast<unsigned int> (std::stoi(str, nullptr, 16));
@@ -19,9 +21,9 @@ inline static unsigned long __hextol(const string &str) {
   return std::stoul(str, nullptr, 16);
 }
 
-Request::Request(const std::string &input) : raw_request(input) {
+RequestParser::RequestParser(const std::string &input) : raw_request(input) {
   LL_LOG("request parser get is %s", input.c_str());
-  if (input.size() < Request::REQUEST_MIN_LEN) {
+  if (input.size() < RequestParser::REQUEST_MIN_LEN) {
     throw std::invalid_argument("input string is too short");
   }
   // 0x00 - 0x20 bytes : id
@@ -71,44 +73,44 @@ Request::Request(const std::string &input) : raw_request(input) {
   hexToBuffer(input.substr(offset), this->data, this->data_len);
 }
 
-Request::~Request() {
+RequestParser::~RequestParser() {
   if (this->data != NULL) {
     free(this->data);
   }
 }
-const string &Request::getRawRequest() const {
+const string &RequestParser::getRawRequest() const {
   return raw_request;
 }
 
-const string Request::toString() const {
+const string RequestParser::toString() const {
   stringstream ss;
   ss << "request id=" << this->id << " type=" << this->type << " with date " << this->data_len << "B\n";
   return ss.str();
 }
-unsigned long Request::getId() const {
+unsigned long RequestParser::getId() const {
   return id;
 }
-unsigned long Request::getType() const {
+unsigned long RequestParser::getType() const {
   return type;
 }
-const uint8_t *Request::getRequester() const {
+const uint8_t *RequestParser::getRequester() const {
   return requester;
 }
-unsigned long Request::getFee() const {
+unsigned long RequestParser::getFee() const {
   return fee;
 }
-const uint8_t *Request::getCallback() const {
+const uint8_t *RequestParser::getCallback() const {
   return callback;
 }
-const uint8_t *Request::getParamHash() const {
+const uint8_t *RequestParser::getParamHash() const {
   return param_hash;
 }
-unsigned long Request::getTimestamp() const {
+unsigned long RequestParser::getTimestamp() const {
   return timestamp;
 }
-unsigned int Request::getDataLen() const {
+unsigned int RequestParser::getDataLen() const {
   return data_len;
 }
-uint8_t *Request::getData() const {
+uint8_t *RequestParser::getData() const {
   return data;
 }

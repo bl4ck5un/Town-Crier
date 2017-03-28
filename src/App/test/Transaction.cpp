@@ -1,7 +1,6 @@
 #include <gtest/gtest.h>
 
 #include "../utils.h"
-#include "../Enclave_u.h"
 
 
 TEST (Transaction, All) {

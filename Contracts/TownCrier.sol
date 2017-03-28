@@ -34,9 +34,9 @@ contract TownCrier {
     // an exception, sending back the Ether (this was different before Solidity
     // v0.4.0). So if you want your contract to receive Ether, you have to
     // implement a fallback function.
-    function () payable { }
+    function () {}
 
-    function TownCrier() public payable {
+    function TownCrier() public {
         // Start request IDs at 1 for two reasons:
         //   1. We can use 0 to denote an invalid request (ids are unsigned)
         //   2. Storage is more expensive when changing something from zero to non-zero,
@@ -51,6 +51,7 @@ contract TownCrier {
         if (msg.value < MIN_FEE || msg.value > MAX_FEE) {
             RequestInfo(0, requestType, msg.sender, msg.value, callbackAddr, 0, 0, requestData);
             RequestLog(this, -1);
+            msg.sender.send(msg.value);
             return 0;
         } else {
             uint64 requestId = requestCnt;
@@ -114,7 +115,7 @@ contract TownCrier {
         // If the request has was sent by this user and has money left on it, then cancel it.
         uint fee = requests[requestId].fee;
         if (requests[requestId].requester == msg.sender && fee > CANCELLATION_FEE) {
-            if (msg.sender.send(fee - CANCELLATION_FEE)) {
+            if (!msg.sender.send(fee - CANCELLATION_FEE)) {
                 throw;
             }
             requests[requestId].fee = CANCELLED_FEE_FLAG;

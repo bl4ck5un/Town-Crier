@@ -1,3 +1,5 @@
+#define LOGURU_IMPLEMENTATION 1
+
 #include "attestation.h"
 #include "utils.h"
 #include "Converter.h"
@@ -13,7 +15,7 @@ int main() {
     LL_CRITICAL("Failed to initialize the enclave");
     std::exit(-1);
   } else {
-    LL_NOTICE("enclave %lu created", eid);
+    LL_INFO("enclave %lu created", eid);
   }
   std::vector<unsigned char> quote = get_attestation(eid);
 

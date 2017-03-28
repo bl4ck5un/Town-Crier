@@ -27,12 +27,16 @@
 #define TYPE_FINANCE_INFO   0x3
 
 /* Possible return values to be used in Enclave-Relay Connections */
-#define SUCESS				0x0
-#define INPUT_ERROR 		0x1
-#define SERVER_ERROR 		0x3
+#define TC_SUCCESS  		0x0
+#define TC_INPUT_ERROR 		0x1
+#define TC_INTERNAL_ERROR 	0x3
 
 #define SGX_ADDRESS "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 
 #define ERR_ENCLAVE_SSL_CLIENT 0x1001
+
+/* flags for enclave debugging and logging */
+// #define TRACE_TLS_CLIENT
+// #define HEXDUMP_TLS_TRANSCRIPT
 
 typedef int pkgstatus_t;

@@ -33,6 +33,21 @@ enclave {
     };
 
     untrusted {
+        /* logging */
+        void ocall_log_FATAL    ([in,string] const char* str);
+        void ocall_log_ERROR    ([in,string] const char* str);
+        void ocall_log_WARNING  ([in,string] const char* str);
+        void ocall_log_INFO     ([in,string] const char* str);
+        void ocall_log_1        ([in,string] const char* str);
+        void ocall_log_2        ([in,string] const char* str);
+        void ocall_log_3        ([in,string] const char* str);
+        void ocall_log_4        ([in,string] const char* str);
+        void ocall_log_5        ([in,string] const char* str);
+        void ocall_log_6        ([in,string] const char* str);
+        void ocall_log_7        ([in,string] const char* str);
+        void ocall_log_8        ([in,string] const char* str);
+        void ocall_log_9        ([in,string] const char* str);
+
         long long rdtsc();
         void ocall_sleep(int milisec);
         time_t ocall_time();

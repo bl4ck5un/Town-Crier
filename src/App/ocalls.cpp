@@ -3,6 +3,7 @@
 #include <ctime>
 #include "Enclave_u.h"
 #include <sgx_tseal.h>
+
 #ifdef _WIN32
 #include "windows.h"
 #endif
@@ -20,6 +21,26 @@ int ocall_print_string(const char *str)
     return ret;
 }
 
+/* defining log functions for enclave's usage */
+
+#define __OCALL_LOG_FUNC(LVL) \
+void ocall_log_##LVL(const char* str) {\
+  LOG_F(LVL, "%s", str);\
+}
+
+__OCALL_LOG_FUNC(FATAL)
+__OCALL_LOG_FUNC(ERROR)
+__OCALL_LOG_FUNC(WARNING)
+__OCALL_LOG_FUNC(INFO)
+__OCALL_LOG_FUNC(1)
+__OCALL_LOG_FUNC(2)
+__OCALL_LOG_FUNC(3)
+__OCALL_LOG_FUNC(4)
+__OCALL_LOG_FUNC(5)
+__OCALL_LOG_FUNC(6)
+__OCALL_LOG_FUNC(7)
+__OCALL_LOG_FUNC(8)
+__OCALL_LOG_FUNC(9)
 
 long long rdtsc()
 {
@@ -34,7 +55,7 @@ long long rdtsc()
 
 void ocall_sleep(int milisec)
 {
-    LL_NOTICE("Waiting for %d", milisec/1000);
+    LL_INFO("Waiting for %d", milisec/1000);
     for (int i = 0; i < milisec / 1000; i++)
     {
         printf(".");

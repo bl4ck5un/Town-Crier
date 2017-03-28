@@ -56,7 +56,7 @@ int yahoo_current(const char* symbol, double* r) {
     vector<string> header;
     header.push_back("Host: download.finance.yahoo.com");
     HttpRequest httpRequest("download.finance.yahoo.com", query, header);
-    HttpClient httpClient(httpRequest);
+    HttpsClient httpClient(httpRequest);
 
     try {
         HttpResponse response = httpClient.getResponse();

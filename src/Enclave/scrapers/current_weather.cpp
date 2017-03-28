@@ -43,7 +43,7 @@ int weather_current(unsigned int zipcode, double* r) {
                         ",us";
 
     HttpRequest httpRequest("api.openweathermap.org", query);
-    HttpClient httpClient(httpRequest);
+    HttpsClient httpClient(httpRequest);
 
     try {
         HttpResponse response = httpClient.getResponse();

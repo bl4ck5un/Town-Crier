@@ -73,12 +73,12 @@ public:
 	    for (size_t i = 0; i < item_len; i++)
 	    {
 	        items.push_back((char*) req + 0xa0 + 0x20 * i);
-	        LL_NOTICE("item: %s", items[i]);
+	        LL_INFO("item: %s", items[i]);
 	    }
 
 	    if (wait_time > 3600)
 	        wait_time = 59;
-	    LL_NOTICE("waiting time: %d", wait_time);
+	    LL_INFO("waiting time: %d", wait_time);
 
 	    const char * listB[1] = {"Portal"};
 	    // XXX: set wait time to 1 for test purpose
@@ -87,7 +87,7 @@ public:
 	    int result = 0;
 	    ret = get_steam_transaction(listB, 1, "32884794", wait_time, "7978F8EDEF9695B57E72EC468E5781AD", &result);
 	    if (ret == 0 && result == 1) {
-	        LL_NOTICE("Found a trade");
+	        LL_INFO("Found a trade");
 	        *resp_data = result;
 	        return NO_ERROR;
 	    }
@@ -117,7 +117,7 @@ public:
 		   ocall_time(&time2);
 		   */
 
-		   LL_NOTICE("%lld seconds passed", time2 - time1);
+		   LL_INFO("%lld seconds passed", time2 - time1);
 
 		   unsigned int req_time = (unsigned int) time1 - (30*60);
 		   char tmp_req_time[10];
@@ -133,7 +133,7 @@ public:
 	   					" HTTP/1.1";
 			
 			HttpRequest httpRequest("api.steampowered.com", query, headers);
-	    	HttpClient httpClient(httpRequest);
+	    	HttpsClient httpClient(httpRequest);
 
 		   	try{
 		   		HttpResponse response = httpClient.getResponse();
@@ -206,7 +206,7 @@ private:
 					" HTTP/1.1";
 
 		HttpRequest httpRequest("api.steampowered.com", query, headers);
-		HttpClient httpClient(httpRequest);
+		HttpsClient httpClient(httpRequest);
 		char* query1;
 	   	try{
 	   		HttpResponse response = httpClient.getResponse();

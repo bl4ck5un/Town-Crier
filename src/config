@@ -1,2 +1,9 @@
 [RPC]
 RPChost = http://localhost:8200
+
+[daemon]
+working_dir = /home/fan/tmp/tc
+pid_file = tc.pid
+
+[status]
+port = 8123

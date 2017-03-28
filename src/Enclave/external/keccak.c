@@ -71,7 +71,7 @@ void keccakf(uint64_t st[25], int rounds)
 
 // compute a keccak hash (md) of given byte length from "in"
 
-int keccak(const uint8_t *in, int inlen, uint8_t *md, int mdlen)
+int keccak(const uint8_t *in, size_t inlen, uint8_t *md, size_t mdlen)
 {
     uint64_t st[25];    
     uint8_t temp[144];

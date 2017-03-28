@@ -18,7 +18,7 @@ uint8_t get_n_th_byte (uint64_t in, int n)
  * @param len length of int in byte
  * @return
  */
-int enc_int(bytes& out, uint64_t in, int len)
+int append_as_uint256(bytes &out, uint64_t in, int len)
 {
   if (len > 32) {
     printf_sgx("Error: too big\n");
@@ -76,6 +76,16 @@ void bytes::rlp(bytes& out, unsigned len)
 void bytes::rlp(bytes& out)
 {
 	return rlp(out, std::vector<uint8_t>::size());
+}
+
+void bytes::appendInt(uint64_t in, uint8_t byteLen) {
+    if (byteLen > 32) {
+        throw std::invalid_argument("Error: too big");
+    }
+    // padding with 0
+    for (int i = 0; i < 32 - byteLen; i++) { std::vector<uint8_t>::push_back(0); }
+    // push big-endian int
+    for (int i = byteLen - 1; i >= 0; i--) { std::vector<uint8_t>::push_back(get_n_th_byte(in, i)); }
 }
 
 // This function assumes src to be a zero terminated sanitized string with

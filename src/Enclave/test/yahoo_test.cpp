@@ -24,22 +24,22 @@ int yahoo_self_test(){
 	if(yahoo_current("GOOG", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[Yahoo]Goog returns: %f", r);
+	LL_INFO("[Yahoo]Goog returns: %f", r);
 	
 	if (r == 0 || yahoo_current("AAPL", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[Yahoo]AAPL returns: %f", r);
+	LL_INFO("[Yahoo]AAPL returns: %f", r);
 
 	if (r == 0 || yahoo_current("ORCL", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[Yahoo]ORCL returns: %f", r);
+	LL_INFO("[Yahoo]ORCL returns: %f", r);
 
 	if (r == 0 || yahoo_current("YHOO", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[Yahoo]YHOO returns: %f", r);
+	LL_INFO("[Yahoo]YHOO returns: %f", r);
 
 
 	//Null check

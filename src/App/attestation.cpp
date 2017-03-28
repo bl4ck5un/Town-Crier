@@ -10,7 +10,7 @@
 #include "attestation.h"
 #include "Log.h"
 #include "Constants.h"
-#include "Debug.h"
+#include "../Enclave/Debug.h"
 #include "utils.h"
 
 using namespace std;

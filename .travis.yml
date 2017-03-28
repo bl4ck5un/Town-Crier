@@ -1,14 +1,19 @@
 language: cpp
 sudo: required
 compiler:
-- gcc
+    - gcc
 dist:
-- Ubuntu
+    - Ubuntu
 os:
-- linux
+    - linux
+before_install:
+    - src/utils/build_odb.sh
+    - src/utils/install_jsonrpccpp.sh
+    - wget https://s3.amazonaws.com/tc-travis/sgx-sdk.tar.gz
+    - tar xvf sgx-sdk.tar.gz -C /
 install:
-- ./install-dependencies.sh
-scripts:
-- ./compile-project.sh
-after_sucess:
-- run-tests.sh
+    - sudo apt-get install -qq cmake libjsoncpp-dev libsqlite3-0 libsqlite3-dev libboost-all-dev
+    - cd src/utils && ./build_gtest.sh && cd -
+script:
+    - make -C src/Enclave/mbedtls-SGX
+    - mkdir -p src/build && cd src/build && cmake .. && make all && make TestMain && ./TestMain

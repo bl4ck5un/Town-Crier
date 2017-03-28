@@ -7,17 +7,17 @@
 
 int ABI_UInt64::encode(bytes& out)
 {
-    return enc_int(out, this->_data, 8);
+    return append_as_uint256(out, this->_data, 8);
 }
 
 int ABI_UInt8::encode(bytes& out)
 {
-    return enc_int(out, this->_data, 1);
+    return append_as_uint256(out, this->_data, 1);
 }
 
 int ABI_UInt32::encode(bytes& out)
 {
-    return enc_int(out, this->_data, 4);
+    return append_as_uint256(out, this->_data, 4);
 }
 
 int ABI_Address::encode(bytes& out)
@@ -42,7 +42,7 @@ int ABI_Bytes32::encode(bytes& out)
 
 int ABI_Bytes::encode(bytes& out)
 {
-    if (enc_int(out, this->_data.size(), 4) != 0) {printf_sgx("Error! enc(out, int) return non-zero!\n"); return -1;}
+    if (append_as_uint256(out, this->_data.size(), 4) != 0) {printf_sgx("Error! enc(out, int) return non-zero!\n"); return -1;}
     // padding left
     for (size_t i = 0; i < ROUND_TO_32(this->_data.size()) - this->_data.size(); i++) 
         {out.push_back(0);}
@@ -53,7 +53,7 @@ int ABI_Bytes::encode(bytes& out)
 //template<class T>
 //int ABI_T_Array<T>::encode(bytes& out)
 //{
-//    if (enc_int(out, this->items.size(), 4) != 0) {printf_sgx("Error! enc(out, int) return non-zero!\n"); return -1;}
+//    if (append_as_uint256(out, this->items.size(), 4) != 0) {printf_sgx("Error! enc(out, int) return non-zero!\n"); return -1;}
 //    for (size_t i = 0; i < this->items.size(); i++)
 //    {
 //        if (items[i]->encode(out)) return -1;
@@ -89,7 +89,7 @@ int ABI_Generic_Array::encode(bytes& out)
             {
                 tail_len_sum += this->items[j]->tail_len();
             }
-            if (enc_int(out, head_len_sum + tail_len_sum, sizeof (size_t)) != 0) {return -1;}
+            if (append_as_uint256(out, head_len_sum + tail_len_sum, sizeof(size_t)) != 0) {return -1;}
         }
         else
         {

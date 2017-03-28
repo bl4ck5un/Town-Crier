@@ -17,6 +17,9 @@
 # include <unistd.h>
 # include <pwd.h>
 #include <stdint.h>
+
+using namespace std;
+
 # define MAX_PATH FILENAME_MAX
 
 #ifndef TC_LINUX_INIT_H
@@ -122,6 +125,8 @@ static sgx_errlist_t sgx_errlist[] = {
         NULL
     }
 };
+
+void daemonize(string working_dir, string pid_filename);
 
 #if defined(__cplusplus)
 }

@@ -21,22 +21,22 @@ int coin_self_test(){
 	if(coinmarketcap_current("bitcoin", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[CoinMarket] bitcoin returns: %f", r);
+	LL_INFO("[CoinMarket] bitcoin returns: %f", r);
 	
 	if (r == 0 || coinmarketcap_current("litecoin", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[CoinMarket] litecoin returns: %f", r);
+	LL_INFO("[CoinMarket] litecoin returns: %f", r);
 
 	if (r == 0 || coinmarketcap_current("ethereum", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[CoinMarket] ethereum returns: %f", r);
+	LL_INFO("[CoinMarket] ethereum returns: %f", r);
 
 	if (r == 0 || coinmarketcap_current("ripple", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[CoinMarket] ripple returns: %f", r);
+	LL_INFO("[CoinMarket] ripple returns: %f", r);
 
 
 	//Null check

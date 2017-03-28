@@ -18,22 +18,22 @@ int google_self_test(){
 	if(google_current("GOOG", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[Google] Goog returns: %f", r);
+	LL_INFO("[Google] Goog returns: %f", r);
 	
 	if (r == 0 || google_current("Apple", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[Google] Apple returns: %f", r);
+	LL_INFO("[Google] Apple returns: %f", r);
 
 	if (r == 0 || google_current("oracle", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[Google] oracle returns: %f", r);
+	LL_INFO("[Google] oracle returns: %f", r);
 
 	if (r == 0 || google_current("YAHOO", &r) == -1){
 		return -1;
 	}
-	LL_NOTICE("[Google] YAHOO returns: %f", r);
+	LL_INFO("[Google] YAHOO returns: %f", r);
 
 
 	//Null check
