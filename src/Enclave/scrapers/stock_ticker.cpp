@@ -53,20 +53,35 @@ void StockTickerScraper::CreateQuery(int day, int month, int year, std::string s
     this->query.SetYear(year);
     this->query.SetSymbol(symbol);
 }
-
-
+/* (NOTE: Feel free to change the structure as see fit *)
+/* The data is structured as follows (Feel free to change if there is a better way to structure it *:
+ * 0x00 - 0x20 Symbol (i.e GOOG, APPL, etc)
+ * 0x20 - 0x28 Month
+ * 0x28 - 0x30 Day
+ * 0x30 - 0x40 Year
+ */
 err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data){
     //TODO
     if(data_len != 64){
         LL_CRITICAL("req_len is not 64");
         return INVALID_PARAMS;
     }
-    LL_INFO("USING HARDCODEDVALUES FOR NOW");
-    CreateQuery(12,3,2014,"BABA");
+
+    char symbol[35] = {0};
+    memcpy(symbol, req, 0x20);
+    string str(symbol);
+
+    int month = strtol((char *) req + 0x20, NULL, 10);
+    int day = strtol((char *) req + 0x28, NULL, 10);
+    int year = strtol((char *) req + 0x30, NULL, 10);
+
+    
+    CreateQuery(day, month, year, str);
     StockTickerParser parser = QueryWebsite();
     if(parser.GetErrorCode() == WEB_ERROR){
         return WEB_ERROR;
     }
+
     double closingPrice = parser.GetClosingPrice();
     *resp_data = (int) closingPrice;
     return NO_ERROR; 

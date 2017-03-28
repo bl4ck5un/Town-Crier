@@ -29,6 +29,7 @@ int handle_request(int nonce,
     int ret;
     bytes resp_data;
     int resp_data_len = 0;
+    int error_flag = 0;
 /*
     printf_sgx("nonce: %d\n", nonce);
     printf_sgx("id: %llu\n", id);
@@ -46,7 +47,8 @@ int handle_request(int nonce,
         StockTickerScraper stockTickerScraper;
         switch (stockTickerScraper.handler(data, data_len, &closingPrice)){
             case INVALID_PARAMS:
-                return -1;
+                error_flag = 1;
+                break;
             case WEB_ERROR:
                 return TC_INTERNAL_ERROR;
             case NO_ERROR:
