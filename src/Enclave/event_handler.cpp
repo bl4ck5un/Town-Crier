@@ -16,6 +16,7 @@
 #include "Enclave_t.h"
 #include "external/keccak.h"
 #include "Constants.h"
+#include "Log.h"
 
 int handle_request(int nonce,
                    uint64_t id,
@@ -47,20 +48,13 @@ int handle_request(int nonce,
             case INVALID_PARAMS:
                 return -1;
             case WEB_ERROR:
-                return -1;
+                return TC_INTERNAL_ERROR;
             case NO_ERROR:
-                LL_NOTICE("Closing pricing is %d", closingPrice);
-
-                bytes rr;
-                enc_int(rr, closingPrice, sizeof (closingPrice));;
-
-                ret = get_raw_signed_tx(nonce, 32, 
-                    id, type, 
-                    data, data_len, 
-                    rr,
-                    raw_tx, raw_tx_len);
-                return ret;
+                LL_INFO("Closing pricing is %d", closingPrice);
+                append_as_uint256(resp_data, closingPrice, sizeof(closingPrice));
+                break;
         }
+        break; 
     }
     case TYPE_FLIGHT_INS: {
       FlightScraper flightHandler;

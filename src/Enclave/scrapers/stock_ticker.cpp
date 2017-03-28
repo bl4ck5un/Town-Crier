@@ -6,6 +6,7 @@
 #include "stdio.h"
 #include "Log.h"
 #include "stockticker.h"
+#include "tls_client.h"
 
 using namespace std;
 
@@ -33,17 +34,8 @@ void StockQuery::SetSymbol(std::string symbol){
     this->symbol = symbol;
 }
 //TODO: any reason we subtract the month by 1?
+//TODO: A nicer C++ way to turn ints into strings?
 std::string StockQuery::GetUrl(){
-    //To be used when they figure out how to use c++ 11
-    // std::string query = "/table.csv?s=" + 
-    //     std::string(this->symbol) + 
-    //     "&a=" + std::string(itoa(this->month-1)) + 
-    //     "&b=" + std::string(itoa(this->day)) +
-    //     "&c=" + std::string(itoa(this->year)) + 
-    //     "&d=" + std::string(itoa(this->month-1)) +
-    //     "&e=" + std::string(itoa(this->day)) + 
-    //     "&f=" + std::string(itoa(this->year)) + 
-    //     "&g=d&ignore=.csv";
     char tmp[100];
     snprintf(tmp, 100,\
        "/table.csv?s=%s&a=%d&b=%d&c=%d&d=%d&e=%d&f=%d&g=d&ignore=.csv",\
@@ -69,7 +61,7 @@ err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data)
         LL_CRITICAL("req_len is not 64");
         return INVALID_PARAMS;
     }
-    LL_NOTICE("USING HARDCODEDVALUES FOR NOW");
+    LL_INFO("USING HARDCODEDVALUES FOR NOW");
     CreateQuery(12,3,2014,"BABA");
     StockTickerParser parser = QueryWebsite();
     if(parser.GetErrorCode() == WEB_ERROR){
@@ -85,11 +77,11 @@ err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data)
 */
 StockTickerParser StockTickerScraper::QueryWebsite(){
     HttpRequest httpRequest("ichart.yahoo.com",this->query.GetUrl(), NULL);
-    HttpClient httpClient(httpRequest);
+    HttpsClient httpClient(httpRequest);
 
     try{
-            HttpResponse response = httpClient.getResponse();
-            return StockTickerParser(response.getContent().c_str(), NO_ERROR);
+        HttpResponse response = httpClient.getResponse();
+        return StockTickerParser(response.getContent().c_str(), NO_ERROR);
 
     }catch(std::runtime_error &e){
         /* An HTTPS error has occured */

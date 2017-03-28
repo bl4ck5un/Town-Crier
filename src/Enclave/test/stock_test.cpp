@@ -11,13 +11,13 @@ int stockticker_self_test(){
     int closingPrice;
     switch(stockTickerScraper.handler(NULL, 64, &closingPrice)){
         case NO_ERROR:
-            LL_NOTICE("closingPrice is %d", closingPrice);
+            LL_INFO("closingPrice is %d", closingPrice);
             return 0;
         case WEB_ERROR:
-            LL_NOTICE("Returned unexpected WEB_ERROR");
+            LL_INFO("Returned unexpected WEB_ERROR");
             return -1;
         case INVALID_PARAMS:
-            LL_NOTICE("Returned unexpected INVALID_PARAMS");
+            LL_INFO("Returned unexpected INVALID_PARAMS");
             return 0;
     }
 
