@@ -1,95 +1,148 @@
-//#include <string>
-//
-//#include "scraper_lib.h"
-//#include "scrapers.h"
-//#include "stdio.h"
-//#include "Log.h"
-//
-//using namespace std;
-//
-//struct str {
-//    char *ptr;
-//    size_t len;
-//};
-//
-//
-//int writefunc(char* ptr, size_t size, size_t nmemb, struct str* dest){
-//    size_t new_len = dest->len + size*nmemb;
-//    dest->ptr = (char*) realloc(dest->ptr, new_len+1);
-//    if (dest->ptr == NULL) {
-//        LL_CRITICAL("realloc() failed\n");
-//        return -1;
-//    }
-//    memcpy(dest->ptr+dest->len, ptr, size*nmemb);
-//    dest->ptr[new_len] = '\0';
-//    dest->len = new_len;
-//    return size*nmemb;
-//}
-//
-//
-//void init_string(struct str *s) {
-//    s->len = 0;
-//    s->ptr = (char*) malloc(s->len+1);
-//    if (s->ptr == NULL) {
-//        LL_CRITICAL("malloc() failed\n");
-//    }
-//    s->ptr[0] = '\0';
-//}
-//
-//int construct_query(int month, int day, int year, const char* symbol, char* query, int len) {
-//    snprintf(query, len,
-//        "ichart.yahoo.com/table.csv?s=%s&a=%d&b=%d&c=%d&d=%d&e=%d&f=%d&g=d&ignore=.csv",
-//        symbol, month-1, day, year, month-1, day, year);
-//    return 0;
-//}
-//
-//int parse_response(unsigned char* resp, char* buf) {
-//    int i, len;
-//    unsigned char* temp = resp;
-//    unsigned char* end;
-//
-//    if (*resp == 0) {
-//        LL_CRITICAL("Buf is empty!\n");
-//        return -1;
-//    }
-//    for (i=0; i < 10; i++) {
-//        while(*temp!=',') {
-//            temp+= 1;
-//        }
-//        temp+=1;
-//    }
-//    end = temp;
-//    while(*end != ',') {
-//        end+=1;
-//    }
-//    //*end = 0;
-//    len = end - temp;
-//    memcpy(buf, temp, len);
-//    buf[len] = 0;
-//    return len;
-//}
-//
-double get_closing_price(int month, int day, int year, const char* symbol) {
-//    int ret;
-//    unsigned char buf[SSL_MAX_CONTENT_LEN]={0};
-//    char query[128] = {0};
-//    char result[128] = {0};
-//
-//    ret = construct_query(month, day, year, symbol, query, sizeof query);
-//    if (ret < 0) {
-//        return -1;
-//    }
-//
-//    ret = get_page_on_ssl("ichart.yahoo.com", query, NULL, 0, buf, sizeof buf);
-//    if (ret != 0){
-//        LL_CRITICAL("get_page_on_ssl returned %d\n", ret);
-//        return ret;
-//    }
-//
-//    ret = parse_response(buf, result);
-//    if (ret < 0)
-//        return -1;
-//
-//    return std::strtod(result, NULL);
-    return 0;
+#include <string.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "stdio.h"
+#include "Log.h"
+#include "stockticker.h"
+
+using namespace std;
+
+/* Implement the stockQuery class **/
+StockQuery::StockQuery(int day, int month, int year, std::string symbol){
+    this->day = day; 
+    this->month = month;
+    this->year = year;
+    this->symbol = symbol;
+}
+
+void StockQuery::SetDay(int day){
+    this->day = day;
+}
+
+void StockQuery::SetMonth(int month){
+    this->month = month;
+}
+
+void StockQuery::SetYear(int year){
+    this->year = year;
+}
+
+void StockQuery::SetSymbol(std::string symbol){
+    this->symbol = symbol;
+}
+//TODO: any reason we subtract the month by 1?
+std::string StockQuery::GetUrl(){
+    //To be used when they figure out how to use c++ 11
+    // std::string query = "/table.csv?s=" + 
+    //     std::string(this->symbol) + 
+    //     "&a=" + std::string(itoa(this->month-1)) + 
+    //     "&b=" + std::string(itoa(this->day)) +
+    //     "&c=" + std::string(itoa(this->year)) + 
+    //     "&d=" + std::string(itoa(this->month-1)) +
+    //     "&e=" + std::string(itoa(this->day)) + 
+    //     "&f=" + std::string(itoa(this->year)) + 
+    //     "&g=d&ignore=.csv";
+    char tmp[100];
+    snprintf(tmp, 100,\
+       "/table.csv?s=%s&a=%d&b=%d&c=%d&d=%d&e=%d&f=%d&g=d&ignore=.csv",\
+       this->symbol, this->month-1, this->day, this->year, \
+       this->month-1, this->day, this->year);
+    std::string str(tmp);
+    return str;
+}
+
+/** Implement the StockTickerScraper class **/
+/* Note Still not sure why we decrease the month by 1 */
+void StockTickerScraper::CreateQuery(int day, int month, int year, std::string symbol){
+    this->query.SetDay(day);
+    this->query.SetMonth(month-1);
+    this->query.SetYear(year);
+    this->query.SetSymbol(symbol);
+}
+
+
+err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data){
+    //TODO
+    if(data_len != 64){
+        LL_CRITICAL("req_len is not 64");
+        return INVALID_PARAMS;
+    }
+    LL_NOTICE("USING HARDCODEDVALUES FOR NOW");
+    CreateQuery(12,3,2014,"BABA");
+    StockTickerParser parser = QueryWebsite();
+    if(parser.GetErrorCode() == WEB_ERROR){
+        return WEB_ERROR;
+    }
+    double closingPrice = parser.GetClosingPrice();
+    *resp_data = (int) closingPrice;
+    return NO_ERROR; 
+}
+
+/* Query the ichar.yahoo website, returns a StockTickerParser which can be 
+    used to parse the response
+*/
+StockTickerParser StockTickerScraper::QueryWebsite(){
+    HttpRequest httpRequest("ichart.yahoo.com",this->query.GetUrl(), NULL);
+    HttpClient httpClient(httpRequest);
+
+    try{
+            HttpResponse response = httpClient.getResponse();
+            return StockTickerParser(response.getContent().c_str(), NO_ERROR);
+
+    }catch(std::runtime_error &e){
+        /* An HTTPS error has occured */
+        LL_CRITICAL("Https error: %s", e.what());
+        LL_CRITICAL("Details: %s", httpClient.getError().c_str());
+        httpClient.close();
+        return StockTickerParser(NULL, WEB_ERROR);
+    }
+}
+
+
+/** Implement the StockTickerParser class **/
+
+/* Implement the constructor */
+StockTickerParser::StockTickerParser(const char* resp, err_code err){
+    this->rawResponse = resp; 
+    this->error = err;
+}
+
+/* Returns the raw csv file */
+const char* StockTickerParser::GetResponse(){
+    return this->rawResponse;
+}
+
+/* Returns the error code */
+err_code StockTickerParser::GetErrorCode(){
+    return this->error;
+}
+
+/* returns the closing price of the stock */
+double StockTickerParser::GetClosingPrice(){
+    int i, len;
+    unsigned char* temp = (unsigned char*)this->rawResponse;
+    unsigned char* end;
+    char* buf; /* hacky soln */
+
+    if(this->rawResponse == NULL){
+        LL_CRITICAL("Buf is empty!\n");
+        return -1.0;
+    }
+    for(int i = 0; i < 10; i++){
+        while(*temp != ','){
+            temp += 1;
+        }
+        temp += 1;
+    }
+    end = temp;
+    while(*end != ',') {
+       end+=1;
+    }
+
+    len = end - temp;
+    memcpy(buf, temp, len);
+    buf[len] = 0;
+    return std::strtod(buf, NULL);   
 }

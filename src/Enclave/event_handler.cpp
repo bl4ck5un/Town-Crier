@@ -9,6 +9,7 @@
 #include "scrapers/Scraper.h"
 #include "scrapers/flight.h"
 #include "scrapers/utils.h"
+#include "scrapers/stockticker.h"
 #include "time.h"
 #include "eth_transaction.h"
 #include "eth_abi.h"
@@ -79,10 +80,28 @@ int handle_request(int nonce,
     switch (type){
     case TYPE_FINANCE_INFO:
     {
-        return stock_ticker_handler(nonce, id, type,
-            data, data_len,
-            raw_tx, raw_tx_len);
-        break;
+        /* NEED TO FIGURE OUT HOW TO PARSE */ 
+        int closingPrice;
+        StockTickerScraper stockTickerScraper;
+        switch (stockTickerScraper.handler(data, data_len, &closingPrice)){
+            case INVALID_PARAMS:
+                return -1;
+            case WEB_ERROR:
+                return -1;
+            case NO_ERROR:
+                LL_NOTICE("Closing pricing is %d", closingPrice);
+
+                bytes rr;
+                enc_int(rr, closingPrice, sizeof (closingPrice));;
+
+                ret = get_raw_signed_tx(nonce, 32, 
+                    id, type, 
+                    data, data_len, 
+                    rr,
+                    raw_tx, raw_tx_len);
+                return ret;
+        }
+
     }
     case TYPE_FLIGHT_INS:
     {
