@@ -121,15 +121,15 @@ static int my_verify(void *data, mbedtls_x509_crt *crt, int depth, uint32_t *fla
   char buf[1024];
   ((void) data);
 
-  LL_TRACE("\nVerify requested for (Depth %d):", depth);
+  LL_DEBUG("\nVerify requested for (Depth %d):", depth);
   mbedtls_x509_crt_info(buf, sizeof(buf) - 1, "", crt);
-  LL_TRACE("%s", buf);
+  LL_DEBUG("%s", buf);
 
   if ((*flags) == 0) {
-    LL_TRACE("  This certificate has no flags");
+    LL_DEBUG("  This certificate has no flags");
   } else {
     mbedtls_x509_crt_verify_info(buf, sizeof(buf), "  ! ", *flags);
-    LL_TRACE("%s", buf);
+    LL_DEBUG("%s", buf);
   }
 
   return (0);
@@ -312,13 +312,11 @@ HttpResponse HttpsClient::getResponse() {
         LL_TRACE("X.509 Verifies");
       }
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
-      LL_CRITICAL("mbedtls_ssl_handshake returned -%#x", -ret);
-
       if (ret == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED) {
         LL_CRITICAL("Unable to verify the server's certificate.");
       }
 
-      throw runtime_error("mbedtls_ssl_handshake");
+      throw runtime_error("mbedtls_ssl_handshake failed.");
     }
   }
 
