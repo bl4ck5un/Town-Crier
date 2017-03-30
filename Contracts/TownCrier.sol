@@ -10,19 +10,19 @@ contract TownCrier {
     }
 
     event RequestLog(address self, int16 flag);
-    event RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, bytes32 paramsHash, bytes32 timestamp, bytes32[] requestData);
+    event RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, bytes32 paramsHash, uint timeout, bytes32[] requestData);
     event DeliverLog(uint gasLeft, int flag);
     event DeliverInfo(uint64 requestId, uint fee, uint gasPrice, uint gasLeft, uint callbackGas, bytes32 paramsHash, uint64 error, bytes32 respData);
 //    event DeliverSig(uint8 v, bytes32 r, bytes32 s, address recoveredAddr);
     event Cancel(uint64 requestId, address canceller, address requester, int flag);
 
-    address constant SGX_ADDRESS = 0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997;
+    address constant SGX_ADDRESS = 0x89B44e4d3c81EDE05D0f5de8d1a68F754D73d997;
 
     uint public constant GAS_PRICE = 5 * 10**10;
     uint public constant MAX_FEE = (31 * 10**5) * GAS_PRICE;
 
-    uint public constant MIN_FEE = 35000 * GAS_PRICE;
-    uint public constant CANCELLATION_FEE = 24500 * GAS_PRICE;
+    uint public constant MIN_FEE = 30000 * GAS_PRICE;
+    uint public constant CANCELLATION_FEE = 20000 * GAS_PRICE;
 
     uint constant CANCELLED_FEE_FLAG = 1;
     uint constant DELIVERED_FEE_FLAG = 0;
@@ -46,10 +46,10 @@ contract TownCrier {
         requests[0].requester = msg.sender;
     }
 
-    function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, bytes32[] requestData) public payable returns (uint64) {
+    function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, uint timeout, bytes32[] requestData) public payable returns (uint64) {
         RequestLog(this, 0);
         if (msg.value < MIN_FEE || msg.value > MAX_FEE) {
-            RequestInfo(0, requestType, msg.sender, msg.value, callbackAddr, 0, 0, requestData);
+            RequestInfo(0, requestType, msg.sender, msg.value, callbackAddr, 0, timeout, requestData);
             RequestLog(this, -1);
             if (!msg.sender.send(msg.value)) {
                 RequestLog(this, -2);
@@ -66,7 +66,7 @@ contract TownCrier {
             requests[requestId].callbackAddr = callbackAddr;
             requests[requestId].callbackFID = callbackFID;
             requests[requestId].paramsHash = paramsHash;
-            RequestInfo(requestId, requestType, msg.sender, msg.value, callbackAddr, paramsHash, 0, requestData);
+            RequestInfo(requestId, requestType, msg.sender, msg.value, callbackAddr, paramsHash, timeout, requestData);
             RequestLog(this, 1);
             return requestId;
         }
@@ -74,7 +74,7 @@ contract TownCrier {
 
     function deliver(uint64 requestId, bytes32 paramsHash, uint64 error, bytes32 respData) public {
         uint fee = requests[requestId].fee;
-        if (//msg.sender != SGX_ADDRESS ||
+        if (msg.sender != SGX_ADDRESS ||
                 requests[requestId].requester == 0
                 || fee == DELIVERED_FEE_FLAG) {
             DeliverInfo(requestId, fee, tx.gasprice, msg.gas, 0, paramsHash, error, respData);
@@ -84,9 +84,10 @@ contract TownCrier {
             DeliverInfo(requestId, fee, tx.gasprice, msg.gas, 0, paramsHash, error, respData);
             DeliverLog(msg.gas, -4);
             return;
-        } else if (requests[requestId].fee == CANCELLED_FEE_FLAG) {
+        } else if (fee == CANCELLED_FEE_FLAG) {
             DeliverLog(msg.gas, 1);
-            if (! SGX_ADDRESS.send(CANCELLATION_FEE)){
+            if (!SGX_ADDRESS.send(CANCELLATION_FEE)){
+                DeliverLog(msg.gas, -8);
                 throw;
             }
             requests[requestId].fee = DELIVERED_FEE_FLAG;
@@ -96,6 +97,7 @@ contract TownCrier {
 
         DeliverLog(msg.gas, 8);
         if (!SGX_ADDRESS.send(fee)) {
+            DeliverLog(msg.gas, -16);
             throw;
         }
         requests[requestId].fee = DELIVERED_FEE_FLAG;
@@ -112,13 +114,13 @@ contract TownCrier {
     }
 
     function cancel(uint64 requestId) public returns (bool) {
-        // Compute the gas reimbursement necessary if TownCrier attemts to respond to this request later.
+        // Compute the gas reimbursement necessary if TownCrier attempts to respond to this request later.
         Cancel(requestId, msg.sender, requests[requestId].requester, int(fee));
-
-        // If the request has was sent by this user and has money left on it, then cancel it.
+        // If the request was sent by this user and has money left on it, then cancel it.
         uint fee = requests[requestId].fee;
-        if (requests[requestId].requester == msg.sender && fee > CANCELLATION_FEE) {
+        if ((requests[requestId].requester == msg.sender || msg.sender == SGX_ADDRESS) && fee > CANCELLATION_FEE) {
             if (!msg.sender.send(fee - CANCELLATION_FEE)) {
+                Cancel(requestId, msg.sender, requests[requestId].requester, -2);
                 throw;
             }
             requests[requestId].fee = CANCELLED_FEE_FLAG;
