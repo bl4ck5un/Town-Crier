@@ -25,7 +25,7 @@ public:
     bytes32 s;
     uint8_t v;
     TX(Type p);
-    void rlp_list(bytes& out, bool withSig=true);
+    void rlp_encode(bytes &out, bool withSig = true);
 };
 
 

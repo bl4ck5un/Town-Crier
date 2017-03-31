@@ -61,12 +61,15 @@ void Monitor::loop() {
 
     try {
       blocknum_t current_highest_block = eth_blockNumber();
-      LL_LOG("highest block = %ld", current_highest_block);
+      LL_DEBUG("Highest block is %ld, waiting for block %ld...", current_highest_block, next_block_num);
 
       // if we've scanned all of them
       if (next_block_num > current_highest_block) {
-        LL_INFO("Highest block is %ld, waiting for block %ld...", current_highest_block, next_block_num);
         throw NothingTodoException();
+      }
+      else {
+        // wakeup the monitor
+        isSleeping = false;
       }
 
       for (; next_block_num <= current_highest_block; next_block_num++) {
@@ -150,7 +153,10 @@ void Monitor::loop() {
       }
     }
     catch (const NothingTodoException& e) {
-      LL_INFO("Nothing to do. Sleep for %d seconds", Monitor::nothingToDoSleepSec);
+      if (!isSleeping) {
+        LL_INFO("Nothing to do. Going to sleep...");
+        isSleeping = true;
+      }
       sleep(Monitor::nothingToDoSleepSec);
     }
     catch (const jsonrpc::JsonRpcException &ex) {

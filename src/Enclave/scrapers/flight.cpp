@@ -157,7 +157,7 @@ err_code FlightScraper::handler(uint8_t *req, int data_len, int *resp_data) {
   char *flighttime = (char *) req + 0x20;
   uint64_t unix_epoch = strtol(flighttime, NULL, 10);
 
-  LL_DEBUG("unix_epoch=%ld, flight_number=%s", unix_epoch, flight_number);
+  LL_DEBUG("unix_epoch=%lld, flight_number=%s", unix_epoch, flight_number);
   switch (get_flight_delay(unix_epoch, flight_number, &delay)) {
     case INVALID:*resp_data = -1;
       return INVALID_PARAMS;

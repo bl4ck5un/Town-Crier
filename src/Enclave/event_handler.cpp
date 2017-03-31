@@ -87,7 +87,7 @@ int handle_request(int nonce,
 
       break;
     }
-    default :LL_CRITICAL("Unknown request type: %d", type);
+    default :LL_CRITICAL("Unknown request type: %lld", type);
       return -1;
       break;
   }
