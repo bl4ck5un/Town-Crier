@@ -101,6 +101,8 @@ class OdbDriver {
       ret = tr->getNumOfRetrial() >= retryThreshold || ! tr->getResponse().empty();
     }
     t.commit();
+
+    return ret;
   }
 
   void updateLog(TransactionRecord tr) {
