@@ -11,7 +11,7 @@ var buyerAddr = eth.accounts[2]
 var sgxAddr = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 
 var gasCnt = 3e+6
-var TC_FEE = 55 * 5e+13
+var TC_FEE = 3e+15
 
 personal.unlockAccount(minerAddr, '123123')
 personal.unlockAccount(sellerAddr, '123123')

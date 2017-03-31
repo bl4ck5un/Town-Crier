@@ -46,7 +46,7 @@ string send_transaction(const std::string &rawTransaction) {
  * @remark How to get topic id?
  *  > https://asecuritysite.com/encryption/sha3
  *  > https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
- *  $ sha3(RequestInfo(uint64,uint8,address,uint256,address,bytes32,bytes32,bytes32[]))
+ *  $ sha3(RequestInfo(uint64,uint8,address,uint256,address,bytes32,uint256,bytes32[]))
  * Returns a filter from block [from] to block [to], writes the value of the filter into [id]
  * Postcondition: [id] is a valid id that can be used with eth_get_filter_logs
  */
@@ -58,7 +58,7 @@ string eth_new_filter(blocknum_t from, blocknum_t to) {
   Json::Value filter_opt;
   filter_opt["address"] = TC_ADDRESS;
 
-  filter_opt["topics"][0] = "0xc8d1123dbf500dfdf606f7ec68a0e5f51c3a0112d0d433a442a9664266a8cc41";
+  filter_opt["topics"][0] = "0x295780EA261767C398D062898E5648587D7B8CA371FFD203BE8B4F9A43454FFA";
   filter_opt["fromBlock"] = static_cast<Json::Value::UInt64 >(from);
   filter_opt["toBlock"] = static_cast<Json::Value::UInt64 >(to);
 

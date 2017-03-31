@@ -110,7 +110,7 @@ void Monitor::loop() {
 
           /* try to get txn from the database */
           if (driver.isProcessed(_current_tx_hash, maxRetry)) {
-              LL_INFO("this request has fulfilled (or can't be fulfilled), skipping");
+              LL_INFO("this request %s has fulfilled (or can't be fulfilled), skipping", _current_tx_hash.c_str());
               continue;
           }
             // if no record found, create a new one
