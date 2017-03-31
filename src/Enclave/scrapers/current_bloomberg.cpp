@@ -4,24 +4,9 @@
 #include "scrapers.h"
 #include "Log.h"
 #include "tls_client.h"
-//static int construct_query(const char* symbol, char** buf) {
-//
-//    int len;
-//    char query[1000];
-//    query[0] = 0;
-//
-//    strncat(query, "/quote/", sizeof query);
-//    strncat(query, symbol, sizeof query);
-//    strncat(query, ":US", sizeof query);
-//
-//    len = strlen(query);
-//    *buf = (char*)malloc(len+1);
-//    memcpy(*buf, query, len);
-//    (*buf)[len] = 0;
-//    return len;
-//}
-//
-//
+
+#include "macros.h"
+
 static double parse_response(const char* resp) {
    int len;
    double ret = 0.0;
@@ -46,39 +31,31 @@ static double parse_response(const char* resp) {
    ret = std::strtod(temp, NULL); 
    return ret;
 }
-
-int bloomberg_current(char* symbol, double* r) {
+// WARNING: bloomberg is deprecated because the web page is too verbose.
+DEPRECATED(int bloomberg_current(const char* symbol, double* r));
+int bloomberg_current(const char* symbol, double* r) {
+  /*
 	//Null Checking
 	if (symbol == NULL || r == NULL){
-       LL_CRITICAL("Error: Passed in a NULL pointer\n");
+       LL_CRITICAL("Error: Passed in a NULL pointer");
        return -1;
    	}
-   	/***** VARIABLE DECLARATIONS */
-
    	std::string query = "/quote/" + std::string(symbol) + ":US";
-   	HttpRequest httpRequest("bloomberg.com", query);
+   	HttpRequest httpRequest("www.bloomberg.com", query, true);
     HttpsClient httpClient(httpRequest);
 
-	/***** CONSTRUCT THE QUERY */
 	try{
-		HttpResponse response = httpClient.getResponse();
-		*r = parse_response(response.getContent().c_str());
+        HttpResponse response = httpClient.getResponse();
+      LL_DEBUG("get response %s", response.getContent().c_str());
+		 *r = parse_response(response.getContent().c_str());
 		return 0;		
 	}
 	catch(std::runtime_error &e){
-		//TODO: should we not return -1 here
 		LL_CRITICAL("Https error: %s", e.what());
 		LL_CRITICAL("Details: %s", httpClient.getError().c_str());
 		httpClient.close();
 	}
 	return -1;
+  */
+  return 0;
 }
-//
-////int main(int argc, char* argv[]) {
-////    double r;
-////    bloomberg_current("GOOG", &r);
-////    printf("%f\n", r);
-////    bloomberg_current("YHOO", &r);
-////    printf("%f\n", r);
-////    return 0;
-////}

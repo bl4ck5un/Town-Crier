@@ -8,10 +8,8 @@
 #include "Log.h"
 
 int main(int argc, char **argv) {
-  // init logging
-  loguru::init(argc, (const char**) argv);
   loguru::g_stderr_verbosity = LOG_LEVEL_INFO;
-
+  loguru::init(argc, (const char **) argv);
 
   ::testing::InitGoogleTest(&argc, argv);
   int ret = RUN_ALL_TESTS();

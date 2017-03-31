@@ -36,8 +36,8 @@ int coinmarketcap_current(const char* symbol, double* r) {
         return -1;
     }
 
-    std::string query = "/ticker/" + std::string(symbol) + "/";
-    HttpRequest httpRequest("api.coinmarketcap.com", query);
+    std::string query = "/v1/ticker/" + std::string(symbol) + "/";
+    HttpRequest httpRequest("api.coinmarketcap.com", query, true);
     HttpsClient httpClient(httpRequest);
 
     try {

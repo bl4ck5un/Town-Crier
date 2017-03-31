@@ -6,6 +6,8 @@
 #include "Constants.h"
 #include "ca_bundle.h"
 
+#define MIN(x,y) (x < y ? x : y)
+
 #if !defined(MBEDTLS_CONFIG_FILE)
 
 #include "mbedtls/config.h"
@@ -34,6 +36,20 @@
 #include <stlport/type_traits>
 
 using namespace std;
+
+static const string printableRequest(const string &request) {
+  std::string res;
+  for (int i = 0; i < request.length(); ++i) {
+    switch (request[i]) {
+      case '\r':res += "\\r";
+        break;
+      case '\n':res += "\\n";
+        break;
+      default:res += request[i];
+    }
+  }
+  return res;
+}
 
 typedef struct {
   ReceivingBuffer *buffer;
@@ -169,7 +185,7 @@ HttpsClient::HttpsClient(HttpRequest &httpRequest) : httpRequest(httpRequest) {
    * 1. Load the trusted CA
    */
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
-  ret = mbedtls_x509_crt_parse(&cacert, (const unsigned char*) mozilla_ca_bundle, sizeof(mozilla_ca_bundle));
+  ret = mbedtls_x509_crt_parse(&cacert, (const unsigned char *) mozilla_ca_bundle, sizeof(mozilla_ca_bundle));
   if (ret < 0) {
     throw std::runtime_error("mbedtls_x509_crt_parse failed");
   }
@@ -207,7 +223,7 @@ void HttpsClient::sendRequest() {
 #ifdef HEXDUMP_TLS_TRANSCRIPT
   dump_buf("Request: ", (const unsigned char *) requestMessage.c_str(), requestMessage.length());
 #else
-  LL_DEBUG("\nRequest:\n%s", requestMessage.c_str());
+  LL_DEBUG("Request: %s", printableRequest(requestMessage).c_str());
 #endif
 
   for (int written = 0, frags = 0; written < requestMessage.size(); written += ret, frags++) {
@@ -304,8 +320,7 @@ HttpResponse HttpsClient::getResponse() {
           LL_CRITICAL("Peer certificate information");
           mbedtls_x509_crt_info((char *) temp_buf, sizeof(temp_buf) - 1, "|-", mbedtls_ssl_get_peer_cert(&ssl));
           mbedtls_printf("%s\n", temp_buf);
-        }
-        else{
+        } else {
           LL_CRITICAL("mbedtls_ssl_get_peer_cert returns NULL");
         }
       } else {
@@ -389,6 +404,10 @@ HttpResponse HttpsClient::getResponse() {
         throw runtime_error("upgrade not supported");
       } else if (n_parsed != ret) {
         LL_CRITICAL("Error: received %d bytes and parsed %d of them", ret, n_parsed);
+        char _tmp_buf[buf.length + 1];
+        memcpy(_tmp_buf, buf.buf, buf.length);
+        _tmp_buf[MIN(buf.length, 5000)] = 0x0;
+        printf_sgx("%s\n", _tmp_buf);
         ret = ERR_ENCLAVE_SSL_CLIENT;
         throw runtime_error("received bytes are can not be fully parsed");
       }
@@ -397,15 +416,14 @@ HttpResponse HttpsClient::getResponse() {
         LL_TRACE("EOF");
         if (parser.status_code != 200) {
           LL_CRITICAL("status code %d", parser.status_code);
-        }
-        else
+        } else
           LL_LOG("status code %d", parser.status_code);
         break;
       }
     }
   }
 
-  if (cb_data.eof == 0) {
+  if (cb_data.eof == 0 && buf.length == buf.cap) {
     LL_CRITICAL("receiving buffer (%d bytes) is not big enough", buf.cap);
   }
 
@@ -415,8 +433,11 @@ HttpResponse HttpsClient::getResponse() {
   string content((const char *) buf.buf + cb_data.header_length, buf.length - cb_data.header_length);
   HttpResponse resp(parser.status_code, response_headers, content);
 
-  LL_DEBUG("\nResponse header:\n%s", response_headers.c_str());
-  LL_DEBUG("\nResponse body:\n%s", content.substr(0, HttpsClient::responseLogLimit).c_str());
+  LL_DEBUG("\nResponse header:\n%s",
+           response_headers.length() == 0 ? "empty" : response_headers.c_str());
+  LL_DEBUG("\nResponse body (len=%d):\n%s",
+           content.length(),
+           content.length() == 0 ? "empty" : content.substr(0, HttpsClient::responseLogLimit).c_str());
 
   return resp;
 }
