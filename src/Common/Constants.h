@@ -1,19 +1,5 @@
 #pragma once
 
-// switch on banchmark
-
-// at most one of them should be enabled.
-//#define E2E_BENCHMARK
-//#define E2E_BENCHMARK_THREADING
-
-//#define OFFLINE_BENCHMARK
-//#define TIME_CALIBRATION_BENCHMARK
-
-#if (defined(TIME_CALIBRATION_BENCHMARK) || defined(OFFLINE_BENCHMARK) || \
-    defined(E2E_BENCHMARK_THREADING) || defined(E2E_BENCHMARK))
-#define BENCHMARK
-#endif
-
 #define TX_BUF_SIZE 2048
 
 #define TC_ADDRESS  "0x18322346bfb90378ceaf16c72cee4496723636b9"

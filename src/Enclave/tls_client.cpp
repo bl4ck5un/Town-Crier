@@ -1,10 +1,10 @@
 #include "tls_client.h"
 #include "Log.h"
 #include "Enclave_t.h"
-#include "trusted_ca_certs.h"
 #include "Debug.h"
 #include "external/http_parser.h"
 #include "Constants.h"
+#include "ca_bundle.h"
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 
@@ -31,8 +31,7 @@
 #include <string>
 #include <exception>
 #include <vector>
-
-#include "Log.h"
+#include <stlport/type_traits>
 
 using namespace std;
 
@@ -170,10 +169,11 @@ HttpsClient::HttpsClient(HttpRequest &httpRequest) : httpRequest(httpRequest) {
    * 1. Load the trusted CA
    */
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
-  ret = mbedtls_x509_crt_parse(&cacert, (const unsigned char *) root_cas_pem, root_cas_pem_len);
+  ret = mbedtls_x509_crt_parse(&cacert, (const unsigned char*) mozilla_ca_bundle, sizeof(mozilla_ca_bundle));
   if (ret < 0) {
     throw std::runtime_error("mbedtls_x509_crt_parse failed");
   }
+
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
 }

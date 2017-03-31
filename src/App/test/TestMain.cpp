@@ -10,7 +10,7 @@
 int main(int argc, char **argv) {
   // init logging
   loguru::init(argc, (const char**) argv);
-  loguru::g_stderr_verbosity = LOG_LEVEL_DEBUG;
+  loguru::g_stderr_verbosity = LOG_LEVEL_INFO;
 
 
   ::testing::InitGoogleTest(&argc, argv);

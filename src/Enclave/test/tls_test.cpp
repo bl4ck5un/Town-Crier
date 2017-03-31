@@ -2,7 +2,6 @@
 #include "tls_client.h"
 #include "Log.h"
 #include <stdexcept>
-#include <trusted_ca_certs.h>
 
 const char* ref_page = \
     "<!DOCTYPE html>\n"
@@ -73,8 +72,6 @@ const char* ref_page = \
 int ssl_self_test(){
     HttpRequest request("s3.amazonaws.com", "/tc-travis/html.htm", true);
     HttpsClient client(request);
-
-  LL_INFO("%d CA loaded", root_cas_pem_len);
 
     try {
         HttpResponse response = client.getResponse();

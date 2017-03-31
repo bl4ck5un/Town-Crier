@@ -12,8 +12,7 @@ set(SOURCE_FILES
     event_handler.cpp
     scrapers/flight.cpp
     external/keccak.c
-    trusted_ca_certs.c
-    tls_client.cpp
+        tls_client.cpp
     scrapers/steam2.cpp
     scrapers/stock_ticker.cpp
     eth_transaction.cpp
