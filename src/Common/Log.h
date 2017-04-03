@@ -39,6 +39,7 @@ do { \
 #define LOG_LEVEL_TRACE 3
 #define LOG_LEVEL_DEBUG 2
 #define LOG_LEVEL_LOG 1
+#define LOG_LEVEL_INFO 0
 
 #define LL_TRACE( fmt, arg... )     LOG(3, fmt, ##arg )
 #define LL_DEBUG( fmt, arg... )     LOG(2, fmt, ##arg )

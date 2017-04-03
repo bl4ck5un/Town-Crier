@@ -64,7 +64,10 @@ TEST(OdbTest, newDB) {
 
   vector<TransactionRecord> rc = driver.getAllLogs();
   ASSERT_EQ(5, rc.size());
-  for (vector<TransactionRecord>::iterator it = rc.begin(); it != rc.end(); it++) {
-    cerr << it->getTxHash() << endl;
-  }
+  auto it = rc.begin();
+  ASSERT_STREQ("0xaaa1", it->getTxHash().c_str()); it++;
+  ASSERT_STREQ("0xaaa2", it->getTxHash().c_str()); it++;
+  ASSERT_STREQ("0xaaa3", it->getTxHash().c_str()); it++;
+  ASSERT_STREQ("0xaaa4", it->getTxHash().c_str()); it++;
+  ASSERT_STREQ("0xaaa5", it->getTxHash().c_str());
 }

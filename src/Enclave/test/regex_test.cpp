@@ -231,11 +231,11 @@ int regex_self_test() {
 
     if (slre_match("^\\s*(\\S+)\\s+(\\S+)\\s+HTTP/(\\d)\\.(\\d)",
                    request, strlen(request), caps, 4, 0) > 0) {
-      LL_INFO("Method: [%.*s], URI: [%.*s]",
+      LL_LOG("Method: [%.*s], URI: [%.*s]",
              caps[0].len, caps[0].ptr,
              caps[1].len, caps[1].ptr);
     } else {
-      LL_INFO("Error parsing [%s]\n", request);
+      LL_ERROR("Error parsing [%s]\n", request);
     }
 
     ASSERT(caps[1].len == 11);
@@ -247,7 +247,6 @@ int regex_self_test() {
     char *s = slre_replace("({{.+?}})",
                            "Good morning, {{foo}}. How are you, {{bar}}?",
                            "Bob");
-    LL_INFO("%s", s);
     ASSERT(strcmp(s, "Good morning, Bob. How are you, Bob?") == 0);
     free(s);
   }
@@ -264,7 +263,7 @@ int regex_self_test() {
 
     while (j < str_len &&
            (i = slre_match(regex, str + j, str_len - j, caps, 2, SLRE_IGNORE_CASE)) > 0) {
-      LL_INFO("Found URL: [%.*s]", caps[0].len, caps[0].ptr);
+      LL_LOG("Found URL: [%.*s]", caps[0].len, caps[0].ptr);
       j += i;
     }
   }
@@ -280,10 +279,6 @@ int regex_self_test() {
     ASSERT(caps[2].len == 1);
     ASSERT(caps[2].ptr[0] == 'z');
   }
-
-  LL_INFO("Unit test %s (total test: %d, failed tests: %d)",
-         static_failed_tests > 0 ? "FAILED" : "PASSED",
-         static_total_tests, static_failed_tests);
 
   return static_failed_tests == 0 ? 0 : -1;
 }

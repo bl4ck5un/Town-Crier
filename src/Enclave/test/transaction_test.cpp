@@ -76,7 +76,7 @@ int transaction_rlp_test() {
   }
 
   bytes tcAddress;
-  tcAddress.fromHex(TC_ADDRESS);
+  tcAddress.from_hex(TC_ADDRESS);
 
   for (int i = 14; i < 14 + 20; i++) {
     ans[i] = tcAddress.at(i - 14);

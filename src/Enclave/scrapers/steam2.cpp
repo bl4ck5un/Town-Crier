@@ -117,7 +117,7 @@ public:
 		   ocall_time(&time2);
 		   */
 
-		   LL_INFO("%lld seconds passed", time2 - time1);
+		   LL_INFO("%ld seconds passed", time2 - time1);
 
 		   unsigned int req_time = (unsigned int) time1 - (30*60);
 		   char tmp_req_time[10];

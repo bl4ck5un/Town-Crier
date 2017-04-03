@@ -25,10 +25,11 @@ class Monitor {
 
   const static int maxRetry = 5;
   const static int nothingToDoSleepSec = 5;
+  bool isSleeping;
 
  public:
   Monitor(OdbDriver &driver, sgx_enclave_id_t eid, int nonceOffset, std::atomic_bool &quit) :
-      driver(driver), eid(eid), nonceOffset(nonceOffset), quit(quit) {}
+      driver(driver), eid(eid), nonceOffset(nonceOffset), quit(quit), isSleeping(false) {}
 
   void loop();
 };

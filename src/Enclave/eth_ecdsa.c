@@ -84,7 +84,7 @@ int __ecdsa_sec_to_pub(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigne
    return -1;
  }
  if (buflen != 65) {
-   LL_CRITICAL("ecp serialization is incorrect olen=%d", buflen);
+   LL_CRITICAL("ecp serialization is incorrect olen=%ld", buflen);
  }
 
  ret = keccak(__pubkey + 1, 64, __address, 32);

@@ -16,4 +16,4 @@ $GETH --datadir=$DATADIR \
   --rpcapi="db,eth,ne,web3,personal" \
   --ipcpath=$IPC_PATH \
   --keystore=$KEY_STORE \
-  console
+  $@

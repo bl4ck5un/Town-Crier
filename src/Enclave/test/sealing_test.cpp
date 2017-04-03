@@ -16,7 +16,6 @@ int seal_data_test()
     uint8_t x[1024*10];
     uint32_t len = sgx_calc_sealed_data_size(0, sizeof(x));
     sgx_sealed_data_t *p = (sgx_sealed_data_t *)malloc(len);
-    printf_sgx("len:%u\n", len);
     if (sgx_seal_data(0, 0, sizeof(x), x, len, p) != SGX_SUCCESS) return -10;
 
     long long time1, time2;
@@ -31,7 +30,7 @@ int seal_data_test()
         if (decrypted_text_length != sizeof(x)) return -1;
         if (memcmp(x, y, sizeof(x))) {
             hexdump("x:", x, sizeof(x));
-          hexdump("y:", y, sizeof(x));
+            hexdump("y:", y, sizeof(x));
             return -5;
         }
     }

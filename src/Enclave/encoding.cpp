@@ -38,7 +38,7 @@ uint8_t bytesRequired(int _i)
     return i;
 }
 
-void bytes::fromHex(const char* src)
+void bytes::from_hex(const char *src)
 {
     if (strlen(src) % 2 != 0)
     { LL_CRITICAL("Error: input is not of even len\n");}
@@ -73,7 +73,7 @@ void bytes::rlp(bytes& out, unsigned len)
     }
 }
 
-void bytes::rlp(bytes& out)
+void bytes::to_rlp(bytes &out)
 {
 	return rlp(out, std::vector<uint8_t>::size());
 }
@@ -96,7 +96,7 @@ void bytes::appendInt(uint64_t in, uint8_t byteLen) {
     [out] target 
     [out] len: how many bytes get written to the target
 */
-void bytes32::fromHex(const char* src)
+void bytes32::from_hex(const char *src)
 {
     _size = 0;
     if (strlen(src) % 2 != 0)
@@ -113,7 +113,7 @@ void bytes32::fromHex(const char* src)
     if (_size == 1 && bytes::operator[](0) == 0) _size = 0;
 }
 
-void bytes32::rlp(bytes& out)
+void bytes32::to_rlp(bytes &out)
 {
 	bytes::rlp(out, _size);
 }
