@@ -190,20 +190,28 @@ function check_balance(){
 
 function watch_events(contract) {
     var his = contract.allEvents({fromBlock: 0, toBlock: 'latest'});
+    var events;
     his.get(function(error, result) {
         if (!error) {
             console.log(result.length);
             for (var i = 0; i < result.length; ++i) {
                 console.log(i + " : " + result[i].event);
             }
-            return result;
+            events = result;
         } else {
             console.log("error");
-            return -1;
+            events = "error";
         }
-    })
+    });
+    return events;
 }
 
+
+function unlockAccounts() {
+    for (var i = 0; i < eth.accounts.length; ++i) {
+        personal.unlockAccount(eth.accounts[i], '123123');
+    }
+}
 
 /* =========== The following should be run line-by-line as a demo =========== */
 // loadScript("demorc.js");
