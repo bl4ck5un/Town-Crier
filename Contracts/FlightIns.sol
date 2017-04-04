@@ -13,7 +13,7 @@ contract FlightIns {
     uint constant PAYOUT = 2 * 10**19;
     uint32 constant PAYOUT_DELAY = 30;
 
-    bytes4 constant TC_CALLBACK_FID = bytes4(sha3("pay(uint64, uint64, bytes32)"));
+    bytes4 constant TC_CALLBACK_FID = bytes4(sha3("pay(uint64,uint64,bytes32)"));
 
     TownCrier public TC_CONTRACT;
     address owner;
