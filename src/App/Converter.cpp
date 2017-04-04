@@ -1,5 +1,5 @@
-#include "utils.h"
 #include <boost/algorithm/hex.hpp>
+
 #include "Converter.h"
 
 using namespace std;

@@ -43,6 +43,7 @@ function checkWork(){
 
 function mineBlocks(num) {
     miner.start(1); miner.start(1); admin.sleepBlocks(num); miner.stop();
+    return;
 }
 
 

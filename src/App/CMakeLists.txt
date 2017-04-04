@@ -22,8 +22,8 @@ add_custom_command(
 )
 
 add_executable(tc ${TC_SRC_FILES})
-add_executable(tc-keygen
-        tc-keygen.cpp
+add_executable(tc-keyutil
+        tc-keyutil.cpp
         external/base64.cpp
         utils.cpp Converter.cpp
         Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
@@ -74,8 +74,9 @@ target_link_libraries(tc
     -Wl,-rpath -Wl,${SGX_LIBRARY_PATH}
     -lpthread -ldl)
 
-target_link_libraries(tc-keygen
+target_link_libraries(tc-keyutil
     -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} ${Boost_LIBRARIES}
+    -Wl,-rpath -Wl,${SGX_LIBRARY_PATH}
     -lpthread -ldl)
 
 target_link_libraries(tc-att

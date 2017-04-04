@@ -18,12 +18,10 @@
 # include <pwd.h>
 #include <stdint.h>
 
-using namespace std;
-
 # define MAX_PATH FILENAME_MAX
 
-#ifndef TC_LINUX_INIT_H
-#define TC_LINUX_INIT_H
+#ifndef TC_APP_UTILS_H
+#define TC_APP_UTILS_H
 
 #define TOKEN_FILENAME   "towncrier.enclave.token"
 #define ENCLAVE_FILENAME "enclave.signed.so"
@@ -126,10 +124,10 @@ static sgx_errlist_t sgx_errlist[] = {
     }
 };
 
-void daemonize(string working_dir, string pid_filename);
+void daemonize(::std::string working_dir, ::std::string pid_filename);
 
 #if defined(__cplusplus)
 }
 #endif
 
-#endif //TC_LINUX_INIT_H
+#endif //TC_APP_UTILS_H
