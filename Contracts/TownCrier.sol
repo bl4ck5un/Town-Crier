@@ -22,7 +22,7 @@ contract TownCrier {
     uint public constant MAX_FEE = (31 * 10**5) * GAS_PRICE;
 
     uint public constant MIN_FEE = 30000 * GAS_PRICE;
-    uint public constant CANCELLATION_FEE = 20000 * GAS_PRICE;
+    uint public constant CANCELLATION_FEE = 25000 * GAS_PRICE;
 
     uint constant CANCELLED_FEE_FLAG = 1;
     uint constant DELIVERED_FEE_FLAG = 0;
@@ -115,9 +115,9 @@ contract TownCrier {
 
     function cancel(uint64 requestId) public returns (bool) {
         // Compute the gas reimbursement necessary if TownCrier attempts to respond to this request later.
-        Cancel(requestId, msg.sender, requests[requestId].requester, int(fee));
         // If the request was sent by this user and has money left on it, then cancel it.
         uint fee = requests[requestId].fee;
+        Cancel(requestId, msg.sender, requests[requestId].requester, int(fee));
         if ((requests[requestId].requester == msg.sender || msg.sender == SGX_ADDRESS) && fee > CANCELLATION_FEE) {
             if (!msg.sender.send(fee - CANCELLATION_FEE)) {
                 Cancel(requestId, msg.sender, requests[requestId].requester, -2);

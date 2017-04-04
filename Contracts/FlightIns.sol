@@ -8,7 +8,7 @@ contract FlightIns {
     event PaymentInfo(address payee, uint payeeBalance, uint gasRemaining, uint64 requestId, uint64 error, uint256 delay);
     //event FlightCancel(address canceller, address requester, bool success);
 
-    uint constant TC_FEE = (30000 + 30000) * 5 * 10**10;
+    uint constant TC_FEE = (30000 + 20000) * 5 * 10**10;
     uint constant FEE = 10**18;
     uint constant PAYOUT = 2 * 10**19;
     uint32 constant PAYOUT_DELAY = 30;
