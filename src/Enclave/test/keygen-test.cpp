@@ -20,8 +20,8 @@ int keygen_test() {
   unsigned char pubkey[64];
   unsigned char address[20];
 
-  if ((ret = __ecdsa_sec_to_pub(&seckey, pubkey, address))) {
-    LL_CRITICAL("__ecdsa_sec_to_pub returned %d", ret);
+  if ((ret = __ecdsa_seckey_to_pubkey(&seckey, pubkey, address))) {
+    LL_CRITICAL("__ecdsa_seckey_to_pubkey returned %d", ret);
     return -1;
   }
   return memcmp(address, "\x89\xb4\x4e\x4d\x3c\x81\xed\xe0\x5d\x0f\x5d\xe8\xd1\xa6\x8f\x75\x4d\x73\xd9\x97", 20);

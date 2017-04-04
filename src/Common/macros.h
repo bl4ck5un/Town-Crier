@@ -23,4 +23,6 @@
 #define PUBKEY_LEN  64
 #define ADDRESS_LEN 20
 
+#define TC_KEY_NOT_PROVISIONED 0x9001
+
 #endif //TOWN_CRIER_MACROS_H

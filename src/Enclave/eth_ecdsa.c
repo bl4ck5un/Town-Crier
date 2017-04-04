@@ -1,5 +1,6 @@
 #include <string.h>
 #include <sgx_tseal.h>
+#include <mbedtls-SGX/include/mbedtls/bignum.h>
 
 #include "eth_ecdsa.h"
 #include "external/keccak.h"
@@ -44,6 +45,11 @@ ADR: 89b44e4d3c81ede05d0f5de8d1a68f754d73d997
 */
 
 #define PREDEFINED_SECKEY "cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8"
+static mbedtls_mpi g_secret_key;
+
+int provision_seckey() {
+
+}
 
 /*!
  * @brief generate a key pair (or generate a pubkey and address from a secret key)
@@ -53,7 +59,7 @@ ADR: 89b44e4d3c81ede05d0f5de8d1a68f754d73d997
  * @param address [out,size=20] output buffer for the address
  * @return 0 if succeed
  */
-int __ecdsa_sec_to_pub(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigned char *address) {
+int __ecdsa_seckey_to_pubkey(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigned char *address) {
  if (pubkey == NULL || address == NULL || seckey == NULL) {
    return -1;
  }
@@ -108,6 +114,7 @@ int __ecdsa_sec_to_pub(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigne
  * @return
  */
 int ecdsa_keygen_unseal(const sgx_sealed_data_t *secret, size_t secret_len, unsigned char* pubkey, unsigned char *address) {
+  // used by edge8r
   (void) secret_len;
 
   uint32_t decrypted_text_length = sgx_get_encrypt_txt_len(secret);
@@ -120,11 +127,53 @@ int ecdsa_keygen_unseal(const sgx_sealed_data_t *secret, size_t secret_len, unsi
     return -1;
   }
 
-  mbedtls_mpi seckey;
-  mbedtls_mpi_init(&seckey);
-  mbedtls_mpi_read_binary(&seckey, y, sizeof y);
+  // initialize the local secret key
+  mbedtls_mpi secret_key;
+  mbedtls_mpi_init(&secret_key);
+  mbedtls_mpi_read_binary(&secret_key, y, sizeof y);
 
-  return __ecdsa_sec_to_pub(&seckey, pubkey, address);
+  return __ecdsa_seckey_to_pubkey(&secret_key, pubkey, address);
+}
+
+/*!
+ * Set the global secret key
+ * @param secret
+ * @param secret_len
+ * @param pubkey
+ * @param address
+ * @return
+ */
+int tc_provision_key(const sgx_sealed_data_t *secret, size_t secret_len) {
+  // used by edge8r
+  (void) secret_len;
+
+  uint32_t decrypted_text_length = sgx_get_encrypt_txt_len(secret);
+  uint8_t y[decrypted_text_length];
+  sgx_status_t st;
+
+  st = sgx_unseal_data(secret, NULL, 0, y, &decrypted_text_length);
+  if (st != SGX_SUCCESS) {
+    LL_CRITICAL("unseal returned %x", st);
+    return -1;
+  }
+
+  // initialize the global secret key
+  mbedtls_mpi_init(&g_secret_key);
+  return mbedtls_mpi_read_binary(&g_secret_key, y, sizeof y);
+}
+
+/*!
+ * get the current address of Town Crier wallet
+ * @param pubkey
+ * @param address
+ * @return
+ */
+int tc_get_address(unsigned char *pubkey, unsigned char *address) {
+  if (g_secret_key.p == NULL) {
+    LL_CRITICAL("key has not been provisioned yet. Call tc_provision_key() first");
+    return TC_KEY_NOT_PROVISIONED;
+  }
+  return __ecdsa_seckey_to_pubkey(&g_secret_key, pubkey, address);
 }
 
 /*!
@@ -167,7 +216,7 @@ int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen, unsigned char *o_pu
   memcpy(o_sealed, seal_buffer, len);
 
   LL_LOG("calling sec to pub");
-  if (__ecdsa_sec_to_pub(&secret, o_pubkey, o_address) != 0) {
+  if (__ecdsa_seckey_to_pubkey(&secret, o_pubkey, o_address) != 0) {
     LL_CRITICAL("failed to get public key");
     ret = -1;
     goto exit;

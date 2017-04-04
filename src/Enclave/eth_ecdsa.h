@@ -1,6 +1,7 @@
 #include <stdint.h>
-#include <mbedtls/bignum.h>
+#include <sgx_tseal.h>
 
+#include "mbedtls/bignum.h"
 #include "macros.h"
 
 #ifndef ENCLAVE_ECDSA_H
@@ -10,8 +11,9 @@
 extern "C" {
 #endif
 int sign(uint8_t *data, size_t in_len, uint8_t *rr, uint8_t *ss, uint8_t *vv);
-DEPRECATED(int ecdsa_keygen(unsigned char *pubkey, unsigned char *address));
-DEPRECATED(int __ecdsa_sec_to_pub(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigned char *address));
+DEPRECATED(int __ecdsa_seckey_to_pubkey(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigned char *address));
+int tc_provision_key(const sgx_sealed_data_t *secret, size_t secret_len);
+int tc_get_address(unsigned char *pubkey, unsigned char *address);
 #if defined(__cplusplus)
 }
 #endif
