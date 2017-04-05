@@ -65,7 +65,7 @@ int cb_on_message_complete(http_parser *parser) {
 }
 
 int cb_on_body(http_parser *parser, const char *at, size_t len) {
-  LL_TRACE("On body called with at=%p and len=%d", at, len);
+  LL_TRACE("On body called with at=%p and len=%zu", at, len);
   cb_data_t *p = (cb_data_t *) parser->data;
 
   return 0;
@@ -74,7 +74,7 @@ int cb_on_body(http_parser *parser, const char *at, size_t len) {
 int cb_on_header_complete(http_parser *parser) {
   cb_data_t *p = (cb_data_t *) parser->data;
   p->header_length = parser->nread;
-  LL_TRACE("header_complete called after reading %d", p->header_length);
+  LL_TRACE("header_complete called after reading %zu", p->header_length);
 
   return 0;
 }
@@ -403,7 +403,7 @@ HttpResponse HttpsClient::getResponse() {
         ret = ERR_ENCLAVE_SSL_CLIENT;
         throw runtime_error("upgrade not supported");
       } else if (n_parsed != ret) {
-        LL_CRITICAL("Error: received %d bytes and parsed %d of them", ret, n_parsed);
+        LL_CRITICAL("Error: received %d bytes and parsed %zu of them", ret, n_parsed);
         char _tmp_buf[buf.length + 1];
         memcpy(_tmp_buf, buf.buf, buf.length);
         _tmp_buf[MIN(buf.length, 5000)] = 0x0;
@@ -424,7 +424,7 @@ HttpResponse HttpsClient::getResponse() {
   }
 
   if (cb_data.eof == 0 && buf.length == buf.cap) {
-    LL_CRITICAL("receiving buffer (%d bytes) is not big enough", buf.cap);
+    LL_CRITICAL("receiving buffer (%zu bytes) is not big enough", buf.cap);
   }
 
   string response_headers(reinterpret_cast<const char *>(buf.buf),
@@ -435,7 +435,7 @@ HttpResponse HttpsClient::getResponse() {
 
   LL_DEBUG("\nResponse header:\n%s",
            response_headers.length() == 0 ? "empty" : response_headers.c_str());
-  LL_DEBUG("\nResponse body (len=%d):\n%s",
+  LL_DEBUG("\nResponse body (len=%zu):\n%s",
            content.length(),
            content.length() == 0 ? "empty" : content.substr(0, HttpsClient::responseLogLimit).c_str());
 

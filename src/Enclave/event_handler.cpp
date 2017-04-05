@@ -1,20 +1,13 @@
 
 #include <Log.h>
 #include <string>
-#include <Debug.h>
 
-#include "stdint.h"
 #include "event_handler.h"
 #include "scrapers.h"
 #include "scrapers/Scraper.h"
 #include "scrapers/flight.h"
-#include "scrapers/utils.h"
-#include "time.h"
 #include "eth_transaction.h"
-#include "eth_abi.h"
-#include "Enclave_t.h"
-#include "external/keccak.h"
-#include "Constants.h"
+
 
 int handle_request(int nonce,
                    uint64_t id,
@@ -24,7 +17,7 @@ int handle_request(int nonce,
                    uint8_t *raw_tx,
                    size_t *raw_tx_len) {
   bytes resp_data;
-  int error_flag = 0;
+  uint64_t error_flag = 0;
 
   switch (type) {
     case TYPE_FINANCE_INFO: {
@@ -87,11 +80,12 @@ int handle_request(int nonce,
 
       break;
     }
-    default :LL_CRITICAL("Unknown request type: %lld", type);
+    default :LL_CRITICAL("Unknown request type: %" PRIu64, type);
       return -1;
       break;
   }
 
+  // TODO: MAJOR: change type to larger type
   return form_transaction(nonce, 32, id, type, data, data_len, error_flag, resp_data, raw_tx, raw_tx_len);
 }
 
