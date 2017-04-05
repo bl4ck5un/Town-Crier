@@ -10,10 +10,9 @@ contract TownCrier {
     }
 
     event RequestLog(address self, int16 flag);
-    event RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, bytes32 paramsHash, uint timeout, bytes32[] requestData);
+    event RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, bytes32 paramsHash, uint timestamp, bytes32[] requestData);
     event DeliverLog(uint gasLeft, int flag);
     event DeliverInfo(uint64 requestId, uint fee, uint gasPrice, uint gasLeft, uint callbackGas, bytes32 paramsHash, uint64 error, bytes32 respData);
-//    event DeliverSig(uint8 v, bytes32 r, bytes32 s, address recoveredAddr);
     event Cancel(uint64 requestId, address canceller, address requester, int flag);
 
     address constant SGX_ADDRESS = 0x89B44e4d3c81EDE05D0f5de8d1a68F754D73d997;
@@ -24,6 +23,7 @@ contract TownCrier {
     uint public constant MIN_FEE = 30000 * GAS_PRICE;
     uint public constant CANCELLATION_FEE = 25000 * GAS_PRICE;
 
+    uint constant TC_CANCELLED_FLAG = 2;
     uint constant CANCELLED_FEE_FLAG = 1;
     uint constant DELIVERED_FEE_FLAG = 0;
 
@@ -46,10 +46,10 @@ contract TownCrier {
         requests[0].requester = msg.sender;
     }
 
-    function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, uint timeout, bytes32[] requestData) public payable returns (uint64) {
+    function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, uint timestamp, bytes32[] requestData) public payable returns (uint64) {
         RequestLog(this, 0);
         if (msg.value < MIN_FEE || msg.value > MAX_FEE) {
-            RequestInfo(0, requestType, msg.sender, msg.value, callbackAddr, 0, timeout, requestData);
+            RequestInfo(0, requestType, msg.sender, msg.value, callbackAddr, 0, timestamp, requestData);
             RequestLog(this, -1);
             if (!msg.sender.send(msg.value)) {
                 RequestLog(this, -2);
@@ -66,7 +66,7 @@ contract TownCrier {
             requests[requestId].callbackAddr = callbackAddr;
             requests[requestId].callbackFID = callbackFID;
             requests[requestId].paramsHash = paramsHash;
-            RequestInfo(requestId, requestType, msg.sender, msg.value, callbackAddr, paramsHash, timeout, requestData);
+            RequestInfo(requestId, requestType, msg.sender, msg.value, callbackAddr, paramsHash, timestamp, requestData);
             RequestLog(this, 1);
             return requestId;
         }
@@ -93,6 +93,10 @@ contract TownCrier {
             requests[requestId].fee = DELIVERED_FEE_FLAG;
             DeliverLog(msg.gas, int(CANCELLATION_FEE));
             return;
+        } else if (fee == TC_CANCELLED_FLAG) {
+            DeliverInfo(requestId, fee, tx.gasprice, msg.gas, 0, paramsHash, error, respData);
+            DeliverLog(msg.gas, 2);
+            return;
         }
 
         DeliverLog(msg.gas, 8);
@@ -118,7 +122,7 @@ contract TownCrier {
         // If the request was sent by this user and has money left on it, then cancel it.
         uint fee = requests[requestId].fee;
         Cancel(requestId, msg.sender, requests[requestId].requester, int(fee));
-        if ((requests[requestId].requester == msg.sender || msg.sender == SGX_ADDRESS) && fee > CANCELLATION_FEE) {
+        if (requests[requestId].requester == msg.sender && fee >= CANCELLATION_FEE) {
             if (!msg.sender.send(fee - CANCELLATION_FEE)) {
                 Cancel(requestId, msg.sender, requests[requestId].requester, -2);
                 throw;
@@ -126,8 +130,16 @@ contract TownCrier {
             requests[requestId].fee = CANCELLED_FEE_FLAG;
             Cancel(requestId, msg.sender, requests[requestId].requester, int(CANCELLED_FEE_FLAG));
             return true;
+        } else if (requests[requestId].requester == SGX_ADDRESS && fee > TC_CANCELLED_FLAG) {
+            if (!msg.sender.send(fee)) {
+                Cancel(requestId, msg.sender, requests[requestId].requester, -4);
+                throw;
+            }
+            requests[requestId].fee = TC_CANCELLED_FLAG;
+            Cancel(requestId, msg.sender, requests[requestId].requester, int(TC_CANCELLED_FLAG));
+            return true;
         } else {
-            Cancel(requestId, msg.sender, requests[requestId].requester, -int(CANCELLED_FEE_FLAG));
+            Cancel(requestId, msg.sender, requests[requestId].requester, -1);
             return false;
         }
     }

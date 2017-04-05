@@ -1,7 +1,3 @@
-pragma solidity ^0.4.9;
-
-import "TownCrier.sol";
-
 contract FlightIns {
     event Insure(address beneficiary, uint dataLength, bytes32[] data, int72 requestId);
     event PaymentLog(int flag);
@@ -14,7 +10,6 @@ contract FlightIns {
     uint32 constant PAYOUT_DELAY = 30;
 
     bytes4 constant TC_CALLBACK_FID = bytes4(sha3("pay(uint64,uint64,bytes32)"));
-
     TownCrier public TC_CONTRACT;
     address owner;
     address[2**64] requesters;

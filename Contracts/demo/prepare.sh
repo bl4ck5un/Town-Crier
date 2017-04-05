@@ -27,21 +27,24 @@ var buyerSteamId = String(32884794);
 EOF
 
 # Make sure you modify the TC contract to have the right SGX address.
-SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../TownCrier.sol ../SteamTrade.sol ../FlightIns.sol | paste -sd '' | sed 's/\s\+/ /g')
+SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../TownCrier.sol | paste -sd '' | sed 's/\s\+/ /g')
 
 cat <<EOF
-var source = '$SRC'
+var TCsource = '$SRC'
 EOF
 
-cat <<EOF > full.sol
-$SRC
+SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../Ref.sol ../FlightIns.sol ../SteamTrade.sol| paste -sd '' | sed 's/\s\+/ /g')
+
+cat <<EOF
+var APPsource = '$SRC'
 EOF
 
 cat <<EOF
-var contracts = eth.compile.solidity(source)
-var TownCrier = eth.contract(contracts["<stdin>:TownCrier"].info.abiDefinition)
-var SteamTrade = eth.contract(contracts["<stdin>:SteamTrade"].info.abiDefinition)
-var FlightIns = eth.contract(contracts["<stdin>:FlightIns"].info.abiDefinition)
+var TCcontract = eth.compile.solidity(TCsource)
+var APPcontracts = eth.compile.solidity(APPsource)
+var TownCrier = eth.contract(TCcontract["<stdin>:TownCrier"].info.abiDefinition)
+var SteamTrade = eth.contract(APPcontracts["<stdin>:SteamTrade"].info.abiDefinition)
+var FlightIns = eth.contract(APPcontracts["<stdin>:FlightIns"].info.abiDefinition)
 
 function checkWork(){
     if (eth.getBlock("pending").transactions.length > 0) {
@@ -88,7 +91,7 @@ function setup_log(tc, tradeContract) {
 function setup_tc() {
     var tc = TownCrier.new({
         from: minerAddr, 
-        data: contracts["<stdin>:TownCrier"].code, 
+        data: TCcontract["<stdin>:TownCrier"].code, 
         gas: gasCnt}, function(e, c) {
             if (!e){
                 if (c.address) {
@@ -105,7 +108,7 @@ function createSteamTrade(apiKey, item, price) {
   var tradeContract = SteamTrade.new(
           tc.address, apiKey[0], apiKey[1], item, price, {
               from: sellerAddr, 
-              data: contracts["<stdin>:SteamTrade"].code, 
+              data: APPcontracts["<stdin>:SteamTrade"].code, 
               gas: gasCnt}, 
               function(e, c) { 
                   if (!e) {
@@ -124,7 +127,7 @@ function createFlightIns() {
             tc.address, {
                 value: 100e+18,
                 from: sellerAddr,
-                data: contracts["<stdin>:FlightIns"].code,
+                data: APPcontracts["<stdin>:FlightIns"].code,
                 gas: gasCnt},
                 function(e, c) {
                     if (!e) {
