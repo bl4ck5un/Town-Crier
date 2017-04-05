@@ -51,7 +51,7 @@ int transaction_rlp_test() {
                              error_code,
                              std::vector<uint8_t>(resp_data, resp_data + 32),
                              serialized_tx,
-                             &o_len);
+                             &o_len, false);
 
   uint8_t ans[] =
       {248, 0xea, 128, 133, 11, 164, 59, 116, 0, 131, 1, 95, 144, 148, 136, 203, 90, 183, 19, 87, 217, 140, 123, 249,

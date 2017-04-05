@@ -2,7 +2,7 @@
 
 #include "Converter.h"
 
-using namespace std;
+using std::invalid_argument;
 
 void hexToBuffer(const string &str, unsigned char *buffer, size_t bufSize) {
   if (buffer == nullptr)

@@ -271,7 +271,7 @@ int ext::b64_pton(const char *src, u_char *target, size_t targsize) {
       for ((void)NULL; ch != '\0'; ch = *src++)
         if (!isspace((unsigned char)ch))
           break;
-      /* Make sure there is another trailing = sign. */
+      /* Make sure there is another trailing = ecdsa_sign. */
       if (ch != Pad64)
         return (-1);
       ch = *src++; /* Skip the = */

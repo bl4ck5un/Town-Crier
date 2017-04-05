@@ -118,9 +118,6 @@ int main(int argc, const char *argv[]) {
     std::exit(-1);
   }
 
-  LL_INFO("print: %s", key_input.c_str());
-  LL_INFO("keygen: %s", key_output.c_str());
-
   sgx_enclave_id_t eid;
   sgx_status_t st;
   int ret;
@@ -141,5 +138,5 @@ int main(int argc, const char *argv[]) {
   }
 
   sgx_destroy_enclave(eid);
-  LL_CRITICAL("Info: all enclave closed successfully.");
+  LL_INFO("Info: all enclave closed successfully.");
 }

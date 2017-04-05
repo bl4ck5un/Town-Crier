@@ -6,9 +6,10 @@
 #include <cstdint>
 
 using std::string;
+using std::vector;
 
-void hexToBuffer(const ::std::string &str, unsigned char *buffer, size_t bufSize);
-void hexToBuffer(const ::std::string &hex, ::std::vector<uint8_t> &buffer);
+void hexToBuffer(const string &str, unsigned char *buffer, size_t bufSize);
+void hexToBuffer(const string &hex, vector<uint8_t> &buffer);
 string bufferToHex(const unsigned char *buffer, size_t bufSize, bool prefix = false);
-string bufferToHex(::std::vector<unsigned char> const &  buffer, bool prefix = false);
+string bufferToHex(vector<unsigned char> const &  buffer, bool prefix = false);
 #endif //TC_LINUX_CONVERTER_H

@@ -21,25 +21,17 @@ int ecall_time_calibrate (time_t wall_clock, uint8_t wtc_rsv[65])
 {
     int ret = 0;
     uint8_t wtc_hash[32];
-#ifdef TIME_CALIBRATION_BENCHMARK
-    long long time1 = 0, time2 = 0;
-    rdtsc(&time1);
-#endif
     ret = keccak((uint8_t*)&wall_clock, sizeof wall_clock, wtc_hash, 32);
     if (ret != 0)
     {
         LL_CRITICAL("keccak returned %d", ret);
         return ret;
     }
-    ret = sign(wtc_hash, sizeof wtc_hash, wtc_rsv, wtc_rsv + 32, wtc_rsv + 64);
+    ret = ecdsa_sign(wtc_hash, sizeof wtc_hash, wtc_rsv, wtc_rsv + 32, wtc_rsv + 64);
     if (ret != 0)
     {
-        LL_CRITICAL("sign() returned %d", ret);
+        LL_CRITICAL("ecdsa_sign() returned %d", ret);
         return ret;
     }
-#ifdef TIME_CALIBRATION_BENCHMARK
-    rdtsc(&time2);
-    LL_CRITICAL("sign the timestamp: %f", (time2-time1)/FREQ);
-#endif
     return ret;
 }

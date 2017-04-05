@@ -24,6 +24,7 @@
 #include "stdint.h"
 #include "utils.h"
 #include "utils.h"
+#include "key-utils.h"
 
 #define LOGURU_IMPLEMENTATION 1
 #include "Log.h"
@@ -83,6 +84,7 @@ int main(int argc, const char *argv[]) {
   string working_dir;
   string pid_filename;
   int status_rpc_port;
+  string sealed_sig_key;
 
   //! parse config files
   boost::property_tree::ptree pt;
@@ -95,6 +97,7 @@ int main(int argc, const char *argv[]) {
     working_dir = pt.get<string>("daemon.working_dir");
     pid_filename = pt.get<string>("daemon.pid_file");
     status_rpc_port = pt.get<int>("status.port");
+    sealed_sig_key = pt.get<string>("sealed.sig_key");
 
     LOG_F(INFO, "Using config file: %s", options_config.c_str());
     LOG_F(INFO, "cwd: %s", working_dir.c_str());
@@ -103,7 +106,6 @@ int main(int argc, const char *argv[]) {
     std::cout << e.what() << std::endl;
     exit(-1);
   }
-
 
   int ret;
   sgx_enclave_id_t eid;
@@ -149,6 +151,20 @@ int main(int argc, const char *argv[]) {
   } else {
     LOG_F(INFO, "Enclave %lld created", eid);
   }
+
+  string address;
+
+  try {
+    address = unseal_key(eid, sealed_sig_key);
+  }
+  catch (const std::runtime_error& e) {
+    LL_CRITICAL(e.what());
+    exit(-1);
+  }
+
+  LL_INFO("using address %s", address.c_str());
+  // TODO: stopped here
+  // TODO: call provision key here and add more test
 
   Monitor monitor(driver, eid, nonce_offset, quit);
   monitor.loop();

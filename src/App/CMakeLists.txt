@@ -7,8 +7,9 @@ set(TC_SRC_FILES tc.cpp monitor.cpp attestation.cpp request-parser.cpp
     bookkeeping/transaction-record.hxx
     bookkeeping/transaction-record-odb.cxx
     Converter.cpp utils.cpp types.cpp
-    EthRPC.cpp StatusRpcServer.cpp StatusRpcServer.h
-        )
+    EthRPC.cpp StatusRpcServer.cpp
+    external/base64.cpp
+    key-utils.cpp)
 
 set_directory_properties(PROPERTIES
     ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")

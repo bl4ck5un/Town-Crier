@@ -124,7 +124,8 @@ int form_transaction(int nonce,
                      uint64_t resp_error,
                      bytes resp_data,
                      uint8_t *tx_output_bf,
-                     size_t *o_len) {
+                     size_t *o_len,
+                     bool with_sig) {
   if (tx_output_bf == NULL || o_len == NULL) {
     LL_CRITICAL("Error: tx_output_bf or o_len gets NULL input\n");
     return TC_INTERNAL_ERROR;
@@ -218,20 +219,21 @@ int form_transaction(int nonce,
     LL_CRITICAL("keccak returned %d", ret);
     return TC_INTERNAL_ERROR;
   }
-  ret = sign(_tx_hash, 32, &tx.r[0], &tx.s[0], &tx.v);
 
-  if (ret != 0) {
-    LL_CRITICAL("Error: signing returned %d\n", ret);
-    return TC_INTERNAL_ERROR;
+  if (with_sig) {
+    if ((ret = ecdsa_sign(_tx_hash, 32, &tx.r[0], &tx.s[0], &tx.v)) != 0) {
+      LL_CRITICAL("Error: signing returned %d\n", ret);
+      return TC_INTERNAL_ERROR;
+    }
   }
   else {
-    tx.r.set_size(32);
-    tx.s.set_size(32);
+    // fill in dummy signatures
+    memset(&tx.r[0], 0, 32);
+    memset(&tx.s[0], 0, 32);
+    tx.v = 27;
   }
-
-//  print_str_dbg("r", &tx.r[0], 32);
-//  print_str_dbg("s", &tx.s[0], 32);
-//  print_str_dbg("v", &tx.v, 1);
+  tx.r.set_size(32);
+  tx.s.set_size(32);
 
   // RLP encode the final output with signature
   out.clear();

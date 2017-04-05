@@ -36,12 +36,11 @@ class KeygenTestSuite: public ::testing::Test
 };
 
 TEST_F (KeygenTestSuite, keygen) {
-  unsigned char pubkey[64];
-  unsigned char address[20];
   sgx_status_t st;
   int ret;
   st = keygen_test(eid, &ret);
-  EXPECT_EQ(0, ret);
+  ASSERT_EQ(0, st);
+  ASSERT_EQ(0, ret);
 }
 
 TEST_F(KeygenTestSuite, provision) {
@@ -61,9 +60,6 @@ TEST_F(KeygenTestSuite, provision) {
     FAIL();
   }
 
-  cout << "PublicKey: " << bufferToHex(pubkey_ref, sizeof pubkey_ref, true) << endl;
-  cout << "Address: " << bufferToHex(address_ref, sizeof address_ref, true) << endl;
-
   unsigned char pubkey_result[PUBKEY_LEN];
   unsigned char address_result[ADDRESS_LEN];
   tc_get_address(eid, &ret, pubkey_result, address_result);
@@ -78,9 +74,6 @@ TEST_F(KeygenTestSuite, provision) {
   }
 
   tc_get_address(eid, &ret, pubkey_result, address_result);
-
-  cout << "PublicKey: " << bufferToHex(address_result, sizeof address_result, true) << endl;
-  cout << "Address: " << bufferToHex(address_result, sizeof address_result, true) << endl;
 
   ASSERT_EQ(0, memcmp(pubkey_ref, pubkey_result, PUBKEY_LEN));
   ASSERT_EQ(0, memcmp(address_ref, address_result, ADDRESS_LEN));
