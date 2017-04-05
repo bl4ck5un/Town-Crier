@@ -6,15 +6,6 @@
 
 #include "Constants.h"
 
-enum MONITOR_EXCEPTION {
-    EX_GET_BLOCK_NUM,
-    EX_CREATE_FILTER,
-    EX_GET_FILTER_LOG,
-    EX_NOTHING_TO_DO,
-    EX_SEND_TRANSACTION,
-    EX_HANDLE_REQ,
-};
-
 class Monitor {
  private:
   OdbDriver &driver;

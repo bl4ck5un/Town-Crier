@@ -11,5 +11,6 @@
 using std::string;
 
 string unseal_key(sgx_enclave_id_t eid, string sealed_key);
+void provision_key(sgx_enclave_id_t eid, string sealed_key);
 
 #endif //TOWN_CRIER_KEY_UTILS_H

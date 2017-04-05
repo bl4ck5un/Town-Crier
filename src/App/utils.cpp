@@ -1,7 +1,6 @@
 #include <boost/algorithm/hex.hpp>
 #include <boost/filesystem.hpp>
 
-#include "Converter.h"
 #include "sgx_urts.h"
 #include "utils.h"
 
@@ -16,6 +15,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <errno.h>
+
+using std::string;
 
 /*!
  * \brief   Initialize the enclave:
@@ -96,6 +97,31 @@ void print_error_message(sgx_status_t ret) {
 
   if (idx == ttl)
     printf("Error: returned %x\n", ret);
+}
+
+#include <iomanip>
+#include <sstream>
+
+std::string sgx_error_message(sgx_status_t ret) {
+  size_t idx = 0;
+  size_t ttl = sizeof sgx_errlist / sizeof sgx_errlist[0];
+  std::stringstream ss;
+
+  for (idx = 0; idx < ttl; idx++) {
+    if (ret == sgx_errlist[idx].err) {
+      ss << "Error: " << sgx_errlist[idx].msg;
+      if (NULL != sgx_errlist[idx].sug)
+        ss << " " << sgx_errlist[idx].sug;
+
+      return ss.str();
+    }
+  }
+
+  if (idx == ttl) {
+    ss << "Error: returned " << std::hex << ret;
+  }
+
+  return ss.str();
 }
 
 /**

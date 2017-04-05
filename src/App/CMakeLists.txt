@@ -9,7 +9,8 @@ set(TC_SRC_FILES tc.cpp monitor.cpp attestation.cpp request-parser.cpp
     Converter.cpp utils.cpp types.cpp
     EthRPC.cpp StatusRpcServer.cpp
     external/base64.cpp
-    key-utils.cpp)
+    key-utils.cpp
+    tc-exception.cpp)
 
 set_directory_properties(PROPERTIES
     ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
@@ -23,14 +24,14 @@ add_custom_command(
 )
 
 add_executable(tc ${TC_SRC_FILES})
-add_executable(tc-keyutil
-        tc-keyutil.cpp
-        external/base64.cpp
-        utils.cpp Converter.cpp
-        Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
+add_executable(tc-keygen
+    tc-keygen.cpp
+    external/base64.cpp
+    utils.cpp Converter.cpp
+    Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp utils.cpp Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 
-# Tests
+# Source files for tests
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
 add_executable(TestMain EXCLUDE_FROM_ALL
     ${TEST_SRC_FILES}
@@ -43,7 +44,9 @@ add_executable(TestMain EXCLUDE_FROM_ALL
     bookkeeping/transaction-record-odb.cxx
     mbedtls_sgx_net.c
     Converter.cpp
-    types.cpp types.hxx request-parser.cpp request-parser.hxx)
+    external/base64.cpp
+    types.cpp request-parser.cpp
+    key-utils.cpp)
 
 find_package(CURL REQUIRED)
 find_package(Boost QUIET REQUIRED COMPONENTS program_options filesystem system log)
@@ -65,6 +68,7 @@ include_directories(
     ${MBEDTLS_LIB_DIR}/include
     ../vendor/gtest/include
     ../Common
+    ../App
 )
 
 target_link_libraries(tc
@@ -75,7 +79,7 @@ target_link_libraries(tc
     -Wl,-rpath -Wl,${SGX_LIBRARY_PATH}
     -lpthread -ldl)
 
-target_link_libraries(tc-keyutil
+target_link_libraries(tc-keygen
     -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} ${Boost_LIBRARIES}
     -Wl,-rpath -Wl,${SGX_LIBRARY_PATH}
     -lpthread -ldl)

@@ -23,8 +23,8 @@
 #include "request-parser.hxx"
 #include "stdint.h"
 #include "utils.h"
-#include "utils.h"
 #include "key-utils.h"
+#include "tc-exception.hxx"
 
 #define LOGURU_IMPLEMENTATION 1
 #include "Log.h"
@@ -156,15 +156,14 @@ int main(int argc, const char *argv[]) {
 
   try {
     address = unseal_key(eid, sealed_sig_key);
+    LL_INFO("using address %s", address.c_str());
+
+    provision_key(eid, sealed_sig_key);
   }
-  catch (const std::runtime_error& e) {
+  catch (const tc::EcallException& e) {
     LL_CRITICAL(e.what());
     exit(-1);
   }
-
-  LL_INFO("using address %s", address.c_str());
-  // TODO: stopped here
-  // TODO: call provision key here and add more test
 
   Monitor monitor(driver, eid, nonce_offset, quit);
   monitor.loop();

@@ -1,14 +1,22 @@
 #include <gtest/gtest.h>
 
-#include "../utils.h"
-#include "../Enclave_u.h"
+#include "utils.h"
+#include "Enclave_u.h"
 
+class AbiTestSuite : public ::testing::Test {
+ protected:
+  sgx_enclave_id_t eid;
+  virtual void SetUp() {
+    initialize_enclave(ENCLAVE_FILENAME, &eid);
+  }
 
-TEST (ABI, All) {
-    sgx_enclave_id_t eid;
-    int ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
-    ASSERT_EQ(SGX_SUCCESS, ret);
+  virtual void TearDown() {
+    sgx_destroy_enclave(eid);
+  }
+};
 
-    ABI_self_test(eid, &ret);
-    ASSERT_EQ(0, ret);
+TEST_F (AbiTestSuite, All) {
+  int ret;
+  ABI_self_test(eid, &ret);
+  ASSERT_EQ(0, ret);
 }

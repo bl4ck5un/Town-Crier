@@ -1,7 +1,3 @@
-//
-// Created by fanz on 6/11/16.
-//
-
 #include "gtest/gtest.h"
 
 #define LOGURU_IMPLEMENTATION 1

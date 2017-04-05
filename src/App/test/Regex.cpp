@@ -1,21 +1,22 @@
 #include <gtest/gtest.h>
 
-#include "../utils.h"
-#include "../Enclave_u.h"
+#include "utils.h"
+#include "Enclave_u.h"
 
-#include "../EthRPC.h"
-#include "../Converter.h"
-#include <vector>
+class RegExTestSuite : public ::testing::Test {
+ protected:
+  sgx_enclave_id_t eid;
+  virtual void SetUp() {
+    initialize_enclave(ENCLAVE_FILENAME, &eid);
+  }
 
-TEST(RegEx, regex){
-    sgx_enclave_id_t eid;
-    int ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
-    ASSERT_EQ(SGX_SUCCESS, ret);
+  virtual void TearDown() {
+    sgx_destroy_enclave(eid);
+  }
+};
 
-   //Note: Test is on outdated flights
-   // flight_self_test(eid, &ret);
-   // ASSERT_EQ(0, ret);
-    regex_self_test(eid, &ret);
-    ASSERT_EQ(0, ret);
-
+TEST_F(RegExTestSuite, regex) {
+  int ret;
+  regex_self_test(eid, &ret);
+  EXPECT_EQ(0, ret);
 }

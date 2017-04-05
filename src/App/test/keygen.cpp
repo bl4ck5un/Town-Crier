@@ -5,32 +5,21 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "../utils.h"
+#include "utils.h"
 #include "macros.h"
-#include "../Converter.h"
+#include "Converter.h"
+#include "Enclave_u.h"
 
 using namespace std;
 
-class KeygenTestSuite: public ::testing::Test
-{
+class KeygenTestSuite : public ::testing::Test {
  protected:
   sgx_enclave_id_t eid;
-  KeygenTestSuite()
-  {
-    ;
-  }
-  ~KeygenTestSuite()
-  {
-    ;
-  }
-
-  virtual void SetUp()
-  {
+  virtual void SetUp() {
     initialize_enclave(ENCLAVE_FILENAME, &eid);
   }
 
-  virtual void TearDown()
-  {
+  virtual void TearDown() {
     sgx_destroy_enclave(eid);
   }
 };
@@ -65,7 +54,7 @@ TEST_F(KeygenTestSuite, provision) {
   tc_get_address(eid, &ret, pubkey_result, address_result);
   ASSERT_EQ(ret, TC_KEY_NOT_PROVISIONED);
 
-  ecall_status = tc_provision_key(eid, &ret, (sgx_sealed_data_t*) secret_sealed, buffer_used);
+  ecall_status = tc_provision_key(eid, &ret, (sgx_sealed_data_t *) secret_sealed, buffer_used);
   if (SGX_SUCCESS != ecall_status || ret != 0) {
     LL_CRITICAL("ecall failed");
     print_error_message(ecall_status);
