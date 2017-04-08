@@ -15,29 +15,6 @@ else()
     set(SGX_EDGER8R ${SGX_SDK}/bin/x64/sgx_edger8r)
 endif()
 
-# set debug flags properly
-if (SGX_DEBUG AND SGX_PRERELEASE)
-    message(FATAL_ERROR "Cannot set SGX_DEBUG and SGX_PRERELEASE at the same time")
-endif()
-
-# figure out build mode
-if (SGX_DEBUG)
-    set(SGX_COMMON_CFLAGS "${SGX_COMMON_CFLAGS} -O0 -g")
-else(SGX_DEBUG)
-    set(SGX_COMMON_CFLAGS "${SGX_COMMON_CFLAGS} -O2")
-endif(SGX_DEBUG)
-
-if (SGX_DEBUG)
-    # for debug mode: turn on DEBUG, turn off EDEBUG
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG -UNDEBUG -UEDEBUG")
-elseif (SGX_PRERELEASE)
-    # for pre-release mode: turn off DEBUG, turn on EDEBUG
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -DEDEBUG")
-else (SGX_DEBUG)
-    # for release mode: turn off DEBUG, turn on EDEBUG
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -UEDEBUG")
-endif (SGX_DEBUG)
-
 if (SGX_MODE STREQUAL HW)
     set(SGX_URTS_LIB sgx_urts)
     set(SGX_USVC_LIB sgx_uae_service)
@@ -50,12 +27,21 @@ else ()
     set(SGX_TSVC_LIB sgx_tservice_sim)
 endif (SGX_MODE STREQUAL HW)
 
-# set SGX_RELEASE if built in HW mode without DEBUG
-# unless SGX_PRERELEASE is set
-if (SGX_MODE STREQUAL HW AND NOT SGX_DEBUG AND NOT SGX_PRERELEASE)
-    set(SGX_RELEASE TRUE)
+if (SGX_BUILD STREQUAL "DEBUG")
+    set(SGX_COMMON_CFLAGS "${SGX_COMMON_CFLAGS} -O0 -g")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DDEBUG -UNDEBUG -UEDEBUG")
+elseif(SGX_BUILD STREQUAL "PRERELEASE")
+    set(SGX_COMMON_CFLAGS "${SGX_COMMON_CFLAGS} -O2")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -DEDEBUG")
+elseif(SGX_BUILD STREQUAL "RELEASE")
+    if(SGX_MODE STREQUAL "HW")
+        set(SGX_COMMON_CFLAGS "${SGX_COMMON_CFLAGS} -O2")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -UDEBUG -DNDEBUG -UEDEBUG")
+    else()
+        message(FATAL_ERROR "HW mode must be set with RELEASE")
+    endif()
 else()
-    set(SGX_RELEASE FALSE)
+    message(FATAL_ERROR "Unknown build ${SGX_BUILD}")
 endif()
 
 find_package(SGXSDK REQUIRED)
@@ -64,8 +50,7 @@ message(STATUS "SGX_COMMON_CFLAGS: ${SGX_COMMON_CFLAGS}")
 message(STATUS "SGX_SDK: ${SGX_SDK}")
 message(STATUS "SGX_ARCH: ${SGX_ARCH}")
 message(STATUS "SGX_MODE: ${SGX_MODE}")
-message(STATUS "SGX_PRERELEASE: ${SGX_PRERELEASE}")
-message(STATUS "SGX_RELEASE: ${SGX_RELEASE}")
+message(STATUS "SGX_BUILD: ${SGX_BUILD}")
 message(STATUS "SGX_LIBRARY_PATH: ${SGX_LIBRARY_PATH}")
 message(STATUS "SGX_ENCLAVE_SIGNER: ${SGX_ENCLAVE_SIGNER}")
 message(STATUS "SGX_EDGER8R: ${SGX_EDGER8R}")
