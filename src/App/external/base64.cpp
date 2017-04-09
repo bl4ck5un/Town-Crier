@@ -295,6 +295,9 @@ int ext::b64_pton(const char *src, u_char *target, size_t targsize) {
        */
       if (target && (size_t)tarindex < targsize && target[tarindex] != 0)
         return (-1);
+      break;
+    default:
+      abort();
     }
   } else {
     /*

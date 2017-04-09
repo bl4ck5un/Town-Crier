@@ -7,12 +7,12 @@ set(SOURCE_FILES
     scrapers/UPS_Tracking.cpp
     scrapers/current_coinmarket.cpp
     scrapers/current_weather.cpp
-    eth_ecdsa.c
+    eth_ecdsa.cpp
     Enclave_t.c
     event_handler.cpp
     scrapers/flight.cpp
     external/keccak.c
-        tls_client.cpp
+    tls_client.cpp
     scrapers/steam2.cpp
     scrapers/stock_ticker.cpp
     eth_transaction.cpp

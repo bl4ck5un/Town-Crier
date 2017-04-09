@@ -18,7 +18,7 @@ export KEY_STORE=wallet_privnet
 export TESTNET_DATADIR=~/.ethereum
 
 # verbosity
-export VERBOSITY=3
+export VERBOSITY=2
 export MIST_LOG_LVL=error
 
 mkdir -p $DATADIR

@@ -1,7 +1,10 @@
 #!/bin/bash
 source env.sh
 
-$GETH --datadir=$DATADIR init genesis.json
+$GETH --datadir=$DATADIR \
+  --verbosity=$VERBOSITY \
+  --keystore=$KEY_STORE \
+  init genesis.json
 
 $GETH --datadir=$DATADIR \
   --identity="00" \

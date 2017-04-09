@@ -9,7 +9,7 @@ enclave {
 
     trusted {
         public int handle_request(
-                   int nonce, 
+                   int nonce,
                    uint64_t id, uint64_t type,
                    [user_check] uint8_t* data, int data_len,
                    [user_check] uint8_t* tx, [out] size_t* len);
@@ -28,6 +28,14 @@ enclave {
         public int ecdsa_keygen_unseal(
                     [in,size=secret_len] const sgx_sealed_data_t *secret,
                     size_t secret_len,
+                    [user_check] unsigned char* pubkey,
+                    [user_check] unsigned char *address);
+
+        public int tc_provision_key(
+                    [in,size=secret_len] const sgx_sealed_data_t *secret,
+                    size_t secret_len);
+
+        public int tc_get_address(
                     [user_check] unsigned char* pubkey,
                     [user_check] unsigned char *address);
     };

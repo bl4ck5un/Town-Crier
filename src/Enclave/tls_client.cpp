@@ -1,3 +1,42 @@
+//
+// Copyright (c) 2016-2017 by Cornell University.  All Rights Reserved.
+//
+// Permission to use the "TownCrier" software ("TownCrier"), officially docketed at
+// the Center for Technology Licensing at Cornell University as D-7364, developed
+// through research conducted at Cornell University, and its associated copyrights
+// solely for educational, research and non-profit purposes without fee is hereby
+// granted, provided that the user agrees as follows:
+//
+// The permission granted herein is solely for the purpose of compiling the
+// TowCrier source code. No other rights to use TownCrier and its associated
+// copyrights for any other purpose are granted herein, whether commercial or
+// non-commercial.
+//
+// Those desiring to incorporate TownCrier software into commercial products or use
+// TownCrier and its associated copyrights for commercial purposes must contact the
+// Center for Technology Licensing at Cornell University at 395 Pine Tree Road,
+// Suite 310, Ithaca, NY 14850; email: ctl-connect@cornell.edu; Tel: 607-254-4698;
+// FAX: 607-254-5454 for a commercial license.
+//
+// IN NO EVENT SHALL CORNELL UNIVERSITY BE LIABLE TO ANY PARTY FOR DIRECT,
+// INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS,
+// ARISING OUT OF THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS, EVEN IF
+// CORNELL UNIVERSITY MAY HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// THE WORK PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND CORNELL UNIVERSITY HAS NO
+// OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
+// MODIFICATIONS.  CORNELL UNIVERSITY MAKES NO REPRESENTATIONS AND EXTENDS NO
+// WARRANTIES OF ANY KIND, EITHER IMPLIED OR EXPRESS, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+// PURPOSE, OR THAT THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS WILL NOT
+// INFRINGE ANY PATENT, TRADEMARK OR OTHER RIGHTS.
+//
+// TownCrier was developed with funding in part by the National Science Foundation
+// (NSF grants CNS-1314857, CNS-1330599, CNS-1453634, CNS-1518765, CNS-1514261), a
+// Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
+// VMWare Research Award.
+//
+
 #include "tls_client.h"
 #include "Log.h"
 #include "Enclave_t.h"
@@ -65,7 +104,7 @@ int cb_on_message_complete(http_parser *parser) {
 }
 
 int cb_on_body(http_parser *parser, const char *at, size_t len) {
-  LL_TRACE("On body called with at=%p and len=%d", at, len);
+  LL_TRACE("On body called with at=%p and len=%zu", at, len);
   cb_data_t *p = (cb_data_t *) parser->data;
 
   return 0;
@@ -74,7 +113,7 @@ int cb_on_body(http_parser *parser, const char *at, size_t len) {
 int cb_on_header_complete(http_parser *parser) {
   cb_data_t *p = (cb_data_t *) parser->data;
   p->header_length = parser->nread;
-  LL_TRACE("header_complete called after reading %d", p->header_length);
+  LL_TRACE("header_complete called after reading %zu", p->header_length);
 
   return 0;
 }
@@ -403,7 +442,7 @@ HttpResponse HttpsClient::getResponse() {
         ret = ERR_ENCLAVE_SSL_CLIENT;
         throw runtime_error("upgrade not supported");
       } else if (n_parsed != ret) {
-        LL_CRITICAL("Error: received %d bytes and parsed %d of them", ret, n_parsed);
+        LL_CRITICAL("Error: received %d bytes and parsed %zu of them", ret, n_parsed);
         char _tmp_buf[buf.length + 1];
         memcpy(_tmp_buf, buf.buf, buf.length);
         _tmp_buf[MIN(buf.length, 5000)] = 0x0;
@@ -424,7 +463,7 @@ HttpResponse HttpsClient::getResponse() {
   }
 
   if (cb_data.eof == 0 && buf.length == buf.cap) {
-    LL_CRITICAL("receiving buffer (%d bytes) is not big enough", buf.cap);
+    LL_CRITICAL("receiving buffer (%zu bytes) is not big enough", buf.cap);
   }
 
   string response_headers(reinterpret_cast<const char *>(buf.buf),
@@ -435,7 +474,7 @@ HttpResponse HttpsClient::getResponse() {
 
   LL_DEBUG("\nResponse header:\n%s",
            response_headers.length() == 0 ? "empty" : response_headers.c_str());
-  LL_DEBUG("\nResponse body (len=%d):\n%s",
+  LL_DEBUG("\nResponse body (len=%zu):\n%s",
            content.length(),
            content.length() == 0 ? "empty" : content.substr(0, HttpsClient::responseLogLimit).c_str());
 

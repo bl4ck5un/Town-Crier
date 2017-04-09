@@ -1,6 +1,11 @@
 # Town Crier: An Authenticated Data Feed For Smart Contracts
 
-Smart contracts systems today lack trustworthy sources of data, as currently deployed oracles provide only weak provenance and confidentiality guarantees. The Town Crier (TC) system leverages trusted hardware (Intel SGX) to provide a strong guarantee that data comes from an existing, trustworthy source. It also provides confidentiality, enabling smart contracts to support confidential queries and manage user credentials.
+Smart contracts systems today lack trustworthy sources of data, as currently
+deployed oracles provide only weak provenance and confidentiality guarantees.
+The Town Crier (TC) system leverages trusted hardware (Intel SGX) to provide a
+strong guarantee that data comes from an existing, trustworthy source. It also
+provides confidentiality, enabling smart contracts to support confidential
+queries and manage user credentials.
 
 Please read on for installation instructions. If you want to learn how Town Crier works,
 you can read our [CCS'16 paper](https://www.cs.cornell.edu/~fanz/files/pubs/tc-ccs16-final.pdf).
@@ -11,19 +16,22 @@ This section enumerates the required dependencies to compile Town Crier on your 
 
 ## Intel Software Guardian eXtension (SGX)
 
-Town Crier makes use of Intel SGX as a trusted execution environment (TEE). 
-Compiling TC requires libraries provided by the SGX Software Development Kit (SDK),
-which is freely available from [Intel](https://01.org/intel-software-guard-extensions/downloads). 
-Intel SGX SDK releases two versions of SGX
-libraries, a **hardware** version and a **simulation** version. 
-The only difference (yet a significant one) is that the hardware libraries
-implement SGX APIs with actual SGX hardware instructions while the simulation libraries
-just simulate them in the user space. 
+Town Crier makes use of Intel SGX as a trusted execution environment (TEE).
+Compiling TC requires libraries provided by the SGX Software Development Kit
+(SDK), which is freely available from
+[Intel](https://01.org/intel-software-guard-extensions/downloads).  Intel SGX
+SDK releases two versions of SGX libraries, a **hardware** version and a
+**simulation** version.  The only difference (yet a significant one) is that the
+hardware libraries implement SGX APIs with actual SGX hardware instructions
+while the simulation libraries just simulate them in the user space. 
 
 TC can be linked against either version of APIs:
 
-- If linked with the hardware libraries, the executable will run in the hardware mode, which requires a SGX-enabled CPU.
-- If linked with the simulation libraries, the executable will run as if it's an ordinary userspace program, providing ABSOLUTELY NO SECURITY GUARANTEE. Therefore the simulation mode is only for development and testing purpose.
+- If linked with the hardware libraries, the executable will run in the hardware
+  mode, which requires a SGX-enabled CPU.
+- If linked with the simulation libraries, the executable will run as if it's an
+  ordinary userspace program, providing ABSOLUTELY NO SECURITY GUARANTEE.
+  Therefore the simulation mode is only for development and testing purpose.
 
 ### Run TC in the simulation mode
 
@@ -45,7 +53,7 @@ has to be installed and configured. Please refer to
 - [`libjson-rpc-cpp`](https://github.com/cinemast/libjson-rpc-cpp)
 - sqlite3: 
 - `boost`
-- `odb`: **DON'T USE APT VERSION. Manually install the following libraries from the upstream.** [upstream](http://www.codesynthesis.com/products/odb)
+- `odb`:
     - odb-2.4.0
     - libodb-2.4.0
     - libodb-sqlite-2.4.0
@@ -53,8 +61,7 @@ has to be installed and configured. Please refer to
 On Ubuntu 16.04 LTS: 
 
 ```
-sudo apt-get install cmake libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools \ 
-    libsqlite3-0 libsqlite3-dev libboost-all-dev libmicrohttpd-dev
+sudo apt-get install cmake libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools libsqlite3-0 libsqlite3-dev libboost-all-dev libmicrohttpd-dev libcurl4-openssl-dev odb
 ```
 
 Other platforms have yet to be tested.
