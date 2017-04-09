@@ -93,64 +93,67 @@ void StockTickerScraper::CreateQuery(int month, int day, int year, std::string s
     this->query.SetYear(year);
     this->query.SetSymbol(symbol);
 }
-/* (NOTE: Feel free to change the structure as see fit *)
+
 /* The data is structured as follows (Feel free to change if there is a better way to structure it *:
- * 0x00 - 0x20 Symbol (i.e GOOG, APPL, etc)
- * 0x20 - 0x28 Month
- * 0x28 - 0x30 Day
- * 0x30 - 0x40 Year
+ *      0x00 - 0x20 Symbol (i.e GOOG, APPL, etc)
+ *      0x20 - 0x40 Month
+ *      0x40 - 0x60 Day
+ *      0x60 - 0x80 Year
  */
 err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data){
-    //TODO
-    if(data_len != 64){
-        LL_CRITICAL("req_len is not 64");
+
+    if(data_len != 32*4){
+        LL_CRITICAL("req_len %d is not 4*32", data_len / 32);
         return INVALID_PARAMS;
     }
 
-    // char symbol[35] = {0};
-    // memcpy(symbol, req, 0x20);
-    // string str(symbol);
+    char symbol[35] = {0};
+    memcpy(symbol, req, 4);
+    string str(symbol);
+    LL_INFO("symbol: %s\n",symbol);
 
-    // int month = strtol((char *) req + 0x20, NULL, 10);
-    // int day = strtol((char *) req + 0x28, NULL, 10);
-    // int year = strtol((char *) req + 0x30, NULL, 10);
+    int month = strtol((char *) (req + 4), NULL, 10);
+    int day = strtol((char *) (req + 8), NULL, 10);
+    int year = strtol((char *) (req + 12), NULL, 10);
 
+    LL_INFO("month: %d\n", month);
+    LL_INFO("day: %d\n", day);
+    LL_INFO("year: %d\n", year);
 
-    CreateQuery(12, 3, 2010, "GOOG");
+    CreateQuery(day, month, year, symbol);
     StockTickerParser parser = QueryWebsite();
     if(parser.GetErrorCode() == WEB_ERROR){
         return WEB_ERROR;
     }
 
 
-  string resp(parser.GetResponse());
+    string resp(parser.GetResponse());
 
-  std::vector<std::string> strings;
+    std::vector<std::string> strings;
 
-  std::string::size_type pos = 0;
-  std::string::size_type prev = 0;
-  while ((pos = resp.find('\n', prev)) != std::string::npos)
-  {
-    strings.push_back(resp.substr(prev, pos - prev));
-    prev = pos + 1;
-  }
+    std::string::size_type pos = 0;
+    std::string::size_type prev = 0;
+    while ((pos = resp.find('\n', prev)) != std::string::npos){
+        strings.push_back(resp.substr(prev, pos - prev));
+        prev = pos + 1;
+    }
 
-  // To get the last substring (or only, if delimiter is not found)
-  strings.push_back(resp.substr(prev));
+    // To get the last substring (or only, if delimiter is not found)
+    strings.push_back(resp.substr(prev));
 
-  CSV_Parser csv_parser;
-  KEY_VAL_FIELDS _price_chart;
-  CSV_FIELDS _price_chart_hdr;
-  csv_parser.parse_line(strings[0], _price_chart_hdr);
-  csv_parser.parse_line(strings[1], _price_chart_hdr, _price_chart);
+    CSV_Parser csv_parser;
+    KEY_VAL_FIELDS _price_chart;
+    CSV_FIELDS _price_chart_hdr;
+    csv_parser.parse_line(strings[0], _price_chart_hdr);
+    csv_parser.parse_line(strings[1], _price_chart_hdr, _price_chart);
 
-  for (KEY_VAL_FIELDS::iterator it = _price_chart.begin(); it != _price_chart.end(); it++) {
-    printf_sgx("%s -> %s\n", it->first.c_str(), it->second.c_str());
-  }
+    for (KEY_VAL_FIELDS::iterator it = _price_chart.begin(); it != _price_chart.end(); it++) {
+        printf_sgx("%s -> %s\n", it->first.c_str(), it->second.c_str());
+    }
 
-  double closing_price = atof(_price_chart["Close"].c_str());
-  *resp_data = (int) closing_price;
-  return NO_ERROR;
+    double closing_price = atof(_price_chart["Close"].c_str());
+    *resp_data = (int) closing_price;
+    return NO_ERROR;
 
 //  double closingPrice = parser.GetClosingPrice();
 //    *resp_data = (int) closingPrice;

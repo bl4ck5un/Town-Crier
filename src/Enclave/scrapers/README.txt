@@ -24,9 +24,9 @@ Each of these contains a handler class that returns a desired value.  We describ
 	StockTicker:
 		Input:
 			0x00 - 0x20 Symbol (i.e GOOG, APPL, etc)
-			0x20 - 0x40 Month
-			0x40 - 0x60 Day
-			0x60 - 0x80 Year
+			0x20 - 0x40 ascii Month 
+			0x40 - 0x60 ascii Day
+			0x60 - 0x80 ascii Year
 		Output:
 			32 bytes - Closing Price
 

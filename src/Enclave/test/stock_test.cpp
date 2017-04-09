@@ -5,11 +5,12 @@
 #include "../scrapers/stockticker.h"
 #include "Log.h"
 
+uint8_t data[] = { 0x47, 0x4f, 0x4f, 0x47, 0x33, 0, 0, 0, 0x31, 0x32, 0, 0, 0x32, 0x30, 0x31, 0x30};
 /* Test updated on 2/21/17 */
 int stockticker_self_test(){
     StockTickerScraper stockTickerScraper;
     int closingPrice;
-    switch(stockTickerScraper.handler(NULL, 64, &closingPrice)){
+    switch(stockTickerScraper.handler(data, 32*4, &closingPrice)){
         case NO_ERROR:
             LL_INFO("closingPrice is %d", closingPrice);
             return 0;
