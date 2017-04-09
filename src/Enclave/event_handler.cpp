@@ -48,6 +48,7 @@
 #include "scrapers/utils.h"
 #include "scrapers/stockticker.h"
 #include "scrapers/UPS_Tracking.h"
+#include "scrapers/steam2.h"
 #include "time.h"
 #include "eth_transaction.h"
 #include "eth_abi.h"
@@ -113,23 +114,23 @@ int handle_request(int nonce,
       break;
     }
     case TYPE_STEAM_EX:
-      //TODO
-//             int found = 0;
-//             if (data_len != 6 * 32)
-//             {
-//                 LL_CRITICAL("data_len %d*32 is not 6*32", data_len / 32);
-//                 return -1;
-//             }
-//             ret = handler_steam_exchange(data, data_len, &found);
-//             if (ret == -1)
-//             {
-//                 LL_CRITICAL("%s returns %d", "handler_steam_exchange", ret);
-//                 return -1;
-//             }
-// //            found = 1;
-//             append_as_uint256(resp_data, found, sizeof ( found ));
-//             resp_data_len = 32;
-      break;
+    {
+        SteamScraper steamHandler;       
+        int found;
+        switch(steamHandler.handler(data, data_len, &found)){
+            case UNKNOWN_ERROR:
+            case WEB_ERROR:
+                return TC_INTERNAL_ERROR;
+            case INVALID_PARAMS:
+                error_flag = 1;
+                break;
+            case NO_ERROR:
+                append_as_uint256(resp_data, found, sizeof(found));
+                break;
+        }
+        break;
+    }
+    
     case TYPE_CURRENT_VOTE: {
       double r1 = 0, r2 = 0, r3 = 0;
       long long time1, time2;
