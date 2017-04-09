@@ -45,6 +45,7 @@
 #include "scrapers.h"
 #include "scrapers/Scraper.h"
 #include "scrapers/flight.h"
+#include "scrapers/UPS_Tracking.h"
 #include "eth_transaction.h"
 
 
@@ -117,6 +118,22 @@ int handle_request(int nonce,
       rdtsc(&time2);
       LL_CRITICAL("GOOGLE: %llu", time2 - time1);
 
+      break;
+    }
+    case TYPE_UPS_TRACKING: {
+      USPSScraper uSPSScraper;
+      int pkg_status;
+      switch(uSPSScraper.handler(data,data_len, &pkg_status)){
+        case UNKNOWN_ERROR:
+        case WEB_ERROR:
+          return TC_INTERNAL_ERROR;
+        // treat invalid_params as no_error
+        case INVALID_PARAMS:
+          error_flag = 1;
+        case NO_ERROR:
+          append_as_uint256(resp_data, pkg_status, sizeof(pkg_status));
+          break;
+      };
       break;
     }
     default :LL_CRITICAL("Unknown request type: %" PRIu64, type);
