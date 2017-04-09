@@ -11,7 +11,7 @@ var buyerAddr = eth.accounts[2]
 var sgxAddr = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 
 var gasCnt = 3e+6
-var TC_FEE = 55 * 5e+13
+var TC_FEE = 3e+15
 
 personal.unlockAccount(minerAddr, '123123')
 personal.unlockAccount(sellerAddr, '123123')
@@ -188,6 +188,30 @@ function check_balance(){
     return "Success!"
 }
 
+function watch_events(contract) {
+    var his = contract.allEvents({fromBlock: 0, toBlock: 'latest'});
+    var events;
+    his.get(function(error, result) {
+        if (!error) {
+            console.log(result.length);
+            for (var i = 0; i < result.length; ++i) {
+                console.log(i + " : " + result[i].event);
+            }
+            events = result;
+        } else {
+            console.log("error");
+            events = "error";
+        }
+    });
+    return events;
+}
+
+
+function unlockAccounts() {
+    for (var i = 0; i < eth.accounts.length; ++i) {
+        personal.unlockAccount(eth.accounts[i], '123123');
+    }
+}
 
 /* =========== The following should be run line-by-line as a demo =========== */
 // loadScript("demorc.js");

@@ -1,3 +1,42 @@
+//
+// Copyright (c) 2016-2017 by Cornell University.  All Rights Reserved.
+//
+// Permission to use the "TownCrier" software ("TownCrier"), officially docketed at
+// the Center for Technology Licensing at Cornell University as D-7364, developed
+// through research conducted at Cornell University, and its associated copyrights
+// solely for educational, research and non-profit purposes without fee is hereby
+// granted, provided that the user agrees as follows:
+//
+// The permission granted herein is solely for the purpose of compiling the
+// TowCrier source code. No other rights to use TownCrier and its associated
+// copyrights for any other purpose are granted herein, whether commercial or
+// non-commercial.
+//
+// Those desiring to incorporate TownCrier software into commercial products or use
+// TownCrier and its associated copyrights for commercial purposes must contact the
+// Center for Technology Licensing at Cornell University at 395 Pine Tree Road,
+// Suite 310, Ithaca, NY 14850; email: ctl-connect@cornell.edu; Tel: 607-254-4698;
+// FAX: 607-254-5454 for a commercial license.
+//
+// IN NO EVENT SHALL CORNELL UNIVERSITY BE LIABLE TO ANY PARTY FOR DIRECT,
+// INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS,
+// ARISING OUT OF THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS, EVEN IF
+// CORNELL UNIVERSITY MAY HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// THE WORK PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND CORNELL UNIVERSITY HAS NO
+// OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
+// MODIFICATIONS.  CORNELL UNIVERSITY MAKES NO REPRESENTATIONS AND EXTENDS NO
+// WARRANTIES OF ANY KIND, EITHER IMPLIED OR EXPRESS, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+// PURPOSE, OR THAT THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS WILL NOT
+// INFRINGE ANY PATENT, TRADEMARK OR OTHER RIGHTS.
+//
+// TownCrier was developed with funding in part by the National Science Foundation
+// (NSF grants CNS-1314857, CNS-1330599, CNS-1453634, CNS-1518765, CNS-1514261), a
+// Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
+// VMWare Research Award.
+//
+
 #include "sgx_utils.h"
 #include "sgx_report.h"
 #include "string.h"
@@ -21,25 +60,17 @@ int ecall_time_calibrate (time_t wall_clock, uint8_t wtc_rsv[65])
 {
     int ret = 0;
     uint8_t wtc_hash[32];
-#ifdef TIME_CALIBRATION_BENCHMARK
-    long long time1 = 0, time2 = 0;
-    rdtsc(&time1);
-#endif
     ret = keccak((uint8_t*)&wall_clock, sizeof wall_clock, wtc_hash, 32);
     if (ret != 0)
     {
         LL_CRITICAL("keccak returned %d", ret);
         return ret;
     }
-    ret = sign(wtc_hash, sizeof wtc_hash, wtc_rsv, wtc_rsv + 32, wtc_rsv + 64);
+    ret = ecdsa_sign(wtc_hash, sizeof wtc_hash, wtc_rsv, wtc_rsv + 32, wtc_rsv + 64);
     if (ret != 0)
     {
-        LL_CRITICAL("sign() returned %d", ret);
+        LL_CRITICAL("ecdsa_sign() returned %d", ret);
         return ret;
     }
-#ifdef TIME_CALIBRATION_BENCHMARK
-    rdtsc(&time2);
-    LL_CRITICAL("sign the timestamp: %f", (time2-time1)/FREQ);
-#endif
     return ret;
 }

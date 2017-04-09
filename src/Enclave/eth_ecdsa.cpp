@@ -1,5 +1,49 @@
+//
+// Copyright (c) 2016-2017 by Cornell University.  All Rights Reserved.
+//
+// Permission to use the "TownCrier" software ("TownCrier"), officially docketed at
+// the Center for Technology Licensing at Cornell University as D-7364, developed
+// through research conducted at Cornell University, and its associated copyrights
+// solely for educational, research and non-profit purposes without fee is hereby
+// granted, provided that the user agrees as follows:
+//
+// The permission granted herein is solely for the purpose of compiling the
+// TowCrier source code. No other rights to use TownCrier and its associated
+// copyrights for any other purpose are granted herein, whether commercial or
+// non-commercial.
+//
+// Those desiring to incorporate TownCrier software into commercial products or use
+// TownCrier and its associated copyrights for commercial purposes must contact the
+// Center for Technology Licensing at Cornell University at 395 Pine Tree Road,
+// Suite 310, Ithaca, NY 14850; email: ctl-connect@cornell.edu; Tel: 607-254-4698;
+// FAX: 607-254-5454 for a commercial license.
+//
+// IN NO EVENT SHALL CORNELL UNIVERSITY BE LIABLE TO ANY PARTY FOR DIRECT,
+// INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS,
+// ARISING OUT OF THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS, EVEN IF
+// CORNELL UNIVERSITY MAY HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// THE WORK PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND CORNELL UNIVERSITY HAS NO
+// OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
+// MODIFICATIONS.  CORNELL UNIVERSITY MAKES NO REPRESENTATIONS AND EXTENDS NO
+// WARRANTIES OF ANY KIND, EITHER IMPLIED OR EXPRESS, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+// PURPOSE, OR THAT THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS WILL NOT
+// INFRINGE ANY PATENT, TRADEMARK OR OTHER RIGHTS.
+//
+// TownCrier was developed with funding in part by the National Science Foundation
+// (NSF grants CNS-1314857, CNS-1330599, CNS-1453634, CNS-1518765, CNS-1514261), a
+// Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
+// VMWare Research Award.
+//
+
 #include <string.h>
 #include <sgx_tseal.h>
+#include <mbedtls-SGX/include/mbedtls/bignum.h>
+#include <stdexcept>
+#include <string>
+
+using std::runtime_error;
 
 #include "eth_ecdsa.h"
 #include "external/keccak.h"
@@ -44,6 +88,7 @@ ADR: 89b44e4d3c81ede05d0f5de8d1a68f754d73d997
 */
 
 #define PREDEFINED_SECKEY "cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8"
+static mbedtls_mpi g_secret_key;
 
 /*!
  * @brief generate a key pair (or generate a pubkey and address from a secret key)
@@ -53,7 +98,7 @@ ADR: 89b44e4d3c81ede05d0f5de8d1a68f754d73d997
  * @param address [out,size=20] output buffer for the address
  * @return 0 if succeed
  */
-int __ecdsa_sec_to_pub(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigned char *address) {
+int __ecdsa_seckey_to_pubkey(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigned char *address) {
  if (pubkey == NULL || address == NULL || seckey == NULL) {
    return -1;
  }
@@ -84,7 +129,7 @@ int __ecdsa_sec_to_pub(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigne
    return -1;
  }
  if (buflen != 65) {
-   LL_CRITICAL("ecp serialization is incorrect olen=%d", buflen);
+   LL_CRITICAL("ecp serialization is incorrect olen=%ld", buflen);
  }
 
  ret = keccak(__pubkey + 1, 64, __address, 32);
@@ -108,6 +153,7 @@ int __ecdsa_sec_to_pub(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigne
  * @return
  */
 int ecdsa_keygen_unseal(const sgx_sealed_data_t *secret, size_t secret_len, unsigned char* pubkey, unsigned char *address) {
+  // used by edge8r
   (void) secret_len;
 
   uint32_t decrypted_text_length = sgx_get_encrypt_txt_len(secret);
@@ -120,11 +166,53 @@ int ecdsa_keygen_unseal(const sgx_sealed_data_t *secret, size_t secret_len, unsi
     return -1;
   }
 
-  mbedtls_mpi seckey;
-  mbedtls_mpi_init(&seckey);
-  mbedtls_mpi_read_binary(&seckey, y, sizeof y);
+  // initialize the local secret key
+  mbedtls_mpi secret_key;
+  mbedtls_mpi_init(&secret_key);
+  mbedtls_mpi_read_binary(&secret_key, y, sizeof y);
 
-  return __ecdsa_sec_to_pub(&seckey, pubkey, address);
+  return __ecdsa_seckey_to_pubkey(&secret_key, pubkey, address);
+}
+
+/*!
+ * Set the global secret key
+ * @param secret
+ * @param secret_len
+ * @param pubkey
+ * @param address
+ * @return
+ */
+int tc_provision_key(const sgx_sealed_data_t *secret, size_t secret_len) {
+  // used by edge8r
+  (void) secret_len;
+
+  uint32_t decrypted_text_length = sgx_get_encrypt_txt_len(secret);
+  uint8_t y[decrypted_text_length];
+  sgx_status_t st;
+
+  st = sgx_unseal_data(secret, NULL, 0, y, &decrypted_text_length);
+  if (st != SGX_SUCCESS) {
+    LL_CRITICAL("unseal returned %x", st);
+    return -1;
+  }
+
+  // initialize the global secret key
+  mbedtls_mpi_init(&g_secret_key);
+  return mbedtls_mpi_read_binary(&g_secret_key, y, sizeof y);
+}
+
+/*!
+ * get the current address of Town Crier wallet
+ * @param pubkey
+ * @param address
+ * @return
+ */
+int tc_get_address(unsigned char *pubkey, unsigned char *address) {
+  if (g_secret_key.p == NULL) {
+    LL_CRITICAL("key has not been provisioned yet. Call tc_provision_key() first");
+    return TC_KEY_NOT_PROVISIONED;
+  }
+  return __ecdsa_seckey_to_pubkey(&g_secret_key, pubkey, address);
 }
 
 /*!
@@ -136,14 +224,23 @@ int ecdsa_keygen_unseal(const sgx_sealed_data_t *secret, size_t secret_len, unsi
  * @return
  */
 int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen, unsigned char *o_pubkey, unsigned char *o_address) {
-  mbedtls_mpi secret;
   mbedtls_ecp_group grp;
   int ret = 0;
 
+  mbedtls_mpi secret;
   mbedtls_mpi_init(&secret);
+
   mbedtls_ecp_group_init(&grp);
   mbedtls_ecp_group_load(&grp, ECPARAMS);
+#ifdef PREDEFINED_SECKEY
+  ret = mbedtls_mpi_read_string(&secret, 16, PREDEFINED_SECKEY);
+  if (ret != 0) {
+    LL_CRITICAL("Error: mbedtls_mpi_read_string returned %d", ret);
+    return -1;
+  }
+#else
   mbedtls_mpi_fill_random(&secret, grp.nbits / 8, mbedtls_sgx_drbg_random, NULL);
+#endif
 
   unsigned char secret_buffer[32];
   if (mbedtls_mpi_write_binary(&secret, secret_buffer, sizeof secret_buffer) != 0) {
@@ -152,22 +249,25 @@ int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen, unsigned char *o_pu
     goto exit;
   }
 
-  uint32_t len = sgx_calc_sealed_data_size(0, sizeof(secret_buffer));
-  sgx_sealed_data_t* seal_buffer = malloc(len);
-  LL_LOG("sealed secret length is %d", len);
+  // seal the data
+  {
+    uint32_t len = sgx_calc_sealed_data_size(0, sizeof(secret_buffer));
+    sgx_sealed_data_t* seal_buffer = (sgx_sealed_data_t*) malloc(len);
+    LL_LOG("sealed secret length is %d", len);
 
-  sgx_status_t st = sgx_seal_data(0, NULL, sizeof secret_buffer, secret_buffer, len, seal_buffer);
-  if (st != SGX_SUCCESS) {
-    LL_LOG("Failed to seal. Ecall returned %d", st);
-    ret = -1;
-    goto exit;
+    sgx_status_t st = sgx_seal_data(0, NULL, sizeof secret_buffer, secret_buffer, len, seal_buffer);
+    if (st != SGX_SUCCESS) {
+      LL_LOG("Failed to seal. Ecall returned %d", st);
+      ret = -1;
+      goto exit;
+    }
+
+    *olen = len;
+    memcpy(o_sealed, seal_buffer, len);
+    free(seal_buffer);
   }
 
-  *olen = len;
-  memcpy(o_sealed, seal_buffer, len);
-
-  LL_LOG("calling sec to pub");
-  if (__ecdsa_sec_to_pub(&secret, o_pubkey, o_address) != 0) {
+  if (__ecdsa_seckey_to_pubkey(&secret, o_pubkey, o_address) != 0) {
     LL_CRITICAL("failed to get public key");
     ret = -1;
     goto exit;
@@ -175,13 +275,12 @@ int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen, unsigned char *o_pu
   LL_LOG("returning from keygen_seal");
 
   exit:
-  if (seal_buffer) free(seal_buffer);
   mbedtls_mpi_free(&secret);
   mbedtls_ecp_group_free(&grp);
   return ret;
 }
 
-int sign(uint8_t *data, size_t in_len, uint8_t *rr, uint8_t *ss, uint8_t *vv) {
+int ecdsa_sign(const uint8_t *data, size_t in_len, uint8_t *rr, uint8_t *ss, uint8_t *vv) {
   int ret;
   mbedtls_ecdsa_context ctx_sign, ctx_verify;
   mbedtls_entropy_context entropy;
@@ -195,9 +294,14 @@ int sign(uint8_t *data, size_t in_len, uint8_t *rr, uint8_t *ss, uint8_t *vv) {
   mbedtls_ctr_drbg_init(&ctr_drbg);
 
   mbedtls_ecp_group_load(&ctx_sign.grp, ECPARAMS);
-  ret = mbedtls_mpi_read_string(&ctx_sign.d, 16, PREDEFINED_SECKEY);
+
+  if (g_secret_key.p == NULL) {
+    LL_CRITICAL("signing key not provisioned yet. Call tc_provision_key() first");
+    return -1;
+  }
+  ret = mbedtls_mpi_copy(&ctx_sign.d, &g_secret_key);
   if (ret != 0) {
-    LL_CRITICAL("Error: mbedtls_mpi_read_string returned %d", ret);
+    LL_CRITICAL("Error: mbedtls_mpi_copy returned %d", ret);
     return -1;
   }
   ret = mbedtls_ecp_mul(&ctx_sign.grp, &ctx_sign.Q, &ctx_sign.d, &ctx_sign.grp.G, NULL, NULL);

@@ -1,7 +1,10 @@
 #!/bin/bash
 source env.sh
 
-$GETH --datadir=$DATADIR init genesis.json
+$GETH --datadir=$DATADIR \
+  --verbosity=$VERBOSITY \
+  --keystore=$KEY_STORE \
+  init genesis.json
 
 $GETH --datadir=$DATADIR \
   --identity="00" \
@@ -16,4 +19,4 @@ $GETH --datadir=$DATADIR \
   --rpcapi="db,eth,ne,web3,personal" \
   --ipcpath=$IPC_PATH \
   --keystore=$KEY_STORE \
-  console
+  $@

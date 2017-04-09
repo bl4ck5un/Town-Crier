@@ -1,10 +1,51 @@
+//
+// Copyright (c) 2016-2017 by Cornell University.  All Rights Reserved.
+//
+// Permission to use the "TownCrier" software ("TownCrier"), officially docketed at
+// the Center for Technology Licensing at Cornell University as D-7364, developed
+// through research conducted at Cornell University, and its associated copyrights
+// solely for educational, research and non-profit purposes without fee is hereby
+// granted, provided that the user agrees as follows:
+//
+// The permission granted herein is solely for the purpose of compiling the
+// TowCrier source code. No other rights to use TownCrier and its associated
+// copyrights for any other purpose are granted herein, whether commercial or
+// non-commercial.
+//
+// Those desiring to incorporate TownCrier software into commercial products or use
+// TownCrier and its associated copyrights for commercial purposes must contact the
+// Center for Technology Licensing at Cornell University at 395 Pine Tree Road,
+// Suite 310, Ithaca, NY 14850; email: ctl-connect@cornell.edu; Tel: 607-254-4698;
+// FAX: 607-254-5454 for a commercial license.
+//
+// IN NO EVENT SHALL CORNELL UNIVERSITY BE LIABLE TO ANY PARTY FOR DIRECT,
+// INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS,
+// ARISING OUT OF THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS, EVEN IF
+// CORNELL UNIVERSITY MAY HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// THE WORK PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND CORNELL UNIVERSITY HAS NO
+// OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
+// MODIFICATIONS.  CORNELL UNIVERSITY MAKES NO REPRESENTATIONS AND EXTENDS NO
+// WARRANTIES OF ANY KIND, EITHER IMPLIED OR EXPRESS, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+// PURPOSE, OR THAT THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS WILL NOT
+// INFRINGE ANY PATENT, TRADEMARK OR OTHER RIGHTS.
+//
+// TownCrier was developed with funding in part by the National Science Foundation
+// (NSF grants CNS-1314857, CNS-1330599, CNS-1453634, CNS-1518765, CNS-1514261), a
+// Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
+// VMWare Research Award.
+//
+
 #include "tls_client.h"
 #include "Log.h"
 #include "Enclave_t.h"
-#include "trusted_ca_certs.h"
 #include "Debug.h"
 #include "external/http_parser.h"
 #include "Constants.h"
+#include "ca_bundle.h"
+
+#define MIN(x,y) (x < y ? x : y)
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 
@@ -31,10 +72,23 @@
 #include <string>
 #include <exception>
 #include <vector>
-
-#include "Log.h"
+#include <stlport/type_traits>
 
 using namespace std;
+
+static const string printableRequest(const string &request) {
+  std::string res;
+  for (int i = 0; i < request.length(); ++i) {
+    switch (request[i]) {
+      case '\r':res += "\\r";
+        break;
+      case '\n':res += "\\n";
+        break;
+      default:res += request[i];
+    }
+  }
+  return res;
+}
 
 typedef struct {
   ReceivingBuffer *buffer;
@@ -50,7 +104,7 @@ int cb_on_message_complete(http_parser *parser) {
 }
 
 int cb_on_body(http_parser *parser, const char *at, size_t len) {
-  LL_TRACE("On body called with at=%p and len=%d", at, len);
+  LL_TRACE("On body called with at=%p and len=%zu", at, len);
   cb_data_t *p = (cb_data_t *) parser->data;
 
   return 0;
@@ -59,7 +113,7 @@ int cb_on_body(http_parser *parser, const char *at, size_t len) {
 int cb_on_header_complete(http_parser *parser) {
   cb_data_t *p = (cb_data_t *) parser->data;
   p->header_length = parser->nread;
-  LL_TRACE("header_complete called after reading %d", p->header_length);
+  LL_TRACE("header_complete called after reading %zu", p->header_length);
 
   return 0;
 }
@@ -121,15 +175,15 @@ static int my_verify(void *data, mbedtls_x509_crt *crt, int depth, uint32_t *fla
   char buf[1024];
   ((void) data);
 
-  LL_TRACE("\nVerify requested for (Depth %d):", depth);
+  LL_DEBUG("\nVerify requested for (Depth %d):", depth);
   mbedtls_x509_crt_info(buf, sizeof(buf) - 1, "", crt);
-  LL_TRACE("%s", buf);
+  LL_DEBUG("%s", buf);
 
   if ((*flags) == 0) {
-    LL_TRACE("  This certificate has no flags");
+    LL_DEBUG("  This certificate has no flags");
   } else {
     mbedtls_x509_crt_verify_info(buf, sizeof(buf), "  ! ", *flags);
-    LL_TRACE("%s", buf);
+    LL_DEBUG("%s", buf);
   }
 
   return (0);
@@ -170,10 +224,11 @@ HttpsClient::HttpsClient(HttpRequest &httpRequest) : httpRequest(httpRequest) {
    * 1. Load the trusted CA
    */
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
-  ret = mbedtls_x509_crt_parse(&cacert, (const unsigned char *) root_cas_pem, root_cas_pem_len);
+  ret = mbedtls_x509_crt_parse(&cacert, (const unsigned char *) mozilla_ca_bundle, sizeof(mozilla_ca_bundle));
   if (ret < 0) {
     throw std::runtime_error("mbedtls_x509_crt_parse failed");
   }
+
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
 }
@@ -207,7 +262,7 @@ void HttpsClient::sendRequest() {
 #ifdef HEXDUMP_TLS_TRANSCRIPT
   dump_buf("Request: ", (const unsigned char *) requestMessage.c_str(), requestMessage.length());
 #else
-  LL_DEBUG("\nRequest:\n%s", requestMessage.c_str());
+  LL_DEBUG("Request: %s", printableRequest(requestMessage).c_str());
 #endif
 
   for (int written = 0, frags = 0; written < requestMessage.size(); written += ret, frags++) {
@@ -304,21 +359,18 @@ HttpResponse HttpsClient::getResponse() {
           LL_CRITICAL("Peer certificate information");
           mbedtls_x509_crt_info((char *) temp_buf, sizeof(temp_buf) - 1, "|-", mbedtls_ssl_get_peer_cert(&ssl));
           mbedtls_printf("%s\n", temp_buf);
-        }
-        else{
+        } else {
           LL_CRITICAL("mbedtls_ssl_get_peer_cert returns NULL");
         }
       } else {
         LL_TRACE("X.509 Verifies");
       }
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
-      LL_CRITICAL("mbedtls_ssl_handshake returned -%#x", -ret);
-
       if (ret == MBEDTLS_ERR_X509_CERT_VERIFY_FAILED) {
         LL_CRITICAL("Unable to verify the server's certificate.");
       }
 
-      throw runtime_error("mbedtls_ssl_handshake");
+      throw runtime_error("mbedtls_ssl_handshake failed.");
     }
   }
 
@@ -390,7 +442,11 @@ HttpResponse HttpsClient::getResponse() {
         ret = ERR_ENCLAVE_SSL_CLIENT;
         throw runtime_error("upgrade not supported");
       } else if (n_parsed != ret) {
-        LL_CRITICAL("Error: received %d bytes and parsed %d of them", ret, n_parsed);
+        LL_CRITICAL("Error: received %d bytes and parsed %zu of them", ret, n_parsed);
+        char _tmp_buf[buf.length + 1];
+        memcpy(_tmp_buf, buf.buf, buf.length);
+        _tmp_buf[MIN(buf.length, 5000)] = 0x0;
+        printf_sgx("%s\n", _tmp_buf);
         ret = ERR_ENCLAVE_SSL_CLIENT;
         throw runtime_error("received bytes are can not be fully parsed");
       }
@@ -399,16 +455,15 @@ HttpResponse HttpsClient::getResponse() {
         LL_TRACE("EOF");
         if (parser.status_code != 200) {
           LL_CRITICAL("status code %d", parser.status_code);
-        }
-        else
+        } else
           LL_LOG("status code %d", parser.status_code);
         break;
       }
     }
   }
 
-  if (cb_data.eof == 0) {
-    LL_CRITICAL("receiving buffer (%d bytes) is not big enough", buf.cap);
+  if (cb_data.eof == 0 && buf.length == buf.cap) {
+    LL_CRITICAL("receiving buffer (%zu bytes) is not big enough", buf.cap);
   }
 
   string response_headers(reinterpret_cast<const char *>(buf.buf),
@@ -417,8 +472,11 @@ HttpResponse HttpsClient::getResponse() {
   string content((const char *) buf.buf + cb_data.header_length, buf.length - cb_data.header_length);
   HttpResponse resp(parser.status_code, response_headers, content);
 
-  LL_DEBUG("\nResponse header:\n%s", response_headers.c_str());
-  LL_DEBUG("\nResponse body:\n%s", content.substr(0, HttpsClient::responseLogLimit).c_str());
+  LL_DEBUG("\nResponse header:\n%s",
+           response_headers.length() == 0 ? "empty" : response_headers.c_str());
+  LL_DEBUG("\nResponse body (len=%zu):\n%s",
+           content.length(),
+           content.length() == 0 ? "empty" : content.substr(0, HttpsClient::responseLogLimit).c_str());
 
   return resp;
 }

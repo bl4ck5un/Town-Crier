@@ -1,3 +1,42 @@
+//
+// Copyright (c) 2016-2017 by Cornell University.  All Rights Reserved.
+//
+// Permission to use the "TownCrier" software ("TownCrier"), officially docketed at
+// the Center for Technology Licensing at Cornell University as D-7364, developed
+// through research conducted at Cornell University, and its associated copyrights
+// solely for educational, research and non-profit purposes without fee is hereby
+// granted, provided that the user agrees as follows:
+//
+// The permission granted herein is solely for the purpose of compiling the
+// TowCrier source code. No other rights to use TownCrier and its associated
+// copyrights for any other purpose are granted herein, whether commercial or
+// non-commercial.
+//
+// Those desiring to incorporate TownCrier software into commercial products or use
+// TownCrier and its associated copyrights for commercial purposes must contact the
+// Center for Technology Licensing at Cornell University at 395 Pine Tree Road,
+// Suite 310, Ithaca, NY 14850; email: ctl-connect@cornell.edu; Tel: 607-254-4698;
+// FAX: 607-254-5454 for a commercial license.
+//
+// IN NO EVENT SHALL CORNELL UNIVERSITY BE LIABLE TO ANY PARTY FOR DIRECT,
+// INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS,
+// ARISING OUT OF THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS, EVEN IF
+// CORNELL UNIVERSITY MAY HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// THE WORK PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND CORNELL UNIVERSITY HAS NO
+// OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
+// MODIFICATIONS.  CORNELL UNIVERSITY MAKES NO REPRESENTATIONS AND EXTENDS NO
+// WARRANTIES OF ANY KIND, EITHER IMPLIED OR EXPRESS, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+// PURPOSE, OR THAT THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS WILL NOT
+// INFRINGE ANY PATENT, TRADEMARK OR OTHER RIGHTS.
+//
+// TownCrier was developed with funding in part by the National Science Foundation
+// (NSF grants CNS-1314857, CNS-1330599, CNS-1453634, CNS-1518765, CNS-1514261), a
+// Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
+// VMWare Research Award.
+//
+
 #include <assert.h>
 #include "stdlib.h"
 #include "stdint.h"
@@ -74,22 +113,22 @@ TX::TX(TX::Type p) {
   this->v = 0;
 }
 
-void TX::rlp_list(bytes &out, bool withSig) {
+void TX::rlp_encode(bytes &out, bool withSig) {
   int i;
   uint8_t len_len, b;
-  m_nonce.rlp(out);
-  m_gasPrice.rlp(out);
-  m_gas.rlp(out);
+  m_nonce.to_rlp(out);
+  m_gasPrice.to_rlp(out);
+  m_gas.to_rlp(out);
   if (m_type == MessageCall) {
-    m_receiveAddress.rlp(out);
+    m_receiveAddress.to_rlp(out);
   }
-  m_value.rlp(out);
-  m_data.rlp(out);
+  m_value.to_rlp(out);
+  m_data.to_rlp(out);
   // v is also different
   if (withSig) {
     rlp_item((const uint8_t *) &v, 1, out);
-    r.rlp(out);
-    s.rlp(out);
+    r.to_rlp(out);
+    s.to_rlp(out);
   }
   int len = out.size();
   // list header
@@ -124,7 +163,8 @@ int form_transaction(int nonce,
                      uint64_t resp_error,
                      bytes resp_data,
                      uint8_t *tx_output_bf,
-                     size_t *o_len) {
+                     size_t *o_len,
+                     bool with_sig) {
   if (tx_output_bf == NULL || o_len == NULL) {
     LL_CRITICAL("Error: tx_output_bf or o_len gets NULL input\n");
     return TC_INTERNAL_ERROR;
@@ -182,6 +222,8 @@ int form_transaction(int nonce,
     return TC_INTERNAL_ERROR;
   }
 
+  dump_buf("encoded_abi_call", &encoded_abi_call[0], encoded_abi_call.size());
+
   // insert the function selector to the begining of the encoded abi
   for (int i = 0; i < 4; i++) { encoded_abi_call.insert(encoded_abi_call.begin(), func_selector[3 - i]); }
 
@@ -194,15 +236,15 @@ int form_transaction(int nonce,
   memcpy(&tx.m_nonce[0], &nonce_bytes[0], nonce_bytes.size());
   set_byte_length(&tx.m_nonce);
 
-  tx.m_gasPrice.fromHex(GASPRICE);
-  tx.m_gas.fromHex(GASLIMIT);
-  tx.m_receiveAddress.fromHex(TC_ADDRESS);
+  tx.m_gasPrice.from_hex(GASPRICE);
+  tx.m_gas.from_hex(GASLIMIT);
+  tx.m_receiveAddress.from_hex(TC_ADDRESS);
 
   tx.m_data.clear();
   tx.m_data = encoded_abi_call;
 
   try {
-    tx.rlp_list(out, false);
+    tx.rlp_encode(out, false);
   }
   catch (std::invalid_argument &ex) {
     LL_CRITICAL("%s\n", ex.what());
@@ -216,24 +258,25 @@ int form_transaction(int nonce,
     LL_CRITICAL("keccak returned %d", ret);
     return TC_INTERNAL_ERROR;
   }
-  ret = sign(_tx_hash, 32, &tx.r[0], &tx.s[0], &tx.v);
 
-  if (ret != 0) {
-    LL_CRITICAL("Error: signing returned %d\n", ret);
-    return TC_INTERNAL_ERROR;
+  if (with_sig) {
+    if ((ret = ecdsa_sign(_tx_hash, 32, &tx.r[0], &tx.s[0], &tx.v)) != 0) {
+      LL_CRITICAL("Error: signing returned %d\n", ret);
+      return TC_INTERNAL_ERROR;
+    }
   }
   else {
-    tx.r.set_size(32);
-    tx.s.set_size(32);
+    // fill in dummy signatures
+    memset(&tx.r[0], 0, 32);
+    memset(&tx.s[0], 0, 32);
+    tx.v = 27;
   }
-
-//  print_str_dbg("r", &tx.r[0], 32);
-//  print_str_dbg("s", &tx.s[0], 32);
-//  print_str_dbg("v", &tx.v, 1);
+  tx.r.set_size(32);
+  tx.s.set_size(32);
 
   // RLP encode the final output with signature
   out.clear();
-  tx.rlp_list(out, true);
+  tx.rlp_encode(out, true);
 
   if (out.size() > TX_BUF_SIZE) {
     LL_CRITICAL("Error buffer size (%d) is too small.\n", TX_BUF_SIZE);

@@ -14,7 +14,7 @@ contract SteamTrade {
     uint public P;
     address[2**64] buyers;
     uint constant TC_FEE = (35000 + 20000) * 5 * 10**10;
-    bytes4 constant TC_CALLBACK_FID = 0x3d622256;
+    bytes4 constant TC_CALLBACK_FID = bytes4(sha3("pay(uint64, uint64, bytes32)"));
 
     function () {  }
 
@@ -47,13 +47,13 @@ contract SteamTrade {
         format[3] = bytes32(T_B);
         format[4] = bytes32(1);
         format[5] = ITEM;
-        uint64 requestId = TC_CONTRACT.request.value(TC_FEE)(2, this, TC_CALLBACK_FID, format);
+        uint64 requestId = TC_CONTRACT.request.value(TC_FEE)(2, this, TC_CALLBACK_FID, 0, format);
         buyers[requestId] = msg.sender;
         UINT(format.length);
         return format.length;
     } 
 
-    function pay(uint64 requestId, bytes32 result) public { 
+    function pay(uint64 requestId, uint64 error, bytes32 result) public { 
         address buyer = buyers[requestId];
         if (msg.sender != address(TC_CONTRACT)) { // && msg.sender != 0x50adbfc5017cc4fe557e64425c8d0ce674f8de69) {
             UINT(666);
