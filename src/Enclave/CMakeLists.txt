@@ -13,6 +13,7 @@ set(SOURCE_FILES
     event_handler.cpp
     scrapers/flight.cpp
     external/keccak.c
+    external/csv_parser.cpp
     tls_client.cpp
     scrapers/steam2.cpp
     scrapers/stock_ticker.cpp

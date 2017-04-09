@@ -24,6 +24,3 @@ int stockticker_self_test(){
   	
     /* Test5: Test on flight that has not departed yet */
 }
-//1477276620,
-//filed_departuretime":1477276620
-//filed_departuretime":1477276620

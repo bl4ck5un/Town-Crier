@@ -42,6 +42,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "external/csv_parser.hpp"
 #include "stdio.h"
 #include "Log.h"
 #include "stockticker.h"
@@ -51,7 +52,7 @@ using namespace std;
 
 /* Implement the stockQuery class **/
 StockQuery::StockQuery(int month, int day, int year, std::string symbol){
-    this->day = day; 
+    this->day = day;
     this->month = month-1;
     this->year = year;
     this->symbol = symbol;
@@ -114,30 +115,59 @@ err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data)
     // int day = strtol((char *) req + 0x28, NULL, 10);
     // int year = strtol((char *) req + 0x30, NULL, 10);
 
-    
+
     CreateQuery(12, 3, 2010, "GOOG");
     StockTickerParser parser = QueryWebsite();
     if(parser.GetErrorCode() == WEB_ERROR){
         return WEB_ERROR;
     }
 
-    double closingPrice = parser.GetClosingPrice();
-    *resp_data = (int) closingPrice;
-    return NO_ERROR; 
+
+  string resp(parser.GetResponse());
+
+  std::vector<std::string> strings;
+
+  std::string::size_type pos = 0;
+  std::string::size_type prev = 0;
+  while ((pos = resp.find('\n', prev)) != std::string::npos)
+  {
+    strings.push_back(resp.substr(prev, pos - prev));
+    prev = pos + 1;
+  }
+
+  // To get the last substring (or only, if delimiter is not found)
+  strings.push_back(resp.substr(prev));
+
+  CSV_Parser csv_parser;
+  KEY_VAL_FIELDS _price_chart;
+  CSV_FIELDS _price_chart_hdr;
+  csv_parser.parse_line(strings[0], _price_chart_hdr);
+  csv_parser.parse_line(strings[1], _price_chart_hdr, _price_chart);
+
+  for (KEY_VAL_FIELDS::iterator it = _price_chart.begin(); it != _price_chart.end(); it++) {
+    printf_sgx("%s -> %s\n", it->first.c_str(), it->second.c_str());
+  }
+
+  double closing_price = atof(_price_chart["Close"].c_str());
+  *resp_data = (int) closing_price;
+  return NO_ERROR;
+
+//  double closingPrice = parser.GetClosingPrice();
+//    *resp_data = (int) closingPrice;
+//    return NO_ERROR;
 }
 
 /* Query the ichar.yahoo website, returns a StockTickerParser which can be 
     used to parse the response
 */
 StockTickerParser StockTickerScraper::QueryWebsite(){
-    HttpRequest httpRequest("ichart.yahoo.com",this->query.GetUrl().c_str(), NULL);
+    HttpRequest httpRequest("ichart.yahoo.com", this->query.GetUrl().c_str(), false);
     HttpsClient httpClient(httpRequest);
 
     try{
         HttpResponse response = httpClient.getResponse();
         return StockTickerParser(response.getContent().c_str(), NO_ERROR);
-
-    }catch(std::runtime_error &e){
+    } catch(std::runtime_error &e){
         /* An HTTPS error has occured */
         LL_CRITICAL("Https error: %s", e.what());
         LL_CRITICAL("Details: %s", httpClient.getError().c_str());
@@ -151,7 +181,7 @@ StockTickerParser StockTickerScraper::QueryWebsite(){
 
 /* Implement the constructor */
 StockTickerParser::StockTickerParser(const char* resp, err_code err){
-    this->rawResponse = resp; 
+    this->rawResponse = resp;
     this->error = err;
 }
 
@@ -190,5 +220,5 @@ double StockTickerParser::GetClosingPrice(){
     len = end - temp;
     memcpy(buf, temp, len);
     buf[len] = 0;
-    return std::strtod(buf, NULL);   
+    return std::strtod(buf, NULL);
 }
