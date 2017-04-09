@@ -50,9 +50,9 @@
 using namespace std;
 
 /* Implement the stockQuery class **/
-StockQuery::StockQuery(int day, int month, int year, std::string symbol){
+StockQuery::StockQuery(int month, int day, int year, std::string symbol){
     this->day = day; 
-    this->month = month;
+    this->month = month-1;
     this->year = year;
     this->symbol = symbol;
 }
@@ -77,18 +77,18 @@ void StockQuery::SetSymbol(std::string symbol){
 std::string StockQuery::GetUrl(){
     char tmp[100];
     snprintf(tmp, 100,\
-       "/table.csv?s=%s&a=%d&b=%d&c=%d&d=%d&e=%d&f=%d&g=d&ignore=.csv",\
-       this->symbol, this->month-1, this->day, this->year, \
-       this->month-1, this->day, this->year);
+       "ichart.yahoo.com/table.csv?s=%s&a=%d&b=%d&c=%d&d=%d&e=%d&f=%d&g=d&ignore=.csv",\
+       this->symbol, this->month, this->day, this->year, \
+       this->month, this->day, this->year);
     std::string str(tmp);
     return str;
 }
 
 /** Implement the StockTickerScraper class **/
 /* Note Still not sure why we decrease the month by 1 */
-void StockTickerScraper::CreateQuery(int day, int month, int year, std::string symbol){
+void StockTickerScraper::CreateQuery(int month, int day, int year, std::string symbol){
     this->query.SetDay(day);
-    this->query.SetMonth(month-1);
+    this->query.SetMonth(month - 1);
     this->query.SetYear(year);
     this->query.SetSymbol(symbol);
 }
@@ -130,7 +130,7 @@ err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data)
     used to parse the response
 */
 StockTickerParser StockTickerScraper::QueryWebsite(){
-    HttpRequest httpRequest("ichart.yahoo.com",this->query.GetUrl(), NULL);
+    HttpRequest httpRequest("ichart.yahoo.com",this->query.GetUrl().c_str(), NULL);
     HttpsClient httpClient(httpRequest);
 
     try{

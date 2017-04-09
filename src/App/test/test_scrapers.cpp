@@ -69,7 +69,7 @@ TEST_F(ScraperTestSuite, coinmarket) {
   EXPECT_EQ(0, ret);
 }
 
-TEST_F(ScraperTest, steam) {
+TEST_F(ScraperTestSuite, steam) {
     int ocall_status, ret;
     ocall_status = steam_self_test(eid, &ret); 
     ASSERT_EQ(0, ocall_status);
@@ -91,14 +91,14 @@ TEST_F(ScraperTestSuite, bloomberg) {
   EXPECT_EQ(0, ret);
 }
 
-TEST_F(ScraperTest, flight){
+TEST_F(ScraperTestSuite, flight){
     int ocall_status, ret;
     ocall_status = flight_self_test(eid, &ret);
     ASSERT_EQ(0, ocall_status);
     ASSERT_EQ(0, ret);
 }
 
-TEST_F(ScraperTest, stock){
+TEST_F(ScraperTestSuite, stock){
     int ocall_status, ret;
     ocall_status =stockticker_self_test(eid, &ret);
     ASSERT_EQ(0, ocall_status);
