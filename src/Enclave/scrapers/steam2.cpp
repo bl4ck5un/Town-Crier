@@ -111,11 +111,6 @@ public:
 
 
 		for (i = 0; i < 20; i++) {
-		   /*
-		   ocall_time(&time1);
-		   ocall_sleep(10 * 1000);
-		   ocall_time(&time2);
-		   */
 
 		   LL_INFO("%lld seconds passed", time2 - time1);
 
@@ -143,8 +138,7 @@ public:
 		        LL_CRITICAL("Https error: %s", e.what());
 		        LL_CRITICAL("Details: %s", httpClient.getError().c_str());
 		        httpClient.close();	   		
-		   		return -1;
-		   	}
+		   		return -1;		   	}
 
 			if (ret < 0) {
 		       LL_CRITICAL("Found no trade");

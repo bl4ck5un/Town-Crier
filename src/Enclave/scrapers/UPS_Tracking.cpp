@@ -37,6 +37,7 @@ public:
 		
 		if (tracking_num == NULL){
 			LL_CRITICAL("Error: Passed in NULL Pointer");
+			*status = -1;
 			return -1;
 		}
 
@@ -54,6 +55,7 @@ public:
 	        LL_CRITICAL("Https error: %s", e.what());
         LL_CRITICAL("Details: %s", httpClient.getError().c_str());
 	        httpClient.close();
+	        *status = -1;
 	        return -1;		
 		}
 
