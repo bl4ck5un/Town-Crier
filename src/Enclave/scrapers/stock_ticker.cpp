@@ -79,7 +79,7 @@ std::string StockQuery::GetUrl(){
     char tmp[100];
     snprintf(tmp, 100,\
        "ichart.yahoo.com/table.csv?s=%s&a=%d&b=%d&c=%d&d=%d&e=%d&f=%d&g=d&ignore=.csv",\
-       this->symbol, this->month, this->day, this->year, \
+       this->symbol.c_str(), this->month, this->day, this->year, \
        this->month, this->day, this->year);
     std::string str(tmp);
     return str;
@@ -129,26 +129,26 @@ err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data)
 
     string resp(parser.GetResponse());
 
-    std::vector<std::string> strings;
+    std::vector<std::string> _rows;
 
     std::string::size_type pos = 0;
     std::string::size_type prev = 0;
     while ((pos = resp.find('\n', prev)) != std::string::npos){
-        strings.push_back(resp.substr(prev, pos - prev));
+        _rows.push_back(resp.substr(prev, pos - prev));
         prev = pos + 1;
     }
 
     // To get the last substring (or only, if delimiter is not found)
-    strings.push_back(resp.substr(prev));
+    _rows.push_back(resp.substr(prev));
 
     CSV_Parser csv_parser;
     KEY_VAL_FIELDS _price_chart;
     CSV_FIELDS _price_chart_hdr;
-    csv_parser.parse_line(strings[0], _price_chart_hdr);
-    csv_parser.parse_line(strings[1], _price_chart_hdr, _price_chart);
+    csv_parser.parse_line(_rows[0], _price_chart_hdr);
+    csv_parser.parse_line(_rows[1], _price_chart_hdr, _price_chart);
 
     for (KEY_VAL_FIELDS::iterator it = _price_chart.begin(); it != _price_chart.end(); it++) {
-        printf_sgx("%s -> %s\n", it->first.c_str(), it->second.c_str());
+        LL_DEBUG("%s -> %s", it->first.c_str(), it->second.c_str());
     }
 
     double closing_price = atof(_price_chart["Close"].c_str());
