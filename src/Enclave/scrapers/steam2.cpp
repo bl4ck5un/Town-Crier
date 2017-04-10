@@ -135,64 +135,52 @@ err_code SteamScraper::handler(uint8_t *req, int len, int *resp_data){
     return NO_ERROR;
 }
 
-
 int SteamScraper::get_steam_transaction(const char** item_name_list, int item_list_len, const char* other, unsigned int time_cutoff, const char* key, int* resp) {
 	int ret;
 	int i;
 	char buf[16385];
-	char* query = NULL;
 
 	time_t time1, time2;
 	this->headers.push_back(HOST);
 
-	for (i = 0; i < 20; i++) {
-	   /*
-	   ocall_time(&time1);
-	   ocall_sleep(10 * 1000);
-	   ocall_time(&time2);
-	   */
+	LL_INFO("%lld seconds passed", time2 - time1);
 
-	   LL_INFO("%lld seconds passed", time2 - time1);
+	unsigned int req_time = (unsigned int) time1 - (30*60);
+	char tmp_req_time[10];
+	snprintf(tmp_req_time, sizeof(tmp_req_time), "%u", req_time);
 
-	   unsigned int req_time = (unsigned int) time1 - (30*60);
-	   char tmp_req_time[10];
-	   snprintf(tmp_req_time, sizeof(tmp_req_time), "%u", req_time);
+	// reference query
+	// https://api.steampowered.com/IEconService/GetTradeOffers/v0001/?get_sent_offers=1&get_received_offers=0&get_descriptions=0&active_only=1&historical_only=1&key=7978F8EDEF9695B57E72EC468E5781AD&time_historical_cutoff=1355220300
+	std::string query = "/IEconService/GetTradeOffers/v0001/?get_sent_offers=0&get_received_offers=1&get_descriptions=0&active_only=1&historical_only=1&key=" + \
+				std::string(key) + \
+				"&time_historical_cutoff=" + \
+				std::string(tmp_req_time) + \
+				" HTTP/1.1";
 
-	   // reference query
-	   // https://api.steampowered.com/IEconService/GetTradeOffers/v0001/?get_sent_offers=1&get_received_offers=0&get_descriptions=0&active_only=1&historical_only=1&key=7978F8EDEF9695B57E72EC468E5781AD&time_historical_cutoff=1355220300
+	HttpRequest httpRequest("api.steampowered.com", query, this->headers);
+	HttpsClient httpClient(httpRequest);
 
-   		std::string query = "/IEconService/GetTradeOffers/v0001/?get_sent_offers=0&get_received_offers=1&get_descriptions=0&active_only=1&historical_only=1&key=" + \
-   					std::string(key) + \
-   					"&time_historical_cutoff=" + \
-   					std::string(tmp_req_time) + \
-   					" HTTP/1.1";
-		
-		HttpRequest httpRequest("api.steampowered.com", query, this->headers);
-    	HttpsClient httpClient(httpRequest);
-
-	   	try{
-	   		HttpResponse response = httpClient.getResponse();
-			ret = parse_response1(response.getContent().c_str(), other, item_name_list, item_list_len, key);
-	   	}
-	   	catch (std::runtime_error& e){
-	        LL_CRITICAL("Https error: %s", e.what());
-	        LL_CRITICAL("Details: %s", httpClient.getError().c_str());
-	        httpClient.close();	   		
-	   		return -1;
-	   	}
-
-		if (ret < 0) {
-	       LL_CRITICAL("Found no trade");
-	       *resp = 0;
-	       return 0;
-	   	}
-	   	else {
-	       *resp = 1;
-	       return 0;
-	   	}
+	try{
+		HttpResponse response = httpClient.getResponse();
+		ret = parse_response1(response.getContent().c_str(), other, item_name_list, item_list_len, key);
 	}
-	*resp = 0;
-    return 0;
+	catch (std::runtime_error& e){
+		LL_CRITICAL("Https error: %s", e.what());
+		LL_CRITICAL("Details: %s", httpClient.getError().c_str());
+		httpClient.close();	   		
+		return -1;
+	}
+
+	if (ret < 0) {
+	   	LL_CRITICAL("Found no trade");
+	   	*resp = 0;
+		return 0;
+	}
+
+	else {
+	   	*resp = 1;
+	   	return 0;
+	}
 }
 
 char* SteamScraper::search(const char* buf, const char* search_string) {

@@ -1,10 +1,10 @@
-Inputs to scrapers
+Inputs to scrapers -Done
 Contract to test everything
-Finish the event handler
-list the ids/types/requested data
-finish the event handler
-stock ticker -gives the closing price for stock given 
-tickers- Errors for google/scrapers
-Finish the handler
-specify what we need to parse the data
+Finish the event handler -DONE
+list the ids/types/requested data- DONE
+finish the event handler- DONE
+stock ticker -gives the closing price for stock given -Done 
+tickers- Errors for google/scrapers- Done 
+Finish the handler- Done 
+specify what we need to parse the data - DONE
 
