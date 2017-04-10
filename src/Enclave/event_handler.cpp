@@ -45,8 +45,17 @@
 #include "scrapers.h"
 #include "scrapers/Scraper.h"
 #include "scrapers/flight.h"
+#include "scrapers/utils.h"
+#include "scrapers/stockticker.h"
+#include "scrapers/UPS_Tracking.h"
+#include "scrapers/steam2.h"
+#include "time.h"
 #include "eth_transaction.h"
-
+#include "eth_abi.h"
+#include "Enclave_t.h"
+#include "external/keccak.h"
+#include "Constants.h"
+#include "Log.h"
 
 int handle_request(int nonce,
                    uint64_t id,
@@ -54,17 +63,39 @@ int handle_request(int nonce,
                    uint8_t *data,
                    int data_len,
                    uint8_t *raw_tx,
-                   size_t *raw_tx_len) {
-  bytes resp_data;
-  uint64_t error_flag = 0;
-
-  switch (type) {
-    case TYPE_FINANCE_INFO: {
-      // TODO
-//        return stock_ticker_handler(nonce, id, type,
-//            data, data_len,
-//            raw_tx, raw_tx_len);
-      break;
+                   size_t *raw_tx_len)
+{
+    int ret;
+    bytes resp_data;
+    int resp_data_len = 0;
+    int error_flag = 0;
+/*
+    printf_sgx("nonce: %d\n", nonce);
+    printf_sgx("id: %llu\n", id);
+    printf_sgx("type: %llu\n", type);
+    printf_sgx("data len: %d\n", data_len);
+    for (int i = 0; i < data_len; i++)
+        printf_sgx("%u,", data[i]);
+    printf_sgx("\n");
+*/
+    switch (type){
+    case TYPE_FINANCE_INFO:
+    {
+        /* NEED TO FIGURE OUT HOW TO PARSE */ 
+        int closingPrice;
+        StockTickerScraper stockTickerScraper;
+        switch (stockTickerScraper.handler(data, data_len, &closingPrice)){
+            case INVALID_PARAMS:
+                error_flag = 1;
+                break;
+            case WEB_ERROR:
+                return TC_INTERNAL_ERROR;
+            case NO_ERROR:
+                LL_INFO("Closing pricing is %d", closingPrice);
+                append_as_uint256(resp_data, closingPrice, sizeof(closingPrice));
+                break;
+        }
+        break; 
     }
     case TYPE_FLIGHT_INS: {
       FlightScraper flightHandler;
@@ -83,23 +114,23 @@ int handle_request(int nonce,
       break;
     }
     case TYPE_STEAM_EX:
-      //TODO
-//             int found = 0;
-//             if (data_len != 6 * 32)
-//             {
-//                 LL_CRITICAL("data_len %d*32 is not 6*32", data_len / 32);
-//                 return -1;
-//             }
-//             ret = handler_steam_exchange(data, data_len, &found);
-//             if (ret == -1)
-//             {
-//                 LL_CRITICAL("%s returns %d", "handler_steam_exchange", ret);
-//                 return -1;
-//             }
-// //            found = 1;
-//             append_as_uint256(resp_data, found, sizeof ( found ));
-//             resp_data_len = 32;
-      break;
+    {
+        SteamScraper steamHandler;       
+        int found;
+        switch(steamHandler.handler(data, data_len, &found)){
+            case UNKNOWN_ERROR:
+            case WEB_ERROR:
+                return TC_INTERNAL_ERROR;
+            case INVALID_PARAMS:
+                error_flag = 1;
+                break;
+            case NO_ERROR:
+                append_as_uint256(resp_data, found, sizeof(found));
+                break;
+        }
+        break;
+    }
+    
     case TYPE_CURRENT_VOTE: {
       double r1 = 0, r2 = 0, r3 = 0;
       long long time1, time2;
@@ -119,6 +150,22 @@ int handle_request(int nonce,
 
       break;
     }
+    case TYPE_UPS_TRACKING: {
+      USPSScraper uSPSScraper;
+      int pkg_status;
+      switch(uSPSScraper.handler(data,data_len, &pkg_status)){
+        case UNKNOWN_ERROR:
+        case WEB_ERROR:
+          return TC_INTERNAL_ERROR;
+        // treat invalid_params as no_error
+        case INVALID_PARAMS:
+          error_flag = 1;
+        case NO_ERROR:
+          append_as_uint256(resp_data, pkg_status, sizeof(pkg_status));
+          break;
+      };
+      break;
+    }
     default :LL_CRITICAL("Unknown request type: %" PRIu64, type);
       return -1;
       break;
@@ -127,38 +174,3 @@ int handle_request(int nonce,
   // TODO: MAJOR: change type to larger type
   return form_transaction(nonce, 32, id, type, data, data_len, error_flag, resp_data, raw_tx, raw_tx_len);
 }
-
-//static int stock_ticker_handler(int nonce, uint64_t request_id, uint8_t request_type,
-//                                const uint8_t *req, int req_len, uint8_t *raw_tx, size_t *raw_tx_len)
-//{
-//    int ret;
-//    if (req_len != 64)
-//    {
-//        LL_CRITICAL("req_len is not 64");
-//        return -1;
-//    }
-//
-//    char* code = (char*)(req);
-//    uint32_t date;
-//    time_t epoch;
-//    memcpy(&date, req + 64 - sizeof (uint32_t), sizeof (uint32_t));
-//    date = swap_uint32(date);
-//
-//    epoch = date;
-//    LL_NOTICE("Looking for %s at %lld", code, epoch);
-//
-//    int price = (int) get_closing_price(12, 3, 2014, "BABA");
-//
-//    LL_NOTICE("Closing pricing is %d", price);
-//
-//    bytes rr;
-//    append_as_uint256(rr, price, sizeof (price));;
-//
-//    ret = form_transaction(nonce, 32,
-//        request_id, request_type,
-//        req, req_len,
-//        rr,
-//        raw_tx, raw_tx_len);
-//
-//    return ret;
-//}

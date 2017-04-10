@@ -49,7 +49,8 @@
 #define TYPE_FLIGHT_INS     0x1
 #define TYPE_STEAM_EX       0x2
 #define TYPE_FINANCE_INFO   0x3
-
+#define TYPE_UPS_TRACKING   0x4
+ 
 /* Possible return values to be used in Enclave-Relay Connections */
 #define TC_SUCCESS  		0x0
 #define TC_INPUT_ERROR 		0x1
