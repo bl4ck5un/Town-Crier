@@ -76,7 +76,7 @@ int initialize_enclave(const char *enclave_name, sgx_enclave_id_t *eid) {
   /*! Step 1: try to retrieve the launch token saved by last transaction
    *         if there is no token, then create a new one.
    */
-  const char* token_path = TOKEN_FILENAME;
+  const char *token_path = TOKEN_FILENAME;
   FILE *fp = fopen(token_path, "rb");
   if (fp == NULL && (fp = fopen(token_path, "wb")) == NULL) {
     printf("Warning: Failed to create/open the launch token file \"%s\".\n", token_path);
@@ -166,87 +166,80 @@ std::string sgx_error_message(sgx_status_t ret) {
 /**
  * \brief This function will daemonize this app
  */
-void daemonize(string working_dir, string pid_filename)
-{
+void daemonize(string working_dir, string pid_filename) {
   LL_INFO("daemonizing Town Crier..");
-	pid_t pid = 0;
-	int fd;
+  pid_t pid = 0;
+  int fd;
 
-	/* Fork off the parent process */
-	pid = fork();
+  /* Fork off the parent process */
+  pid = fork();
 
-	/* An error occurred */
-	if (pid < 0) {
-		exit(EXIT_FAILURE);
-	}
+  /* An error occurred */
+  if (pid < 0) {
+    exit(EXIT_FAILURE);
+  }
 
-	/* Success: Let the parent terminate */
-	if (pid > 0) {
-		exit(EXIT_SUCCESS);
-	}
+  /* Success: Let the parent terminate */
+  if (pid > 0) {
+    exit(EXIT_SUCCESS);
+  }
 
-	/* On success: The child process becomes session leader */
-	if (setsid() < 0) {
-		exit(EXIT_FAILURE);
-	}
+  /* On success: The child process becomes session leader */
+  if (setsid() < 0) {
+    exit(EXIT_FAILURE);
+  }
 
-	/* Ignore signal sent from child to parent process */
-	signal(SIGCHLD, SIG_IGN);
+  /* Ignore signal sent from child to parent process */
+  signal(SIGCHLD, SIG_IGN);
 
-	/* Fork off for the second time*/
-	pid = fork();
+  /* Fork off for the second time*/
+  pid = fork();
 
-	/* An error occurred */
-	if (pid < 0) {
-		exit(EXIT_FAILURE);
-	}
+  /* An error occurred */
+  if (pid < 0) {
+    exit(EXIT_FAILURE);
+  }
 
-	/* Success: Let the parent terminate */
-	if (pid > 0) {
-		exit(EXIT_SUCCESS);
-	}
+  /* Success: Let the parent terminate */
+  if (pid > 0) {
+    exit(EXIT_SUCCESS);
+  }
 
   LL_INFO("forked");
-	/* Set new file permissions */
-	umask(0);
+  /* Set new file permissions */
+  umask(0);
 
-	/* Change the working directory to the root directory */
-	/* or another appropriated directory */
-	chdir(working_dir.c_str());
+  /* Change the working directory to the root directory */
+  /* or another appropriated directory */
+  chdir(working_dir.c_str());
   LL_INFO("cwd changed to %s", working_dir.c_str());
   LL_INFO("PID %ld", getpid());
 
-	/* Try to write PID of daemon to lockfile */
-    int pid_fd = 0;
-	if (! pid_filename.empty())
-	{
-		char str[256];
-		pid_fd = open(pid_filename.c_str(), O_RDWR|O_CREAT, 0640);
-		if (pid_fd < 0) {
-			/* Can't open lockfile */
-          LL_ERROR("can't create lockfile: %s", strerror(errno));
-			exit(EXIT_FAILURE);
-		}
-		if (lockf(pid_fd, F_TLOCK, 0) < 0) {
-			/* Can't lock file */
-          LL_ERROR("can't lock flie: %s", strerror(errno));
-			exit(EXIT_FAILURE);
-		}
-		/* Get current PID */
-		sprintf(str, "%d\n", getpid());
-		/* Write PID to lockfile */
-		write(pid_fd, str, strlen(str));
-	}
+  /* Try to write PID of daemon to lockfile */
+  int pid_fd = 0;
+  if (!pid_filename.empty()) {
+    char str[256];
+    pid_fd = open(pid_filename.c_str(), O_RDWR | O_CREAT, 0640);
+    if (pid_fd < 0) {
+      /* Can't open lockfile */
+      LL_ERROR("can't create lockfile: %s", strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+    if (lockf(pid_fd, F_TLOCK, 0) < 0) {
+      /* Can't lock file */
+      LL_ERROR("can't lock flie: %s", strerror(errno));
+      exit(EXIT_FAILURE);
+    }
+    /* Get current PID */
+    sprintf(str, "%d\n", getpid());
+    /* Write PID to lockfile */
+    write(pid_fd, str, strlen(str));
+  }
 
-	/* Close all open file descriptors */
-	for (fd = sysconf(_SC_OPEN_MAX); fd > 0 && fd != pid_fd; fd--) {
-		close(fd);
-	}
-
-	/* Reopen stdin (fd = 0), stdout (fd = 1), stderr (fd = 2) */
-    freopen("/dev/null/", "r", stdin);
-    freopen("tc.log", "w", stdout);
-    freopen("tc.log", "w", stderr);
+  /* Close all open file descriptors */
+  for (fd = sysconf(_SC_OPEN_MAX); fd > 0 && fd != pid_fd; fd--) {
+    close(fd);
+  }
 
   LL_INFO("daemonized");
 }
