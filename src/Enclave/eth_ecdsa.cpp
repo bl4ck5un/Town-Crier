@@ -233,6 +233,8 @@ int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen, unsigned char *o_pu
   mbedtls_ecp_group_init(&grp);
   mbedtls_ecp_group_load(&grp, ECPARAMS);
 #ifdef PREDEFINED_SECKEY
+  LL_CRITICAL("*** PREDEFINED SECRET KEY IS USED ***");
+  LL_CRITICAL("*** DISABLE THIS BEFORE DEPLOY ***");
   ret = mbedtls_mpi_read_string(&secret, 16, PREDEFINED_SECKEY);
   if (ret != 0) {
     LL_CRITICAL("Error: mbedtls_mpi_read_string returned %d", ret);
