@@ -36,77 +36,13 @@
 // Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
 // VMWare Research Award.
 //
+#include "Scraper.h"
 
-#include <gtest/gtest.h>
+class WeatherScraper : Scraper {
+public:
+	err_code handler(uint8_t *req, int data_len, int *resp_data);
+	err_code weather_current(unsigned int zipcode, double* r);
 
-#include "utils.h"
-#include "Enclave_u.h"
-
-class ScraperTestSuite : public ::testing::Test {
- protected:
-  sgx_enclave_id_t eid;
- public:
-  virtual void SetUp() {
-    initialize_enclave(ENCLAVE_FILENAME, &eid);
-  }
-
-  virtual void TearDown() {
-    sgx_destroy_enclave(eid);
-  }
+private:
+	double parse_response(const char* resp);
 };
-
-TEST_F(ScraperTestSuite, yahoo) {
-  int ocall_status, ret;
-  ocall_status = yahoo_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, coinmarket) {
-  int ocall_status, ret;
-  ocall_status = coin_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, steam) {
-    int ocall_status, ret;
-    ocall_status = steam_self_test(eid, &ret); 
-    ASSERT_EQ(0, ocall_status);
-    ASSERT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, google) {
-  int ocall_status, ret;
-  ocall_status = google_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, bloomberg) {
-  int ocall_status, ret;
-  ocall_status = bloomberg_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, flight){
-    int ocall_status, ret;
-    ocall_status = flight_self_test(eid, &ret);
-    ASSERT_EQ(0, ocall_status);
-    ASSERT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, stock){
-    int ocall_status, ret;
-    ocall_status =stockticker_self_test(eid, &ret);
-    ASSERT_EQ(0, ocall_status);
-    ASSERT_EQ(0,ret);
-}
-
-TEST_F(ScraperTestSuite, weather) {
-    int ocall_status, ret;
-    ocall_status = weather_self_test(eid, &ret); 
-    ASSERT_EQ(0, ocall_status);
-    ASSERT_EQ(0, ret);
-}

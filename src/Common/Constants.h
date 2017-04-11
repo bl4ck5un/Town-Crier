@@ -51,6 +51,7 @@
 #define TYPE_FINANCE_INFO   0x3
 #define TYPE_UPS_TRACKING   0x4
 #define TYPE_COINMARKET 	0x5
+#define TYPE_WEATHER		0X6
 
 /* Possible return values to be used in Enclave-Relay Connections */
 #define TC_SUCCESS  		0x0

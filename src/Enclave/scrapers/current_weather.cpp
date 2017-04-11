@@ -18,12 +18,12 @@
 // Suite 310, Ithaca, NY 14850; email: ctl-connect@cornell.edu; Tel: 607-254-4698;
 // FAX: 607-254-5454 for a commercial license.
 //
-// IN NO EVENT SHALL CORNELL UNIVERSITY BE LIABLE TO ANY PARTY FOR DIRECT,
+// IN NO EVENT SHALL CORNELL UNIVERSITY BE LIABLE TO ANY PARTY FOR DIRECT,/weather?zip=11510&
 // INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS,
 // ARISING OUT OF THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS, EVEN IF
 // CORNELL UNIVERSITY MAY HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// THE WORK PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND CORNELL UNIVERSITY HAS NO
+// TH/weather?zip=11510&E WORK PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND CORNELL UNIVERSITY HAS NO
 // OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
 // MODIFICATIONS.  CORNELL UNIVERSITY MAKES NO REPRESENTATIONS AND EXTENDS NO
 // WARRANTIES OF ANY KIND, EITHER IMPLIED OR EXPRESS, INCLUDING, BUT NOT LIMITED
@@ -44,9 +44,12 @@
 #include <Log.h>
 
 #include "tls_client.h"
-#include "scrapers.h"
+#include "current_weather.h"
+#include "utils.h"
 
-static double parse_response(const char* resp) {
+#define API_KEY "4e1e78c89f9e50e47589242064e0e3b5"
+
+double WeatherScraper::parse_response(const char* resp) {
     double ret = 0;
     const char * end;
     const char * temp = resp;
@@ -68,33 +71,47 @@ static double parse_response(const char* resp) {
     return ret;
 }
 
-int weather_current(unsigned int zipcode, double* r) {
+/* The Data is structured as follows:
+ * 0x00 - 0x20 int 
+ */
+err_code WeatherScraper::handler(uint8_t *req, int data_len, int *resp_data){
+    if (data_len != 32){
+        LL_CRITICAL("data_len %d*32 is not 32",data_len / 32);
+        return INVALID_PARAMS;
+    }
+    int zipcode = strtol((char*) req, NULL, 10);
+    double tmp;
+    err_code ret = weather_current(zipcode, &tmp); 
+    *resp_data = (int) tmp;
+    return ret;
+}
+
+err_code WeatherScraper::weather_current(unsigned int zipcode, double* r) {
     /* Null Checker */
     if (zipcode > 99999 || r == NULL){
         LL_CRITICAL("Error: Passed null pointers");
-        return -1;
+        return INVALID_PARAMS;
     }
     char tmp_zip[10];
     snprintf(tmp_zip, sizeof(tmp_zip), "%u", zipcode);
 
     std::string query = "/data/2.5/weather?zip=" +\
                         std::string(tmp_zip) +\
-                        ",us";
-
+                        "&appid=" + API_KEY;
+    LL_INFO("query: %s", query.c_str());
     HttpRequest httpRequest("api.openweathermap.org", query);
     HttpsClient httpClient(httpRequest);
 
     try {
         HttpResponse response = httpClient.getResponse();
         *r = parse_response(response.getContent().c_str());
-        return 0;
     }
     catch (std::runtime_error& e){
         LL_CRITICAL("Https error: %s", e.what());
         LL_CRITICAL("Details: %s", httpClient.getError().c_str());
         httpClient.close();
+        return WEB_ERROR;
     }
-
-    return 0;
+    return NO_ERROR;
 }
 

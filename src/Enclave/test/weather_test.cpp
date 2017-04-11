@@ -37,76 +37,34 @@
 // VMWare Research Award.
 //
 
-#include <gtest/gtest.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <Debug.h>
 
-#include "utils.h"
-#include "Enclave_u.h"
+#include "tls_client.h"
+#include "scrapers/current_weather.h"
+#include "Log.h"
+#include "utils.c"
 
-class ScraperTestSuite : public ::testing::Test {
- protected:
-  sgx_enclave_id_t eid;
- public:
-  virtual void SetUp() {
-    initialize_enclave(ENCLAVE_FILENAME, &eid);
-  }
+int weather_self_test(){
+	WeatherScraper weatherScraper;
+	
+	//Null Checker
+	double r = 0.0;
+	if (weatherScraper.weather_current(999999, &r) != INVALID_PARAMS || weatherScraper.weather_current(999999, NULL) != INVALID_PARAMS){
+		return -1;
+	}
 
-  virtual void TearDown() {
-    sgx_destroy_enclave(eid);
-  }
-};
+	//Test out regular performance
+	if(weatherScraper.weather_current(11510, &r) != NO_ERROR){
+		return -1;
+	}
+	LL_INFO("11510 location returns: %f", r);
+	
+	if (r == 0 || weatherScraper.weather_current(14850, &r) != NO_ERROR){
+		return -1;
+	}
+	LL_INFO("14850 location returns: %f", r);
 
-TEST_F(ScraperTestSuite, yahoo) {
-  int ocall_status, ret;
-  ocall_status = yahoo_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, coinmarket) {
-  int ocall_status, ret;
-  ocall_status = coin_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, steam) {
-    int ocall_status, ret;
-    ocall_status = steam_self_test(eid, &ret); 
-    ASSERT_EQ(0, ocall_status);
-    ASSERT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, google) {
-  int ocall_status, ret;
-  ocall_status = google_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, bloomberg) {
-  int ocall_status, ret;
-  ocall_status = bloomberg_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, flight){
-    int ocall_status, ret;
-    ocall_status = flight_self_test(eid, &ret);
-    ASSERT_EQ(0, ocall_status);
-    ASSERT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, stock){
-    int ocall_status, ret;
-    ocall_status =stockticker_self_test(eid, &ret);
-    ASSERT_EQ(0, ocall_status);
-    ASSERT_EQ(0,ret);
-}
-
-TEST_F(ScraperTestSuite, weather) {
-    int ocall_status, ret;
-    ocall_status = weather_self_test(eid, &ret); 
-    ASSERT_EQ(0, ocall_status);
-    ASSERT_EQ(0, ret);
+	return 0;
 }
