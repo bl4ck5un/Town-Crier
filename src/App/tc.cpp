@@ -79,7 +79,6 @@ void exitGraceful(int) { quit.store(true); }
 int main(int argc, const char *argv[]) {
   // init logging
   loguru::init(argc, argv);
-  loguru::add_file("tc.log", loguru::Append, loguru::Verbosity_MAX);
 
   boost::filesystem::path current_path = boost::filesystem::current_path();
 
@@ -145,6 +144,10 @@ int main(int argc, const char *argv[]) {
     std::cout << e.what() << std::endl;
     exit(-1);
   }
+
+  boost::filesystem::path log_path = boost::filesystem::path(working_dir) / "tc.log";
+  loguru::add_file(log_path.c_str(), loguru::Append, loguru::Verbosity_MAX);
+  LL_INFO("logging to %s", log_path.c_str());
 
   int ret;
   sgx_enclave_id_t eid;

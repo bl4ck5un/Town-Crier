@@ -122,6 +122,8 @@ void keygen (sgx_enclave_id_t eid, string keyfile) {
 namespace po = boost::program_options;
 
 int main(int argc, const char *argv[]) {
+  loguru::init(argc, argv);
+
   string key_input, key_output;
 
   try {
