@@ -44,7 +44,7 @@ else()
     message(FATAL_ERROR "Unknown build ${SGX_BUILD}")
 endif()
 
-find_package(SGXSDK REQUIRED)
+find_package(SGXSuite REQUIRED)
 
 message(STATUS "SGX_COMMON_CFLAGS: ${SGX_COMMON_CFLAGS}")
 message(STATUS "SGX_SDK: ${SGX_SDK}")

@@ -74,32 +74,32 @@ include_directories(
 target_link_libraries(tc
     ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
     ${LIBODB_LIBRARIES} ${MHD_LIBRARIES} ${SQLITE_LIBRARIES} ${Boost_LIBRARIES}
-    -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB}
+    -L${SGX_URT_LIBRARIES} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB}
     -Wl,-rpath -Wl,/usr/local/lib
-    -Wl,-rpath -Wl,${SGX_LIBRARY_PATH}
+    -Wl,-rpath -Wl,${SGX_URT_LIBRARIES}
     -lpthread -ldl)
 
 target_link_libraries(tc-keygen
-    -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} ${Boost_LIBRARIES}
-    -Wl,-rpath -Wl,${SGX_LIBRARY_PATH}
+    -L${SGX_URT_LIBRARIES} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} ${Boost_LIBRARIES}
+    -Wl,-rpath -Wl,${SGX_URT_LIBRARIES}
     -lpthread -ldl)
 
 target_link_libraries(tc-att
-    -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} ${Boost_LIBRARIES}
+    -L${SGX_URT_LIBRARIES} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB} ${Boost_LIBRARIES}
     -lpthread -ldl)
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
 set(TEST_PROGRAM_LDFLAGS " ${LIBGTEST}/libgtest_main.a")
 
 target_link_libraries(TestMain
-    -L${SGX_LIBRARY_PATH} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB}
+    -L${SGX_URT_LIBRARIES} -l${SGX_URTS_LIB} -l${SGX_USVC_LIB}
     ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
     ${LIBODB_LIBRARIES} ${MHD_LIBRARIES} ${SQLITE_LIBRARIES} ${Boost_LIBRARIES}
     -lpthread -ldl
     ${LIBGTEST}/libgtest.a
     ${LIBGTEST}/libgtest_main.a
     -Wl,-rpath -Wl,/usr/local/lib
-    -Wl,-rpath -Wl,${SGX_LIBRARY_PATH})
+    -Wl,-rpath -Wl,${SGX_URT_LIBRARIES})
 
 add_custom_command(TARGET tc
     POST_BUILD
