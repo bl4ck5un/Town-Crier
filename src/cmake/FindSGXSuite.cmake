@@ -1,22 +1,28 @@
 # Try to find SGX SDK
-#  SGXSDK_FOUND - system has sqlite
-#  SGXSDK_INCLUDE_DIRS - the sqlite include directory
-#  SGXSDK_LIBRARIES - Link these to use sqlite
+#  SGXSuite_FOUND - system has SGX SDK/PSW installed
+#  SGXSDK_INCLUDE_DIRS - the SGX SDK include directory
+#  SGXSDK_LIBRARY_DIRS - the SGX SDK libraries directory
+#  SGX_APP_LIBRARIES   - the untrusted runtime support libraries
 #
 
 FIND_PATH(SGXSDK_INCLUDE_DIRS sgx.h "${SGX_SDK}/include")
+FIND_PATH(SGXSDK_LIBRARY_DIRS lib${SGX_USVC_LIB}.so ${SGX_SDK}/lib64)
 
-FIND_LIBRARY(SGXSDK_LIBRARIES libsgx_urts.so "${SGX_SDK}/lib64")
 if (SGX_MODE STREQUAL HW)
-    FIND_LIBRARY(SGX_URT_LIBRARIES libsgx_urts.so "/usr/lib")
+    FIND_LIBRARY(SGX_URTS_LIBRARY lib${SGX_URTS_LIB}.so "/usr/lib")
+    FIND_LIBRARY(SGX_USVC_LIBRARY lib${SGX_USVC_LIB}.so "/usr/lib")
 else()
-    set(SGX_URT_LIBRARIES ${SGXSDK_LIBRARIES})
+    FIND_LIBRARY(SGX_URTS_LIBRARY lib${SGX_URTS_LIB}.so "${SGX_SDK}/lib64")
+    FIND_LIBRARY(SGX_USVC_LIBRARY lib${SGX_USVC_LIB}.so "${SGX_SDK}/lib64")
 endif()
 
-# handle the QUIETLY and REQUIRED arguments and set LibODB_FOUND to TRUE
+# handle the QUIETLY and REQUIRED arguments and set SGXSuite_FOUND to TRUE
 # if all listed variables are TRUE, hide their existence from configuration view
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(SGXSDK DEFAULT_MSG
-    SGXSDK_INCLUDE_DIRS SGXSDK_LIBRARIES)
+find_package_handle_standard_args(SGXSuite DEFAULT_MSG
+        SGXSDK_INCLUDE_DIRS
+        SGXSDK_LIBRARY_DIRS
+        SGX_URTS_LIBRARY
+        SGX_USVC_LIBRARY)
 
 MARK_AS_ADVANCED(SGXSDK_LIBRARIES SGXSDK_INCLUDE_DIRS)
