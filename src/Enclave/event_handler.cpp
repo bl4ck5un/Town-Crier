@@ -49,6 +49,7 @@
 #include "scrapers/stockticker.h"
 #include "scrapers/UPS_Tracking.h"
 #include "scrapers/steam2.h"
+#include "scrapers/current_coinmarket.h"
 #include "time.h"
 #include "eth_transaction.h"
 #include "eth_abi.h"
@@ -166,6 +167,21 @@ int handle_request(int nonce,
       };
       break;
     }
+    case TYPE_COINMARKET: {
+      CoinMarket coinMarket;
+      int coin_value;
+      switch(coinMarket.handler(data, data_len, &coin_value)){
+        case UNKNOWN_ERROR:
+        case WEB_ERROR:
+          return TC_INTERNAL_ERROR;
+        case INVALID_PARAMS:
+          error_flag = 1;
+        case NO_ERROR:
+          append_as_uint256(resp_data, coin_value, sizeof(coin_value));
+          break;
+      };
+      break;
+    } 
     default :LL_CRITICAL("Unknown request type: %" PRIu64, type);
       return -1;
       break;

@@ -51,7 +51,7 @@ int google_current(const char* symbol, double* r);
 int yahoo_current(const char* symbol, double* r);
 int bloomberg_current(const char* symbol, double* r);
 int ups_track(const char* tracking_num, int status);
-int coinmarketcap_current(const char* symbol, double* r);
+//int coinmarketcap_current(const char* symbol, double* r);
 int weather_current(unsigned int zip, double* r);
 
 #endif

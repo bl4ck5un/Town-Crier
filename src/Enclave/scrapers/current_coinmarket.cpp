@@ -43,10 +43,27 @@
 #include <string>
 #include <Log.h>
 
+#include "utils.h"
 #include "tls_client.h"
-#include "scrapers.h"
+#include "current_coinmarket.h"
 
-static double parse_response(const char* resp) {
+/* Data is structure as follows,
+ * 0x00 - 0x20 char Crypto Coin 
+ */
+err_code CoinMarket::handler(uint8_t *req, int len, int *resp_data){
+    if (len != 32){
+        LL_CRITICAL("data_len %d*32 is not 32", len / 32);
+        return INVALID_PARAMS;
+    }
+    unsigned char  symbol[33] = {0};
+    memcpy(symbol, req, 0x20);
+    double coinval;
+    err_code res = coinmarketcap_current((const char*)symbol,&coinval);
+    *resp_data = (int) coinval;
+    return res;
+}
+
+double CoinMarket::parse_response(const char* resp) {
     double ret = 0;
     const char * end;
     const char * temp = resp;
@@ -68,11 +85,11 @@ static double parse_response(const char* resp) {
     return ret;
 }
 
-int coinmarketcap_current(const char* symbol, double* r) {
+err_code CoinMarket::coinmarketcap_current(const char* symbol, double* r) {
     /* Null Checker */
     if (symbol == NULL || r == NULL){
         LL_CRITICAL("Error: Passed null pointers");
-        return -1;
+        return INVALID_PARAMS;
     }
 
     std::string query = "/v1/ticker/" + std::string(symbol) + "/";
@@ -82,14 +99,15 @@ int coinmarketcap_current(const char* symbol, double* r) {
     try {
         HttpResponse response = httpClient.getResponse();
         *r = parse_response(response.getContent().c_str());
-        return 0;
+        return NO_ERROR;
     }
     catch (std::runtime_error& e){
         LL_CRITICAL("Https error: %s", e.what());
         LL_CRITICAL("Details: %s", httpClient.getError().c_str());
         httpClient.close();
+        return WEB_ERROR;
     }
 
-    return 0;
+    return NO_ERROR;
 }
 
