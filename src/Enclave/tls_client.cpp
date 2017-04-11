@@ -45,6 +45,8 @@
 #include "Constants.h"
 #include "ca_bundle.h"
 
+#include <algorithm>
+
 #define MIN(x,y) (x < y ? x : y)
 
 #if !defined(MBEDTLS_CONFIG_FILE)
@@ -442,13 +444,24 @@ HttpResponse HttpsClient::getResponse() {
         ret = ERR_ENCLAVE_SSL_CLIENT;
         throw runtime_error("upgrade not supported");
       } else if (n_parsed != ret) {
+        string _partial_buffer(buf.buf, buf.buf + buf.length);
+
+        // TODO: nasty hack: a workaround to http_parser bug
+        if (httpRequest.getHost() == "ichart.yahoo.com") {
+          // this is actually okay. Pretend everything is fine and set EOF
+          cb_data.eof = 1;
+          // remove the trailing \r\n
+          if (_partial_buffer.compare(_partial_buffer.length() - 2, 2, "\r\n")) {
+            _partial_buffer.erase(_partial_buffer.end()-1, _partial_buffer.end());
+          }
+          return HttpResponse(200, "", _partial_buffer);
+        }
         LL_CRITICAL("Error: received %d bytes and parsed %zu of them", ret, n_parsed);
-        char _tmp_buf[buf.length + 1];
-        memcpy(_tmp_buf, buf.buf, buf.length);
-        _tmp_buf[MIN(buf.length, 5000)] = 0x0;
-        printf_sgx("%s\n", _tmp_buf);
+        LL_CRITICAL("Error: %s", http_errno_name(HTTP_PARSER_ERRNO((&parser))));
+
+        printf_sgx(_partial_buffer.c_str());
         ret = ERR_ENCLAVE_SSL_CLIENT;
-        throw runtime_error("received bytes are can not be fully parsed");
+        throw runtime_error("received bytes are can not be fully parsed: " + string(http_errno_name(HTTP_PARSER_ERRNO((&parser)))));
       }
 
       if (cb_data.eof == 1) {
@@ -460,7 +473,7 @@ HttpResponse HttpsClient::getResponse() {
         break;
       }
     }
-  }
+  } // while (true)
 
   if (cb_data.eof == 0 && buf.length == buf.cap) {
     LL_CRITICAL("receiving buffer (%zu bytes) is not big enough", buf.cap);

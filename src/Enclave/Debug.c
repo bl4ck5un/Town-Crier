@@ -46,10 +46,7 @@
 
 void dump_buf(const char *title, const unsigned char *buf, size_t len)
 {
-  hexdump(title, buf, MIN(DEBUG_LIMIT, len));
-  if (DEBUG_LIMIT < len) {
-    printf_sgx("...\n");
-  }
+  hexdump(title, buf, len);
 }
 
 void hexdump(const char* title, void const * data, size_t len)
