@@ -454,7 +454,7 @@ HttpResponse HttpsClient::getResponse() {
           if (_partial_buffer.compare(_partial_buffer.length() - 2, 2, "\r\n")) {
             _partial_buffer.erase(_partial_buffer.end()-1, _partial_buffer.end());
           }
-          return HttpResponse(parser.status_code, "", _partial_buffer);
+          return HttpResponse(200, "", _partial_buffer);
         }
         LL_CRITICAL("Error: received %d bytes and parsed %zu of them", ret, n_parsed);
         LL_CRITICAL("Error: %s", http_errno_name(HTTP_PARSER_ERRNO((&parser))));

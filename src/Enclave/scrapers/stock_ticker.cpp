@@ -51,47 +51,47 @@
 using namespace std;
 
 /* Implement the stockQuery class **/
-StockQuery::StockQuery(int month, int day, int year, std::string symbol){
-    this->day = day;
-    this->month = month-1;
-    this->year = year;
-    this->symbol = symbol;
+StockQuery::StockQuery(int month, int day, int year, std::string symbol) {
+  this->day = day;
+  this->month = month - 1;
+  this->year = year;
+  this->symbol = symbol;
 }
 
-void StockQuery::SetDay(int day){
-    this->day = day;
+void StockQuery::SetDay(int day) {
+  this->day = day;
 }
 
-void StockQuery::SetMonth(int month){
-    this->month = month;
+void StockQuery::SetMonth(int month) {
+  this->month = month;
 }
 
-void StockQuery::SetYear(int year){
-    this->year = year;
+void StockQuery::SetYear(int year) {
+  this->year = year;
 }
 
-void StockQuery::SetSymbol(std::string symbol){
-    this->symbol = symbol;
+void StockQuery::SetSymbol(std::string symbol) {
+  this->symbol = symbol;
 }
 //TODO: any reason we subtract the month by 1?
 //TODO: A nicer C++ way to turn ints into strings?
-std::string StockQuery::GetUrl(){
-    char tmp[100];
-    snprintf(tmp, 100,\
-       "ichart.yahoo.com/table.csv?s=%s&a=%d&b=%d&c=%d&d=%d&e=%d&f=%d&g=d&ignore=.csv",\
+std::string StockQuery::GetUrl() {
+  char tmp[100];
+  snprintf(tmp, 100, \
+       "ichart.yahoo.com/table.csv?s=%s&a=%d&b=%d&c=%d&d=%d&e=%d&f=%d&g=d&ignore=.csv", \
        this->symbol.c_str(), this->month, this->day, this->year, \
        this->month, this->day, this->year);
-    std::string str(tmp);
-    return str;
+  std::string str(tmp);
+  return str;
 }
 
 /** Implement the StockTickerScraper class **/
 /* Note Still not sure why we decrease the month by 1 */
-void StockTickerScraper::CreateQuery(int month, int day, int year, std::string symbol){
-    this->query.SetDay(day);
-    this->query.SetMonth(month - 1);
-    this->query.SetYear(year);
-    this->query.SetSymbol(symbol);
+void StockTickerScraper::CreateQuery(int month, int day, int year, std::string symbol) {
+  this->query.SetDay(day);
+  this->query.SetMonth(month - 1);
+  this->query.SetYear(year);
+  this->query.SetSymbol(symbol);
 }
 
 /* The data is structured as follows (Feel free to change if there is a better way to structure it *:
@@ -100,60 +100,59 @@ void StockTickerScraper::CreateQuery(int month, int day, int year, std::string s
  *      0x40 - 0x60 Day
  *      0x60 - 0x80 Year
  */
-err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data){
+err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data) {
 
-    if(data_len != 32*4){
-        LL_CRITICAL("req_len %d is not 4*32", data_len / 32);
-        return INVALID_PARAMS;
-    }
+  if (data_len != 32 * 4) {
+    LL_CRITICAL("req_len %d is not 4*32", data_len / 32);
+    return INVALID_PARAMS;
+  }
 
-    char symbol[35] = {0};
-    memcpy(symbol, req, 4);
-    string str(symbol);
-    LL_INFO("symbol: %s\n",symbol);
+  char symbol[35] = {0};
+  memcpy(symbol, req, 4);
+  string str(symbol);
+  LL_INFO("symbol: %s", symbol);
 
-    int month = strtol((char *) (req + 4), NULL, 10);
-    int day = strtol((char *) (req + 8), NULL, 10);
-    int year = strtol((char *) (req + 12), NULL, 10);
+  int month = strtol((char *) (req + 4), NULL, 10);
+  int day = strtol((char *) (req + 8), NULL, 10);
+  int year = strtol((char *) (req + 12), NULL, 10);
 
-    LL_INFO("month: %d\n", month);
-    LL_INFO("day: %d\n", day);
-    LL_INFO("year: %d\n", year);
+  LL_INFO("month: %d", month);
+  LL_INFO("day: %d", day);
+  LL_INFO("year: %d", year);
 
-    CreateQuery(day, month, year, symbol);
-    StockTickerParser parser = QueryWebsite();
-    if(parser.GetErrorCode() == WEB_ERROR){
-        return WEB_ERROR;
-    }
+  CreateQuery(day, month, year, symbol);
+  StockTickerParser parser = QueryWebsite();
+  if (parser.GetErrorCode() == WEB_ERROR) {
+    return WEB_ERROR;
+  }
 
+  string resp(parser.GetResponse());
 
-    string resp(parser.GetResponse());
+  std::vector<std::string> _rows;
 
-    std::vector<std::string> _rows;
+  std::string::size_type pos = 0;
+  std::string::size_type prev = 0;
+  while ((pos = resp.find('\n', prev)) != std::string::npos) {
+    _rows.push_back(resp.substr(prev, pos - prev));
+    prev = pos + 1;
+  }
 
-    std::string::size_type pos = 0;
-    std::string::size_type prev = 0;
-    while ((pos = resp.find('\n', prev)) != std::string::npos){
-        _rows.push_back(resp.substr(prev, pos - prev));
-        prev = pos + 1;
-    }
+  // To get the last substring (or only, if delimiter is not found)
+  _rows.push_back(resp.substr(prev));
 
-    // To get the last substring (or only, if delimiter is not found)
-    _rows.push_back(resp.substr(prev));
+  CSV_Parser csv_parser;
+  KEY_VAL_FIELDS _price_chart;
+  CSV_FIELDS _price_chart_hdr;
+  csv_parser.parse_line(_rows[0], _price_chart_hdr);
+  csv_parser.parse_line(_rows[1], _price_chart_hdr, _price_chart);
 
-    CSV_Parser csv_parser;
-    KEY_VAL_FIELDS _price_chart;
-    CSV_FIELDS _price_chart_hdr;
-    csv_parser.parse_line(_rows[0], _price_chart_hdr);
-    csv_parser.parse_line(_rows[1], _price_chart_hdr, _price_chart);
+  for (KEY_VAL_FIELDS::iterator it = _price_chart.begin(); it != _price_chart.end(); it++) {
+    LL_DEBUG("%s -> %s", it->first.c_str(), it->second.c_str());
+  }
 
-    for (KEY_VAL_FIELDS::iterator it = _price_chart.begin(); it != _price_chart.end(); it++) {
-        LL_DEBUG("%s -> %s", it->first.c_str(), it->second.c_str());
-    }
-
-    double closing_price = atof(_price_chart["Close"].c_str());
-    *resp_data = (int) closing_price;
-    return NO_ERROR;
+  double closing_price = atof(_price_chart["Close"].c_str());
+  *resp_data = (int) closing_price;
+  return NO_ERROR;
 
 //  double closingPrice = parser.GetClosingPrice();
 //    *resp_data = (int) closingPrice;
@@ -163,65 +162,66 @@ err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data)
 /* Query the ichar.yahoo website, returns a StockTickerParser which can be 
     used to parse the response
 */
-StockTickerParser StockTickerScraper::QueryWebsite(){
-    HttpRequest httpRequest("ichart.yahoo.com", this->query.GetUrl().c_str(), false);
-    HttpsClient httpClient(httpRequest);
+StockTickerParser StockTickerScraper::QueryWebsite() {
+  HttpRequest httpRequest("ichart.yahoo.com", this->query.GetUrl().c_str(), false);
+  HttpsClient httpClient(httpRequest);
 
-    try{
-        HttpResponse response = httpClient.getResponse();
-        return StockTickerParser(response.getContent().c_str(), NO_ERROR);
-    } catch(std::runtime_error &e){
-        /* An HTTPS error has occured */
-        LL_CRITICAL("Https error: %s", e.what());
-        LL_CRITICAL("Details: %s", httpClient.getError().c_str());
-        httpClient.close();
-        return StockTickerParser(NULL, WEB_ERROR);
-    }
+  try {
+    HttpResponse response = httpClient.getResponse();
+    LL_DEBUG("httpStatus=%d", response.getStatusCode());
+    return StockTickerParser(response.getContent().c_str(), NO_ERROR);
+  } catch (std::runtime_error &e) {
+    /* An HTTPS error has occured */
+    LL_CRITICAL("Https error: %s", e.what());
+    LL_CRITICAL("Details: %s", httpClient.getError().c_str());
+    httpClient.close();
+    return StockTickerParser(NULL, WEB_ERROR);
+  }
 }
 
 
 /** Implement the StockTickerParser class **/
 
 /* Implement the constructor */
-StockTickerParser::StockTickerParser(const char* resp, err_code err){
-    this->rawResponse = resp;
-    this->error = err;
+StockTickerParser::StockTickerParser(const char *resp, err_code err) {
+  this->rawResponse = resp;
+  this->error = err;
 }
 
 /* Returns the raw csv file */
-const char* StockTickerParser::GetResponse(){
-    return this->rawResponse;
+const char *StockTickerParser::GetResponse() {
+  return this->rawResponse;
 }
 
 /* Returns the error code */
-err_code StockTickerParser::GetErrorCode(){
-    return this->error;
+err_code StockTickerParser::GetErrorCode() {
+  return this->error;
 }
 
 /* returns the closing price of the stock */
-double StockTickerParser::GetClosingPrice(){
-    int i, len;
-    unsigned char* temp = (unsigned char*)this->rawResponse;
-    unsigned char* end;
-    char* buf; /* hacky soln */
+double StockTickerParser::GetClosingPrice() {
+  int i, len;
+  unsigned char *temp = (unsigned char *) this->rawResponse;
+  unsigned char *end;
+  char *buf; /* hacky soln */
 
-    if(this->rawResponse == NULL){
-        LL_CRITICAL("Buf is empty!\n");
-        return -1.0;
+  if (this->rawResponse == NULL) {
+    LL_CRITICAL("Buf is empty!\n");
+    return -1.0;
+  }
+  for (int i = 0; i < 10; i++) {
+    while (*temp != ',') {
+      temp += 1;
     }
-    for(int i = 0; i < 10; i++){
-        while(*temp != ','){
-            temp += 1;
-        }
-        temp += 1;
-    }
-    end = temp;
-    while(*end != ',') {
-       end+=1;
-    }
+    temp += 1;
+  }
+  end = temp;
+  while (*end != ',') {
+    end += 1;
+  }
 
-    len = end - temp;
-    memcpy(buf, temp, len);
-    buf[len] = 0;
-    return std::strtod(buf, NULL);
+  len = end - temp;
+  memcpy(buf, temp, len);
+  buf[len] = 0;
+  return std::strtod(buf, NULL);
 }
