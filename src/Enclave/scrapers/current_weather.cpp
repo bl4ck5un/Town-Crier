@@ -47,9 +47,12 @@
 #include "current_weather.h"
 #include "utils.h"
 
-#define API_KEY "4e1e78c89f9e50e47589242064e0e3b5"
+#define API_KEY "9b0ede9af16533e1557ad783c2dfe40d"
 
 double WeatherScraper::parse_response(const char* resp) {
+    
+    LL_INFO("resp: %s", resp);
+
     double ret = 0;
     const char * end;
     const char * temp = resp;
@@ -75,31 +78,34 @@ double WeatherScraper::parse_response(const char* resp) {
  * 0x00 - 0x20 int 
  */
 err_code WeatherScraper::handler(uint8_t *req, int data_len, int *resp_data){
+    
     if (data_len != 32){
         LL_CRITICAL("data_len %d*32 is not 32",data_len / 32);
         return INVALID_PARAMS;
     }
-    int zipcode = strtol((char*) req, NULL, 10);
+    char lat[32] = {0};
+    char lng[32] = {0};
+
+    memcpy(lat, req, 0x20);
+    memcpy(lng, req + 0x20, 0x20);
+    
     double tmp;
-    err_code ret = weather_current(zipcode, &tmp); 
+    err_code ret = weather_current((const char*)lat, (const char*)lng, &tmp); 
     *resp_data = (int) tmp;
     return ret;
 }
 
-err_code WeatherScraper::weather_current(unsigned int zipcode, double* r) {
+err_code WeatherScraper::weather_current(const char* lattitude, const char* longitude, double* r) {
     /* Null Checker */
-    if (zipcode > 99999 || r == NULL){
+    if (r == NULL){
         LL_CRITICAL("Error: Passed null pointers");
         return INVALID_PARAMS;
     }
-    char tmp_zip[10];
-    snprintf(tmp_zip, sizeof(tmp_zip), "%u", zipcode);
 
-    std::string query = "/data/2.5/weather?zip=" +\
-                        std::string(tmp_zip) +\
-                        "&appid=" + API_KEY;
-    LL_INFO("query: %s", query.c_str());
-    HttpRequest httpRequest("api.openweathermap.org", query);
+    std::string query = "/forecast/9b0ede9af16533e1557ad783c2dfe40d" + \
+                        std::string(lattitude) + "," + std::string(longitude);
+
+    HttpRequest httpRequest("api.darksky.net", query);
     HttpsClient httpClient(httpRequest);
 
     try {
