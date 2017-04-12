@@ -170,7 +170,11 @@ int main(int argc, const char *argv[]) {
   fs::create_directory(fs::path(opt_cwd));
 
   if (options_daemon) {
+#ifdef CONFIG_IMPL_DAEMON
     daemonize(opt_cwd, pid_filename);
+#else
+    LL_CRITICAL("*** daemonize() is not implemented ***");
+#endif
   }
 
   const static string db_name = (fs::path(opt_cwd) / "tc.db").string();

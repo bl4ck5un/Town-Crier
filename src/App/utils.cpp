@@ -163,6 +163,7 @@ const string sgx_error_message(sgx_status_t ret) {
   return ss.str();
 }
 
+#ifdef CONFIG_IMPL_DAEMON
 /**
  * \brief This function will daemonize this app
  */
@@ -243,3 +244,4 @@ void daemonize(string working_dir, string pid_filename) {
 
   LL_INFO("daemonized");
 }
+#endif // CONFIG_IMPL_DAEMON

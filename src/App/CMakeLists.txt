@@ -80,7 +80,6 @@ target_link_libraries(tc
 
 target_link_libraries(tc-keygen
     ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
-    -Wl,-rpath -Wl,${SGXSDK_LIBRARY_DIRS}
     -lpthread -ldl)
 
 target_link_libraries(tc-att

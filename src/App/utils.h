@@ -161,7 +161,9 @@ static sgx_errlist_t sgx_errlist[] = {
     }
 };
 
+#ifdef CONFIG_IMPL_DAEMON
 void daemonize(::std::string working_dir, ::std::string pid_filename);
+#endif
 
 #if defined(__cplusplus)
 }
