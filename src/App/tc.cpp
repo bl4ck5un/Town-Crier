@@ -86,7 +86,7 @@ int main(int argc, const char *argv[]) {
   bool options_rpc = false;
   bool options_daemon = false;
   string options_config = "config";
-  string opt_cwd = "/tmp/tc";
+  string opt_cwd = homedir();
 
   try {
     po::options_description desc("Allowed options");
@@ -95,7 +95,7 @@ int main(int argc, const char *argv[]) {
         "rpc", po::bool_switch(&options_rpc)->default_value(false), "Launch RPC server")(
         "daemon,d", po::bool_switch(&options_daemon)->default_value(false), "Run TC as a daemon")(
         "config,c", po::value(&options_config)->default_value("config"), "Path to a config file")(
-        "cwd", po::value(&opt_cwd)->default_value("/tmp/tc"), "Working directory (where log and db are stored");
+        "cwd", po::value(&opt_cwd)->default_value(homedir()), "Working directory (where log and db are stored");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
