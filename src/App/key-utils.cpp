@@ -85,9 +85,9 @@ string unseal_key(sgx_enclave_id_t eid, string sealed_key) {
   return bufferToHex(address, sizeof address, true);
 }
 
+
 void provision_key(sgx_enclave_id_t eid, string sealed_key) {
   unsigned char _sealed_key_buf[SECRETKEY_SEALED_LEN];
-
   size_t buffer_used = (size_t) ext::b64_pton(sealed_key.c_str(), _sealed_key_buf, sizeof _sealed_key_buf);
 
   int ret = 0;
