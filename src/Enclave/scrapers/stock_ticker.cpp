@@ -100,10 +100,10 @@ void StockTickerScraper::CreateQuery(int month, int day, int year, std::string s
  *      0x40 - 0x60 Day
  *      0x60 - 0x80 Year
  */
-err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data) {
+err_code StockTickerScraper::handler(uint8_t *req, size_t data_len, int *resp_data) {
 
   if (data_len != 32 * 4) {
-    LL_CRITICAL("req_len %d is not 4*32", data_len / 32);
+    LL_CRITICAL("req_len %zu is not 4*32", data_len / 32);
     return INVALID_PARAMS;
   }
 
@@ -112,9 +112,9 @@ err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data)
   string str(symbol);
   LL_INFO("symbol: %s", symbol);
 
-  int month = strtol((char *) (req + 4), NULL, 10);
-  int day = strtol((char *) (req + 8), NULL, 10);
-  int year = strtol((char *) (req + 12), NULL, 10);
+  int month = strtol((char *) (req + 0x20), NULL, 10);
+  int day = strtol((char *) (req + 0x40), NULL, 10);
+  int year = strtol((char *) (req + 0x60), NULL, 10);
 
   LL_INFO("month: %d", month);
   LL_INFO("day: %d", day);

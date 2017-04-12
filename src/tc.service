@@ -1,0 +1,9 @@
+[Unit]
+Description=Town Crier SGX Server
+
+[Service]
+Type=simple
+ExecStart=/opt/tc/tc -c /opt/tc/config-systemd --cwd %h/.tc/daemon
+
+[Install]
+WantedBy=default.target

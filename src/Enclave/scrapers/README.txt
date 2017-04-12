@@ -52,3 +52,11 @@ Each of these contains a handler class that returns a desired value.  We describ
 				4  - OUT_FOR_DELIVERY,
 				5  - DELIVERED,
 
+	CoinMarketScraper:
+		Description: Gives the current exchange rate in dollars for a given crypto-currency
+		Input:
+			0x00 - 0x20 string cryptocurrency
+		Output:
+			32 bit integer indicating the currentn exchange rate of the package
+
+

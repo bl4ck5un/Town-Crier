@@ -112,7 +112,8 @@ void keygen (sgx_enclave_id_t eid, string keyfile) {
     LL_CRITICAL("cannot open key file: %s", keyfile.c_str());
     std::exit(-1);
   }
-  of.write(secret_sealed_b64, buffer_used + 1);
+  of.write(secret_sealed_b64, buffer_used);
+  of << endl;
   of.close();
 
   cout << "PublicKey: " << bufferToHex(pubkey, sizeof pubkey, true) << endl;
@@ -122,6 +123,9 @@ void keygen (sgx_enclave_id_t eid, string keyfile) {
 namespace po = boost::program_options;
 
 int main(int argc, const char *argv[]) {
+  loguru::g_stderr_verbosity = loguru::Verbosity_WARNING;
+  loguru::init(argc, argv);
+
   string key_input, key_output;
 
   try {
@@ -161,7 +165,7 @@ int main(int argc, const char *argv[]) {
   sgx_status_t st;
   int ret;
 
-  ret = initialize_tc_enclave(&eid);
+  ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
   if (ret != 0) {
     LL_CRITICAL("Failed to initialize the enclave");
     std::exit(-1);

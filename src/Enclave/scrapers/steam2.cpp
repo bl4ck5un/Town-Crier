@@ -43,24 +43,21 @@
 #include <vector>
 
 #include "steam2.h"
-#include "tls_client.h"
-#include "utils.h"
-#include "Log.h"
+#include "commons.h"
 /*
    - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
 */
 #define HOST "Host: api.steampowered.com"
 
-//TODO: Define Error for the steam scraper
 enum steam_error {
   INVALID = 0,
 };
 
 /* Handler function */
-err_code SteamScraper::handler(uint8_t *req, int len, int *resp_data) {
+err_code SteamScraper::handler(uint8_t *req, size_t len, int *resp_data) {
 
   if (len != 6 * 32) {
-    LL_CRITICAL("data_len %d*32 is not 6*32", len / 32);
+    LL_CRITICAL("data_len %zu*32 is not 6*32", len / 32);
     return INVALID_PARAMS;
   }
   /*
@@ -71,115 +68,92 @@ err_code SteamScraper::handler(uint8_t *req, int len, int *resp_data) {
   format[4] = bytes32(LIST_I.length);
   format[5] = LIST_I[0];
   */
-  int ret;
-  //(void) len;
 
-  //handling input
-//    std::string buyer_id;  // buyer_id is 32B, each of byte takes two chars. Plus \0
   uint32_t wait_time;
   size_t item_len;
-  vector<char *> items;
-
-#ifdef VERBOSE
-  //dump_buf("req dump", req, len);
-#endif
+  char _str_buf[100];
 
   // 0x00 .. 0x40
-  // - encAPI: TODO: insert dec here
-  unsigned char enc_api_key[64];
-  memcpy(enc_api_key, req, 0x40);
-//	    dump_buf("API KEY: ", enc_api_key, 64);
+  // - encAPI:
+  char encrypted_api_key[64];
+  memcpy(encrypted_api_key, req, 0x40);
+  LL_INFO("API key: %s", encrypted_api_key);
 
   // 0x40 .. 0x60 buyer_id
-  unsigned char buyer_id[33] = {0};
-
+  char buyer_id[33] = {0};
   memcpy(buyer_id, req + 0x40, 0x20);
-  //LL_NOTICE("buyer id: %s", buyer_id);
-//	    dump_buf("buyer id: ", buyer_id, 32);
+  LL_INFO("buyer id: %s", buyer_id);
 
   // 0x60 .. 0x80
   // get last 4 bytes
-  memcpy(&wait_time, req + 0x80 - sizeof(uint32_t), sizeof(uint32_t));
-  wait_time = swap_uint32(wait_time);
+  wait_time = uint_bytes<uint32_t, 32>(req + 0x60);
+  LL_INFO("cufoff time is %d", wait_time);
+
 
   // 0x80 .. 0xa0 - item_len
-  memcpy(&item_len, req + 0xa0 - sizeof(size_t), sizeof(size_t));
-  item_len = swap_uint32(item_len);//?
+  item_len = uint_bytes<size_t, 32>(req + 80);
 
   // 0xa0 .. 0xc0
+  const char *items[item_len];
   for (size_t i = 0; i < item_len; i++) {
-    items.push_back((char *) req + 0xa0 + 0x20 * i);
+    items[i] = (char *) req + 0xa0 + 0x20 * i;
     LL_INFO("item: %s", items[i]);
   }
 
-  if (wait_time > 3600)
-    wait_time = 59;
-  LL_INFO("waiting time: %d", wait_time);
-
-  const char *listB[1] = {"Portal"};
-  // XXX: set wait time to 1 for test purpose
-//    wait_time = 1;
-
   int result = 0;
-  ret = get_steam_transaction(listB, 1, "32884794", wait_time, "7978F8EDEF9695B57E72EC468E5781AD", &result);
-  if (ret == 0 && result == 1) {
+  err_code ret = get_steam_transaction(items, 1, buyer_id, wait_time, encrypted_api_key, &result);
+  if (ret == NO_ERROR && result == 1) {
     LL_INFO("Found a trade");
     *resp_data = result;
     return NO_ERROR;
+  } else {
+    *resp_data = -1;
+    return ret;
   }
-
-//    uncomment to simulate an real trade
-//    *resp_data = 1;
-
-  return NO_ERROR;
 }
 
-int SteamScraper::get_steam_transaction(const char** item_name_list, int item_list_len, const char* other, unsigned int time_cutoff, const char* key, int* resp) {
-	int ret;
-	int i;
-	char buf[16385];
+//TODO: NULL POINTERS
+err_code SteamScraper::get_steam_transaction(const char **item_name_list,
+                                             int item_list_len,
+                                             const char *buyer_id,
+                                             unsigned int time_cutoff,
+                                             const char *api_key,
+                                             int *resp) {
+  if (item_name_list == NULL || buyer_id == NULL || api_key == NULL || resp == NULL) {
+    return INVALID_PARAMS;
+  }
+  int ret;
+  char tmp_req_time[12];
+  snprintf(tmp_req_time, sizeof(tmp_req_time), "%u", time_cutoff);
 
-	time_t time1, time2;
-	this->headers.push_back(HOST);
+  // reference query
+  // https://api.steampowered.com/IEconService/GetTradeOffers/v0001/?get_sent_offers=1&get_received_offers=0&get_descriptions=0&active_only=1&historical_only=1&key=7978F8EDEF9695B57E72EC468E5781AD&time_historical_cutoff=1355220300
+  std::string query =
+      "/IEconService/GetTradeOffers/v0001/?get_sent_offers=0&get_received_offers=1&get_descriptions=0&active_only=1&historical_only=1&key="
+          + std::string(api_key) + "&time_historical_cutoff=" + std::string(tmp_req_time);
 
-	LL_INFO("%lld seconds passed", time2 - time1);
+  HttpRequest httpRequest("api.steampowered.com", query, true);
+  HttpsClient httpClient(httpRequest);
 
-	unsigned int req_time = (unsigned int) time1 - (30*60);
-	char tmp_req_time[10];
-	snprintf(tmp_req_time, sizeof(tmp_req_time), "%u", req_time);
+  try {
+    HttpResponse response = httpClient.getResponse();
+    ret = parse_response(response.getContent().c_str(), buyer_id, item_name_list, item_list_len, api_key);
+  }
+  catch (std::runtime_error &e) {
+    LL_CRITICAL("Https error: %s", e.what());
+    LL_CRITICAL("Details: %s", httpClient.getError().c_str());
+    httpClient.close();
+    return WEB_ERROR;
+  }
 
-	// reference query
-	// https://api.steampowered.com/IEconService/GetTradeOffers/v0001/?get_sent_offers=1&get_received_offers=0&get_descriptions=0&active_only=1&historical_only=1&key=7978F8EDEF9695B57E72EC468E5781AD&time_historical_cutoff=1355220300
-	std::string query = "/IEconService/GetTradeOffers/v0001/?get_sent_offers=0&get_received_offers=1&get_descriptions=0&active_only=1&historical_only=1&key=" + \
-				std::string(key) + \
-				"&time_historical_cutoff=" + \
-				std::string(tmp_req_time) + \
-				" HTTP/1.1";
-
-	HttpRequest httpRequest("api.steampowered.com", query, this->headers);
-	HttpsClient httpClient(httpRequest);
-
-	try{
-		HttpResponse response = httpClient.getResponse();
-		ret = parse_response1(response.getContent().c_str(), other, item_name_list, item_list_len, key);
-	}
-	catch (std::runtime_error& e){
-		LL_CRITICAL("Https error: %s", e.what());
-		LL_CRITICAL("Details: %s", httpClient.getError().c_str());
-		httpClient.close();	   		
-		return -1;
-	}
-
-	if (ret < 0) {
-	   	LL_CRITICAL("Found no trade");
-	   	*resp = 0;
-		return 0;
-	}
-
-	else {
-	   	*resp = 1;
-	   	return 0;
-	}
+  if (ret < 0) {
+    LL_CRITICAL("Found no trade");
+    *resp = 0;
+    return NO_ERROR;
+  } else {
+    *resp = 1;
+    return NO_ERROR;
+  }
 }
 
 char *SteamScraper::search(const char *buf, const char *search_string) {
@@ -265,7 +239,7 @@ int SteamScraper::in_list(const char **list, int len, const char *name) {
   return -1;
 }
 
-int SteamScraper::parse_response1(const char *resp, const char *other, const char **listB, int lenB, const char *key) {
+int SteamScraper::parse_response(const char *resp, const char *other, const char **listB, int lenB, const char *key) {
   int ret, counter, flag;
   char *index = (char *) resp;
   char *name;

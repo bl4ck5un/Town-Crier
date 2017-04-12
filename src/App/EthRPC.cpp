@@ -104,28 +104,27 @@ string eth_new_filter(blocknum_t from, blocknum_t to) {
   return rpc_client->eth_newFilter(filter_opt);
 }
 
-
 /* eth_getfilterlogs [hostname] [port] [filter_id] [result] returns the logged events of [filter_id]
  * Given the [filter_id] writes to [result] an array containing the required data
  */
 void eth_getfilterlogs(const string &filter_id, Json::Value &txnContainer) {
-    if(filter_id.empty()){
-      throw invalid_argument("filter_id is empty");
-    }
+  if (filter_id.empty()) {
+    throw invalid_argument("filter_id is empty");
+  }
   txnContainer = rpc_client->eth_getFilterLogs(filter_id);
 }
 
 /*!
  * @return the highest block number that geth has seen so far
  */
-blocknum_t eth_blockNumber()
-{
-    unsigned long ret;
-    std::string blk = rpc_client->eth_blockNumber();
-    std::stringstream ss;
-    ss << std::hex << blk;
-    ss >> ret;
-    return ret;
+blocknum_t eth_blockNumber() {
+  unsigned long ret;
+  std::string blk = rpc_client->eth_blockNumber();
+  LL_DEBUG("eth_blockNumber returns %s", blk.c_str());
+  std::stringstream ss;
+  ss << std::hex << blk;
+  ss >> ret;
+  return ret;
 }
 
 long eth_getTransactionCount() {

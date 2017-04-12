@@ -36,53 +36,13 @@
 // Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
 // VMWare Research Award.
 //
+#include "Scraper.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <Debug.h>
+class WeatherScraper : Scraper {
+public:
+	err_code handler(uint8_t *req, size_t data_len, int *resp_data);
+	err_code weather_current(const char* lattitude, const char* longitude, double* r);
 
-#include "tls_client.h"
-#include "scrapers/current_coinmarket.h"
-#include "Log.h"
-
-
-int coin_self_test(){
-	CoinMarket coinMarketTest;
-	
-	//Null Checker
-	double r = 0.0;
-	if (coinMarketTest.coinmarketcap_current(NULL, &r) != INVALID_PARAMS || coinMarketTest.coinmarketcap_current("GOOG", NULL) != INVALID_PARAMS ||\
-		coinMarketTest.coinmarketcap_current(NULL, NULL) != INVALID_PARAMS){
-		return -1;
-	}
-
-	//Test out regular performance
-	if(coinMarketTest.coinmarketcap_current("bitcoin", &r) != NO_ERROR){
-		return -1;
-	}
-	LL_INFO("[CoinMarket] bitcoin returns: %f", r);
-	
-	if (r == 0 || coinMarketTest.coinmarketcap_current("litecoin", &r) != NO_ERROR){
-		return -1;
-	}
-	LL_INFO("[CoinMarket] litecoin returns: %f", r);
-
-	if (r == 0 || coinMarketTest.coinmarketcap_current("ethereum", &r) != NO_ERROR){
-		return -1;
-	}
-	LL_INFO("[CoinMarket] ethereum returns: %f", r);
-
-	if (r == 0 || coinMarketTest.coinmarketcap_current("ripple", &r) != NO_ERROR){
-		return -1;
-	}
-	LL_INFO("[CoinMarket] ripple returns: %f", r);
-
-
-	//Null check
-	int ret = coinMarketTest.coinmarketcap_current("vdbsd", &r);
-	if (r != 0.0){
-		return -1;
-	}
-
-	return 0;
-}
+private:
+	double parse_response(const char* resp);
+};

@@ -63,7 +63,7 @@ enum usps_state{
 
 class USPSScraper : Scraper{
 public:
-	err_code handler(uint8_t *req, int len, int *resp_data);
+	err_code handler(uint8_t *req, size_t len, int *resp_data);
 	err_code ups_tracking (const char* tracking_num, int* status);
 
 private:

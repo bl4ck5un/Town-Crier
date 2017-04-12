@@ -49,7 +49,7 @@
 int main() {
   sgx_enclave_id_t eid;
   int ret;
-  ret = initialize_tc_enclave(&eid);
+  ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
   if (ret != 0) {
     LL_CRITICAL("Failed to initialize the enclave");
     std::exit(-1);

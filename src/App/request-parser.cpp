@@ -96,10 +96,10 @@ RequestParser::RequestParser(const std::string &input) : raw_request(input) {
   this->timestamp = __hextol(input.substr(offset, ENTRY_LEN));
   offset += ENTRY_LEN;
 
-  // 0xe0 - 0x100       : offset of requestData
+  // 0xe0 - 0x100      : offset of requestData
   offset += ENTRY_LEN; // skipping offset
 
-  // 0x100 - 0x120      : reqLen (in bytes32)
+  // 0x100 - 0x120     : reqLen (in bytes32)
   this->data_len = __hextoi(input.substr(offset, ENTRY_LEN)) * 32;
   offset += ENTRY_LEN;
 
@@ -147,7 +147,7 @@ const uint8_t *RequestParser::getParamHash() const {
 unsigned long RequestParser::getTimestamp() const {
   return timestamp;
 }
-unsigned int RequestParser::getDataLen() const {
+size_t RequestParser::getDataLen() const {
   return data_len;
 }
 uint8_t *RequestParser::getData() const {

@@ -21,6 +21,7 @@ set(SOURCE_FILES
     enclave_exception_hdlr.c
     eth_abi.cpp
     encoding.cpp
+    commons.cpp
     external/slre.c
     external/http_parser.c utils.c)
 
@@ -28,7 +29,7 @@ add_definitions(-DENCLAVE_STD_ALT)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
 
-SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES}  scrapers/utils.h scrapers/UPS_Tracking.h scrapers/Scraper.cpp scrapers/Scraper.h scrapers/steam2.h scrapers/flight.h scrapers/stockticker.h)
+SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES}  scrapers/utils.h scrapers/UPS_Tracking.h scrapers/Scraper.cpp scrapers/Scraper.h scrapers/steam2.h scrapers/flight.h scrapers/stockticker.h scrapers/current_coinmarket.h scrapers/current_weather.h)
 
 set_directory_properties(PROPERTIES
     ADDITIONAL_MAKE_CLEAN_FILES "Enclave_t.c; Enclave_t.h")
@@ -56,7 +57,7 @@ include_directories(
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fvisibility=hidden -fpie -fstack-protector")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++03 -nostdinc++")
 
-set(LIB_MBEDTLS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/mbedtls-SGX/lib/libmbedtls_sgx.a")
+set(LIB_MBEDTLS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/mbedtls-SGX/lib/libmbedtls_sgx_t.a")
 
 set_target_properties(enclave PROPERTIES PREFIX "")
 
@@ -76,3 +77,6 @@ add_custom_command(TARGET enclave
     -enclave ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.so
     -out ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so
     COMMENT "Signing the enclave. Written to ${CMAKE_BINARY_DIR}")
+
+
+install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so DESTINATION tc)
