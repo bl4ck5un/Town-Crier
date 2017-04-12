@@ -21,6 +21,7 @@ set(SOURCE_FILES
     enclave_exception_hdlr.c
     eth_abi.cpp
     encoding.cpp
+    commons.cpp
     external/slre.c
     external/http_parser.c utils.c)
 

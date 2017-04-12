@@ -37,15 +37,19 @@
 // VMWare Research Award.
 //
 
-#include <gtest/gtest.h>
+#include <iostream>
+#include "gtest/gtest.h"
 
 #include "utils.h"
+#include "macros.h"
+#include "Converter.h"
 #include "Enclave_u.h"
 
-class ScraperTestSuite : public ::testing::Test {
+using namespace std;
+
+class UintTestSuite : public ::testing::Test {
  protected:
   sgx_enclave_id_t eid;
- public:
   virtual void SetUp() {
     initialize_enclave(ENCLAVE_FILENAME, &eid);
   }
@@ -55,58 +59,10 @@ class ScraperTestSuite : public ::testing::Test {
   }
 };
 
-TEST_F(ScraperTestSuite, yahoo) {
-  int ocall_status, ret;
-  ocall_status = yahoo_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, coinmarket) {
-  int ocall_status, ret;
-  ocall_status = coin_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, steam) {
-  int ocall_status, ret;
-  ocall_status = steam_self_test(eid, &ret);
-  ASSERT_EQ(0, ocall_status);
-  ASSERT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, google) {
-  int ocall_status, ret;
-  ocall_status = google_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, bloomberg) {
-  int ocall_status, ret;
-  ocall_status = bloomberg_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, flight) {
-  int ocall_status, ret;
-  ocall_status = flight_self_test(eid, &ret);
-  ASSERT_EQ(0, ocall_status);
-  ASSERT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, stock) {
-  int ocall_status, ret;
-  ocall_status = stockticker_self_test(eid, &ret);
-  ASSERT_EQ(0, ocall_status);
-  ASSERT_EQ(0, ret);
-}
-
-TEST_F(ScraperTestSuite, weather) {
-  int ocall_status, ret;
-  ocall_status = weather_self_test(eid, &ret);
-  ASSERT_EQ(0, ocall_status);
+TEST_F (UintTestSuite, uint) {
+  sgx_status_t st;
+  int ret;
+  st = uint_utils_test(eid, &ret);
+  ASSERT_EQ(0, st);
   ASSERT_EQ(0, ret);
 }

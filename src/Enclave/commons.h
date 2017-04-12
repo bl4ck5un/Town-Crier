@@ -36,7 +36,8 @@
  * VMWare Research Award.
  */
 
-#pragma once
+#ifndef TOWN_CRIER_COMMONS_H
+#define TOWN_CRIER_COMMONS_H
 #include <stdint.h>
 #include <vector>
 #include "Log.h"
@@ -51,37 +52,76 @@
 
 #define ROUND_TO_32(x) ((x + 31) / 32 * 32)
 
-
-static uint8_t hex2int(char input)
-{
-  if(input >= '0' && input <= '9')
+static uint8_t hex2int(char input) {
+  if (input >= '0' && input <= '9')
     return input - '0';
-  if(input >= 'A' && input <= 'F')
+  if (input >= 'A' && input <= 'F')
     return input - 'A' + 10;
-  if(input >= 'a' && input <= 'f')
+  if (input >= 'a' && input <= 'f')
     return input - 'a' + 10;
   throw std::invalid_argument("Invalid input string");
 }
 
-
-//inline void toHex(const uint8_t* bytes, int len, char* hex) {
-//    int i;
-//    for (i = 0; i < len; i++)
-//    {
-//        hex += snprintf(hex, 2, "%02X", bytes[i]);
-//    }
-//    *(hex + 1) = '\0';
-//}
-
 static char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                           '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+                        '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
-inline std::string toHex(unsigned char *data, int len)
-{
+inline std::string toHex(const unsigned char *data, int len) {
   std::string s(len * 2, ' ');
   for (int i = 0; i < len; ++i) {
-    s[2 * i]     = hexmap[(data[i] & 0xF0) >> 4];
+    s[2 * i] = hexmap[(data[i] & 0xF0) >> 4];
     s[2 * i + 1] = hexmap[data[i] & 0x0F];
   }
   return s;
 }
+
+inline const char *hex(char *_hex, const unsigned char *buf, size_t len) {
+  for (int i = 0; i < len; ++i) {
+    _hex[2 * i] = hexmap[(buf[i] & 0xF0) >> 4];
+    _hex[2 * i + 1] = hexmap[buf[i] & 0x0F];
+  }
+  _hex[2 * len] = 0;
+  return _hex;
+}
+
+#include <cassert>
+
+template<typename T>
+T swap_endian(T u) {
+  assert(CHAR_BIT == 8);
+
+  union {
+    T u;
+    unsigned char u8[sizeof(T)];
+  } source, dest;
+
+  source.u = u;
+
+  for (size_t k = 0; k < sizeof(T); k++)
+    dest.u8[k] = source.u8[sizeof(T) - k - 1];
+
+  return dest.u;
+}
+
+inline uint32_t swap_uint32(uint32_t num) {
+  return ((num >> 24) & 0xff) | // move byte 3 to byte 0
+      ((num << 8) & 0xff0000) | // move byte 1 to byte 2
+      ((num >> 8) & 0xff00) | // move byte 2 to byte 1
+      ((num << 24) & 0xff000000); // byte 0 to byte 3
+}
+
+inline uint64_t swap_uint64(uint64_t num) {
+  return ((static_cast<uint64_t>(swap_uint32(num & 0xffffffff))) << 32) |
+      (static_cast<uint64_t>(swap_uint32((num >> 32) & 0xffffffff)));
+}
+
+template<typename UINT, size_t BUF_LEN>
+UINT uint_bytes(const unsigned char *buf, bool big_endian = true) {
+  UINT ret;
+  memcpy(&ret, buf + BUF_LEN - sizeof(UINT), sizeof(UINT));
+  if (big_endian)
+    ret = swap_endian<UINT>(ret);
+
+  return ret;
+}
+
+#endif

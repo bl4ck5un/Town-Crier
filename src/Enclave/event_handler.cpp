@@ -62,14 +62,13 @@ int handle_request(int nonce,
                    uint64_t id,
                    uint64_t type,
                    uint8_t *data,
-                   int data_len,
+                   size_t data_len,
                    uint8_t *raw_tx,
-                   size_t *raw_tx_len)
-{
-    int ret;
-    bytes resp_data;
-    int resp_data_len = 0;
-    int error_flag = 0;
+                   size_t *raw_tx_len) {
+  int ret;
+  bytes resp_data;
+  int resp_data_len = 0;
+  int error_flag = 0;
 /*
     printf_sgx("nonce: %d\n", nonce);
     printf_sgx("id: %llu\n", id);
@@ -79,90 +78,64 @@ int handle_request(int nonce,
         printf_sgx("%u,", data[i]);
     printf_sgx("\n");
 */
-    switch (type){
-    case TYPE_FINANCE_INFO:
-    {
-        /* NEED TO FIGURE OUT HOW TO PARSE */ 
-        int closingPrice;
-        StockTickerScraper stockTickerScraper;
-        switch (stockTickerScraper.handler(data, data_len, &closingPrice)){
-            case INVALID_PARAMS:
-                error_flag = 1;
-                break;
-            case WEB_ERROR:
-                return TC_INTERNAL_ERROR;
-            case NO_ERROR:
-                LL_INFO("Closing pricing is %d", closingPrice);
-                append_as_uint256(resp_data, closingPrice, sizeof(closingPrice));
-                break;
-        }
-        break; 
+  switch (type) {
+    case TYPE_FINANCE_INFO: {
+      /* NEED TO FIGURE OUT HOW TO PARSE */
+      int closingPrice;
+      StockTickerScraper stockTickerScraper;
+      switch (stockTickerScraper.handler(data, data_len, &closingPrice)) {
+        case INVALID_PARAMS:error_flag = 1;
+          break;
+        case WEB_ERROR:return TC_INTERNAL_ERROR;
+        case NO_ERROR:LL_INFO("Closing pricing is %d", closingPrice);
+          append_as_uint256(resp_data, closingPrice, sizeof(closingPrice));
+          break;
+      }
+      break;
     }
     case TYPE_FLIGHT_INS: {
       FlightScraper flightHandler;
       int delay;
       switch (flightHandler.handler(data, data_len, &delay)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:
-          return TC_INTERNAL_ERROR;
-        // treat invalid_params as no_error
-        case INVALID_PARAMS:
-          error_flag = 1;
-        case NO_ERROR:
-          append_as_uint256(resp_data, delay, sizeof(delay));
+        case WEB_ERROR:return TC_INTERNAL_ERROR;
+          // treat invalid_params as no_error
+        case INVALID_PARAMS:error_flag = 1;
+        case NO_ERROR:append_as_uint256(resp_data, delay, sizeof(delay));
           break;
       };
       break;
     }
-    case TYPE_STEAM_EX:
-    {
-        SteamScraper steamHandler;       
-        int found;
-        switch(steamHandler.handler(data, data_len, &found)){
-            case UNKNOWN_ERROR:
-            case WEB_ERROR:
-                return TC_INTERNAL_ERROR;
-            case INVALID_PARAMS:
-                error_flag = 1;
-                break;
-            case NO_ERROR:
-                append_as_uint256(resp_data, found, sizeof(found));
-                break;
-        }
-        break;
+    case TYPE_STEAM_EX: {
+      SteamScraper steamHandler;
+      int found;
+      switch (steamHandler.handler(data, data_len, &found)) {
+        case UNKNOWN_ERROR:
+        case WEB_ERROR:return TC_INTERNAL_ERROR;
+        case INVALID_PARAMS:error_flag = 1;
+          break;
+        case NO_ERROR:append_as_uint256(resp_data, found, sizeof(found));
+          break;
+      }
+      break;
     }
-    
+
     case TYPE_CURRENT_VOTE: {
       double r1 = 0, r2 = 0, r3 = 0;
-      long long time1, time2;
-
-      rdtsc(&time1);
       yahoo_current("GOOG", &r1);
-      rdtsc(&time2);
-      LL_CRITICAL("Yahoo: %llu", time2 - time1);
-
       google_current("GOOG", &r3);
-      rdtsc(&time1);
-      LL_CRITICAL("Bloomberg: %llu", time1 - time2);
-
       google_current("GOOG", &r2);
-      rdtsc(&time2);
-      LL_CRITICAL("GOOGLE: %llu", time2 - time1);
-
       break;
     }
     case TYPE_UPS_TRACKING: {
       USPSScraper uSPSScraper;
       int pkg_status;
-      switch(uSPSScraper.handler(data,data_len, &pkg_status)){
+      switch (uSPSScraper.handler(data, data_len, &pkg_status)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:
-          return TC_INTERNAL_ERROR;
-        // treat invalid_params as no_error
-        case INVALID_PARAMS:
-          error_flag = 1;
-        case NO_ERROR:
-          append_as_uint256(resp_data, pkg_status, sizeof(pkg_status));
+        case WEB_ERROR:return TC_INTERNAL_ERROR;
+          // treat invalid_params as no_error
+        case INVALID_PARAMS:error_flag = 1;
+        case NO_ERROR:append_as_uint256(resp_data, pkg_status, sizeof(pkg_status));
           break;
       };
       break;
@@ -170,21 +143,18 @@ int handle_request(int nonce,
     case TYPE_COINMARKET: {
       CoinMarket coinMarket;
       int coin_value;
-      switch(coinMarket.handler(data, data_len, &coin_value)){
+      switch (coinMarket.handler(data, data_len, &coin_value)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:
-          return TC_INTERNAL_ERROR;
-        case INVALID_PARAMS:
-          error_flag = 1;
-        case NO_ERROR:
-          append_as_uint256(resp_data, coin_value, sizeof(coin_value));
+        case WEB_ERROR:return TC_INTERNAL_ERROR;
+        case INVALID_PARAMS:error_flag = 1;
+        case NO_ERROR:append_as_uint256(resp_data, coin_value, sizeof(coin_value));
           break;
       };
       break;
-    } 
-    default :LL_CRITICAL("Unknown request type: %" PRIu64, type);
+    }
+    default :LL_CRITICAL("Unknown request type: %"
+                             PRIu64, type);
       return -1;
-      break;
   }
 
   // TODO: MAJOR: change type to larger type
