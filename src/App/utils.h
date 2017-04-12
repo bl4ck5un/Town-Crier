@@ -65,7 +65,7 @@
 
 int initialize_enclave(const char *name, sgx_enclave_id_t *eid);
 void print_error_message(sgx_status_t ret);
-std::string sgx_error_message(sgx_status_t ret);
+const std::string sgx_error_message(sgx_status_t ret);
 
 #if defined(__cplusplus)
 extern "C" {

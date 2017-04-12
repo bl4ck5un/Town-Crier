@@ -141,7 +141,7 @@ void print_error_message(sgx_status_t ret) {
 #include <iomanip>
 #include <sstream>
 
-std::string sgx_error_message(sgx_status_t ret) {
+const string sgx_error_message(sgx_status_t ret) {
   size_t idx = 0;
   size_t ttl = sizeof sgx_errlist / sizeof sgx_errlist[0];
   std::stringstream ss;
