@@ -33,7 +33,7 @@ cat <<EOF
 var TCsource = '$SRC'
 EOF
 
-SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../Ref.sol ../FlightIns.sol ../SteamTrade.sol| paste -sd '' | sed 's/\s\+/ /g')
+SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../Ref.sol ../Flight.sol ../FlightIns.sol | paste -sd '' | sed 's/\s\+/ /g')
 
 cat <<EOF
 var APPsource = '$SRC'
@@ -43,8 +43,9 @@ cat <<EOF
 var TCcontract = eth.compile.solidity(TCsource)
 var APPcontracts = eth.compile.solidity(APPsource)
 var TownCrier = eth.contract(TCcontract["<stdin>:TownCrier"].info.abiDefinition)
-var SteamTrade = eth.contract(APPcontracts["<stdin>:SteamTrade"].info.abiDefinition)
+//var SteamTrade = eth.contract(APPcontracts["<stdin>:SteamTrade"].info.abiDefinition)
 var FlightIns = eth.contract(APPcontracts["<stdin>:FlightIns"].info.abiDefinition)
+var Flight = eth.contract(APPcontracts["<stdin>:Flight"].info.abiDefinition)
 
 function checkWork(){
     if (eth.getBlock("pending").transactions.length > 0) {
@@ -141,6 +142,24 @@ function createFlightIns() {
     return tradeContract;
 }
 
+function createFlight() {
+    var tradeContract = Flight.new(
+        tc.address, {
+            from: sellerAddr,
+            data: APPcontracts["<stdin>:Flight"].code,
+            gas:gasCnt},
+            function(e, c) {
+                if (!e) {
+                    if (c.address) {
+                        console.log('Flight created at: ' + c.address)
+                    }
+                } else {
+                    console.log('Failed to create Flight contract: ' + e)}
+                });
+    mineBlocks(1);
+    return tradeContract;
+}
+
 function SteamPurchase(contract, steamId, delay) {
   // var timeoutSecs = Math.floor((new Date((new Date()).getTime() + (delay * 1000))).getTime() / 1000);
   // to simplify, delay is the time for SGX to wait before fetching
@@ -162,6 +181,25 @@ contract.insure.sendTransaction([web3.fromAscii(flightID, 32), web3.fromAscii(ti
     });
     mineBlocks(1);
     return "Insured!"
+}
+
+function FlightRequest(contract, fligthID, time, fee) {
+    contract.request.sendTransaction([web3.fromAscii(fligthID, 32), web3.fromAscii(time, 32)], {
+        from: buyerAddr,
+        value: fee,
+        gas: gasCnt
+    });
+    mineBlocks(1);
+    return "Request sent!"
+}
+
+function Cancel(contract, id) {
+    contract.cancel.sendTransaction(id, {
+        from: buyerAddr,
+        gas: gasCnt
+    });
+    mineBlocks(1);
+    return "Cancellation request sent!"
 }
 
 function TestSteam(contract, steamId, delay) {
