@@ -81,12 +81,13 @@ int main(int argc, const char *argv[]) {
   // init logging
   loguru::init(argc, argv);
 
+  fs::path home_dir = fs::path(homedir());
   fs::path current_path = fs::current_path();
 
   bool options_rpc = false;
   bool options_daemon = false;
   string options_config = "config";
-  string opt_cwd = homedir();
+  string opt_cwd = (home_dir / ".tc").string();
 
   try {
     po::options_description desc("Allowed options");

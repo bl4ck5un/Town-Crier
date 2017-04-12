@@ -112,7 +112,8 @@ void keygen (sgx_enclave_id_t eid, string keyfile) {
     LL_CRITICAL("cannot open key file: %s", keyfile.c_str());
     std::exit(-1);
   }
-  of.write(secret_sealed_b64, buffer_used + 1);
+  of.write(secret_sealed_b64, buffer_used);
+  of << endl;
   of.close();
 
   cout << "PublicKey: " << bufferToHex(pubkey, sizeof pubkey, true) << endl;
