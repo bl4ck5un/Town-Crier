@@ -1,6 +1,6 @@
-contract Flight {
+contract Application {
     event Request(int64 requestId, address requester, uint dataLength, bytes32[] data);
-    event Response(int64 requestId, address requester, uint64 error, uint delay);
+    event Response(int64 requestId, address requester, uint64 error, uint data);
     event Cancel(uint64 requestId, address requester, bool success);
 
     uint constant MIN_GAS = 30000 + 20000;
@@ -17,12 +17,12 @@ contract Flight {
     
     function() payable {} // must be payable
 
-    function Flight(TownCrier tcCont) public {
+    function Application(TownCrier tcCont) public {
         TC_CONTRACT = tcCont;
         owner = msg.sender;
     }
 
-    function request(bytes32[] requestData) public payable {
+    function request(uint8 requestType, bytes32[] requestData) public payable {
         if (msg.value < TC_FEE) {
             if (!msg.sender.send(msg.value)) {
                 throw;
@@ -31,7 +31,7 @@ contract Flight {
             return;
         }
 
-        uint64 requestId = TC_CONTRACT.request.value(msg.value)(1, this, TC_CALLBACK_FID, 0, requestData);
+        uint64 requestId = TC_CONTRACT.request.value(msg.value)(requestType, this, TC_CALLBACK_FID, 0, requestData);
         if (requestId == 0) {
             if (!msg.sender.send(msg.value)) { 
                 throw;

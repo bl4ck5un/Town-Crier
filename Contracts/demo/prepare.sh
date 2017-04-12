@@ -33,7 +33,7 @@ cat <<EOF
 var TCsource = '$SRC'
 EOF
 
-SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../Ref.sol ../Flight.sol ../FlightIns.sol | paste -sd '' | sed 's/\s\+/ /g')
+SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../Ref.sol ../Application.sol ../FlightIns.sol | paste -sd '' | sed 's/\s\+/ /g')
 
 cat <<EOF
 var APPsource = '$SRC'
@@ -45,7 +45,7 @@ var APPcontracts = eth.compile.solidity(APPsource)
 var TownCrier = eth.contract(TCcontract["<stdin>:TownCrier"].info.abiDefinition)
 //var SteamTrade = eth.contract(APPcontracts["<stdin>:SteamTrade"].info.abiDefinition)
 var FlightIns = eth.contract(APPcontracts["<stdin>:FlightIns"].info.abiDefinition)
-var Flight = eth.contract(APPcontracts["<stdin>:Flight"].info.abiDefinition)
+var App = eth.contract(APPcontracts["<stdin>:Application"].info.abiDefinition)
 
 function checkWork(){
     if (eth.getBlock("pending").transactions.length > 0) {
@@ -142,19 +142,19 @@ function createFlightIns() {
     return tradeContract;
 }
 
-function createFlight() {
-    var tradeContract = Flight.new(
+function createApp() {
+    var tradeContract = App.new(
         tc.address, {
             from: sellerAddr,
-            data: APPcontracts["<stdin>:Flight"].code,
+            data: APPcontracts["<stdin>:Application"].code,
             gas:gasCnt},
             function(e, c) {
                 if (!e) {
                     if (c.address) {
-                        console.log('Flight created at: ' + c.address)
+                        console.log('Application created at: ' + c.address)
                     }
                 } else {
-                    console.log('Failed to create Flight contract: ' + e)}
+                    console.log('Failed to create Application contract: ' + e)}
                 });
     mineBlocks(1);
     return tradeContract;
@@ -187,6 +187,16 @@ function FlightRequest(contract, fligthID, time, fee) {
     contract.request.sendTransaction([web3.fromAscii(fligthID, 32), web3.fromAscii(time, 32)], {
         from: buyerAddr,
         value: fee,
+        gas: gasCnt
+    });
+    mineBlocks(1);
+    return "Request sent!"
+}
+
+function Request(contract, type, requestData) {
+    contract.request.sendTransaction(type, requestData, {
+        from: buyerAddr,
+        value: 3e15,
         gas: gasCnt
     });
     mineBlocks(1);
