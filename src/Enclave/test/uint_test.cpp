@@ -27,5 +27,5 @@ int uint_utils_test() {
     }
   }
 
-  return (int) final;
+  return final ? 0 : 1;
 }
