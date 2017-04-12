@@ -75,14 +75,17 @@ target_link_libraries(tc
     ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
     ${LIBODB_LIBRARIES} ${MHD_LIBRARIES} ${SQLITE_LIBRARIES} ${Boost_LIBRARIES}
     ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY}
+    -Wl,-rpath -Wl,${SGXSDK_LIBRARY_DIRS}
     -lpthread -ldl)
 
 target_link_libraries(tc-keygen
     ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
+    -Wl,-rpath -Wl,${SGXSDK_LIBRARY_DIRS}
     -lpthread -ldl)
 
 target_link_libraries(tc-att
     ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
+    -Wl,-rpath -Wl,${SGXSDK_LIBRARY_DIRS}
     -lpthread -ldl)
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
@@ -99,8 +102,19 @@ target_link_libraries(TestMain
 add_custom_command(TARGET tc
     POST_BUILD
     COMMAND cp
-    -f ${CMAKE_SOURCE_DIR}/config ${CMAKE_BINARY_DIR}
+    -f ${CMAKE_SOURCE_DIR}/config ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
     COMMENT "Installing the default configuration file")
 
 add_dependencies(tc enclave)
 add_dependencies(TestMain enclave)
+
+install(TARGETS tc DESTINATION tc)
+install(FILES ${CMAKE_SOURCE_DIR}/config-systemd DESTINATION tc)
+install(DIRECTORY DESTINATION $ENV{HOME}/.config/systemd/user)
+install(FILES ${CMAKE_SOURCE_DIR}/tc.service DESTINATION $ENV{HOME}/.config/systemd/user)
+install(CODE "message(
+\"Please run
+    systemctl --user enable tc
+or
+    systemctl --user daemon-reload && systemctl --user restart tc
+to (re)load tc.service\")")

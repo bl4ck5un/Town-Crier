@@ -63,7 +63,6 @@
 #define TOKEN_FILENAME   "towncrier.enclave.token"
 #define ENCLAVE_FILENAME "enclave.signed.so"
 
-int initialize_tc_enclave(sgx_enclave_id_t *eid);
 int initialize_enclave(const char *name, sgx_enclave_id_t *eid);
 void print_error_message(sgx_status_t ret);
 std::string sgx_error_message(sgx_status_t ret);

@@ -69,6 +69,10 @@ using std::string;
 namespace fs = boost::filesystem;
 
 int initialize_enclave(const char *enclave_name, sgx_enclave_id_t *eid) {
+  if (!fs::exists(enclave_name)) {
+    LL_CRITICAL("Enclave file %s doesn't not exist", enclave_name);
+    return -1;
+  }
   sgx_launch_token_t token = {0};
   sgx_status_t ret = SGX_ERROR_UNEXPECTED;
   int updated = false;
@@ -115,10 +119,6 @@ int initialize_enclave(const char *enclave_name, sgx_enclave_id_t *eid) {
     printf("Warning: Failed to save launch token to \"%s\".\n", token_path);
   fclose(fp);
   return 0;
-}
-
-int initialize_tc_enclave(sgx_enclave_id_t *eid) {
-  return initialize_enclave(ENCLAVE_FILENAME, eid);
 }
 
 void print_error_message(sgx_status_t ret) {

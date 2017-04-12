@@ -163,7 +163,7 @@ int main(int argc, const char *argv[]) {
   sgx_status_t st;
   int ret;
 
-  ret = initialize_tc_enclave(&eid);
+  ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
   if (ret != 0) {
     LL_CRITICAL("Failed to initialize the enclave");
     std::exit(-1);

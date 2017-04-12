@@ -1,0 +1,9 @@
+[Unit]
+Description=Ethereum go client
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/geth
+
+[Install]
+WantedBy=default.target
