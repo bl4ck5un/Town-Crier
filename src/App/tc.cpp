@@ -159,6 +159,8 @@ int main(int argc, const char *argv[]) {
 
   //! register Ctrl-C handler
   std::signal(SIGINT, exitGraceful);
+  // handle systemd termination signal
+  std::signal(SIGTERM, exitGraceful);
 
   jsonrpc::HttpServer status_server_connector(status_rpc_port);
   StatusRpcServer status_rpc_server(status_server_connector, eid);
