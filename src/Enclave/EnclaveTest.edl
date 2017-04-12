@@ -15,6 +15,7 @@ enclave {
         public int coin_self_test();
         public int keygen_test();
         public int stockticker_self_test();
+	public int weather_self_test();
     };
 
 };

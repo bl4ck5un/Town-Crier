@@ -88,7 +88,6 @@ flight_error FlightScraper::parse_response(const char *resp, int *delay, uint64_
 
   //Corner Case: Flight was not found
   if (pos > buff.length()) {
-    // TODO: ask oscar: why invalid? (See current test)
     LL_DEBUG("Invalid");
     return INVALID;
   }
@@ -108,8 +107,9 @@ flight_error FlightScraper::parse_response(const char *resp, int *delay, uint64_
     LL_DEBUG("NOT_DEPARTED");
     return NOT_DEPARTED;
   }
-  //Case: Flight was cancelled
+  //Case: Flight was cancelled //RETURN MAX_INT DELAY
   if (actual_depart_time == -1) {
+    *delay = 2147483643; //Delay is some very large number
     LL_DEBUG("CANCELLED");
     return CANCELLED;
   }
@@ -144,10 +144,6 @@ flight_error FlightScraper::get_flight_delay(uint64_t unix_epoch_time, const cha
     return INVALID;
   }
 
-  // TODO: if unix_epoch_time < now
-  // TODO: return error
-
-
   //Build header for https request
   std::vector<string> header;
   header.push_back(AUTH_CODE);
@@ -180,7 +176,7 @@ flight_error FlightScraper::get_flight_delay(uint64_t unix_epoch_time, const cha
  *      0x20 - 0x40 uint64 unix_epoch
  */
 err_code FlightScraper::handler(uint8_t *req, int data_len, int *resp_data) {
-  //TODO: What does this do?
+  
   if (data_len != 2 * 32) {
     LL_CRITICAL("Data_len %d*32 is not 2*32", data_len / 32);
     return INVALID_PARAMS;

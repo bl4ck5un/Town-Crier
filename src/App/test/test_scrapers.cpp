@@ -74,7 +74,6 @@ TEST_F(ScraperTestSuite, steam) {
     ocall_status = steam_self_test(eid, &ret); 
     ASSERT_EQ(0, ocall_status);
     ASSERT_EQ(0, ret);
-
 }
 
 TEST_F(ScraperTestSuite, google) {
@@ -103,4 +102,11 @@ TEST_F(ScraperTestSuite, stock){
     ocall_status =stockticker_self_test(eid, &ret);
     ASSERT_EQ(0, ocall_status);
     ASSERT_EQ(0,ret);
+}
+
+TEST_F(ScraperTestSuite, weather) {
+    int ocall_status, ret;
+    ocall_status = weather_self_test(eid, &ret); 
+    ASSERT_EQ(0, ocall_status);
+    ASSERT_EQ(0, ret);
 }

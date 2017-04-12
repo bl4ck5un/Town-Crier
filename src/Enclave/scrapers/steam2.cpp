@@ -71,8 +71,6 @@ err_code SteamScraper::handler(uint8_t *req, int len, int *resp_data) {
   format[4] = bytes32(LIST_I.length);
   format[5] = LIST_I[0];
   */
-  int ret;
-  //(void) len;
 
   //handling input
 //    std::string buyer_id;  // buyer_id is 32B, each of byte takes two chars. Plus \0
@@ -121,21 +119,27 @@ err_code SteamScraper::handler(uint8_t *req, int len, int *resp_data) {
 //    wait_time = 1;
 
   int result = 0;
-  ret = get_steam_transaction(listB, 1, "32884794", wait_time, "7978F8EDEF9695B57E72EC468E5781AD", &result);
-  if (ret == 0 && result == 1) {
+  err_code ret = get_steam_transaction(listB, 1, "32884794", wait_time, "7978F8EDEF9695B57E72EC468E5781AD", &result);
+  if (ret == NO_ERROR && result == 1) {
     LL_INFO("Found a trade");
     *resp_data = result;
     return NO_ERROR;
   }
+  else{
+    *resp_data = -1;
+    return ret; 
+  }
 
 //    uncomment to simulate an real trade
 //    *resp_data = 1;
-
-  return NO_ERROR;
 }
 
-int SteamScraper::get_steam_transaction(const char** item_name_list, int item_list_len, const char* other, unsigned int time_cutoff, const char* key, int* resp) {
-	int ret;
+//TODO: NULL POINTERS
+err_code SteamScraper::get_steam_transaction(const char** item_name_list, int item_list_len, const char* other, unsigned int time_cutoff, const char* key, int* resp) {
+	if(item_name_list == NULL || other == NULL || key==NULL || resp==NULL){
+    return INVALID_PARAMS;
+  }
+  int ret;
 	int i;
 	char buf[16385];
 
@@ -167,18 +171,18 @@ int SteamScraper::get_steam_transaction(const char** item_name_list, int item_li
 		LL_CRITICAL("Https error: %s", e.what());
 		LL_CRITICAL("Details: %s", httpClient.getError().c_str());
 		httpClient.close();	   		
-		return -1;
+		return WEB_ERROR;
 	}
 
 	if (ret < 0) {
 	   	LL_CRITICAL("Found no trade");
 	   	*resp = 0;
-		return 0;
+		return NO_ERROR;
 	}
 
 	else {
 	   	*resp = 1;
-	   	return 0;
+	   	return NO_ERROR;
 	}
 }
 

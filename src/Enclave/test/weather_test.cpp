@@ -42,47 +42,24 @@
 #include <Debug.h>
 
 #include "tls_client.h"
-#include "scrapers/current_coinmarket.h"
+#include "scrapers/current_weather.h"
 #include "Log.h"
+#include "utils.c"
 
-
-int coin_self_test(){
-	CoinMarket coinMarketTest;
+int weather_self_test(){
+	WeatherScraper weatherScraper;
 	
 	//Null Checker
 	double r = 0.0;
-	if (coinMarketTest.coinmarketcap_current(NULL, &r) != INVALID_PARAMS || coinMarketTest.coinmarketcap_current("GOOG", NULL) != INVALID_PARAMS ||\
-		coinMarketTest.coinmarketcap_current(NULL, NULL) != INVALID_PARAMS){
+	if (weatherScraper.weather_current("42.4406","-76.4966", NULL) != INVALID_PARAMS){
 		return -1;
 	}
 
 	//Test out regular performance
-	if(coinMarketTest.coinmarketcap_current("bitcoin", &r) != NO_ERROR){
+	if(weatherScraper.weather_current("42.4406","-76.4966", &r) != NO_ERROR){
 		return -1;
 	}
-	LL_INFO("[CoinMarket] bitcoin returns: %f", r);
-	
-	if (r == 0 || coinMarketTest.coinmarketcap_current("litecoin", &r) != NO_ERROR){
-		return -1;
-	}
-	LL_INFO("[CoinMarket] litecoin returns: %f", r);
-
-	if (r == 0 || coinMarketTest.coinmarketcap_current("ethereum", &r) != NO_ERROR){
-		return -1;
-	}
-	LL_INFO("[CoinMarket] ethereum returns: %f", r);
-
-	if (r == 0 || coinMarketTest.coinmarketcap_current("ripple", &r) != NO_ERROR){
-		return -1;
-	}
-	LL_INFO("[CoinMarket] ripple returns: %f", r);
-
-
-	//Null check
-	int ret = coinMarketTest.coinmarketcap_current("vdbsd", &r);
-	if (r != 0.0){
-		return -1;
-	}
+	LL_INFO("New York (42.4406,-76.4966) location returns: %f", r);
 
 	return 0;
 }
