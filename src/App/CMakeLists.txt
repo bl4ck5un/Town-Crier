@@ -75,7 +75,6 @@ target_link_libraries(tc
     ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
     ${LIBODB_LIBRARIES} ${MHD_LIBRARIES} ${SQLITE_LIBRARIES} ${Boost_LIBRARIES}
     ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY}
-    -Wl,-rpath -Wl,${SGXSDK_LIBRARY_DIRS}
     -lpthread -ldl)
 
 target_link_libraries(tc-keygen
@@ -84,7 +83,6 @@ target_link_libraries(tc-keygen
 
 target_link_libraries(tc-att
     ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
-    -Wl,-rpath -Wl,${SGXSDK_LIBRARY_DIRS}
     -lpthread -ldl)
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
