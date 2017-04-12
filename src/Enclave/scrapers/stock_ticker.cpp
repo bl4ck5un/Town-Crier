@@ -112,9 +112,9 @@ err_code StockTickerScraper::handler(uint8_t *req, int data_len, int *resp_data)
     string str(symbol);
     LL_INFO("symbol: %s\n",symbol);
 
-    int month = strtol((char *) (req + 4), NULL, 10);
-    int day = strtol((char *) (req + 8), NULL, 10);
-    int year = strtol((char *) (req + 12), NULL, 10);
+    int month = strtol((char *) (req + 0x20), NULL, 10);
+    int day = strtol((char *) (req + 0x40), NULL, 10);
+    int year = strtol((char *) (req + 0x60), NULL, 10);
 
     LL_INFO("month: %d\n", month);
     LL_INFO("day: %d\n", day);

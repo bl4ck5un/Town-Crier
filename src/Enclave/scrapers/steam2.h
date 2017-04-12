@@ -23,7 +23,7 @@ public:
 	int parse_response1(const char* resp, const char* other, const char** listB, int lenB, const char* key);
 
 	err_code handler(uint8_t *req, int len, int *resp_data);
-	int get_steam_transaction(const char** item_name_list, int item_list_len, const char* other, unsigned int time_cutoff, const char* key, int* resp);
+	err_code get_steam_transaction(const char** item_name_list, int item_list_len, const char* other, unsigned int time_cutoff, const char* key, int* resp);
 };
 
 #endif

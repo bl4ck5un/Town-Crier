@@ -51,20 +51,15 @@ int weather_self_test(){
 	
 	//Null Checker
 	double r = 0.0;
-	if (weatherScraper.weather_current(999999, &r) != INVALID_PARAMS || weatherScraper.weather_current(999999, NULL) != INVALID_PARAMS){
+	if (weatherScraper.weather_current("42.4406","-76.4966", NULL) != INVALID_PARAMS){
 		return -1;
 	}
 
 	//Test out regular performance
-	if(weatherScraper.weather_current(11510, &r) != NO_ERROR){
+	if(weatherScraper.weather_current("42.4406","-76.4966", &r) != NO_ERROR){
 		return -1;
 	}
-	LL_INFO("11510 location returns: %f", r);
-	
-	if (r == 0 || weatherScraper.weather_current(14850, &r) != NO_ERROR){
-		return -1;
-	}
-	LL_INFO("14850 location returns: %f", r);
+	LL_INFO("New York (42.4406,-76.4966) location returns: %f", r);
 
 	return 0;
 }

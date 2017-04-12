@@ -51,25 +51,22 @@
 
 double WeatherScraper::parse_response(const char* resp) {
     
-    LL_INFO("resp: %s", resp);
-
     double ret = 0;
     const char * end;
     const char * temp = resp;
 
     std::string buf_string(resp);
-    std::size_t pos = buf_string.find("temp\":");
+    std::size_t pos = buf_string.find("temperature\":");
 
-    if (pos == std::string::npos)
-    {
+    if (pos == std::string::npos){
         return 0.0;
     }
-    temp += (pos + 6);
+
+    temp += (pos + 13);
     end = temp;
     while (*end != ',') {
         end += 1;
     }
-
     ret = std::strtod(temp, NULL);
     return ret;
 }
@@ -102,10 +99,10 @@ err_code WeatherScraper::weather_current(const char* lattitude, const char* long
         return INVALID_PARAMS;
     }
 
-    std::string query = "/forecast/9b0ede9af16533e1557ad783c2dfe40d" + \
+    std::string query = "/forecast/9b0ede9af16533e1557ad783c2dfe40d/" + \
                         std::string(lattitude) + "," + std::string(longitude);
-
-    HttpRequest httpRequest("api.darksky.net", query);
+    LL_INFO("Query: %s", query.c_str());
+    HttpRequest httpRequest("api.darksky.net", query, true);
     HttpsClient httpClient(httpRequest);
 
     try {
