@@ -40,6 +40,7 @@
 
 #include <Log.h>
 #include <string>
+#include <scrapers/yahoo_yql_stock.h>
 
 #include "event_handler.h"
 #include "scrapers.h"
@@ -82,8 +83,8 @@ int handle_request(int nonce,
     case TYPE_FINANCE_INFO: {
       /* NEED TO FIGURE OUT HOW TO PARSE */
       int closingPrice;
-      StockTickerScraper stockTickerScraper;
-      switch (stockTickerScraper.handler(data, data_len, &closingPrice)) {
+      YahooYQLStock yahooYQLStock;
+      switch (yahooYQLStock.handler(data, data_len, &closingPrice)) {
         case INVALID_PARAMS:error_flag = 1;
           break;
         case WEB_ERROR:return TC_INTERNAL_ERROR;
