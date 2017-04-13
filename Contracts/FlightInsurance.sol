@@ -48,7 +48,7 @@ contract FlightInsurance {
             }
         }
 
-        if (msg.value < payment + TC_FEE 
+        if (msg.value < payment + TC_FEE
                 || block.timestamp + DAY_EPOCH > time) {
             if (!msg.sender.send(msg.value)) {
                 throw;
@@ -94,7 +94,7 @@ contract FlightInsurance {
 
 
     function response(uint64 requestId, uint64 error, bytes32 respData) public {
-        if (msg.sender == address(TC_CONTRACT)) { //!!!
+        if (msg.sender != address(TC_CONTRACT)) {
             Response(-1, msg.sender, 0, 0, 0);
             return;
         }
@@ -135,7 +135,7 @@ contract FlightInsurance {
         if (policyId == 0 || policies[policyId].requester != msg.sender
                 || policies[policyId].fee == 0 || policies[policyId].tc_id != 0
                 || block.timestamp + DAY_EPOCH > policies[policyId].flightTime) {
-            Cancel(policyId, msg.sender, false, block.timestamp);
+            Cancel(policyId, msg.sender, false, policies[policyId].flightTime);
             return;
         }
 

@@ -305,11 +305,12 @@ function unlockAccounts() {
 // tc = setup_tc();
 // app = createApp(tc);
 // setup_log(tc, app);
-// Request(app, 1, [web3.fromAscii('BA463', 32), web3.fromAscii('1491240900',32)]);
+// Request(app, 1, [web3.fromAscii('FJM273', 32), web3.fromAscii('1492100100',32)]);
 // Request(app, 2, [web3.fromAscii('f68d2a32cf17b1312c6db3f236a38c94', 32), web3.fromAscii('4c9f92f6ec1e2a20a1413d0ac1b867a3', 32), web3.fromAscii('32884794', 32), web3.fromAscii('1456380265', 32), web3.fromAscii('1', 32), web3.fromAscii('Portal', 32)]);
 // Request(app, 3, [web3.fromAscii('GOOG', 32), web3.fromAscii('1',32), web3.fromAscii('2', 32), web3.fromAscii('2010', 32)]);
 // Request(app, 4, [web3.fromAscii('1ZE331480394808282', 32)]);
 // Request(app, 5, [web3.fromAscii('bitcoin', 32)]);
+// FlightInsure(fi, 'FJM273', '1492100100', 1);
 
 // var tradeContract = createSteamTrade(encryptedApiKey, 'Portal', 1e+18);
 // TestSteam(tradeContract, buyerSteamId, 60);
