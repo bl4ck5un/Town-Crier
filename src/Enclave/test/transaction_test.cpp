@@ -77,7 +77,7 @@ int transaction_rlp_test() {
                            0xdd, 0xdd};
 
   size_t o_len;
-  uint8_t serialized_tx[500];
+  uint8_t transaction[500];
 
   uint64_t error_code = 0xee;
 
@@ -89,24 +89,20 @@ int transaction_rlp_test() {
                              req_len,
                              error_code,
                              std::vector<uint8_t>(resp_data, resp_data + 32),
-                             serialized_tx,
+                             transaction,
                              &o_len, true);
 
-  uint8_t ans[] =
-      {248, 0xea, 128, 133, 11, 164, 59, 116, 0, 131, 1, 95, 144, 148, 136, 203, 90, 183, 19, 87, 217, 140, 123, 249,
-       202, 18, 3, 22, 197, 122, 67, 56, 15, 40, 128, 184,
-       0x84, 0x48, 0x7a, 0x6e, 0x32,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 18, 120, 47, 194, 110, 22, 175, 204, 97, 158, 123,
-       124, 230, 84, 174, 112, 89, 153, 10, 80, 130, 49, 109, 143, 251, 41, 135, 225, 230, 105, 64, 202,
-       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-       0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-       0x00, 0x00, 0x00, 0x00, 0xee,
-       0xdd, 0xdd,
-       0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
-       0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
-       0xdd, 0xdd};
+  const char* ans_hex =
+      "f8ea80850ba43b7400832dc6c09418322346bfb90378ceaf16c72cee44967236"
+      "36b980b884487a6e320000000000000000000000000000000000000000000000"
+      "00000000000000000112782fc26e16afcc619e7b7ce654ae7059990a5082316d"
+      "8ffb2987e1e66940ca0000000000000000000000000000000000000000000000"
+      "0000000000000000eedddddddddddddddddddddddddddddddddddddddddddddd"
+      "dddddddddddddddddd";
+
+
+  char ans[strlen(ans_hex) / 2];
+  from_hex(ans_hex, ans);
 
   if (ret) return ret;
   if (o_len != sizeof ans + 32 * 2 + 1 + 2) {
@@ -121,10 +117,10 @@ int transaction_rlp_test() {
     ans[i] = tcAddress.at(i - 14);
   }
 
-  if (memcmp(serialized_tx, ans, sizeof ans)) {
+  if (memcmp(transaction, ans, sizeof ans)) {
     LL_CRITICAL("memcmp failed");
-    print_str_dbg("correct:", ans, sizeof ans);
-    print_str_dbg("Ours: ", serialized_tx, sizeof ans);
+    printf_sgx("correct: %s\n", ans);
+    print_str_dbg("Ours: ", transaction, sizeof ans);
     return 1;
   }
 
