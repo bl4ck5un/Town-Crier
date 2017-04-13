@@ -192,7 +192,7 @@ int tc_provision_key(const sgx_sealed_data_t *secret, size_t secret_len) {
 
   st = sgx_unseal_data(secret, NULL, 0, y, &decrypted_text_length);
   if (st != SGX_SUCCESS) {
-    LL_CRITICAL("unseal returned %x", st);
+    LL_CRITICAL("unseal returned %#x", st);
     return -1;
   }
 
@@ -233,6 +233,8 @@ int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen, unsigned char *o_pu
   mbedtls_ecp_group_init(&grp);
   mbedtls_ecp_group_load(&grp, ECPARAMS);
 #ifdef PREDEFINED_SECKEY
+  LL_CRITICAL("*** PREDEFINED SECRET KEY IS USED ***");
+  LL_CRITICAL("*** DISABLE THIS BEFORE DEPLOY ***");
   ret = mbedtls_mpi_read_string(&secret, 16, PREDEFINED_SECKEY);
   if (ret != 0) {
     LL_CRITICAL("Error: mbedtls_mpi_read_string returned %d", ret);

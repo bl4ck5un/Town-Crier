@@ -40,6 +40,7 @@
 #include "sgx_urts.h"
 #include "sgx_uae_service.h"
 #include "sgx_error.h"
+#include "Log.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -49,11 +50,10 @@
 #include <ctime>
 #include <vector>
 #include <stdexcept>
-#include <Log.h>
-
-#include <unistd.h>
-#include <pwd.h>
 #include <stdint.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 #define MAX_PATH FILENAME_MAX
 
@@ -63,10 +63,9 @@
 #define TOKEN_FILENAME   "towncrier.enclave.token"
 #define ENCLAVE_FILENAME "enclave.signed.so"
 
-int initialize_tc_enclave(sgx_enclave_id_t *eid);
 int initialize_enclave(const char *name, sgx_enclave_id_t *eid);
 void print_error_message(sgx_status_t ret);
-std::string sgx_error_message(sgx_status_t ret);
+const std::string sgx_error_message(sgx_status_t ret);
 
 #if defined(__cplusplus)
 extern "C" {
@@ -162,7 +161,21 @@ static sgx_errlist_t sgx_errlist[] = {
     }
 };
 
+
+inline const char* homedir() {
+  const char* home_dir;
+  if ((home_dir = getenv("HOME")) == NULL) {
+    home_dir = getpwuid(getuid())->pw_dir;
+  }
+
+  return home_dir;
+}
+
+
+
+#ifdef CONFIG_IMPL_DAEMON
 void daemonize(::std::string working_dir, ::std::string pid_filename);
+#endif
 
 #if defined(__cplusplus)
 }

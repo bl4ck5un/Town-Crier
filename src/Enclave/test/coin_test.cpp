@@ -42,44 +42,44 @@
 #include <Debug.h>
 
 #include "tls_client.h"
-#include "scrapers.h"
+#include "scrapers/current_coinmarket.h"
 #include "Log.h"
 
 
 int coin_self_test(){
+	CoinMarket coinMarketTest;
+	
 	//Null Checker
 	double r = 0.0;
-	
-
-	if (coinmarketcap_current(NULL, &r) != -1 || coinmarketcap_current("GOOG", NULL) != -1 ||\
-		coinmarketcap_current(NULL, NULL) != -1){
+	if (coinMarketTest.coinmarketcap_current(NULL, &r) != INVALID_PARAMS || coinMarketTest.coinmarketcap_current("GOOG", NULL) != INVALID_PARAMS ||\
+		coinMarketTest.coinmarketcap_current(NULL, NULL) != INVALID_PARAMS){
 		return -1;
 	}
 
 	//Test out regular performance
-	if(coinmarketcap_current("bitcoin", &r) == -1){
+	if(coinMarketTest.coinmarketcap_current("bitcoin", &r) != NO_ERROR){
 		return -1;
 	}
 	LL_INFO("[CoinMarket] bitcoin returns: %f", r);
 	
-	if (r == 0 || coinmarketcap_current("litecoin", &r) == -1){
+	if (r == 0 || coinMarketTest.coinmarketcap_current("litecoin", &r) != NO_ERROR){
 		return -1;
 	}
 	LL_INFO("[CoinMarket] litecoin returns: %f", r);
 
-	if (r == 0 || coinmarketcap_current("ethereum", &r) == -1){
+	if (r == 0 || coinMarketTest.coinmarketcap_current("ethereum", &r) != NO_ERROR){
 		return -1;
 	}
 	LL_INFO("[CoinMarket] ethereum returns: %f", r);
 
-	if (r == 0 || coinmarketcap_current("ripple", &r) == -1){
+	if (r == 0 || coinMarketTest.coinmarketcap_current("ripple", &r) != NO_ERROR){
 		return -1;
 	}
 	LL_INFO("[CoinMarket] ripple returns: %f", r);
 
 
 	//Null check
-	int ret = coinmarketcap_current("vdbsd", &r);
+	int ret = coinMarketTest.coinmarketcap_current("vdbsd", &r);
 	if (r != 0.0){
 		return -1;
 	}

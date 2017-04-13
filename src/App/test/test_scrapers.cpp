@@ -70,11 +70,10 @@ TEST_F(ScraperTestSuite, coinmarket) {
 }
 
 TEST_F(ScraperTestSuite, steam) {
-    int ocall_status, ret;
-    ocall_status = steam_self_test(eid, &ret); 
-    ASSERT_EQ(0, ocall_status);
-    ASSERT_EQ(0, ret);
-
+  int ocall_status, ret;
+  ocall_status = steam_self_test(eid, &ret);
+  ASSERT_EQ(0, ocall_status);
+  ASSERT_EQ(0, ret);
 }
 
 TEST_F(ScraperTestSuite, google) {
@@ -91,16 +90,23 @@ TEST_F(ScraperTestSuite, bloomberg) {
   EXPECT_EQ(0, ret);
 }
 
-TEST_F(ScraperTestSuite, flight){
-    int ocall_status, ret;
-    ocall_status = flight_self_test(eid, &ret);
-    ASSERT_EQ(0, ocall_status);
-    ASSERT_EQ(0, ret);
+TEST_F(ScraperTestSuite, flight) {
+  int ocall_status, ret;
+  ocall_status = flight_self_test(eid, &ret);
+  ASSERT_EQ(0, ocall_status);
+  ASSERT_EQ(0, ret);
 }
 
-TEST_F(ScraperTestSuite, stock){
-    int ocall_status, ret;
-    ocall_status =stockticker_self_test(eid, &ret);
-    ASSERT_EQ(0, ocall_status);
-    ASSERT_EQ(0,ret);
+TEST_F(ScraperTestSuite, stock) {
+  int ocall_status, ret;
+  ocall_status = stockticker_self_test(eid, &ret);
+  ASSERT_EQ(0, ocall_status);
+  ASSERT_EQ(0, ret);
+}
+
+TEST_F(ScraperTestSuite, weather) {
+  int ocall_status, ret;
+  ocall_status = weather_self_test(eid, &ret);
+  ASSERT_EQ(0, ocall_status);
+  ASSERT_EQ(0, ret);
 }

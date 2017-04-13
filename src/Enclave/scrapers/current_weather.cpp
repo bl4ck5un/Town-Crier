@@ -44,57 +44,77 @@
 #include <Log.h>
 
 #include "tls_client.h"
-#include "scrapers.h"
+#include "current_weather.h"
+#include "utils.h"
 
-static double parse_response(const char* resp) {
+#define API_KEY "9b0ede9af16533e1557ad783c2dfe40d"
+
+double WeatherScraper::parse_response(const char* resp) {
+    
     double ret = 0;
     const char * end;
     const char * temp = resp;
 
     std::string buf_string(resp);
-    std::size_t pos = buf_string.find("temp\":");
+    std::size_t pos = buf_string.find("temperature\":");
 
-    if (pos == std::string::npos)
-    {
+    if (pos == std::string::npos){
         return 0.0;
     }
-    temp += (pos + 6);
+
+    temp += (pos + 13);
     end = temp;
     while (*end != ',') {
         end += 1;
     }
-
     ret = std::strtod(temp, NULL);
     return ret;
 }
 
-int weather_current(unsigned int zipcode, double* r) {
-    /* Null Checker */
-    if (zipcode > 99999 || r == NULL){
-        LL_CRITICAL("Error: Passed null pointers");
-        return -1;
+/* The Data is structured as follows:
+ * 0x00 - 0x20 int 
+ */
+err_code WeatherScraper::handler(uint8_t *req, size_t data_len, int *resp_data){
+    
+    if (data_len != 32){
+        LL_CRITICAL("data_len %zu*32 is not 32",data_len / 32);
+        return INVALID_PARAMS;
     }
-    char tmp_zip[10];
-    snprintf(tmp_zip, sizeof(tmp_zip), "%u", zipcode);
+    char lat[32] = {0};
+    char lng[32] = {0};
 
-    std::string query = "/data/2.5/weather?zip=" +\
-                        std::string(tmp_zip) +\
-                        ",us";
+    memcpy(lat, req, 0x20);
+    memcpy(lng, req + 0x20, 0x20);
+    
+    double tmp;
+    err_code ret = weather_current((const char*)lat, (const char*)lng, &tmp); 
+    *resp_data = (int) tmp;
+    return ret;
+}
 
-    HttpRequest httpRequest("api.openweathermap.org", query);
+err_code WeatherScraper::weather_current(const char* lattitude, const char* longitude, double* r) {
+    /* Null Checker */
+    if (r == NULL){
+        LL_CRITICAL("Error: Passed null pointers");
+        return INVALID_PARAMS;
+    }
+
+    std::string query = "/forecast/9b0ede9af16533e1557ad783c2dfe40d/" + \
+                        std::string(lattitude) + "," + std::string(longitude);
+    LL_INFO("Query: %s", query.c_str());
+    HttpRequest httpRequest("api.darksky.net", query, true);
     HttpsClient httpClient(httpRequest);
 
     try {
         HttpResponse response = httpClient.getResponse();
         *r = parse_response(response.getContent().c_str());
-        return 0;
     }
     catch (std::runtime_error& e){
         LL_CRITICAL("Https error: %s", e.what());
         LL_CRITICAL("Details: %s", httpClient.getError().c_str());
         httpClient.close();
+        return WEB_ERROR;
     }
-
-    return 0;
+    return NO_ERROR;
 }
 

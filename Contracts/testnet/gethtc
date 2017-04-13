@@ -7,7 +7,7 @@ geth --testnet \
      --rpcapi "db,eth,ne,web3,personal,crypto-js" \
      --rpcaddr 127.0.0.1\
      --rpcport 8200\
-     --rpccorsdomain '*' \
+     --rpccorsdomain 'localhost' \
      --ipcdisable \
      --verbosity 3 \
      --keystore "wallet" \
