@@ -50,6 +50,7 @@
 #include "scrapers/UPS_Tracking.h"
 #include "scrapers/steam2.h"
 #include "scrapers/current_coinmarket.h"
+#include "scrapers/current_weather.h"
 #include "time.h"
 #include "eth_transaction.h"
 #include "eth_abi.h"
@@ -181,7 +182,22 @@ int handle_request(int nonce,
           break;
       };
       break;
-    } 
+    }
+    case TYPE_WEATHER: {
+    	WeatherScraper weatherScraper;
+    	int temperature;
+    	switch(weatherScraper.handler(data, data_len, &temperature)){
+    		case UNKNOWN_ERROR:
+    		case WEB_ERROR:
+    			return TC_INTERNAL_ERROR;
+    		case INVALID_PARAMS:
+    			error_flag = 1; 
+    		case NO_ERROR:
+    			append_as_uint256(resp_data, temperature, sizeof(temperature));
+    			break;
+    	};
+    	break;
+    }
     default :LL_CRITICAL("Unknown request type: %" PRIu64, type);
       return -1;
       break;
