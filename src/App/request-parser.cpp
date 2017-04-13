@@ -44,6 +44,7 @@
 #include "Log.h"
 #include "Converter.h"
 #include "utils.h"
+#include "Constants.h"
 
 using namespace tc;
 
@@ -104,7 +105,7 @@ RequestParser::RequestParser(const std::string &input) : raw_request(input) {
   offset += ENTRY_LEN;
 
   // 0x120 - ...       : reqData
-  if (this->data_len > 102400) {
+  if (this->data_len > TC_REQUEST_PAYLOAD_LIMIT) {
     throw std::invalid_argument("request data is too large");
   }
 

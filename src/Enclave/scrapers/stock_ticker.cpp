@@ -89,19 +89,18 @@ std::string StockQuery::GetUrl() {
 /* Note Still not sure why we decrease the month by 1 */
 void StockTickerScraper::CreateQuery(int month, int day, int year, std::string symbol) {
   this->query.SetDay(day);
-  this->query.SetMonth(month - 1);
+  this->query.SetMonth(month);
   this->query.SetYear(year);
   this->query.SetSymbol(symbol);
 }
 
-/* The data is structured as follows (Feel free to change if there is a better way to structure it *:
+/* The data is structured as follows:
  *      0x00 - 0x20 Symbol (i.e GOOG, APPL, etc)
  *      0x20 - 0x40 Month
  *      0x40 - 0x60 Day
  *      0x60 - 0x80 Year
  */
 err_code StockTickerScraper::handler(uint8_t *req, size_t data_len, int *resp_data) {
-
   if (data_len != 32 * 4) {
     LL_CRITICAL("req_len %zu is not 4*32", data_len / 32);
     return INVALID_PARAMS;
@@ -200,28 +199,29 @@ err_code StockTickerParser::GetErrorCode() {
 
 /* returns the closing price of the stock */
 double StockTickerParser::GetClosingPrice() {
-  int i, len;
-  unsigned char *temp = (unsigned char *) this->rawResponse;
-  unsigned char *end;
-  char *buf; /* hacky soln */
+  std::vector<std::string> _rows;
+  std::string resp = GetResponse();
 
-  if (this->rawResponse == NULL) {
-    LL_CRITICAL("Buf is empty!\n");
-    return -1.0;
-  }
-  for (int i = 0; i < 10; i++) {
-    while (*temp != ',') {
-      temp += 1;
-    }
-    temp += 1;
-  }
-  end = temp;
-  while (*end != ',') {
-    end += 1;
+  std::string::size_type pos = 0;
+  std::string::size_type prev = 0;
+  while ((pos = resp.find('\n', prev)) != std::string::npos) {
+    _rows.push_back(resp.substr(prev, pos - prev));
+    prev = pos + 1;
   }
 
-  len = end - temp;
-  memcpy(buf, temp, len);
-  buf[len] = 0;
-  return std::strtod(buf, NULL);
+  // To get the last substring (or only, if delimiter is not found)
+  _rows.push_back(resp.substr(prev));
+
+  CSV_Parser csv_parser;
+  KEY_VAL_FIELDS _price_chart;
+  CSV_FIELDS _price_chart_hdr;
+  csv_parser.parse_line(_rows[0], _price_chart_hdr);
+  csv_parser.parse_line(_rows[1], _price_chart_hdr, _price_chart);
+
+  for (KEY_VAL_FIELDS::iterator it = _price_chart.begin(); it != _price_chart.end(); it++) {
+    LL_DEBUG("%s -> %s", it->first.c_str(), it->second.c_str());
+  }
+
+  double closing_price = atof(_price_chart["Close"].c_str());
+  return closing_price;
 }

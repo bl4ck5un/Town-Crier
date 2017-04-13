@@ -54,33 +54,35 @@
 
 static uint8_t hex2int(char input) {
   if (input >= '0' && input <= '9')
-    return input - '0';
+    return (uint8_t) input - '0';
   if (input >= 'A' && input <= 'F')
-    return input - 'A' + 10;
+    return (uint8_t) input - 'A' + 10;
   if (input >= 'a' && input <= 'f')
-    return input - 'a' + 10;
+    return (uint8_t) input - 'a' + 10;
   throw std::invalid_argument("Invalid input string");
 }
 
 static char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
                         '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
-inline std::string toHex(const unsigned char *data, int len) {
+// This function assumes src to be a zero terminated sanitized string with
+// an even number of [0-9a-f] characters, and target to be sufficiently large
+inline void from_hex(const char* src, char* target)
+{
+  while(*src && src[1])
+  {
+    *(target++) = (char) hex2int(*src)*16 + hex2int(src[1]);
+    src += 2;
+  }
+}
+
+inline std::string to_hex(const unsigned char *data, int len) {
   std::string s(len * 2, ' ');
   for (int i = 0; i < len; ++i) {
     s[2 * i] = hexmap[(data[i] & 0xF0) >> 4];
     s[2 * i + 1] = hexmap[data[i] & 0x0F];
   }
   return s;
-}
-
-inline const char *hex(char *_hex, const unsigned char *buf, size_t len) {
-  for (int i = 0; i < len; ++i) {
-    _hex[2 * i] = hexmap[(buf[i] & 0xF0) >> 4];
-    _hex[2 * i + 1] = hexmap[buf[i] & 0x0F];
-  }
-  _hex[2 * len] = 0;
-  return _hex;
 }
 
 #include <cassert>

@@ -1,4 +1,5 @@
 #include "commons.h"
+#include <inttypes.h>
 
 int uint_utils_test() {
   bool results[3] = {false};
@@ -17,8 +18,11 @@ int uint_utils_test() {
   }
 
   uint64_t _from_buf = uint_bytes<uint64_t, 32>(buf);
-  results[2] = _from_buf == 0x2526272829303132;
-
+  uint64_t _expected_from_buf = 0x18191a1b1c1d1e1f;
+  results[2] = _from_buf == _expected_from_buf;
+  if (!results[2]) {
+    LL_CRITICAL("expected: %" PRIx64 ", get: %" PRIx64, _expected_from_buf, _from_buf);
+  }
   bool final = true;
   for (int i = 0; i < sizeof results; i++) {
     final &= results[i];

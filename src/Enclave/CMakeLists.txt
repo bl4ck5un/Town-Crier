@@ -1,57 +1,63 @@
 set(SOURCE_FILES
-    Debug.c
-    create_report.cpp
-    scrapers/current_bloomberg.cpp
-    scrapers/current_Google.cpp
-    scrapers/current_Yahoo.cpp
-    scrapers/UPS_Tracking.cpp
-    scrapers/current_coinmarket.cpp
-    scrapers/current_weather.cpp
-    scrapers/steam2.cpp
-    eth_ecdsa.cpp
-    Enclave_t.c
-    event_handler.cpp
-    scrapers/flight.cpp
-    external/keccak.c
-    external/csv_parser.cpp
-    tls_client.cpp
-    scrapers/steam2.cpp
-    scrapers/stock_ticker.cpp
-    eth_transaction.cpp
-    enclave_exception_hdlr.c
-    eth_abi.cpp
-    encoding.cpp
-    commons.cpp
-    external/slre.c
-    external/http_parser.c utils.c)
+        Debug.c
+        create_report.cpp
+        scrapers/current_bloomberg.cpp
+        scrapers/current_Google.cpp
+        scrapers/current_Yahoo.cpp
+        scrapers/UPS_Tracking.cpp
+        scrapers/current_coinmarket.cpp
+        scrapers/current_weather.cpp
+        scrapers/steam2.cpp
+        scrapers/yahoo_yql.cpp
+        scrapers/scraper_utils.cpp
+        scrapers/yahoo_yql_stock.cpp
+        eth_ecdsa.cpp
+        Enclave_t.c
+        event_handler.cpp
+        scrapers/flight.cpp
+        external/keccak.c
+        external/csv_parser.cpp
+#        external/tinyhttp/chunk.c
+#        external/tinyhttp/header.c
+#        external/tinyhttp/http.c
+        tls_client_tiny.cpp
+        scrapers/steam2.cpp
+        scrapers/stock_ticker.cpp
+        eth_transaction.cpp
+        enclave_exception_hdlr.c
+        eth_abi.cpp
+        encoding.cpp
+        commons.cpp
+        external/slre.c
+        external/http_parser.c utils.c)
 
 add_definitions(-DENCLAVE_STD_ALT)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
 
-SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES}  scrapers/utils.h scrapers/UPS_Tracking.h scrapers/Scraper.cpp scrapers/Scraper.h scrapers/steam2.h scrapers/flight.h scrapers/stockticker.h scrapers/current_coinmarket.h scrapers/current_weather.h)
+SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES} scrapers/utils.h scrapers/UPS_Tracking.h scrapers/Scraper.cpp scrapers/Scraper.h scrapers/steam2.h scrapers/flight.h scrapers/stockticker.h scrapers/current_coinmarket.h scrapers/current_weather.h)
 
 set_directory_properties(PROPERTIES
-    ADDITIONAL_MAKE_CLEAN_FILES "Enclave_t.c; Enclave_t.h")
+        ADDITIONAL_MAKE_CLEAN_FILES "Enclave_t.c; Enclave_t.h")
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_t.c
-    COMMAND ${SGX_EDGER8R} --trusted ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.edl
-    --search-path ${TC_ROOT_DIR}/Enclave
-    --search-path ${SGX_SDK}/include
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_t.c
+        COMMAND ${SGX_EDGER8R} --trusted ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.edl
+        --search-path ${TC_ROOT_DIR}/Enclave
+        --search-path ${SGX_SDK}/include
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_library(enclave SHARED ${SOURCE_FILES})
 
 include_directories(
-    $(CMAKE_CURRENT_SOURCE_DIR)
-    ${TC_ROOT_DIR}/Common
-    mbedtls-SGX/include
-    ${SGX_SDK}/include
-    ${SGX_SDK}/include/tlibc
-    ${SGX_SDK}/include/stlport
-    .
+        $(CMAKE_CURRENT_SOURCE_DIR)
+        ${TC_ROOT_DIR}/Common
+        mbedtls-SGX/include
+        ${SGX_SDK}/include
+        ${SGX_SDK}/include/tlibc
+        ${SGX_SDK}/include/stlport
+        .
 )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fvisibility=hidden -fpie -fstack-protector")
@@ -70,13 +76,13 @@ target_link_libraries(enclave "${SGX_COMMON_CFLAGS} \
     -Wl,--defsym,__ImageBase=0")
 
 add_custom_command(TARGET enclave
-    POST_BUILD
-    COMMAND ${SGX_ENCLAVE_SIGNER} sign
-    -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
-    -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
-    -enclave ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.so
-    -out ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so
-    COMMENT "Signing the enclave. Written to ${CMAKE_BINARY_DIR}")
+        POST_BUILD
+        COMMAND ${SGX_ENCLAVE_SIGNER} sign
+        -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
+        -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
+        -enclave ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.so
+        -out ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so
+        COMMENT "Signing the enclave. Written to ${CMAKE_BINARY_DIR}")
 
 
 install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so DESTINATION tc)
