@@ -4,14 +4,12 @@ contract TownCrier {
     struct Request { // the data structure for each request
         address requester; // the address of the requester
         uint fee; // the amount of wei the requester pays for the request
-        address callbackAddr; // the address of the contract to call for response delivering
+        address callbackAddr; // the address of the contract to call for delivering response
         bytes4 callbackFID; // the specification of the callback function
         bytes32 paramsHash; // the hash of the request parameters
     }
 
-    event RequestLog(address self, int16 flag); // for request debug
     event RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, bytes32 paramsHash, uint timestamp, bytes32[] requestData); // log of requests, the Town Crier server watches this event and processes requests
-    event DeliverLog(uint gasLeft, int flag); // for deliver debug
     event DeliverInfo(uint64 requestId, uint fee, uint gasPrice, uint gasLeft, uint callbackGas, bytes32 paramsHash, uint64 error, bytes32 respData); // log of responses
     event Cancel(uint64 requestId, address canceller, address requester, uint fee, int flag); // log of cancellations
 
@@ -105,6 +103,7 @@ contract TownCrier {
         }
 
         DeliverLog(msg.gas, 8);
+        requests[requestId].fee = DELIVERED_FEE_FLAG;
         
         if (error < 2) {
             if (!SGX_ADDRESS.send(fee)) { // send the fee to the SGX account for its delivering
@@ -118,7 +117,6 @@ contract TownCrier {
             }
         }
 
-        requests[requestId].fee = DELIVERED_FEE_FLAG;
         DeliverLog(msg.gas, 16);
 
         uint callbackGas = (fee - MIN_FEE) / tx.gasprice; // gas left for the callback function
@@ -141,11 +139,11 @@ contract TownCrier {
         if (requests[requestId].requester == msg.sender && fee >= CANCELLATION_FEE) {
             // If the request was sent by this user and has money left on it,
             // then cancel it.
+            requests[requestId].fee = CANCELLED_FEE_FLAG;
             if (!msg.sender.send(fee - CANCELLATION_FEE)) {
                 Cancel(requestId, msg.sender, requests[requestId].requester, fee - CANCELLATION_FEE, -2);
                 throw;
             }
-            requests[requestId].fee = CANCELLED_FEE_FLAG;
             Cancel(requestId, msg.sender, requests[requestId].requester, requests[requestId].fee, 1);
             return true;
         } else {
