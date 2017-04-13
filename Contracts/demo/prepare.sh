@@ -33,7 +33,7 @@ cat <<EOF
 var TCsource = '$SRC'
 EOF
 
-SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../Ref.sol ../Application.sol | paste -sd '' | sed 's/\s\+/ /g')
+SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../Ref.sol ../Application.sol ../FlightInsurance.sol| paste -sd '' | sed 's/\s\+/ /g')
 
 cat <<EOF
 var APPsource = '$SRC'
@@ -44,7 +44,7 @@ var TCcontract = eth.compile.solidity(TCsource)
 var APPcontracts = eth.compile.solidity(APPsource)
 var TownCrier = eth.contract(TCcontract["<stdin>:TownCrier"].info.abiDefinition)
 //var SteamTrade = eth.contract(APPcontracts["<stdin>:SteamTrade"].info.abiDefinition)
-//var FlightIns = eth.contract(APPcontracts["<stdin>:FlightIns"].info.abiDefinition)
+var FlightIns = eth.contract(APPcontracts["<stdin>:FlightInsurance"].info.abiDefinition)
 var App = eth.contract(APPcontracts["<stdin>:Application"].info.abiDefinition)
 
 function checkWork(){
@@ -64,7 +64,7 @@ function mineBlocks(num) {
 }
 
 
-function setup_log(tc, tradeContract) {
+function setup_log(tc, tradeContract, id) {
 	tc.RequestInfo(function(e,r) { 
 		if (!e) { console.log('TC RequestInfo: ' + JSON.stringify(r.args)); } 
 		else {console.log(e)}
@@ -79,7 +79,14 @@ function setup_log(tc, tradeContract) {
 		if (!e) { console.log('TC Cancel: ' + JSON.stringify(r.args)); } 
 		else {console.log(e)}
 	});
-	
+
+    if (id == 1) {
+        tradeContract.Insure(function(e,r) {
+            if (!e) { console.log('App Insure: ' + JSON.stringify(r.args)); }
+            else { console.log(e)}
+        });
+    }
+
     tradeContract.Request(function(e,r) { 
 		if (!e) { console.log('App Request: ' + JSON.stringify(r.args)); } 
 		else {console.log(e)}
@@ -107,10 +114,10 @@ function setup_tc() {
         gas: gasCnt}, function(e, c) {
             if (!e){
                 if (c.address) {
-                    console.log("Town Crier created at: " + c.address)
+                    console.log('Town Crier created at: ' + c.address)
                 }
             } 
-            else {console.log("Failed to create Town Crier contract: " + e)}
+            else {console.log('Failed to create Town Crier contract: ' + e)}
         });
     mineBlocks(1);
     return tc;
@@ -129,7 +136,7 @@ function createSteamTrade(apiKey, item, price) {
                         console.log('SteamTrade created at: ' + c.address)
                       }
                   } 
-                  else {console.log("Failed to create SteamTrade contract: " + e)}
+                  else {console.log('Failed to create SteamTrade contract: ' + e)}
               });
     mineBlocks(1);
     return tradeContract;
@@ -141,7 +148,7 @@ function createFlightIns() {
             tc.address, {
                 value: 100e+18,
                 from: sellerAddr,
-                data: APPcontracts["<stdin>:FlightIns"].code,
+                data: APPcontracts["<stdin>:FlightInsurance"].code,
                 gas: gasCnt},
                 function(e, c) {
                     if (!e) {
@@ -149,7 +156,7 @@ function createFlightIns() {
                             console.log('FlightIns created at: ' + c.address)
                         }
                     }
-                    else {console.log("Failed to create FligthIns contract: " + e)}
+                    else {console.log('Failed to create FligthIns contract: ' + e)}
                 });
     mineBlocks(1);
     return tradeContract;
@@ -199,26 +206,35 @@ contract.insure.sendTransaction([web3.fromAscii(flightID, 32), web3.fromAscii(ti
     return "Insured!"
 }
 
-function FlightRequest(contract, fligthID, time, fee) {
+function FlightRequest(contract, id) {
     unlockAccounts();
-    contract.request.sendTransaction([web3.fromAscii(fligthID, 32), web3.fromAscii(time, 32)], {
+    contract.request.sendTransaction(id, {
         from: buyerAddr,
-        value: fee,
         gas: gasCnt
     });
     mineBlocks(1);
     return "Request sent!"
 }
 
+function FlightCancel(contract, id) {
+    unlockAccounts();
+    contract.cancel.sendTransaction(id, {
+        from: buyerAddr,
+        gas: gasCnt
+    });
+    mineBlocks(1);
+    return "Request Cancelled."
+}
+
 function Request(contract, type, requestData) {
     unlockAccounts();
     contract.request.sendTransaction(type, requestData, {
         from: buyerAddr,
-        value: 3e15,
+        value: 1e18,
         gas: gasCnt
     });
     mineBlocks(1);
-    return "Request sent!"
+    return "Request sent!";
 }
 
 function Cancel(contract, id) {
@@ -228,7 +244,7 @@ function Cancel(contract, id) {
         gas: gasCnt
     });
     mineBlocks(1);
-    return "Cancellation request sent!"
+    return "Request Cancelled.";
 }
 
 function TestSteam(contract, steamId, delay) {
