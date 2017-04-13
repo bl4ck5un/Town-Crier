@@ -1,7 +1,3 @@
-pragma solidity ^0.4.2;
-
-import "TownCrier.sol";
-
 contract SteamTrade {
     event UINT(uint u);
     event Buy(bytes32 buyerId, uint32 time, bytes32[2] encSellerApi, bytes32 item, int flag);
