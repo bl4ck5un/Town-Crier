@@ -47,11 +47,15 @@ using std::string;
 #include "steam2.h"
 #include "commons.h"
 
+#include "external/picojson.h"
+
 enum steam_error {
   INVALID = 0,
 };
 
 /* Handler function */
+// return 0 -- Find no trade
+//        1 -- Find a trade
 err_code SteamScraper::handler(uint8_t *req, size_t len, int *resp_data) {
 
   if (len != 6 * 32) {
@@ -84,12 +88,12 @@ err_code SteamScraper::handler(uint8_t *req, size_t len, int *resp_data) {
 
   // 0x60 .. 0x80
   // get last 4 bytes
-  cutoff_time = (uint32_t) strtol((const char*) req + 0x60, NULL, 10);
+  cutoff_time = (uint32_t) strtol((const char *) req + 0x60, NULL, 10);
   LL_DEBUG("cufoff time is %d", cutoff_time);
 
 
   // 0x80 .. 0xa0 - item_len
-  item_len = (size_t) strtol((const char*) req + 0x80, NULL, 10);
+  item_len = (size_t) strtol((const char *) req + 0x80, NULL, 10);
 
   // 0xa0 .. 0xc0
   const char *items[item_len];
@@ -98,16 +102,7 @@ err_code SteamScraper::handler(uint8_t *req, size_t len, int *resp_data) {
     LL_INFO("item: %s", items[i]);
   }
 
-  int result = 0;
-  err_code ret = get_steam_transaction(items, 1, buyer_id, cutoff_time, encrypted_api_key, &result);
-  if (ret == NO_ERROR && result == 1) {
-    LL_INFO("Found a trade");
-    *resp_data = result;
-    return NO_ERROR;
-  } else {
-    *resp_data = -1;
-    return ret;
-  }
+  return get_steam_transaction(items, item_len, buyer_id, cutoff_time, encrypted_api_key, resp_data);
 }
 
 // TODO: parse the response using a JSON / XML parser !
@@ -120,7 +115,6 @@ err_code SteamScraper::get_steam_transaction(const char **item_name_list,
   if (item_name_list == NULL || buyer_id == NULL || api_key == NULL || resp == NULL) {
     return INVALID_PARAMS;
   }
-  int ret;
   char tmp_req_time[12];
   snprintf(tmp_req_time, sizeof(tmp_req_time), "%u", time_cutoff);
 
@@ -135,7 +129,24 @@ err_code SteamScraper::get_steam_transaction(const char **item_name_list,
 
   try {
     HttpResponse response = httpClient.getResponse();
-    ret = parse_response(response.getContent().c_str(), buyer_id, item_name_list, item_list_len, api_key);
+    LL_DEBUG("response: %s", response.getContent().c_str());
+
+    picojson::value _root_obj;
+    string err_msg = picojson::parse(_root_obj, response.getContent());
+    if (!err_msg.empty() || !_root_obj.is<picojson::object>()) {
+      LL_CRITICAL("can't parse: %s", err_msg.c_str());
+      return WEB_ERROR;
+    }
+
+    picojson::value _response_obj = _root_obj.get("response");
+    if (!_response_obj.evaluate_as_boolean()) {
+      LL_CRITICAL("Find no trade");
+      *resp = 0;
+    } else {
+      // TODO: add more logic here
+      *resp = 1;
+    }
+//    ret = parse_response(response.getContent().c_str(), buyer_id, item_name_list, item_list_len, api_key);
   }
   catch (std::runtime_error &e) {
     LL_CRITICAL("Https error: %s", e.what());
@@ -143,15 +154,7 @@ err_code SteamScraper::get_steam_transaction(const char **item_name_list,
     httpClient.close();
     return WEB_ERROR;
   }
-
-  if (ret < 0) {
-    LL_CRITICAL("Found no trade");
-    *resp = 0;
-    return NO_ERROR;
-  } else {
-    *resp = 1;
-    return NO_ERROR;
-  }
+  return NO_ERROR;
 }
 
 char *SteamScraper::search(const char *buf, const char *search_string) {

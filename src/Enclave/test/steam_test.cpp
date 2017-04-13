@@ -60,12 +60,12 @@ int steam_self_test() {
   buyer_id.append(32 - buyer_id.length(), 0x00);
 
   // cutoff time [long] (big endian, pre-padded with 0)
-  string cutoff_time = "\x56\xCE\x99\x69";
-  cutoff_time.insert(cutoff_time.begin(), 32 - cutoff_time.length(), '\0');
+  string cutoff_time = "1456380265";
+  cutoff_time.append(32 - cutoff_time.length(), 0x00);
 
   // same as cutoff
-  string item_len = "\x01";
-  item_len.insert(item_len.begin(), 32 - item_len.length(), 0x00);
+  string item_len = "1";
+  item_len.append(32 - item_len.length(), 0x00);
 
   string items = "Portal";
   items.append(32 - items.length(), 0x00);
@@ -73,6 +73,6 @@ int steam_self_test() {
   string request_data = api_key + buyer_id + cutoff_time + item_len + items;
   dump_buf("Request", (unsigned char*) request_data.c_str(), request_data.length());
   err = testScraper.handler((uint8_t *) request_data.c_str(), request_data.length(), &ret);
-  return (err == NO_ERROR && ret == -1) ? 0 : 1;
+  return (err == NO_ERROR && ret == 1) ? 0 : 1;
 }
 
