@@ -69,6 +69,7 @@
 #include "Log.h"
 
 namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 extern ethRPCClient *rpc_client;
 jsonrpc::HttpClient *httpclient;
@@ -79,13 +80,13 @@ void exitGraceful(int) { quit.store(true); }
 int main(int argc, const char *argv[]) {
   // init logging
   loguru::init(argc, argv);
-  loguru::add_file("tc.log", loguru::Append, loguru::Verbosity_MAX);
 
-  boost::filesystem::path current_path = boost::filesystem::current_path();
+  fs::path current_path = fs::current_path();
 
   bool options_rpc = false;
   bool options_daemon = false;
   string options_config = "config";
+  string opt_cwd = "/tmp/tc";
 
   try {
     po::options_description desc("Allowed options");
@@ -93,7 +94,8 @@ int main(int argc, const char *argv[]) {
         "help,h", "print this message")(
         "rpc", po::bool_switch(&options_rpc)->default_value(false), "Launch RPC server")(
         "daemon,d", po::bool_switch(&options_daemon)->default_value(false), "Run TC as a daemon")(
-        "config,c", po::value(&options_config)->default_value("config"), "Path to a config file");
+        "config,c", po::value(&options_config)->default_value("config"), "Path to a config file")(
+        "cwd", po::value(&opt_cwd)->default_value("/tmp/tc"), "Working directory (where log and db are stored");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -116,12 +118,13 @@ int main(int argc, const char *argv[]) {
   }
 
   // report the result of po parsing
-  LL_INFO("input argument: rpc: %d", options_rpc);
-  LL_INFO("input argument: daemon: %d", options_daemon);
+  LL_INFO("rpc: %d", options_rpc);
+  LL_INFO("daemon: %d", options_daemon);
+  LL_INFO("cwd: %s", opt_cwd.c_str());
 
   //!
-  string working_dir;
   string pid_filename;
+  string enclave_path;
   int status_rpc_port;
   string sealed_sig_key;
 
@@ -133,18 +136,21 @@ int main(int argc, const char *argv[]) {
     httpclient = new jsonrpc::HttpClient(st);
     rpc_client = new ethRPCClient(*httpclient);
 
-    working_dir = pt.get<string>("daemon.working_dir");
     pid_filename = pt.get<string>("daemon.pid_file");
     status_rpc_port = pt.get<int>("status.port");
     sealed_sig_key = pt.get<string>("sealed.sig_key");
+    enclave_path = pt.get<string>("init.enclave_path");
 
     LOG_F(INFO, "Using config file: %s", options_config.c_str());
-    LOG_F(INFO, "cwd: %s", working_dir.c_str());
     LOG_F(INFO, "PID file: %s", pid_filename.c_str());
   } catch (const std::exception &e) {
     std::cout << e.what() << std::endl;
     exit(-1);
   }
+
+  fs::path log_path = fs::path(opt_cwd) / "tc.log";
+  loguru::add_file(log_path.c_str(), loguru::Append, loguru::Verbosity_MAX);
+  LL_INFO("logging to %s", log_path.c_str());
 
   int ret;
   sgx_enclave_id_t eid;
@@ -161,16 +167,16 @@ int main(int argc, const char *argv[]) {
   }
 
   // create working dir if not existed
-  boost::filesystem::create_directory(boost::filesystem::path(working_dir));
+  fs::create_directory(fs::path(opt_cwd));
 
   if (options_daemon) {
-    daemonize(working_dir, pid_filename);
+    daemonize(opt_cwd, pid_filename);
   }
 
-  const static string db_name = (boost::filesystem::path(working_dir) / "tc.db").string();
+  const static string db_name = (fs::path(opt_cwd) / "tc.db").string();
   LOG_F(INFO, "using db %s", db_name.c_str());
   bool create_db = false;
-  if (boost::filesystem::exists(db_name) && !options_daemon) {
+  if (fs::exists(db_name) && !options_daemon) {
     std::cout << "Do you want to clean up the database? y/[n] ";
     std::string new_db;
     std::getline(std::cin, new_db);
@@ -183,7 +189,7 @@ int main(int argc, const char *argv[]) {
 
   int nonce_offset = 0;
 
-  ret = initialize_tc_enclave(&eid);
+  ret = initialize_enclave(enclave_path.c_str(), &eid);
   if (ret != 0) {
     LOG_F(FATAL, "Failed to initialize the enclave");
     std::exit(-1);
@@ -199,7 +205,7 @@ int main(int argc, const char *argv[]) {
 
     provision_key(eid, sealed_sig_key);
   }
-  catch (const tc::EcallException& e) {
+  catch (const tc::EcallException &e) {
     LL_CRITICAL(e.what());
     exit(-1);
   }
