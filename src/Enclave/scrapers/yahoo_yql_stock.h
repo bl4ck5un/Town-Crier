@@ -33,9 +33,9 @@ class YahooYQLStock : public Scraper {
     symbol = string(symbol.c_str());
     LL_INFO("symbol: %s", symbol.c_str());
 
-    uint month = strtoul((char *) (req + 0x20), NULL, 10);
-    uint day = strtoul((char *) (req + 0x40), NULL, 10);
-    uint year = strtoul((char *) (req + 0x60), NULL, 10);
+    uint month = (uint) strtoul((char *) (req + 0x20), NULL, 10);
+    uint day = (uint) strtoul((char *) (req + 0x40), NULL, 10);
+    uint year = (uint) strtoul((char *) (req + 0x60), NULL, 10);
 
     LL_INFO("month: %d", month);
     LL_INFO("day: %d", day);

@@ -40,8 +40,9 @@
 
 #include <Log.h>
 #include <string>
-#include <scrapers/yahoo_yql_stock.h>
+#include <inttypes.h>
 
+#include "scrapers/yahoo_yql_stock.h"
 #include "event_handler.h"
 #include "scrapers.h"
 #include "scrapers/Scraper.h"
@@ -70,39 +71,53 @@ int handle_request(int nonce,
   bytes resp_data;
   int resp_data_len = 0;
   int error_flag = 0;
-/*
-    printf_sgx("nonce: %d\n", nonce);
-    printf_sgx("id: %llu\n", id);
-    printf_sgx("type: %llu\n", type);
-    printf_sgx("data len: %d\n", data_len);
-    for (int i = 0; i < data_len; i++)
-        printf_sgx("%u,", data[i]);
-    printf_sgx("\n");
-*/
+
   switch (type) {
+    case TYPE_LOOP_THROUGH: {
+      printf_sgx("nonce: %d\n", nonce);
+      printf_sgx("id: %" PRIu64 "\n", id);
+      printf_sgx("type: %" PRIu64 "\n", type);
+      printf_sgx("data len: %zu\n", data_len);
+
+      if (data_len > TC_REQUEST_PAYLOAD_LIMIT) {
+        LL_CRITICAL("data (%zu bytes) exceeds limit (%d bytes)", data_len, TC_REQUEST_PAYLOAD_LIMIT);
+        return -1;
+      }
+      dump_buf("data:", data, data_len);
+      return 0;
+    }
     case TYPE_FINANCE_INFO: {
-      /* NEED TO FIGURE OUT HOW TO PARSE */
-      int closingPrice;
       YahooYQLStock yahooYQLStock;
-      switch (yahooYQLStock.handler(data, data_len, &closingPrice)) {
-        case INVALID_PARAMS:error_flag = 1;
+      int closing_price = 0;
+      switch (yahooYQLStock.handler(data, data_len, &closing_price)) {
+        case INVALID_PARAMS:
+          error_flag = TC_ERR_FLAG_INVALID_INPUT;
           break;
-        case WEB_ERROR:return TC_INTERNAL_ERROR;
-        case NO_ERROR:LL_INFO("Closing pricing is %d", closingPrice);
-          append_as_uint256(resp_data, closingPrice, sizeof(closingPrice));
+        case WEB_ERROR:
+          error_flag = TC_INTERNAL_ERROR;
           break;
+        case NO_ERROR:
+          LL_INFO("Closing pricing is %d", closing_price);
+          append_as_uint256(resp_data, closing_price, sizeof(closing_price));
+          break;
+        default:
+          LL_CRITICAL("unknown state!");
+          error_flag = TC_ERR_FLAG_INTERNAL_ERR;
       }
       break;
     }
     case TYPE_FLIGHT_INS: {
       FlightScraper flightHandler;
-      int delay;
+      int delay = 0;
       switch (flightHandler.handler(data, data_len, &delay)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:return TC_INTERNAL_ERROR;
-          // treat invalid_params as no_error
-        case INVALID_PARAMS:error_flag = 1;
-        case NO_ERROR:append_as_uint256(resp_data, delay, sizeof(delay));
+        case WEB_ERROR:
+          error_flag = TC_INTERNAL_ERROR;
+          break;
+        case INVALID_PARAMS:
+          error_flag = TC_INPUT_ERROR;
+        case NO_ERROR:
+          append_as_uint256(resp_data, delay, sizeof(delay));
           break;
       };
       break;
@@ -112,10 +127,13 @@ int handle_request(int nonce,
       int found;
       switch (steamHandler.handler(data, data_len, &found)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:return TC_INTERNAL_ERROR;
-        case INVALID_PARAMS:error_flag = 1;
+        case WEB_ERROR:
+          return TC_INTERNAL_ERROR;
+        case INVALID_PARAMS:
+          error_flag = 1;
           break;
-        case NO_ERROR:append_as_uint256(resp_data, found, sizeof(found));
+        case NO_ERROR:
+          append_as_uint256(resp_data, found, sizeof(found));
           break;
       }
       break;
@@ -133,10 +151,13 @@ int handle_request(int nonce,
       int pkg_status;
       switch (uSPSScraper.handler(data, data_len, &pkg_status)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:return TC_INTERNAL_ERROR;
+        case WEB_ERROR:
+          return TC_INTERNAL_ERROR;
           // treat invalid_params as no_error
-        case INVALID_PARAMS:error_flag = 1;
-        case NO_ERROR:append_as_uint256(resp_data, pkg_status, sizeof(pkg_status));
+        case INVALID_PARAMS:
+          error_flag = 1;
+        case NO_ERROR:
+          append_as_uint256(resp_data, pkg_status, sizeof(pkg_status));
           break;
       };
       break;
@@ -146,15 +167,19 @@ int handle_request(int nonce,
       int coin_value;
       switch (coinMarket.handler(data, data_len, &coin_value)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:return TC_INTERNAL_ERROR;
-        case INVALID_PARAMS:error_flag = 1;
-        case NO_ERROR:append_as_uint256(resp_data, coin_value, sizeof(coin_value));
+        case WEB_ERROR:
+          return TC_INTERNAL_ERROR;
+        case INVALID_PARAMS:
+          error_flag = 1;
+        case NO_ERROR:
+          append_as_uint256(resp_data, coin_value, sizeof(coin_value));
           break;
       };
       break;
     }
-    default :LL_CRITICAL("Unknown request type: %"
-                             PRIu64, type);
+    default :
+      LL_CRITICAL("Unknown request type: %"
+                      PRIu64, type);
       return -1;
   }
 

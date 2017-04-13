@@ -389,9 +389,9 @@ HttpResponse HttpsClient::getResponse() {
   http_roundtripper rt;
   http_init(&rt, responseFuncs, &response);
 
-  unsigned char buffer[40960];
-  bool needmore = true;
-  while (needmore) {
+  unsigned char buffer[4096];
+  bool http_need_more = true;
+  while (http_need_more) {
     /*
     return the number of bytes read, or 0 for EOF, or
       MBEDTLS_ERR_SSL_WANT_READ or MBEDTLS_ERR_SSL_WANT_WRITE, or
@@ -401,11 +401,16 @@ HttpResponse HttpsClient::getResponse() {
     const unsigned char* data = buffer;
     int n_data = mbedtls_ssl_read(&ssl, buffer, sizeof(buffer));
 
-    LL_TRACE("mbedtls_ssl_read returns %d", n_data);
+    LL_TRACE("mbedtls_ssl_read returns %d (Content-Length=%d)", n_data, rt.contentlength);
 
     if (n_data == MBEDTLS_ERR_SSL_WANT_READ ||
         n_data == MBEDTLS_ERR_SSL_WANT_WRITE)
       continue;
+
+    // EOF reached
+    if (n_data == 0 && rt.contentlength == -1) {
+      break;
+    }
 
     if (n_data < 0) {
       ret = n_data;
@@ -421,13 +426,13 @@ HttpResponse HttpsClient::getResponse() {
           throw runtime_error("mbedtls_ssl_read returned non-sense");
       }
     }
-    while (needmore && n_data) {
+    while (http_need_more && n_data) {
       int read;
-      needmore = http_data(&rt, (const char*) data, n_data, &read);
+      http_need_more = http_data(&rt, (const char*) data, n_data, &read);
       n_data -= read;
       data += read;
     }
-  } // while (true)
+  } // while (http_need_more)
 
 
   if (http_iserror(&rt)) {

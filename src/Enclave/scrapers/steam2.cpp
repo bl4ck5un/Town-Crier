@@ -40,14 +40,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
+using std::string;
+
 #include <vector>
 
 #include "steam2.h"
 #include "commons.h"
-/*
-   - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
-*/
-#define HOST "Host: api.steampowered.com"
 
 enum steam_error {
   INVALID = 0,
@@ -69,29 +67,29 @@ err_code SteamScraper::handler(uint8_t *req, size_t len, int *resp_data) {
   format[5] = LIST_I[0];
   */
 
-  uint32_t wait_time;
+  uint32_t cutoff_time;
   size_t item_len;
   char _str_buf[100];
 
   // 0x00 .. 0x40
   // - encAPI:
-  char encrypted_api_key[64];
+  char encrypted_api_key[65] = {0};
   memcpy(encrypted_api_key, req, 0x40);
-  LL_INFO("API key: %s", encrypted_api_key);
+  LL_DEBUG("API key: %s", encrypted_api_key);
 
   // 0x40 .. 0x60 buyer_id
   char buyer_id[33] = {0};
   memcpy(buyer_id, req + 0x40, 0x20);
-  LL_INFO("buyer id: %s", buyer_id);
+  LL_DEBUG("buyer id: %s", buyer_id);
 
   // 0x60 .. 0x80
   // get last 4 bytes
-  wait_time = uint_bytes<uint32_t, 32>(req + 0x60);
-  LL_INFO("cufoff time is %d", wait_time);
+  cutoff_time = (uint32_t) strtol((const char*) req + 0x60, NULL, 10);
+  LL_DEBUG("cufoff time is %d", cutoff_time);
 
 
   // 0x80 .. 0xa0 - item_len
-  item_len = uint_bytes<size_t, 32>(req + 80);
+  item_len = (size_t) strtol((const char*) req + 0x80, NULL, 10);
 
   // 0xa0 .. 0xc0
   const char *items[item_len];
@@ -101,7 +99,7 @@ err_code SteamScraper::handler(uint8_t *req, size_t len, int *resp_data) {
   }
 
   int result = 0;
-  err_code ret = get_steam_transaction(items, 1, buyer_id, wait_time, encrypted_api_key, &result);
+  err_code ret = get_steam_transaction(items, 1, buyer_id, cutoff_time, encrypted_api_key, &result);
   if (ret == NO_ERROR && result == 1) {
     LL_INFO("Found a trade");
     *resp_data = result;
@@ -112,7 +110,7 @@ err_code SteamScraper::handler(uint8_t *req, size_t len, int *resp_data) {
   }
 }
 
-//TODO: NULL POINTERS
+// TODO: parse the response using a JSON / XML parser !
 err_code SteamScraper::get_steam_transaction(const char **item_name_list,
                                              int item_list_len,
                                              const char *buyer_id,
@@ -128,9 +126,9 @@ err_code SteamScraper::get_steam_transaction(const char **item_name_list,
 
   // reference query
   // https://api.steampowered.com/IEconService/GetTradeOffers/v0001/?get_sent_offers=1&get_received_offers=0&get_descriptions=0&active_only=1&historical_only=1&key=7978F8EDEF9695B57E72EC468E5781AD&time_historical_cutoff=1355220300
-  std::string query =
+  string query =
       "/IEconService/GetTradeOffers/v0001/?get_sent_offers=0&get_received_offers=1&get_descriptions=0&active_only=1&historical_only=1&key="
-          + std::string(api_key) + "&time_historical_cutoff=" + std::string(tmp_req_time);
+          + string(api_key) + "&time_historical_cutoff=" + string(tmp_req_time);
 
   HttpRequest httpRequest("api.steampowered.com", query, true);
   HttpsClient httpClient(httpRequest);
@@ -191,12 +189,12 @@ int SteamScraper::get_item_name(const char *key, char *appId, char *classId, cha
   char *end;
   char buf[16385];
 
-  std::string query = "/ISteamEconomy/GetAssetClassInfo/v0001/?class_count=1&classid0=" + \
-                std::string(classId) + \
+  string query = "/ISteamEconomy/GetAssetClassInfo/v0001/?class_count=1&classid0=" + \
+                string(classId) + \
                 "&appid=" + \
-                std::string(appId) + \
+                string(appId) + \
                 "&key=" + \
-                std::string(key) + \
+                string(key) + \
                 " HTTP/1.1";
 
   HttpRequest httpRequest("api.steampowered.com", query, this->headers);

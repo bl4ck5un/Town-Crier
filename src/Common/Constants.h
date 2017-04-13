@@ -36,27 +36,36 @@
  * VMWare Research Award.
  */
 
-#pragma once
+#ifndef TOWNCIRER_CONSTANTS_H
+#define TOWNCIRER_CONSTANTS_H
 
 #define TX_BUF_SIZE 2048
 
 #define TC_ADDRESS  "0x18322346bfb90378ceaf16c72cee4496723636b9"
-#define GASPRICE    "0x0BA43B7400"  //50000000000
-#define GASLIMIT    "0x015F90"      // 90000
+#define GASPRICE    "0x0BA43B7400"  // 50000000000
+#define GASLIMIT    "0x2DC6C0"      // 3000000
+
+#define TC_REQUEST_PAYLOAD_LIMIT 20480 // 2k payload limit
 
 /* Define any events that Town Crier Supports here */
-#define TYPE_CURRENT_VOTE   0x0
+#define TYPE_LOOP_THROUGH   0x0
 #define TYPE_FLIGHT_INS     0x1
 #define TYPE_STEAM_EX       0x2
 #define TYPE_FINANCE_INFO   0x3
 #define TYPE_UPS_TRACKING   0x4
-#define TYPE_COINMARKET 	0x5
-#define TYPE_WEATHER		0X6
+#define TYPE_COINMARKET     0x5
+#define TYPE_WEATHER        0X6
+#define TYPE_CURRENT_VOTE   0x7
 
 /* Possible return values to be used in Enclave-Relay Connections */
-#define TC_SUCCESS  		0x0
-#define TC_INPUT_ERROR 		0x1
-#define TC_INTERNAL_ERROR 	0x3
+#define TC_SUCCESS          0x0
+#define TC_INPUT_ERROR      0x1
+#define TC_INTERNAL_ERROR   0x3
+
+/* definition for error flags */
+#define TC_ERR_FLAG_NO_ERROR      0
+#define TC_ERR_FLAG_INVALID_INPUT 1
+#define TC_ERR_FLAG_INTERNAL_ERR  2
 
 #define SGX_ADDRESS "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 
@@ -67,3 +76,5 @@
 // #define HEXDUMP_TLS_TRANSCRIPT
 
 typedef int pkgstatus_t;
+
+#endif
