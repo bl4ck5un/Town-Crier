@@ -13,12 +13,6 @@ var sgxAddr = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 var gasCnt = 3e+6
 var TC_FEE = 3e+15
 
-personal.unlockAccount(minerAddr, '123123')
-personal.unlockAccount(sellerAddr, '123123')
-personal.unlockAccount(buyerAddr, '123123')
-// personal.unlockAccount(sgxAddr)
-
-
 var encryptedApiKey = [
     '0xf68d2a32cf17b1312c6db3f236a38c94', 
     '0x4c9f92f6ec1e2a20a1413d0ac1b867a3']
@@ -65,7 +59,8 @@ function mineBlocks(num) {
 
 
 function setup_log(tc, tradeContract, id) {
-	tc.RequestInfo(function(e,r) { 
+if (id == 0) {
+    tc.RequestInfo(function(e,r) { 
 		if (!e) { console.log('TC RequestInfo: ' + JSON.stringify(r.args)); } 
 		else {console.log(e)}
 	});
@@ -79,6 +74,7 @@ function setup_log(tc, tradeContract, id) {
 		if (!e) { console.log('TC Cancel: ' + JSON.stringify(r.args)); } 
 		else {console.log(e)}
 	});
+}
 
     if (id == 1) {
         tradeContract.Insure(function(e,r) {
@@ -142,11 +138,11 @@ function createSteamTrade(apiKey, item, price) {
     return tradeContract;
 }
 
-function createFlightIns() {
+function createFlightIns(tc) {
     unlockAccounts();
     var tradeContract = FlightIns.new(
-            tc.address, {
-                value: 100e+18,
+            tc, {
+                value: 10e+18,
                 from: sellerAddr,
                 data: APPcontracts["<stdin>:FlightInsurance"].code,
                 gas: gasCnt},
@@ -162,10 +158,10 @@ function createFlightIns() {
     return tradeContract;
 }
 
-function createApp() {
+function createApp(tc) {
     unlockAccounts();
     var tradeContract = App.new(
-        tc.address, {
+        tc, {
             from: sellerAddr,
             data: APPcontracts["<stdin>:Application"].code,
             gas:gasCnt},
@@ -230,7 +226,7 @@ function Request(contract, type, requestData) {
     unlockAccounts();
     contract.request.sendTransaction(type, requestData, {
         from: buyerAddr,
-        value: 1e18,
+        value: 3e15,
         gas: gasCnt
     });
     mineBlocks(1);

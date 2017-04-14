@@ -9,13 +9,13 @@ contract Application {
     uint constant CANCELLATION_FEE = 25000 * GAS_PRICE;
 
     bytes4 constant TC_CALLBACK_FID = bytes4(sha3("response(uint64,uint64,bytes32)"));
-    
+
     TownCrier public TC_CONTRACT;
     address owner;
     address[2**64] requesters;
     uint[2**64] fee;
-    
-    function() payable {} // must be payable
+
+    function() public payable {} // must be payable
 
     function Application(TownCrier tcCont) public {
         TC_CONTRACT = tcCont;

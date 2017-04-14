@@ -29,7 +29,7 @@ contract FlightInsurance {
     Policy[2**64] policies;
     uint64[2**64] id_map;
 
-    function() payable {} // must be payable
+    function() public payable {} // must be payable
 
     function FlightInsurance(TownCrier tcCont) public payable{
         TC_CONTRACT = tcCont;

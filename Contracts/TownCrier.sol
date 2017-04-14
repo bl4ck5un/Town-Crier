@@ -42,13 +42,10 @@ contract TownCrier {
     }
 
     function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, uint timestamp, bytes32[] requestData) public payable returns (uint64) {
-        RequestLog(this, 0);
         if (msg.value < MIN_FEE) {
             // If the amount of ether sent by the requester is too little or 
             // too much, refund the requester and discard the request.
-            RequestLog(this, -1);
             if (!msg.sender.send(msg.value)) {
-                RequestLog(this, -2);
                 throw;
             }
             return 0;
@@ -66,7 +63,6 @@ contract TownCrier {
 
             // Log the request for the Town Crier server to process.
             RequestInfo(requestId, requestType, msg.sender, msg.value, callbackAddr, paramsHash, timestamp, requestData);
-            RequestLog(this, 0);
             return requestId;
         }
     }
@@ -78,7 +74,6 @@ contract TownCrier {
                 requests[requestId].fee == DELIVERED_FEE_FLAG) {
             // If the response is not delivered by the SGX account or the 
             // request has already been responded to, discard the response.
-            DeliverLog(msg.gas, -1);
             return;
         }
         
@@ -86,38 +81,30 @@ contract TownCrier {
         if (requests[requestId].paramsHash != paramsHash) {
             // If the hash of request parameters in the response is not 
             // correct, discard the response for security concern.
-            DeliverLog(msg.gas, -4);
             return;
         } else if (fee == CANCELLED_FEE_FLAG) {
             // If the request is cancelled by the requester, cancellation 
             // fee goes to the SGX account and set the request as having
             // been responded to.
-            DeliverLog(msg.gas, 1);
             if (!SGX_ADDRESS.send(CANCELLATION_FEE)){
-                DeliverLog(msg.gas, -8);
                 throw;
             }
             requests[requestId].fee = DELIVERED_FEE_FLAG;
-            DeliverLog(msg.gas, int(CANCELLATION_FEE));
             return;
         }
 
-        DeliverLog(msg.gas, 8);
         requests[requestId].fee = DELIVERED_FEE_FLAG;
         
         if (error < 2) {
             if (!SGX_ADDRESS.send(fee)) { // send the fee to the SGX account for its delivering
-                DeliverLog(msg.gas, -16);
                 throw;
             }
         } else {
             if (!requests[requestId].requester.send(fee)) {
-                DeliverLog(msg.gas, -32);
                 throw;
             }
         }
 
-        DeliverLog(msg.gas, 16);
 
         uint callbackGas = (fee - MIN_FEE) / tx.gasprice; // gas left for the callback function
         if (callbackGas > MAX_GAS) {
@@ -127,11 +114,6 @@ contract TownCrier {
         DeliverInfo(requestId, fee, tx.gasprice, msg.gas, callbackGas, paramsHash, error, respData); // log the response information
         
         bool deliverSuccess = requests[requestId].callbackAddr.call.gas(callbackGas)(requests[requestId].callbackFID, requestId, error, respData); // call the callback function in the application contract
-        if (deliverSuccess) {
-            DeliverLog(msg.gas, 32);
-        } else {
-            DeliverLog(msg.gas, -2);
-        }
     }
 
     function cancel(uint64 requestId) public returns (bool) {
