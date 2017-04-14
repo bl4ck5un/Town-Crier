@@ -123,3 +123,10 @@ echo "[RPC]" >> config
 echo "RPChost = http://localhost:8200" >> config
 ./tc config
 ```
+
+Status Server
+-------------
+
+```
+curl -d '{"id": 123, "jsonrpc": "2.0", "method": "attest"}' server.town-crier.org:8123
+```
