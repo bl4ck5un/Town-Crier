@@ -16,7 +16,6 @@ contract TownCrier {
     address constant SGX_ADDRESS = 0x89B44e4d3c81EDE05D0f5de8d1a68F754D73d997; // address of the SGX account
 
     uint public constant GAS_PRICE = 5 * 10**10;
-    uint public constant MAX_GAS = 295 * 10 ** 4;
     uint public constant MIN_FEE = 30000 * GAS_PRICE; // least fee required for the requester to pay such that SGX could call deliver() to send a response
     uint public constant CANCELLATION_FEE = 25000 * GAS_PRICE; // charged when the requester cancels a request that is not responded
 
@@ -105,15 +104,13 @@ contract TownCrier {
             }
         }
 
-
         uint callbackGas = (fee - MIN_FEE) / tx.gasprice; // gas left for the callback function
-        if (callbackGas > MAX_GAS) {
-            callbackGas = MAX_GAS;
-        }
-
         DeliverInfo(requestId, fee, tx.gasprice, msg.gas, callbackGas, paramsHash, error, respData); // log the response information
+        if (callbackGas > msg.gas - 5000) {
+            callbackGas = msg.gas - 5000;
+        }
         
-        bool deliverSuccess = requests[requestId].callbackAddr.call.gas(callbackGas)(requests[requestId].callbackFID, requestId, error, respData); // call the callback function in the application contract
+        requests[requestId].callbackAddr.call.gas(callbackGas)(requests[requestId].callbackFID, requestId, error, respData); // call the callback function in the application contract
     }
 
     function cancel(uint64 requestId) public returns (bool) {
