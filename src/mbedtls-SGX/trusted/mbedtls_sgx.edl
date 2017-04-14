@@ -1,0 +1,27 @@
+enclave {
+    include "mbedtls/net_v.h"
+    include "mbedtls/timing_v.h"
+
+    trusted {
+        public void dummy(void);
+    };
+
+    untrusted {
+        // implemented in net_v.h
+        // [in] means going with the call
+        // [out] means getting out from the call
+        int ocall_mbedtls_net_connect([in, out] mbedtls_net_context *ctx, [in,string] const char *host, [in,string] const char *port, int proto );
+        int ocall_mbedtls_net_bind( [out] mbedtls_net_context *ctx, [in,string] const char *bind_ip, [in,string] const char *port, int proto );
+        int ocall_mbedtls_net_accept( [in] mbedtls_net_context *bind_ctx, [out] mbedtls_net_context *client_ctx, [out, size=buf_size] void *client_ip, size_t buf_size, [out] size_t *ip_len );
+        int ocall_mbedtls_net_set_block([in,out] mbedtls_net_context *ctx );
+        int ocall_mbedtls_net_set_nonblock( [in,out] mbedtls_net_context *ctx );
+        void ocall_mbedtls_net_usleep( unsigned long usec );
+        int ocall_mbedtls_net_recv( [in,out] mbedtls_net_context *ctx, [out, size=len] unsigned char *buf, size_t len );
+        int ocall_mbedtls_net_send( [in,out] mbedtls_net_context *ctx, [in, size=len] const unsigned char *buf, size_t len );
+        int ocall_mbedtls_net_recv_timeout( [in,out] mbedtls_net_context *ctx, [out, size=len] unsigned char *buf, size_t len, uint32_t timeout );
+        void ocall_mbedtls_net_free( [in, out] mbedtls_net_context *ctx );
+
+        // printf
+        int ocall_print_string([in, string] const char *str);
+    };
+};
