@@ -10,7 +10,7 @@ set(TC_SRC_FILES tc.cpp monitor.cpp attestation.cpp request-parser.cpp
         EthRPC.cpp StatusRPCServer.cpp
         external/base64.cpp
         key-utils.cpp
-        tc-exception.cpp)
+        tc-exception.cpp config.cpp config.h)
 
 set_directory_properties(PROPERTIES
         ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
