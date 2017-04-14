@@ -157,7 +157,7 @@ int main(int argc, const char *argv[]) {
     exit(-1);
   }
 
-  jsonrpc::HttpServer status_server_connector(config.get_status_server_port());
+  jsonrpc::HttpServer status_server_connector(config.get_status_server_port(), "", "", 3);
   StatusRPCServer status_rpc_server(status_server_connector, eid);
   if (config.is_status_server_enabled()) {
     status_rpc_server.StartListening();
