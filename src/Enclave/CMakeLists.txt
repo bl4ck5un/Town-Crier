@@ -1,3 +1,5 @@
+set(LIB_MBEDTLS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/mbedtls-SGX/lib/libmbedtls_sgx_t.a")
+
 set(SOURCE_FILES
         Debug.c
         create_report.cpp
@@ -17,9 +19,6 @@ set(SOURCE_FILES
         scrapers/flight.cpp
         external/keccak.c
         external/csv_parser.cpp
-#        external/tinyhttp/chunk.c
-#        external/tinyhttp/header.c
-#        external/tinyhttp/http.c
         tls_client_tiny.cpp
         scrapers/steam2.cpp
         scrapers/stock_ticker.cpp
@@ -29,6 +28,7 @@ set(SOURCE_FILES
         encoding.cpp
         commons.cpp
         external/slre.c
+        ${LIB_MBEDTLS_PATH}
         external/http_parser.c utils.c)
 
 add_definitions(-DENCLAVE_STD_ALT)
@@ -48,6 +48,7 @@ add_custom_command(
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+
 add_library(enclave SHARED ${SOURCE_FILES})
 
 include_directories(
@@ -63,7 +64,10 @@ include_directories(
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fvisibility=hidden -fpie -fstack-protector")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++03 -nostdinc++")
 
-set(LIB_MBEDTLS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/mbedtls-SGX/lib/libmbedtls_sgx_t.a")
+add_custom_command(
+        OUTPUT ${LIB_MBEDTLS_PATH}
+        COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/mbedtls-SGX
+)
 
 set_target_properties(enclave PROPERTIES PREFIX "")
 
