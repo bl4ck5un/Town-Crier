@@ -73,12 +73,12 @@ contract Application {
 
         bool tcCancel = TC_CONTRACT.cancel(requestId);
         if (tcCancel) {
+            requesters[requestId] = 0;
             if (!msg.sender.send(fee[requestId] - CANCELLATION_FEE)) {
                 Cancel(requestId, msg.sender, false);
                 throw;
             }
             Cancel(requestId, msg.sender, true);
-            requesters[requestId] = 0;
         } else {
             Cancel (requestId, msg.sender, false);
         }

@@ -79,11 +79,11 @@ contract FlightInsurance {
 
         policies[policyId].tc_id = TC_CONTRACT.request.value(policies[policyId].fee)(1, this, TC_CALLBACK_FID, 0, policies[policyId].data); 
         if (policies[policyId].tc_id == 0) {
+            policies[policyId].fee = 0;
             if (!msg.sender.send(policies[policyId].premium + policies[policyId].fee)) {
                 Request(policyId, msg.sender, -2);
                 throw;
             }
-            policies[policyId].fee = 0;
             Request(policyId, msg.sender, 0);
         } else {
             id_map[policies[policyId].tc_id] = policyId;
@@ -104,6 +104,7 @@ contract FlightInsurance {
         uint premium = policies[policyId].premium;
         uint delay = uint(respData);
 
+        policies[policyId].fee = 0;
         if (error == 0){ // no problem
             if (delay >= PAYOUT_DELAY) {
                 if (!requester.send(premium * PAYOUT_RATE)) {
@@ -128,7 +129,6 @@ contract FlightInsurance {
             }
         }
         Response(int64(policyId), msg.sender, requestId, error, delay);
-        policies[policyId].fee = 0;
     }
 
     function cancel(uint64 policyId) public {
@@ -139,12 +139,12 @@ contract FlightInsurance {
             return;
         }
 
+        policies[policyId].fee = 0;
         if (!msg.sender.send(policies[policyId].fee + policies[policyId].premium)) {
             Cancel(policyId, msg.sender, false, 0);
             throw;
         }
 
-        policies[policyId].fee = 0;
         Cancel(policyId, msg.sender, true, block.timestamp);
     }
 }
