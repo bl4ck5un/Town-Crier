@@ -1,0 +1,19 @@
+enclave {
+    from "mbedtls_sgx.edl" import *;
+    from "sgx_tstdc.edl" import *;
+    include "../common/ssl_context.h"
+
+    trusted {
+        /* define ECALLs here. */
+        public int sgx_connect();
+        public int sgx_accept();
+        public void ssl_conn_init(void);
+        public void ssl_conn_teardown(void);
+        public void ssl_conn_handle(long int thread_id, [in,out] thread_info_t* thread_info);
+    };
+
+    untrusted {
+        /* define OCALLs here. */
+    
+    };
+};
