@@ -1,3 +1,0 @@
-[submodule "src/mbedtls-SGX"]
-	path = src/Enclave/mbedtls-SGX
-	url = https://github.com/bl4ck5un/mbedtls-SGX/
