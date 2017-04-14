@@ -46,12 +46,12 @@
 
 using namespace ::jsonrpc;
 
-class StatusRpcServer : public AbstractStatusServer {
+class StatusRPCServer : public AbstractStatusServer {
  private:
   sgx_enclave_id_t eid;
  public:
-  StatusRpcServer(AbstractServerConnector &connector, sgx_enclave_id_t eid);
-  // curl -d '{"id": 123, "jsonrpc": "2.0", "method": "status"}'  localhost:8123
+  StatusRPCServer(AbstractServerConnector &connector, sgx_enclave_id_t eid);
+  // curl -d '{"id": 1, "jsonrpc": "2.0", "method": "status"}'  localhost:8123
   std::string attest() override;
   Json::Value status() override;
 };

@@ -37,40 +37,31 @@
 // VMWare Research Award.
 //
 
-#include "sgx_utils.h"
-#include "sgx_report.h"
-#include "string.h"
-#include "time.h"
-#include "external/keccak.h"
-#include "eth_ecdsa.h"
-#include "Log.h"
-#include "Enclave_t.h"
-#include "Constants.h"
+#include <gtest/gtest.h>
 
-int ecall_create_report (sgx_target_info_t* quote_enc_info, sgx_report_t* report)
-{
-    sgx_report_data_t data; // user defined data
-    int ret = 0;
-    memset( &data.d, 0x90, sizeof data.d); // put in some data
-    ret = sgx_create_report (quote_enc_info, &data, report);
-    return ret;
-}
+#include "utils.h"
+#include "Enclave_u.h"
+#include "attestation.h"
+#include <vector>
+#include "Converter.h"
 
-int ecall_time_calibrate (time_t wall_clock, uint8_t wtc_rsv[65])
-{
-    int ret = 0;
-    uint8_t wtc_hash[32];
-    ret = keccak((uint8_t*)&wall_clock, sizeof wall_clock, wtc_hash, 32);
-    if (ret != 0)
-    {
-        LL_CRITICAL("keccak returned %d", ret);
-        return ret;
-    }
-    ret = ecdsa_sign(wtc_hash, sizeof wtc_hash, wtc_rsv, wtc_rsv + 32, wtc_rsv + 64);
-    if (ret != 0)
-    {
-        LL_CRITICAL("ecdsa_sign() returned %d", ret);
-        return ret;
-    }
-    return ret;
+using namespace std;
+
+TEST (Attestation, att) {
+  sgx_enclave_id_t eid;
+  int ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
+  ASSERT_EQ(0, ret);
+  try {
+    vector<uint8_t> att;
+    get_attestation(eid, att);
+    LL_INFO("attestation: %s", bufferToHex(att, true).c_str());
+  }
+  catch (const exception& e) {
+    LL_CRITICAL("error: %s", e.what());
+    FAIL();
+  }
+
+  ASSERT_EQ(0, ret);
+
+  sgx_destroy_enclave(eid);
 }

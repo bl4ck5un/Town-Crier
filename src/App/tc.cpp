@@ -56,7 +56,7 @@
 #include "Enclave_u.h"
 #include "EthRPC.h"
 #include "monitor.h"
-#include "StatusRpcServer.h"
+#include "StatusRPCServer.h"
 #include "attestation.h"
 #include "bookkeeping/database.hxx"
 #include "request-parser.hxx"
@@ -123,13 +123,12 @@ int main(int argc, const char *argv[]) {
   LL_INFO("daemon: %d", options_daemon);
   LL_INFO("cwd: %s", opt_cwd.c_str());
 
-  //!
   string pid_filename;
   string enclave_path;
   int status_rpc_port;
   string sealed_sig_key;
 
-  //! parse config files
+  // parse the config files
   boost::property_tree::ptree pt;
   try {
     boost::property_tree::ini_parser::read_ini(options_config, pt);
@@ -161,13 +160,6 @@ int main(int argc, const char *argv[]) {
   std::signal(SIGINT, exitGraceful);
   // handle systemd termination signal
   std::signal(SIGTERM, exitGraceful);
-
-  jsonrpc::HttpServer status_server_connector(status_rpc_port);
-  StatusRpcServer status_rpc_server(status_server_connector, eid);
-  if (options_rpc) {
-    status_rpc_server.StartListening();
-    LOG_F(INFO, "RPC server started");
-  }
 
   // create working dir if not existed
   fs::create_directory(fs::path(opt_cwd));
@@ -215,6 +207,13 @@ int main(int argc, const char *argv[]) {
   catch (const tc::EcallException &e) {
     LL_CRITICAL(e.what());
     exit(-1);
+  }
+
+  jsonrpc::HttpServer status_server_connector(status_rpc_port);
+  StatusRPCServer status_rpc_server(status_server_connector, eid);
+  if (options_rpc) {
+    status_rpc_server.StartListening();
+    LOG_F(INFO, "RPC server started");
   }
 
   Monitor monitor(driver, eid, nonce_offset, quit);

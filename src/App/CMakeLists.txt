@@ -7,7 +7,7 @@ set(TC_SRC_FILES tc.cpp monitor.cpp attestation.cpp request-parser.cpp
         bookkeeping/transaction-record.hxx
         bookkeeping/transaction-record-odb.cxx
         Converter.cpp utils.cpp types.cpp
-        EthRPC.cpp StatusRpcServer.cpp
+        EthRPC.cpp StatusRPCServer.cpp
         external/base64.cpp
         key-utils.cpp
         tc-exception.cpp)
@@ -35,6 +35,7 @@ add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp utils.cpp Enclave
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
 add_executable(TestMain EXCLUDE_FROM_ALL
         ${TEST_SRC_FILES}
+        attestation.cpp
         utils.cpp
         Enclave_u.c
         ocalls.cpp
