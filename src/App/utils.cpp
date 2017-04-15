@@ -157,9 +157,10 @@ const string sgx_error_message(sgx_status_t ret) {
   }
 
   if (idx == ttl) {
-    ss << "Error: returned " << std::hex << ret;
+    ss << "ecall returned 0x" << std::hex << ret;
   }
 
+  LL_DEBUG("sgx_error_message: %s", ss.str().c_str());
   return ss.str();
 }
 

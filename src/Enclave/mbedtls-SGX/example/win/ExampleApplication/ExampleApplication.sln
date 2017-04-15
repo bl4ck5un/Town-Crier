@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExampleApplication", "ExampleApplication.vcxproj", "{8CDEA558-CEE6-4EA9-92C0-129FB3A1A6AE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C51C6960-D15A-4AEC-9D08-09277D3A43AC} = {C51C6960-D15A-4AEC-9D08-09277D3A43AC}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExampleEnclave", "..\ExampleEnclave\ExampleEnclave.vcxproj", "{C51C6960-D15A-4AEC-9D08-09277D3A43AC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Prerelease|Win32 = Prerelease|Win32
+		Release|Win32 = Release|Win32
+		Simulation|Win32 = Simulation|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8CDEA558-CEE6-4EA9-92C0-129FB3A1A6AE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8CDEA558-CEE6-4EA9-92C0-129FB3A1A6AE}.Debug|Win32.Build.0 = Debug|Win32
+		{8CDEA558-CEE6-4EA9-92C0-129FB3A1A6AE}.Prerelease|Win32.ActiveCfg = Prerelease|Win32
+		{8CDEA558-CEE6-4EA9-92C0-129FB3A1A6AE}.Prerelease|Win32.Build.0 = Prerelease|Win32
+		{8CDEA558-CEE6-4EA9-92C0-129FB3A1A6AE}.Release|Win32.ActiveCfg = Release|Win32
+		{8CDEA558-CEE6-4EA9-92C0-129FB3A1A6AE}.Release|Win32.Build.0 = Release|Win32
+		{8CDEA558-CEE6-4EA9-92C0-129FB3A1A6AE}.Simulation|Win32.ActiveCfg = Simulation|Win32
+		{8CDEA558-CEE6-4EA9-92C0-129FB3A1A6AE}.Simulation|Win32.Build.0 = Simulation|Win32
+		{C51C6960-D15A-4AEC-9D08-09277D3A43AC}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C51C6960-D15A-4AEC-9D08-09277D3A43AC}.Debug|Win32.Build.0 = Debug|Win32
+		{C51C6960-D15A-4AEC-9D08-09277D3A43AC}.Prerelease|Win32.ActiveCfg = Prerelease|Win32
+		{C51C6960-D15A-4AEC-9D08-09277D3A43AC}.Prerelease|Win32.Build.0 = Prerelease|Win32
+		{C51C6960-D15A-4AEC-9D08-09277D3A43AC}.Release|Win32.ActiveCfg = Release|Win32
+		{C51C6960-D15A-4AEC-9D08-09277D3A43AC}.Release|Win32.Build.0 = Release|Win32
+		{C51C6960-D15A-4AEC-9D08-09277D3A43AC}.Simulation|Win32.ActiveCfg = Simulation|Win32
+		{C51C6960-D15A-4AEC-9D08-09277D3A43AC}.Simulation|Win32.Build.0 = Simulation|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
