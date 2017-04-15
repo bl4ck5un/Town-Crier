@@ -85,9 +85,7 @@ contract TownCrier {
             // If the request is cancelled by the requester, cancellation 
             // fee goes to the SGX account and set the request as having
             // been responded to.
-            if (!SGX_ADDRESS.send(CANCELLATION_FEE)){
-                throw;
-            }
+            SGX_ADDRESS.send(CANCELLATION_FEE);
             requests[requestId].fee = DELIVERED_FEE_FLAG;
             return;
         }
@@ -95,13 +93,9 @@ contract TownCrier {
         requests[requestId].fee = DELIVERED_FEE_FLAG;
         
         if (error < 2) {
-            if (!SGX_ADDRESS.send(fee)) { // send the fee to the SGX account for its delivering
-                throw;
-            }
+            SGX_ADDRESS.send(fee); // send the fee to the SGX account for its delivering
         } else {
-            if (!requests[requestId].requester.send(fee)) {
-                throw;
-            }
+            requests[requestId].requester.send(fee);
         }
 
         uint callbackGas = (fee - MIN_FEE) / tx.gasprice; // gas left for the callback function

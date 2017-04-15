@@ -57,10 +57,7 @@ contract Application {
         if (error < 2) {
             Response(int64(requestId), requester, error, uint(respData));
         } else {
-            if (!requester.send(fee[requestId])) {
-                Response(-2, msg.sender, error, 0);
-                throw;
-            }
+            requester.send(fee[requestId]);
             Response(int64(requestId), msg.sender, error, 0);
         }
     }

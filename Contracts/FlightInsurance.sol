@@ -97,26 +97,14 @@ contract FlightInsurance {
         policies[policyId].fee = 0;
         if (error == 0){ // no problem
             if (delay >= PAYOUT_DELAY) {
-                if (!requester.send(premium * PAYOUT_RATE)) {
-                    Response(-2, msg.sender, 0, 0, 0);
-                    throw;
-                }
+                requester.send(premium * PAYOUT_RATE);
             } else {
-                if (!owner.send(premium)) {
-                    Response(-4, msg.sender, 0, 0, 0);
-                    throw;
-                }
+                owner.send(premium);
             }
         } else if (error == 1) { // invalid request 
-            if (!requester.send(premium)) {
-                Response(-8, msg.sender, 0, 0, 0);
-                throw;
-            }
+            requester.send(premium);
         } else {
-            if (!requester.send(premium + policies[policyId].fee)) {
-                Response(-16, msg.sender, 0, 0, 0);
-                throw;
-            }
+            requester.send(premium + policies[policyId].fee);
         }
         Response(int64(policyId), msg.sender, requestId, error, delay);
     }
