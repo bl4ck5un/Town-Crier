@@ -191,9 +191,9 @@ function SteamPurchase(contract, steamId, delay) {
   return "Purchased!"
 }
 
-function FlightInsure(contract, flightID, time, fee) {
+function FlightInsure(contract, flightId, time, fee) {
     unlockAccounts();
-contract.insure.sendTransaction([web3.fromAscii(flightID, 32), web3.fromAscii(time, 32)], fee, {
+contract.insure.sendTransaction([flightId, time], fee, {
         from: buyerAddr,
         value: fee * 1e+18 + TC_FEE,
         gas: gasCnt
@@ -296,17 +296,22 @@ function unlockAccounts() {
     }
 }
 
+function pad(n, width) {
+    m = n.toString(16);
+    return '0x' + new Array(width - m.length + 1).join('0') + m;
+}
+
 /* =========== The following should be run line-by-line as a demo =========== */
 // loadScript("demorc.js");
 // tc = setup_tc();
 // app = createApp(tc);
 // setup_log(tc, app);
-// Request(app, 1, [web3.fromAscii('FJM273', 32), web3.fromAscii('1492100100',32)]);
-// Request(app, 2, [web3.fromAscii('f68d2a32cf17b1312c6db3f236a38c94', 32), web3.fromAscii('4c9f92f6ec1e2a20a1413d0ac1b867a3', 32), web3.fromAscii('32884794', 32), web3.fromAscii('1456380265', 32), web3.fromAscii('1', 32), web3.fromAscii('Portal', 32)]);
-// Request(app, 3, [web3.fromAscii('GOOG', 32), web3.fromAscii('1',32), web3.fromAscii('2', 32), web3.fromAscii('2010', 32)]);
-// Request(app, 4, [web3.fromAscii('1ZE331480394808282', 32)]);
-// Request(app, 5, [web3.fromAscii('bitcoin', 32)]);
-// FlightInsure(fi, 'FJM273', '1492100100', 1);
+// Request(app, 1, ['FJM273', pad(1492100100, 64)]);
+// Request(app, 2, ['f68d2a32cf17b1312c6db3f236a38c94', '4c9f92f6ec1e2a20a1413d0ac1b867a3', '32884794', pad(1456380265, 64), pad(1, 64), 'Portal']);
+// Request(app, 3, ['GOOG', pad(1,64), pad(2, 64), pad(2010, 64)]);
+// Request(app, 4, ['1ZE331480394808282']);
+// Request(app, 5, ['bitcoin']);
+// FlightInsure(fi, 'FJM273', pad(1492100100, 64), 1);
 
 // var tradeContract = createSteamTrade(encryptedApiKey, 'Portal', 1e+18);
 // TestSteam(tradeContract, buyerSteamId, 60);

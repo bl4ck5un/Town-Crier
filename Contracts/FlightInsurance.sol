@@ -3,7 +3,6 @@ contract FlightInsurance {
         address requester;
         uint64 tc_id;
         bytes32[] data;
-        uint flightTime;
         uint fee;
         uint premium;
     }
@@ -40,20 +39,12 @@ contract FlightInsurance {
     function insure(bytes32[] flightInfo, uint payment) public payable{
         payment = payment * ETHER_TO_WEI;
 
-        uint time = 0;
-        for (uint j = 0; j < 32; j++) {
-            byte char = byte(bytes32(uint(flightInfo[1]) * 2 ** (8 * j)));
-            if (char != 0) {
-                time = time * 10 + uint(char) - 48;
-            }
-        }
-
         if (msg.value < payment + TC_FEE
-                || block.timestamp + DAY_EPOCH > time) {
+                || block.timestamp + DAY_EPOCH > uint(flightInfo[1])) {
             if (!msg.sender.send(msg.value)) {
                 throw;
             }
-            Insure(-1, msg.sender, flightInfo.length, flightInfo, payment, time);
+            Insure(-1, msg.sender, flightInfo.length, flightInfo, payment, uint(flightInfo[1]));
             return;
         }
 
@@ -63,7 +54,6 @@ contract FlightInsurance {
         policies[policyId].requester = msg.sender;
         policies[policyId].tc_id = 0;
         policies[policyId].data = flightInfo;
-        policies[policyId].flightTime = time;
         policies[policyId].fee = msg.value - payment;
         policies[policyId].premium = payment;
 
@@ -134,8 +124,8 @@ contract FlightInsurance {
     function cancel(uint64 policyId) public {
         if (policyId == 0 || policies[policyId].requester != msg.sender
                 || policies[policyId].fee == 0 || policies[policyId].tc_id != 0
-                || block.timestamp + DAY_EPOCH > policies[policyId].flightTime) {
-            Cancel(policyId, msg.sender, false, policies[policyId].flightTime);
+                || block.timestamp + DAY_EPOCH > uint(policies[policyId].data[1])) {
+            Cancel(policyId, msg.sender, false, uint(policies[policyId].data[1]));
             return;
         }
 
