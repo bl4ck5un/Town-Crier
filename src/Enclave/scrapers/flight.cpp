@@ -119,7 +119,7 @@ flight_error FlightScraper::parse_response(const char *resp, int *delay, uint64_
     *delay = actual_depart_time - unix_epoch_time;
     return DELAYED;
   }
-  //Case: Flight was not delayed
+    //Case: Flight was not delayed
   else {
     *delay = 0;
     LL_DEBUG("DEPARTED");
@@ -175,40 +175,42 @@ flight_error FlightScraper::get_flight_delay(uint64_t unix_epoch_time, const cha
  *      0x00 - 0x20 string flight_number
  *      0x20 - 0x40 uint64 unix_epoch
  */
-err_code FlightScraper::handler(uint8_t *req, int data_len, int *resp_data) {
-  
+err_code FlightScraper::handler(uint8_t *req, size_t data_len, int *resp_data) {
+
   if (data_len != 2 * 32) {
-    LL_CRITICAL("Data_len %d*32 is not 2*32", data_len / 32);
+    LL_CRITICAL("Data_len %zu*32 is not 2*32", data_len / 32);
     return INVALID_PARAMS;
   }
-  dump_buf("Request", req, data_len);
-
-  //Parse raw data into valid parameters
-  //Can this be done in a more C++ way?
-  int ret, delay;
-  char flight_number[35] = {0};
+  int delay;
+  char flight_number[33] = {0};
   memcpy(flight_number, req, 0x20);
 
   char *flighttime = (char *) req + 0x20;
-  uint64_t unix_epoch = strtol(flighttime, NULL, 10);
+  uint64_t unix_epoch = (uint64_t) strtol(flighttime, NULL, 10);
 
   LL_DEBUG("unix_epoch=%lld, flight_number=%s", unix_epoch, flight_number);
+
   switch (get_flight_delay(unix_epoch, flight_number, &delay)) {
-    case INVALID:*resp_data = -1;
+    case INVALID:
+      *resp_data = -1;
       return INVALID_PARAMS;
 
-    case NOT_FOUND:*resp_data = -1;
+    case NOT_FOUND:
+      *resp_data = -1;
       return INVALID_PARAMS;
 
-    case HTTP_ERROR:*resp_data = -1;
+    case HTTP_ERROR:
+      *resp_data = -1;
       return WEB_ERROR;
 
     case DEPARTED:
     case DELAYED:
     case CANCELLED:
       //TODO: why?
-    case NOT_DEPARTED:*resp_data = delay;
+    case NOT_DEPARTED:
+      *resp_data = delay;
       return NO_ERROR;
-    default:return UNKNOWN_ERROR;
+    default:
+      return UNKNOWN_ERROR;
   }
 }

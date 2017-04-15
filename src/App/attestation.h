@@ -44,7 +44,7 @@
 #include <stdexcept>
 #include <cstdint>
 
-std::vector<uint8_t > get_attestation(sgx_enclave_id_t eid) throw(std::runtime_error);
+void get_attestation(sgx_enclave_id_t eid, std::vector<uint8_t>&);
 int time_calibrate(sgx_enclave_id_t eid);
 
 #endif

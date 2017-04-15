@@ -192,7 +192,7 @@ int tc_provision_key(const sgx_sealed_data_t *secret, size_t secret_len) {
 
   st = sgx_unseal_data(secret, NULL, 0, y, &decrypted_text_length);
   if (st != SGX_SUCCESS) {
-    LL_CRITICAL("unseal returned %x", st);
+    LL_CRITICAL("unseal returned %#x", st);
     return -1;
   }
 

@@ -39,21 +39,40 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <Debug.h>
+#include <string>
+
+#include "Debug.h"
 #include "tls_client.h"
 #include "../scrapers/steam2.h"
 #include "Log.h"
 
 int steam_self_test() {
-  int rc, ret;
+  err_code err;
+  int ret;
   SteamScraper testScraper;
 
-  const char *listB[1] = {"Portal"};
-  // needs as input time of request, T_B time for response, key, account # ID_B, list of items L_B, account # ID_S
-  // I'm not sure how we get time... but so long as we get it somehow...
-  rc = testScraper.get_steam_transaction(listB, 1, "32884794", 1456380265, "7978F8EDEF9695B57E72EC468E5781AD", &ret);
-  LL_INFO("%d, %d\n", rc, ret);
-  //rc should be 0, ret should be 1
-  return (rc == 0 && ret == 1);
+  // api_key [string] (padded with \0)
+  string api_key = "7978F8EDEF9695B57E72EC468E5781AD";
+  api_key.append(64 - api_key.length(), 0x00);
+
+  // buyer_id [string] (padded with \0)
+  string buyer_id = "32884794";
+  buyer_id.append(32 - buyer_id.length(), 0x00);
+
+  // cutoff time [long] (big endian, pre-padded with 0)
+  string cutoff_time = "1456380265";
+  cutoff_time.append(32 - cutoff_time.length(), 0x00);
+
+  // same as cutoff
+  string item_len = "1";
+  item_len.append(32 - item_len.length(), 0x00);
+
+  string items = "Portal";
+  items.append(32 - items.length(), 0x00);
+
+  string request_data = api_key + buyer_id + cutoff_time + item_len + items;
+  dump_buf("Request", (unsigned char*) request_data.c_str(), request_data.length());
+  err = testScraper.handler((uint8_t *) request_data.c_str(), request_data.length(), &ret);
+  return (err == NO_ERROR && ret == 1) ? 0 : 1;
 }
 

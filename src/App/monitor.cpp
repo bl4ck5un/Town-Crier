@@ -104,6 +104,8 @@ void Monitor::loop() {
 
       // if we've scanned all of them
       if (next_block_num > current_highest_block) {
+        // reset error counter after one success
+        monitor_retry_counter = 0;
         throw NothingTodoException();
       }
       else {
@@ -114,7 +116,7 @@ void Monitor::loop() {
       for (; next_block_num <= current_highest_block; next_block_num++) {
         /* when TC is run for the first time, this loop will be executed for millions of time very quickly
          * so we need to handle interrupt here too. */
-        std::this_thread::sleep_for(std::chrono::milliseconds(200)); 
+        std::this_thread::sleep_for(std::chrono::milliseconds(50));
         if (quit.load()) {
             LL_INFO("Ctrl-C pressed, cleaning up...");
             ret = 1;
@@ -188,7 +190,8 @@ void Monitor::loop() {
           }
         }
         LL_INFO("Done processing block %ld", next_block_num);
-        monitor_retry_counter = 0; //! reset retry_counter upon each success
+        // reset retry_counter upon each success
+        monitor_retry_counter = 0;
       }
     }
     catch (const NothingTodoException& e) {

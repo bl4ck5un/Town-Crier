@@ -1,5 +1,3 @@
-import "TownCrier.sol";
-
 contract PutOption {
     event Put(bytes32 timestamp, uint gas, bytes32[] data);
     event Pay(uint unitPrice, int amount);

@@ -49,11 +49,7 @@
 
 class Scraper {
 public:
-    virtual err_code handler(uint8_t* req, int data_len, int *resp_data) = 0;
-
-    int dummy(int i){
-        return i;
-    }
+    virtual err_code handler(uint8_t *req, size_t data_len, int *resp_data) = 0;
 };
 
 

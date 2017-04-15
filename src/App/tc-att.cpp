@@ -39,6 +39,7 @@
 
 #define LOGURU_IMPLEMENTATION 1
 
+#include "sgx_error.h"
 #include "attestation.h"
 #include "utils.h"
 #include "Converter.h"
@@ -56,7 +57,15 @@ int main() {
   } else {
     LL_INFO("enclave %lu created", eid);
   }
-  std::vector<unsigned char> quote = get_attestation(eid);
 
-  std::cout << bufferToHex(quote, false) << std::endl;
+  try {
+    std::vector<unsigned char> quote;
+    get_attestation(eid, quote);
+    std::cout << bufferToHex(quote, false) << std::endl;
+
+  }
+  catch (const std::exception e) {
+    LL_CRITICAL("error: %s", e.what());
+  }
+
 }

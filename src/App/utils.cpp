@@ -141,7 +141,7 @@ void print_error_message(sgx_status_t ret) {
 #include <iomanip>
 #include <sstream>
 
-std::string sgx_error_message(sgx_status_t ret) {
+const string sgx_error_message(sgx_status_t ret) {
   size_t idx = 0;
   size_t ttl = sizeof sgx_errlist / sizeof sgx_errlist[0];
   std::stringstream ss;
@@ -157,12 +157,14 @@ std::string sgx_error_message(sgx_status_t ret) {
   }
 
   if (idx == ttl) {
-    ss << "Error: returned " << std::hex << ret;
+    ss << "ecall returned 0x" << std::hex << ret;
   }
 
+  LL_DEBUG("sgx_error_message: %s", ss.str().c_str());
   return ss.str();
 }
 
+#ifdef CONFIG_IMPL_DAEMON
 /**
  * \brief This function will daemonize this app
  */
@@ -243,3 +245,4 @@ void daemonize(string working_dir, string pid_filename) {
 
   LL_INFO("daemonized");
 }
+#endif // CONFIG_IMPL_DAEMON

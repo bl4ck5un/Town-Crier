@@ -56,7 +56,7 @@
 #include "Enclave_u.h"
 #include "EthRPC.h"
 #include "monitor.h"
-#include "StatusRpcServer.h"
+#include "StatusRPCServer.h"
 #include "attestation.h"
 #include "bookkeeping/database.hxx"
 #include "request-parser.hxx"
@@ -67,6 +67,8 @@
 
 #define LOGURU_IMPLEMENTATION 1
 #include "Log.h"
+
+#include "config.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -81,102 +83,47 @@ int main(int argc, const char *argv[]) {
   // init logging
   loguru::init(argc, argv);
 
-  fs::path current_path = fs::current_path();
+  tc::Config config(argc, argv);
+  cout << config.to_string();
 
-  bool options_rpc = false;
-  bool options_daemon = false;
-  string options_config = "config";
-  string opt_cwd = "/tmp/tc";
+  // create working dir if not existed
+  fs::create_directory(fs::path(config.get_working_dir()));
+
+  // logging to file
+  fs::path log_path = fs::path(config.get_working_dir()) / "tc.log";
+  loguru::add_file(log_path.c_str(), loguru::Append, loguru::Verbosity_MAX);
+
+  LL_INFO("config:\n%s", config.to_string().c_str());
 
   try {
-    po::options_description desc("Allowed options");
-    desc.add_options()(
-        "help,h", "print this message")(
-        "rpc", po::bool_switch(&options_rpc)->default_value(false), "Launch RPC server")(
-        "daemon,d", po::bool_switch(&options_daemon)->default_value(false), "Run TC as a daemon")(
-        "config,c", po::value(&options_config)->default_value("config"), "Path to a config file")(
-        "cwd", po::value(&opt_cwd)->default_value("/tmp/tc"), "Working directory (where log and db are stored");
-
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-
-    if (vm.count("help")) {
-      cerr << desc << endl;
-      return -1;
-    }
-    po::notify(vm);
-  }
-  catch (po::required_option &e) {
-    cerr << e.what() << endl;
-    return -1;
-  } catch (std::exception &e) {
-    cerr << e.what() << endl;
-    return -1;
-  } catch (...) {
-    cerr << "Unknown error!" << endl;
-    return -1;
-  }
-
-  // report the result of po parsing
-  LL_INFO("rpc: %d", options_rpc);
-  LL_INFO("daemon: %d", options_daemon);
-  LL_INFO("cwd: %s", opt_cwd.c_str());
-
-  //!
-  string pid_filename;
-  string enclave_path;
-  int status_rpc_port;
-  string sealed_sig_key;
-
-  //! parse config files
-  boost::property_tree::ptree pt;
-  try {
-    boost::property_tree::ini_parser::read_ini(options_config, pt);
-    string st = pt.get<string>("RPC.RPChost");
-    httpclient = new jsonrpc::HttpClient(st);
+    httpclient = new jsonrpc::HttpClient(config.get_geth_rpc_addr());
     rpc_client = new ethRPCClient(*httpclient);
-
-    pid_filename = pt.get<string>("daemon.pid_file");
-    status_rpc_port = pt.get<int>("status.port");
-    sealed_sig_key = pt.get<string>("sealed.sig_key");
-    enclave_path = pt.get<string>("init.enclave_path");
-
-    LOG_F(INFO, "Using config file: %s", options_config.c_str());
-    LOG_F(INFO, "PID file: %s", pid_filename.c_str());
   } catch (const std::exception &e) {
     std::cout << e.what() << std::endl;
     exit(-1);
   }
 
-  fs::path log_path = fs::path(opt_cwd) / "tc.log";
-  loguru::add_file(log_path.c_str(), loguru::Append, loguru::Verbosity_MAX);
-  LL_INFO("logging to %s", log_path.c_str());
-
   int ret;
   sgx_enclave_id_t eid;
   sgx_status_t st;
 
-  //! register Ctrl-C handler
+  // register Ctrl-C handler
   std::signal(SIGINT, exitGraceful);
+  // handle systemd termination signal
+  std::signal(SIGTERM, exitGraceful);
 
-  jsonrpc::HttpServer status_server_connector(status_rpc_port);
-  StatusRpcServer status_rpc_server(status_server_connector, eid);
-  if (options_rpc) {
-    status_rpc_server.StartListening();
-    LOG_F(INFO, "RPC server started");
-  }
-
-  // create working dir if not existed
-  fs::create_directory(fs::path(opt_cwd));
-
-  if (options_daemon) {
+  if (config.is_run_as_daemon()) {
+#ifdef CONFIG_IMPL_DAEMON
     daemonize(opt_cwd, pid_filename);
+#else
+    LL_CRITICAL("*** daemonize() is not implemented ***");
+#endif
   }
 
-  const static string db_name = (fs::path(opt_cwd) / "tc.db").string();
+  const static string db_name = (fs::path(config.get_working_dir()) / "tc.db").string();
   LOG_F(INFO, "using db %s", db_name.c_str());
   bool create_db = false;
-  if (fs::exists(db_name) && !options_daemon) {
+  if (fs::exists(db_name) && ! config.is_run_as_daemon()) {
     std::cout << "Do you want to clean up the database? y/[n] ";
     std::string new_db;
     std::getline(std::cin, new_db);
@@ -189,7 +136,7 @@ int main(int argc, const char *argv[]) {
 
   int nonce_offset = 0;
 
-  ret = initialize_enclave(enclave_path.c_str(), &eid);
+  ret = initialize_enclave(config.get_enclave_path().c_str(), &eid);
   if (ret != 0) {
     LOG_F(FATAL, "Failed to initialize the enclave");
     std::exit(-1);
@@ -200,20 +147,27 @@ int main(int argc, const char *argv[]) {
   string address;
 
   try {
-    address = unseal_key(eid, sealed_sig_key);
+    address = unseal_key(eid, config.get_sealed_sig_key());
     LL_INFO("using address %s", address.c_str());
 
-    provision_key(eid, sealed_sig_key);
+    provision_key(eid, config.get_sealed_sig_key());
   }
   catch (const tc::EcallException &e) {
     LL_CRITICAL(e.what());
     exit(-1);
   }
 
+  jsonrpc::HttpServer status_server_connector(config.get_status_server_port(), "", "", 3);
+  StatusRPCServer status_rpc_server(status_server_connector, eid);
+  if (config.is_status_server_enabled()) {
+    status_rpc_server.StartListening();
+    LOG_F(INFO, "RPC server started");
+  }
+
   Monitor monitor(driver, eid, nonce_offset, quit);
   monitor.loop();
 
-  if (options_rpc) {
+  if (config.is_status_server_enabled()) {
     status_rpc_server.StopListening();
   }
   sgx_destroy_enclave(eid);

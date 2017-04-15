@@ -67,7 +67,7 @@ enum flight_error {
 
 class FlightScraper : Scraper {
  public:
-  err_code handler(uint8_t *req, int data_len, int *resp_data);
+  err_code handler(uint8_t *req, size_t data_len, int *resp_data);
   flight_error parse_response(const char *resp, int *delay, uint64_t unix_epoch_time);
   flight_error get_flight_delay(uint64_t unix_epoch_time, const char *flight, int *resp);
   std::string uint64_to_string(uint64_t value);
