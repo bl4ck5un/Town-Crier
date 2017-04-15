@@ -13,12 +13,6 @@ var sgxAddr = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 var gasCnt = 3e+6
 var TC_FEE = 3e+15
 
-personal.unlockAccount(minerAddr, '123123')
-personal.unlockAccount(sellerAddr, '123123')
-personal.unlockAccount(buyerAddr, '123123')
-// personal.unlockAccount(sgxAddr)
-
-
 var encryptedApiKey = [
     '0xf68d2a32cf17b1312c6db3f236a38c94', 
     '0x4c9f92f6ec1e2a20a1413d0ac1b867a3']
@@ -33,7 +27,7 @@ cat <<EOF
 var TCsource = '$SRC'
 EOF
 
-SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../Ref.sol ../Application.sol ../FlightIns.sol | paste -sd '' | sed 's/\s\+/ /g')
+SRC=$(sed 's/\(\/\/.*$\|import "[^"]\+";\)//' ../Ref.sol ../Application.sol ../FlightInsurance.sol| paste -sd '' | sed 's/\s\+/ /g')
 
 cat <<EOF
 var APPsource = '$SRC'
@@ -44,7 +38,7 @@ var TCcontract = eth.compile.solidity(TCsource)
 var APPcontracts = eth.compile.solidity(APPsource)
 var TownCrier = eth.contract(TCcontract["<stdin>:TownCrier"].info.abiDefinition)
 //var SteamTrade = eth.contract(APPcontracts["<stdin>:SteamTrade"].info.abiDefinition)
-var FlightIns = eth.contract(APPcontracts["<stdin>:FlightIns"].info.abiDefinition)
+var FlightIns = eth.contract(APPcontracts["<stdin>:FlightInsurance"].info.abiDefinition)
 var App = eth.contract(APPcontracts["<stdin>:Application"].info.abiDefinition)
 
 function checkWork(){
@@ -64,24 +58,43 @@ function mineBlocks(num) {
 }
 
 
-function setup_log(tc, tradeContract) {
-	tc.RequestLog(function(e,r) {
-		if (!e) { console.log('RequestLog: ' + JSON.stringify(r.args))}
-		else { console.log(e)}
-	});
-
-	tc.RequestInfo(function(e,r) { 
-		if (!e) { console.log('RequestInfo: ' + JSON.stringify(r.args)); } 
+function setup_log(tc, tradeContract, id) {
+if (id == 0) {
+    tc.RequestInfo(function(e,r) { 
+		if (!e) { console.log('TC RequestInfo: ' + JSON.stringify(r.args)); } 
 		else {console.log(e)}
 	});
 
-	tradeContract.UINT(function(e,r) { 
-		if (!e) { console.log('UNIT: ' + JSON.stringify(r.args)); } 
+	tc.DeliverInfo(function(e,r) { 
+		if (!e) { console.log('TC ResponseInfo: ' + JSON.stringify(r.args)); } 
 		else {console.log(e)}
 	});
 
-	tradeContract.Buy(function(e,r) { 
-		if (!e) { console.log('Buy: ' + JSON.stringify(r.args)); } 
+	tc.Cancel(function(e,r) { 
+		if (!e) { console.log('TC Cancel: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
+}
+
+    if (id == 1) {
+        tradeContract.Insure(function(e,r) {
+            if (!e) { console.log('App Insure: ' + JSON.stringify(r.args)); }
+            else { console.log(e)}
+        });
+    }
+
+    tradeContract.Request(function(e,r) { 
+		if (!e) { console.log('App Request: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
+	
+    tradeContract.Response(function(e,r) { 
+		if (!e) { console.log('App Response: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
+	
+    tradeContract.Cancel(function(e,r) { 
+		if (!e) { console.log('App Cancel: ' + JSON.stringify(r.args)); } 
 		else {console.log(e)}
 	});
 }
@@ -90,22 +103,24 @@ function setup_log(tc, tradeContract) {
 // TODO: Not an emergency
 
 function setup_tc() {
+    unlockAccounts();
     var tc = TownCrier.new({
         from: minerAddr, 
         data: TCcontract["<stdin>:TownCrier"].code, 
         gas: gasCnt}, function(e, c) {
             if (!e){
                 if (c.address) {
-                    console.log("Town Crier created at: " + c.address)
+                    console.log('Town Crier created at: ' + c.address)
                 }
             } 
-            else {console.log("Failed to create Town Crier contract: " + e)}
+            else {console.log('Failed to create Town Crier contract: ' + e)}
         });
     mineBlocks(1);
     return tc;
 }
 
 function createSteamTrade(apiKey, item, price) {
+    unlockAccounts();
   var tradeContract = SteamTrade.new(
           tc.address, apiKey[0], apiKey[1], item, price, {
               from: sellerAddr, 
@@ -117,18 +132,19 @@ function createSteamTrade(apiKey, item, price) {
                         console.log('SteamTrade created at: ' + c.address)
                       }
                   } 
-                  else {console.log("Failed to create SteamTrade contract: " + e)}
+                  else {console.log('Failed to create SteamTrade contract: ' + e)}
               });
     mineBlocks(1);
     return tradeContract;
 }
 
-function createFlightIns() {
+function createFlightIns(tc) {
+    unlockAccounts();
     var tradeContract = FlightIns.new(
-            tc.address, {
-                value: 100e+18,
+            tc, {
+                value: 10e+18,
                 from: sellerAddr,
-                data: APPcontracts["<stdin>:FlightIns"].code,
+                data: APPcontracts["<stdin>:FlightInsurance"].code,
                 gas: gasCnt},
                 function(e, c) {
                     if (!e) {
@@ -136,15 +152,16 @@ function createFlightIns() {
                             console.log('FlightIns created at: ' + c.address)
                         }
                     }
-                    else {console.log("Failed to create FligthIns contract: " + e)}
+                    else {console.log('Failed to create FligthIns contract: ' + e)}
                 });
     mineBlocks(1);
     return tradeContract;
 }
 
-function createApp() {
+function createApp(tc) {
+    unlockAccounts();
     var tradeContract = App.new(
-        tc.address, {
+        tc, {
             from: sellerAddr,
             data: APPcontracts["<stdin>:Application"].code,
             gas:gasCnt},
@@ -164,6 +181,7 @@ function SteamPurchase(contract, steamId, delay) {
   // var timeoutSecs = Math.floor((new Date((new Date()).getTime() + (delay * 1000))).getTime() / 1000);
   // to simplify, delay is the time for SGX to wait before fetching
   // delay = 60, typically
+    unlockAccounts();
   contract.purchase.sendTransaction( steamId, delay, {
       from: buyerAddr, 
       value: 1e+18 + TC_FEE, 
@@ -173,8 +191,9 @@ function SteamPurchase(contract, steamId, delay) {
   return "Purchased!"
 }
 
-function FlightInsure(contract, flightID, time, fee) {
-contract.insure.sendTransaction([web3.fromAscii(flightID, 32), web3.fromAscii(time, 32)], fee, {
+function FlightInsure(contract, flightId, time, fee) {
+    unlockAccounts();
+contract.insure.sendTransaction([flightId, time], fee, {
         from: buyerAddr,
         value: fee * 1e+18 + TC_FEE,
         gas: gasCnt
@@ -183,36 +202,49 @@ contract.insure.sendTransaction([web3.fromAscii(flightID, 32), web3.fromAscii(ti
     return "Insured!"
 }
 
-function FlightRequest(contract, fligthID, time, fee) {
-    contract.request.sendTransaction([web3.fromAscii(fligthID, 32), web3.fromAscii(time, 32)], {
+function FlightRequest(contract, id) {
+    unlockAccounts();
+    contract.request.sendTransaction(id, {
         from: buyerAddr,
-        value: fee,
         gas: gasCnt
     });
     mineBlocks(1);
     return "Request sent!"
 }
 
+function FlightCancel(contract, id) {
+    unlockAccounts();
+    contract.cancel.sendTransaction(id, {
+        from: buyerAddr,
+        gas: gasCnt
+    });
+    mineBlocks(1);
+    return "Request Cancelled."
+}
+
 function Request(contract, type, requestData) {
+    unlockAccounts();
     contract.request.sendTransaction(type, requestData, {
         from: buyerAddr,
         value: 3e15,
         gas: gasCnt
     });
     mineBlocks(1);
-    return "Request sent!"
+    return "Request sent!";
 }
 
 function Cancel(contract, id) {
+    unlockAccounts();
     contract.cancel.sendTransaction(id, {
         from: buyerAddr,
         gas: gasCnt
     });
     mineBlocks(1);
-    return "Cancellation request sent!"
+    return "Request Cancelled.";
 }
 
 function TestSteam(contract, steamId, delay) {
+    unlockAccounts();
     for (var i = 0; i < 1000; ++i) {
         SteamPurchase(contract, steamId, delay);
     }
@@ -264,9 +296,23 @@ function unlockAccounts() {
     }
 }
 
+function pad(n, width) {
+    m = n.toString(16);
+    return '0x' + new Array(width - m.length + 1).join('0') + m;
+}
+
 /* =========== The following should be run line-by-line as a demo =========== */
 // loadScript("demorc.js");
 // tc = setup_tc();
+// app = createApp(tc);
+// setup_log(tc, app);
+// Request(app, 1, ['FJM273', pad(1492100100, 64)]);
+// Request(app, 2, ['f68d2a32cf17b1312c6db3f236a38c94', '4c9f92f6ec1e2a20a1413d0ac1b867a3', '32884794', pad(1456380265, 64), pad(1, 64), 'Portal']);
+// Request(app, 3, ['GOOG', pad(1,64), pad(2, 64), pad(2010, 64)]);
+// Request(app, 4, ['1ZE331480394808282']);
+// Request(app, 5, ['bitcoin']);
+// FlightInsure(fi, 'FJM273', pad(1492100100, 64), 1);
+
 // var tradeContract = createSteamTrade(encryptedApiKey, 'Portal', 1e+18);
 // TestSteam(tradeContract, buyerSteamId, 60);
 // var insContract = createFlightIns();
