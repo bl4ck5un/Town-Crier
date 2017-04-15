@@ -116,12 +116,13 @@ inline uint64_t swap_uint64(uint64_t num) {
       (static_cast<uint64_t>(swap_uint32((num >> 32) & 0xffffffff)));
 }
 
-template<typename UINT, size_t BUF_LEN>
-UINT uint_bytes(const unsigned char *buf, bool big_endian = true) {
-  UINT ret;
-  memcpy(&ret, buf + BUF_LEN - sizeof(UINT), sizeof(UINT));
+// convert [buf, buf + n] to a T
+template<typename T>
+T uint_bytes(const unsigned char *buf, size_t n, bool big_endian = true) {
+  T ret;
+  memcpy(&ret, buf + n - sizeof(T), sizeof(T));
   if (big_endian)
-    ret = swap_endian<UINT>(ret);
+    ret = swap_endian<T>(ret);
 
   return ret;
 }

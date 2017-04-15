@@ -9,11 +9,19 @@
 #include "Log.h"
 #include "yahoo_yql.h"
 #include "external/picojson.h"
+#include "commons.h"
+
+#include "external/gmtime.h"
 
 #include <string>
 #include <time.h>
 
 using namespace std;
+
+#include <time.h>
+#include <ctime>
+
+void gmtime(const time_t *timer, struct tm*);
 
 class YahooYQLStock : public Scraper {
  public:
@@ -33,15 +41,16 @@ class YahooYQLStock : public Scraper {
     symbol = string(symbol.c_str());
     LL_INFO("symbol: %s", symbol.c_str());
 
-    uint month = (uint) strtoul((char *) (req + 0x20), NULL, 10);
-    uint day = (uint) strtoul((char *) (req + 0x40), NULL, 10);
-    uint year = (uint) strtoul((char *) (req + 0x60), NULL, 10);
+    time_t unix_epoch = uint_bytes<time_t> (req + 0x20, 32);
 
-    LL_INFO("month: %d", month);
-    LL_INFO("day: %d", day);
-    LL_INFO("year: %d", year);
+    tc::ext::date date;
+    gmtime_tc(&unix_epoch, date);
 
-    return handle_one(symbol, year, month, day, resp_data);
+    LL_INFO("month: %d", date.month);
+    LL_INFO("day: %d", date.day);
+    LL_INFO("year: %d", date.year);
+
+    return handle_one(symbol, date.year, date.month, date.day, resp_data);
   }
 
   err_code handle_one(string symbol, uint year, uint month, uint day, int* resp_data) {

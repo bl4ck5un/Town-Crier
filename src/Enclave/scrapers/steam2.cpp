@@ -79,21 +79,22 @@ err_code SteamScraper::handler(uint8_t *req, size_t len, int *resp_data) {
   // - encAPI:
   char encrypted_api_key[65] = {0};
   memcpy(encrypted_api_key, req, 0x40);
-  LL_DEBUG("API key: %s", encrypted_api_key);
+  LL_DEBUG("API key=%s", encrypted_api_key);
 
   // 0x40 .. 0x60 buyer_id
   char buyer_id[33] = {0};
   memcpy(buyer_id, req + 0x40, 0x20);
-  LL_DEBUG("buyer id: %s", buyer_id);
+  LL_DEBUG("buyer id=%s", buyer_id);
 
   // 0x60 .. 0x80
   // get last 4 bytes
-  cutoff_time = (uint32_t) strtol((const char *) req + 0x60, NULL, 10);
-  LL_DEBUG("cufoff time is %d", cutoff_time);
+  cutoff_time = uint_bytes<uint32_t> (req + 0x60, 32);
+  LL_DEBUG("cufoff time=%d", cutoff_time);
 
 
   // 0x80 .. 0xa0 - item_len
-  item_len = (size_t) strtol((const char *) req + 0x80, NULL, 10);
+  item_len = uint_bytes<size_t> (req + 0x60, 32);
+  LL_DEBUG("item_len=%zu", item_len);
 
   // 0xa0 .. 0xc0
   const char *items[item_len];

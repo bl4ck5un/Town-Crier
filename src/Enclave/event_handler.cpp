@@ -61,6 +61,16 @@
 #include "Constants.h"
 #include "Log.h"
 
+/*
+ * testing data
+ *
+Request(app, 1, ['FJM273', pad(1492100100, 64)]);
+Request(app, 2, ['f68d2a32cf17b1312c6db3f236a38c94', '4c9f92f6ec1e2a20a1413d0ac1b867a3', '32884794', pad(1456380265, 64), pad(1, 64), 'Portal']);
+Request(app, 3, ['GOOG', pad(1262390400,64)]);;
+Request(app, 4, ['1ZE331480394808282']);
+Request(app, 5, ['bitcoin']);
+ */
+
 int handle_request(int nonce,
                    uint64_t id,
                    uint64_t type,
@@ -68,9 +78,7 @@ int handle_request(int nonce,
                    size_t data_len,
                    uint8_t *raw_tx,
                    size_t *raw_tx_len) {
-  int ret;
   bytes resp_data;
-  int resp_data_len = 0;
   int error_flag = 0;
 
   switch (type) {
@@ -86,26 +94,6 @@ int handle_request(int nonce,
       }
       dump_buf("data:", data, data_len);
       return 0;
-    }
-    case TYPE_FINANCE_INFO: {
-      YahooYQLStock yahooYQLStock;
-      int closing_price = 0;
-      switch (yahooYQLStock.handler(data, data_len, &closing_price)) {
-        case INVALID_PARAMS:
-          error_flag = TC_ERR_FLAG_INVALID_INPUT;
-          break;
-        case WEB_ERROR:
-          error_flag = TC_INTERNAL_ERROR;
-          break;
-        case NO_ERROR:
-          LL_INFO("Closing pricing is %d", closing_price);
-          append_as_uint256(resp_data, closing_price, sizeof(closing_price));
-          break;
-        default:
-          LL_CRITICAL("unknown state!");
-          error_flag = TC_ERR_FLAG_INTERNAL_ERR;
-      }
-      break;
     }
     case TYPE_FLIGHT_INS: {
       FlightScraper flightHandler;
@@ -139,12 +127,24 @@ int handle_request(int nonce,
       }
       break;
     }
-
-    case TYPE_CURRENT_VOTE: {
-      double r1 = 0, r2 = 0, r3 = 0;
-      yahoo_current("GOOG", &r1);
-      google_current("GOOG", &r3);
-      google_current("GOOG", &r2);
+    case TYPE_FINANCE_INFO: {
+      YahooYQLStock yahooYQLStock;
+      int closing_price = 0;
+      switch (yahooYQLStock.handler(data, data_len, &closing_price)) {
+        case INVALID_PARAMS:
+          error_flag = TC_ERR_FLAG_INVALID_INPUT;
+          break;
+        case WEB_ERROR:
+          error_flag = TC_INTERNAL_ERROR;
+          break;
+        case NO_ERROR:
+          LL_INFO("Closing pricing is %d", closing_price);
+          append_as_uint256(resp_data, closing_price, sizeof(closing_price));
+          break;
+        default:
+          LL_CRITICAL("unknown state!");
+          error_flag = TC_ERR_FLAG_INTERNAL_ERR;
+      }
       break;
     }
     case TYPE_UPS_TRACKING: {
@@ -178,7 +178,6 @@ int handle_request(int nonce,
       };
       break;
     }
-
     case TYPE_WEATHER: {
     	WeatherScraper weatherScraper;
     	int temperature;
@@ -193,6 +192,13 @@ int handle_request(int nonce,
     			break;
     	};
     	break;
+    }
+    case TYPE_CURRENT_VOTE: {
+      double r1 = 0, r2 = 0, r3 = 0;
+      yahoo_current("GOOG", &r1);
+      google_current("GOOG", &r3);
+      google_current("GOOG", &r2);
+      break;
     }
     default :
       LL_CRITICAL("Unknown request type: %" PRIu64, type);

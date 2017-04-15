@@ -47,60 +47,71 @@
 #include "Debug.h"
 #include "Log.h"
 #include "utils.h"
-#include "../../Common/Constants.h"
-#include "../external/slre.h"
+#include "Constants.h"
+#include "external/slre.h"
 #include "tls_client.h"
 
+using std::string;
 
-/* Define flight scraper specific constants */
+// for uint_bytes
+#include "commons.h"
 
-///*
 //    A few notes on integration
 //    - username & password should be passed as an Authorization header field, with Base64(user:password)
 //      as its content.
 //    - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
-//*/
-#define STR1(x)  #x
-#define STR(x)  STR1(x)
+//
 
-#define AUTH_CODE "Authorization: Basic Y3JvbWFrNDoyYzNiODZiOGM3N2VlYTBjMjRmZjA4OGEyZjU2ZGEyYjk4ZDQwNTQ3"
-#define HOST "Host: flightxml.flightaware.com"
-#define SECOND_PER_MIN 60
-#define MAX_DELAY_MIN 30
-#define NUM_ENTRY 30
-#define HOW_MANY "&howMany=" STR(NUM_ENTRY)
 
-/*Class used to handle the flight insurance */
-std::string FlightScraper::uint64_to_string(uint64_t value) {
-  // length of 2**64 - 1, +1 for nul.
-  char buf[21];
-  snprintf(buf, sizeof buf, "%"PRIu64, value);
-  std::string str(buf);
-  return str;
-}
+const char *FlightScraper::HOST = "Host: flightxml.flightaware.com";
+const char
+    *FlightScraper::AUTH_CODE = "Authorization: Basic Y3JvbWFrNDoyYzNiODZiOGM3N2VlYTBjMjRmZjA4OGEyZjU2ZGEyYjk4ZDQwNTQ3";
 
-flight_error FlightScraper::parse_response(const char *resp, int *delay, uint64_t unix_epoch_time) {
+#include "external/picojson.h"
+#include <vector>
+using std::vector;
 
-  //Find the scheduled departure time
-  std::string buff(resp);
-  std::string delimeter = "\"filed_departuretime\":" + uint64_to_string(unix_epoch_time);
-  std::size_t pos = buff.find(delimeter);
+flight_error FlightScraper::parse_response(const string &resp, int *delay, uint64_t unix_epoch_time) {
+  LL_DEBUG("parsing from %s", resp.c_str());
 
-  //Corner Case: Flight was not found
-  if (pos > buff.length()) {
-    LL_DEBUG("Invalid");
-    return INVALID;
+  // http://flightxml.flightaware.com/soap/FlightXML2/doc#type_FlightInfoExStruct
+  picojson::value flight_info_struct;
+  string err = picojson::parse(flight_info_struct, resp);
+  if (!err.empty() || !flight_info_struct.is<picojson::object>()) {
+    LL_CRITICAL("can't parse %s", resp.c_str());
+    return HTTP_ERROR;
   }
 
-  //Find the actual departure time
-  std::string delimeter2 = "actualdeparturetime\":";
-  std::size_t pos2 = buff.find(delimeter2, pos);
-  std::string token = buff.substr(pos2 + delimeter2.length(), pos2 + delimeter2.length() + 10);
+  if (flight_info_struct.contains("error")) {
+    if (flight_info_struct.get("error").is<string>()) {
+      err = flight_info_struct.get("error").get<string>();
+    }
 
-  uint64_t actual_depart_time = atoi(token.c_str());
-  LL_DEBUG("actualdeparturetime: %llu", actual_depart_time);
-  LL_DEBUG("filed_departuretime: %llu", unix_epoch_time);
-  LL_DEBUG("diff: %llu", actual_depart_time - unix_epoch_time);
+    LL_CRITICAL("%s", err.c_str());
+    return NOT_FOUND;
+  }
+
+  // http://flightxml.flightaware.com/soap/FlightXML2/doc#type_FlightExStruct
+  uint64_t actual_depart_time;
+  picojson::value flight_ex_struct = flight_info_struct.get("FlightInfoExResult").get("flights");
+  if (flight_ex_struct.is<picojson::array>()) {
+    LL_CRITICAL("%d", flight_ex_struct.get<picojson::array>().size());
+    picojson::value _flight = flight_ex_struct.get<picojson::array>()[0];
+    if (_flight.get("actualdeparturetime").is<double>()) {
+      actual_depart_time = (uint64_t ) _flight.get("actualdeparturetime").get<double>();
+    }
+    else {
+      // actualdepartime is not double
+      return HTTP_ERROR;
+    }
+  } else {
+    LL_CRITICAL("no flight info found");
+    return NOT_FOUND;
+  }
+
+  LL_DEBUG("actualdeparturetime: %" PRIu64, actual_depart_time);
+  LL_DEBUG("filed_departuretime: %" PRIu64, unix_epoch_time);
+  LL_DEBUG("diff: %" PRIu64, actual_depart_time - unix_epoch_time);
 
   //Case: Flight has not yet departed
   if (actual_depart_time == 0) {
@@ -114,30 +125,19 @@ flight_error FlightScraper::parse_response(const char *resp, int *delay, uint64_
     return CANCELLED;
   }
   //Case: Flight Departed but delayed
-  if (actual_depart_time - unix_epoch_time >= MAX_DELAY_MIN * SECOND_PER_MIN) {
+  if (actual_depart_time - unix_epoch_time >= MAX_DELAY_MIN * 60) {
     LL_DEBUG("DELAYED");
     *delay = actual_depart_time - unix_epoch_time;
     return DELAYED;
   }
-    //Case: Flight was not delayed
   else {
+    //Case: Flight was not delayed
     *delay = 0;
     LL_DEBUG("DEPARTED");
     return DEPARTED;
   }
 }
 
-//
-///*
-//    date:   YYYYMMDD
-//    time:   HHmm
-//    flight: ICAO flight numbers
-//    resp:   set to the number of minutes late/early
-//
-//    return: 0 if OK, -1 if no data found or flight still enroute
-//
-//    date and time in Zulu/UTC
-//*/
 flight_error FlightScraper::get_flight_delay(uint64_t unix_epoch_time, const char *flight, int *resp) {
   /* Invalid user input */
   if (flight == NULL || resp == NULL) {
@@ -149,25 +149,36 @@ flight_error FlightScraper::get_flight_delay(uint64_t unix_epoch_time, const cha
   header.push_back(AUTH_CODE);
   header.push_back(HOST);
 
-  //Construct the query
-  std::string query =
-      "/json/FlightXML2/FlightInfoEx?ident=" + std::string(flight) +
-          HOW_MANY +
-          "&offset=0 HTTP/1.1";
+  char _query[256];
+  snprintf(_query, sizeof _query, "/json/FlightXML2/FlightInfoEx?ident=%s@%" PRIu64 "&howMany=5&offset=0 HTTP/1.1",
+           flight, unix_epoch_time);
 
-  HttpRequest httpRequest("flightxml.flightaware.com", query, header);
+  HttpRequest httpRequest("flightxml.flightaware.com", _query, header);
   HttpsClient httpClient(httpRequest);
   flight_error ret;
+
+  string api_response;
   try {
     HttpResponse response = httpClient.getResponse();
-    ret = parse_response(response.getContent().c_str(), resp, unix_epoch_time);
-  } catch (std::runtime_error &e) {
-    /* An HTTPS error has occured */
-    LL_CRITICAL("Https error: %s", e.what());
-    LL_CRITICAL("Details: %s", httpClient.getError().c_str());
+    api_response = response.getContent();
+  } catch (const std::runtime_error &e) {
+    LL_CRITICAL("%s", e.what());
     httpClient.close();
     return HTTP_ERROR;
   }
+
+  if (api_response.empty()) {
+    LL_CRITICAL("api return empty");
+    return HTTP_ERROR;
+  }
+  try {
+    ret = parse_response(api_response.c_str(), resp, unix_epoch_time);
+  }
+  catch (const std::exception& e) {
+    LL_CRITICAL("%s", e.what());
+    return INTERNAL_ERR;
+  }
+
   return ret;
 }
 
@@ -182,11 +193,12 @@ err_code FlightScraper::handler(uint8_t *req, size_t data_len, int *resp_data) {
     return INVALID_PARAMS;
   }
   int delay;
+
+  // 0x00 - 0x20 string flight_number
   char flight_number[33] = {0};
   memcpy(flight_number, req, 0x20);
-
-  char *flighttime = (char *) req + 0x20;
-  uint64_t unix_epoch = (uint64_t) strtol(flighttime, NULL, 10);
+  // 0x20 - 0x40 uint64 flight_time
+  uint64_t unix_epoch = uint_bytes<uint64_t>(req + 0x20, 32);
 
   LL_DEBUG("unix_epoch=%lld, flight_number=%s", unix_epoch, flight_number);
 
@@ -206,10 +218,10 @@ err_code FlightScraper::handler(uint8_t *req, size_t data_len, int *resp_data) {
     case DEPARTED:
     case DELAYED:
     case CANCELLED:
-      //TODO: why?
     case NOT_DEPARTED:
       *resp_data = delay;
       return NO_ERROR;
+    case INTERNAL_ERR:
     default:
       return UNKNOWN_ERROR;
   }

@@ -44,7 +44,6 @@
 #include "tls_client.h"
 #include "scrapers/current_weather.h"
 #include "Log.h"
-#include "utils.c"
 
 int weather_self_test(){
 	WeatherScraper weatherScraper;

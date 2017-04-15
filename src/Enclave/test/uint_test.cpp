@@ -17,7 +17,7 @@ int uint_utils_test() {
     buf[i] = (unsigned char) i;
   }
 
-  uint64_t _from_buf = uint_bytes<uint64_t, 32>(buf);
+  uint64_t _from_buf = uint_bytes<uint64_t>(buf, 32);
   uint64_t _expected_from_buf = 0x18191a1b1c1d1e1f;
   results[2] = _from_buf == _expected_from_buf;
   if (!results[2]) {

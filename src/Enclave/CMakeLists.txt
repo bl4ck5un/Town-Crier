@@ -29,13 +29,13 @@ set(SOURCE_FILES
         commons.cpp
         external/slre.c
         ${LIB_MBEDTLS_PATH}
-        external/http_parser.c utils.c)
+        external/http_parser.c)
 
 add_definitions(-DENCLAVE_STD_ALT)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
 
-SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES} scrapers/utils.h scrapers/UPS_Tracking.h scrapers/Scraper.cpp scrapers/Scraper.h scrapers/steam2.h scrapers/flight.h scrapers/stockticker.h scrapers/current_coinmarket.h scrapers/current_weather.h)
+SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES} scrapers/utils.h scrapers/UPS_Tracking.h scrapers/Scraper.cpp scrapers/Scraper.h scrapers/steam2.h scrapers/flight.h scrapers/stockticker.h scrapers/current_coinmarket.h scrapers/current_weather.h external/gmtime.cpp)
 
 set_directory_properties(PROPERTIES
         ADDITIONAL_MAKE_CLEAN_FILES "Enclave_t.c; Enclave_t.h")
