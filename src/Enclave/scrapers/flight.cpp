@@ -95,7 +95,6 @@ flight_error FlightScraper::parse_response(const string &resp, int *delay, uint6
   uint64_t actual_depart_time;
   picojson::value flight_ex_struct = flight_info_struct.get("FlightInfoExResult").get("flights");
   if (flight_ex_struct.is<picojson::array>()) {
-    LL_CRITICAL("%d", flight_ex_struct.get<picojson::array>().size());
     picojson::value _flight = flight_ex_struct.get<picojson::array>()[0];
     if (_flight.get("actualdeparturetime").is<double>()) {
       actual_depart_time = (uint64_t ) _flight.get("actualdeparturetime").get<double>();
