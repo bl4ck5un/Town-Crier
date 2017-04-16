@@ -165,6 +165,8 @@ int form_transaction(int nonce,
                      uint8_t *tx_output_bf,
                      size_t *o_len,
                      bool with_sig) {
+  LL_DEBUG("foring transaction for nonce=%d, id=%d, type=%d, date_len=%d, err=%d",
+           nonce, request_id, request_type, request_data_len, resp_error);
   if (tx_output_bf == NULL || o_len == NULL) {
     LL_CRITICAL("Error: tx_output_bf or o_len gets NULL input\n");
     return TC_INTERNAL_ERROR;
@@ -191,10 +193,12 @@ int form_transaction(int nonce,
   keccak(__hash_input, __hash_input_len, &param_hash[0], 32);
   free(__hash_input);
 
-
   bytes32 resp_b32;
-  assert (resp_data.size() == 32);
-  memcpy(&resp_b32[0], &resp_data[0], 32);
+  if (resp_error) {
+    resp_b32.clear();
+  } else {
+    memcpy(&resp_b32[0], &resp_data[0], 32);
+  }
 
   // prepare for ABI encoding
   vector<ABI_serializable *> args;
@@ -264,8 +268,7 @@ int form_transaction(int nonce,
       LL_CRITICAL("Error: signing returned %d\n", ret);
       return TC_INTERNAL_ERROR;
     }
-  }
-  else {
+  } else {
     // fill in dummy signatures
     memset(&tx.r[0], 0, 32);
     memset(&tx.s[0], 0, 32);
