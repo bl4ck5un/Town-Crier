@@ -51,7 +51,7 @@
 
 using namespace std;
 /* Define USPS Scraper specific constants */
-#define USPS_API "http://production.shippingapis.com"
+#define USPS_API "production.shippingapis.com"
 #define USERID "063CORNE4274"
 
 
