@@ -16,6 +16,7 @@ else()
 endif()
 
 if (SGX_MODE STREQUAL HW)
+    add_definitions(-DTC_SGX_IN_HW_MODE)
     set(SGX_URTS_LIB sgx_urts)
     set(SGX_USVC_LIB sgx_uae_service)
     set(SGX_TRTS_LIB sgx_trts)
