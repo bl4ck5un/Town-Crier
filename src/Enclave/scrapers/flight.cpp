@@ -95,7 +95,6 @@ flight_error FlightScraper::parse_response(const string &resp, int *delay, uint6
   uint64_t actual_depart_time;
   picojson::value flight_ex_struct = flight_info_struct.get("FlightInfoExResult").get("flights");
   if (flight_ex_struct.is<picojson::array>()) {
-    LL_CRITICAL("%d", flight_ex_struct.get<picojson::array>().size());
     picojson::value _flight = flight_ex_struct.get<picojson::array>()[0];
     if (_flight.get("actualdeparturetime").is<double>()) {
       actual_depart_time = (uint64_t ) _flight.get("actualdeparturetime").get<double>();
@@ -186,7 +185,7 @@ flight_error FlightScraper::get_flight_delay(uint64_t unix_epoch_time, const cha
  *      0x00 - 0x20 string flight_number
  *      0x20 - 0x40 uint64 unix_epoch
  */
-err_code FlightScraper::handler(uint8_t *req, size_t data_len, int *resp_data) {
+err_code FlightScraper::handler(const uint8_t *req, size_t data_len, int *resp_data) {
 
   if (data_len != 2 * 32) {
     LL_CRITICAL("Data_len %zu*32 is not 2*32", data_len / 32);

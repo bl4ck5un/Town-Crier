@@ -56,7 +56,7 @@ enum steam_error {
 /* Handler function */
 // return 0 -- Find no trade
 //        1 -- Find a trade
-err_code SteamScraper::handler(uint8_t *req, size_t len, int *resp_data) {
+err_code SteamScraper::handler(const uint8_t *req, size_t len, int *resp_data) {
 
   if (len != 6 * 32) {
     LL_CRITICAL("data_len %zu*32 is not 6*32", len / 32);

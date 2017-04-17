@@ -31,7 +31,7 @@ class YahooYQLStock : public Scraper {
  *      0x40 - 0x60 Day
  *      0x60 - 0x80 Year
  */
-  err_code handler(uint8_t *req, size_t data_len, int *resp_data) {
+  err_code handler(const uint8_t *req, size_t data_len, int *resp_data) {
     if (data_len != 32 * 2) {
       LL_CRITICAL("req_len %zu is not 2*32", data_len);
       return INVALID_PARAMS;
@@ -42,6 +42,12 @@ class YahooYQLStock : public Scraper {
     LL_INFO("symbol: %s", symbol.c_str());
 
     time_t unix_epoch = uint_bytes<time_t> (req + 0x20, 32);
+
+    // if longer than 2100-1-1
+    if (unix_epoch > 0xF4865700) {
+      LL_CRITICAL("unix_epoch %d is too far to the future", unix_epoch);
+      return INVALID_PARAMS;
+    }
 
     tc::ext::date date;
     gmtime_tc(&unix_epoch, date);

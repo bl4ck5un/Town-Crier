@@ -48,7 +48,7 @@ extern "C" {
 int handle_request(int nonce,
                    uint64_t id,
                    uint64_t type,
-                   uint8_t *data,
+                   const uint8_t *data,
                    size_t data_len,
                    uint8_t *raw_tx,
                    size_t *raw_tx_len);

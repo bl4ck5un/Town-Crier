@@ -41,7 +41,7 @@
 
 class CoinMarket : Scraper{
 public:
-    err_code handler(uint8_t *req, size_t len, int *resp_data);
+    err_code handler(const uint8_t *req, size_t len, int *resp_data);
     err_code coinmarketcap_current(const char* symbol, double* r);
 private:
     double parse_response(const char* resp);
