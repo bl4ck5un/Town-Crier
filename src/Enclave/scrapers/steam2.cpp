@@ -93,8 +93,13 @@ err_code SteamScraper::handler(const uint8_t *req, size_t len, int *resp_data) {
 
 
   // 0x80 .. 0xa0 - item_len
-  item_len = uint_bytes<size_t> (req + 0x60, 32);
+  item_len = uint_bytes<size_t> (req + 0x80, 32);
   LL_DEBUG("item_len=%zu", item_len);
+
+  if (item_len * 32 != len - 0xa0) {
+    LL_CRITICAL("item_len=%zu but rest data is %zu", item_len, len - 0xa0);
+    return INVALID_PARAMS;
+  }
 
   // 0xa0 .. 0xc0
   const char *items[item_len];
