@@ -93,9 +93,12 @@ contract TownCrier {
         requests[requestId].fee = DELIVERED_FEE_FLAG;
         
         if (error < 2) {
-            SGX_ADDRESS.send(fee); // send the fee to the SGX account for its delivering
+            // Either no error occurs, or the requester sent an invalid query.
+            // Send the fee to the SGX account for its delivering.
+            SGX_ADDRESS.send(fee);         
         } else {
-            requests[requestId].requester.send(fee);
+            // Error in TC, refund the requester.
+            requests[requestId].requester.send(fee); 
         }
 
         uint callbackGas = (fee - MIN_FEE) / tx.gasprice; // gas left for the callback function
