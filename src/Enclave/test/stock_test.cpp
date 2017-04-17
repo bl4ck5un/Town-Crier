@@ -8,19 +8,10 @@
 #include "scrapers/yahoo_yql_stock.h"
 #include "scrapers/yahoo_yql.h"
 
-int stockticker_self_test() {
-  string symbol = "YHOO";
-  symbol.append(32 - symbol.length(), 0);
-
-  string unix_epoch = "\x58\x3E\x8C\x80";
-  unix_epoch.insert(unix_epoch.begin(), 32 - unix_epoch.length(), '\0');
-
-  string data = symbol + unix_epoch;
-
-
+static int test(const uint8_t * data) {
   YahooYQLStock yahooYQLStock;
   int closing_price;
-  err_code err = yahooYQLStock.handler((uint8_t*) data.c_str(), 32 * 4, &closing_price);
+  err_code err = yahooYQLStock.handler(data, 32 * 2, &closing_price);
   switch (err) {
     case NO_ERROR:
       LL_INFO("closingPrice is %d", closing_price);
@@ -34,4 +25,26 @@ int stockticker_self_test() {
     default:
       return -1;
   }
+}
+
+int stockticker_self_test() {
+  string symbol = "YHOO";
+  symbol.append(32 - symbol.length(), 0);
+  string unix_epoch = "\x58\x3E\x8C\x80";
+  unix_epoch.insert(unix_epoch.begin(), 32 - unix_epoch.length(), '\0');
+
+  string data = symbol + unix_epoch;
+  dump_buf("data", (const unsigned char*) data.c_str(), data.size());
+
+  test((const uint8_t *) data.c_str());
+
+  bytes32 ticker("AAPL");
+  bytes32 unix_time(1492041600);
+  bytes data_(ticker, unix_time);
+
+  dump_buf("data", &data_[0], data_.size());
+
+  test(&data_[0]);
+
+  return 0;
 }

@@ -59,7 +59,7 @@ using namespace std;
  * The Data is strcutured as follows
  * 		0x00 - 0x20 string tracking_number
  */
-err_code USPSScraper::handler(uint8_t *req, size_t len, int *resp_data){
+err_code USPSScraper::handler(const uint8_t *req, size_t len, int *resp_data){
 	if(len != 32){
 		LL_CRITICAL("Data_len %zu*32 is not 32", len / 32);
 		return INVALID_PARAMS;

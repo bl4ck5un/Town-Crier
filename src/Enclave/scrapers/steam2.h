@@ -22,7 +22,7 @@ public:
 	int in_list(const char** list, int len, const char* name);
 	int parse_response(const char *resp, const char *other, const char **listB, int lenB, const char *key);
 
-	err_code handler(uint8_t *req, size_t len, int *resp_data);
+	err_code handler(const uint8_t *req, size_t len, int *resp_data);
 	err_code get_steam_transaction(const char **item_name_list,
 								   int item_list_len,
 								   const char *buyer_id,

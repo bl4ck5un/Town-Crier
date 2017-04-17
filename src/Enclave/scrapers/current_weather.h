@@ -40,7 +40,7 @@
 
 class WeatherScraper : Scraper {
 public:
-	err_code handler(uint8_t *req, size_t data_len, int *resp_data);
+	err_code handler(const uint8_t *req, size_t data_len, int *resp_data);
 	err_code weather_current(const char* lattitude, const char* longitude, double* r);
 
 private:

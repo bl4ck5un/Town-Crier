@@ -37,17 +37,15 @@
 // VMWare Research Award.
 //
 
-//
-// Created by fanz on 10/14/16.
-//
-
 #include "encoding.h"
 #include "commons.h"
 
-uint8_t get_n_th_byte (uint64_t in, int n)
-{
-    if (n > 8) {printf_sgx("n is too big\n"); return 0xFF;}
-    return (in >> (8*n)) & 0xff;
+uint8_t get_n_th_byte(uint64_t in, int n) {
+  if (n > 8) {
+    printf_sgx("n is too big\n");
+    return 0xFF;
+  }
+  return (in >> (8 * n)) & 0xff;
 }
 
 /*!
@@ -57,8 +55,7 @@ uint8_t get_n_th_byte (uint64_t in, int n)
  * @param len length of int in byte
  * @return
  */
-int append_as_uint256(bytes &out, uint64_t in, int len)
-{
+int append_as_uint256(bytes &out, uint64_t in, int len) {
   if (len > 32) {
     printf_sgx("Error: too big\n");
     return -1;
@@ -70,61 +67,68 @@ int append_as_uint256(bytes &out, uint64_t in, int len)
   return 0;
 }
 
-uint8_t bytesRequired(int _i)
-{
-    uint8_t i = 0;
-    for (; _i != 0; ++i, _i >>= 8) {}
-    return i;
+uint8_t bytesRequired(int _i) {
+  uint8_t i = 0;
+  for (; _i != 0; ++i, _i >>= 8) {}
+  return i;
 }
 
-void bytes::from_hex(const char *src)
-{
-    if (strlen(src) % 2 != 0)
-    { LL_CRITICAL("Error: input is not of even len\n");}
-    if (strncmp(src, "0x", 2) == 0) src += 2;
-    while(*src && src[1])
-    {
-        std::vector<uint8_t>::push_back(hex2int(*src)*16 + hex2int(src[1]));
-        src += 2;
-    }
+bytes::bytes(bytes a, bytes b) {
+  std::vector<uint8_t >::insert(std::vector<uint8_t>::end(), a.begin(), a.end());
+  std::vector<uint8_t >::insert(std::vector<uint8_t>::end(), b.begin(), b.end());
 }
 
-void bytes::rlp(bytes& out, unsigned len)
-{
-    int i;
-    size_t len_len;
-    if (len == 1 && (std::vector<uint8_t>::operator[](0)) < 0x80 ) {
-        out.push_back(std::vector<uint8_t>::operator[](0));
-        return;
-    }
-    // longer than 1
-    if (len < 56) {
-        out.push_back(0x80 + static_cast<uint8_t>(len));
-        for (i = 0; i < len; i++) out.push_back(std::vector<uint8_t>::operator[](i));
-    }
-    else {
-        len_len = bytesRequired(len);
-        if (len_len > 8) {throw std::invalid_argument("Error: len_len > 8");}
-        out.push_back(0xb7 + static_cast<uint8_t>(len_len));
-
-        for (i=len_len-1; i >=0; i--) out.push_back( static_cast<uint8_t>((len >> (8*i)) & 0xFF));
-        for (i = 0; i < len; i++) out.push_back(std::vector<uint8_t>::operator[](i));
-    }
+void bytes::from_hex(const char *src) {
+  if (strlen(src) % 2 != 0) { LL_CRITICAL("Error: input is not of even len\n"); }
+  if (strncmp(src, "0x", 2) == 0) src += 2;
+  while (*src && src[1]) {
+    std::vector<uint8_t>::push_back(hex2int(*src) * 16 + hex2int(src[1]));
+    src += 2;
+  }
 }
 
-void bytes::to_rlp(bytes &out)
-{
-	return rlp(out, std::vector<uint8_t>::size());
+void bytes::rlp(bytes &out, unsigned len) {
+  int i;
+  size_t len_len;
+  if (len == 1 && (std::vector<uint8_t>::operator[](0)) < 0x80) {
+    out.push_back(std::vector<uint8_t>::operator[](0));
+    return;
+  }
+  // longer than 1
+  if (len < 56) {
+    out.push_back(0x80 + static_cast<uint8_t>(len));
+    for (i = 0; i < len; i++) out.push_back(std::vector<uint8_t>::operator[](i));
+  } else {
+    len_len = bytesRequired(len);
+    if (len_len > 8) { throw std::invalid_argument("Error: len_len > 8"); }
+    out.push_back(0xb7 + static_cast<uint8_t>(len_len));
+
+    for (i = len_len - 1; i >= 0; i--) out.push_back(static_cast<uint8_t>((len >> (8 * i)) & 0xFF));
+    for (i = 0; i < len; i++) out.push_back(std::vector<uint8_t>::operator[](i));
+  }
 }
 
-void bytes::appendInt(uint64_t in, uint8_t byteLen) {
-    if (byteLen > 32) {
-        throw std::invalid_argument("Error: too big");
-    }
-    // padding with 0
-    for (int i = 0; i < 32 - byteLen; i++) { std::vector<uint8_t>::push_back(0); }
-    // push big-endian int
-    for (int i = byteLen - 1; i >= 0; i--) { std::vector<uint8_t>::push_back(get_n_th_byte(in, i)); }
+void bytes::to_rlp(bytes &out) {
+  return rlp(out, std::vector<uint8_t>::size());
+}
+
+bytes32::bytes32(uint64_t in) {
+  // padding with 0
+  size_t byteLen = sizeof in;
+  std::vector<uint8_t >::insert(std::vector<uint8_t>::end(), 32 - byteLen, 0);
+  // push big-endian int
+  for (int i = byteLen - 1; i >= 0; i--) { std::vector<uint8_t>::push_back(get_n_th_byte(in, i)); }
+}
+
+
+bytes32::bytes32(std::string in) {
+  if (in.length() > 32) {
+    throw std::invalid_argument("too big");
+  }
+  // push string
+  std::vector<uint8_t >::insert(std::vector<uint8_t>::end(), in.begin(), in.end());
+  // padding with 0
+  std::vector<uint8_t >::insert(std::vector<uint8_t>::end(), 32 - in.length(), 0x0);
 }
 
 // This function assumes src to be a zero terminated sanitized string with
@@ -135,24 +139,19 @@ void bytes::appendInt(uint64_t in, uint8_t byteLen) {
     [out] target 
     [out] len: how many bytes get written to the target
 */
-void bytes32::from_hex(const char *src)
-{
-    _size = 0;
-    if (strlen(src) % 2 != 0)
-    { LL_CRITICAL("Error: input is not of even len\n");}
-    if (strncmp(src, "0x", 2) == 0) src += 2;
-    while(*src && src[1])
-    {
-        try { bytes::operator[](_size) = hex2int(*src)*16 + hex2int(src[1]); }
-        catch (std::invalid_argument e)
-		{ printf_sgx("Error: can't convert %s to bytes\n", src); }
-        src += 2; 
-        _size++;
-    }
-    if (_size == 1 && bytes::operator[](0) == 0) _size = 0;
+void bytes32::from_hex(const char *src) {
+  _size = 0;
+  if (strlen(src) % 2 != 0) { LL_CRITICAL("Error: input is not of even len\n"); }
+  if (strncmp(src, "0x", 2) == 0) src += 2;
+  while (*src && src[1]) {
+    try { bytes::operator[](_size) = hex2int(*src) * 16 + hex2int(src[1]); }
+    catch (std::invalid_argument e) { printf_sgx("Error: can't convert %s to bytes\n", src); }
+    src += 2;
+    _size++;
+  }
+  if (_size == 1 && bytes::operator[](0) == 0) _size = 0;
 }
 
-void bytes32::to_rlp(bytes &out)
-{
-	bytes::rlp(out, _size);
+void bytes32::to_rlp(bytes &out) {
+  bytes::rlp(out, _size);
 }
