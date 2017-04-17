@@ -11,7 +11,7 @@ enclave {
         public int handle_request(
                    int nonce,
                    uint64_t id, uint64_t type,
-                   [user_check] uint8_t* data, size_t data_len,
+                   [user_check] const uint8_t* data, size_t data_len,
                    [user_check] uint8_t* tx, [out] size_t* len);
 
         public int ecall_create_report ([in] sgx_target_info_t* quote_enc_info, [out] sgx_report_t* report);
