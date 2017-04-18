@@ -47,6 +47,8 @@ class OdbDriver {
   }
 
   void logTransaction(TransactionRecord tr) {
+    if (isLogged(tr.getTxHash()))
+      return;
     transaction t(db->begin());
     db->persist(tr);
     t.commit();
@@ -116,8 +118,8 @@ class OdbDriver {
     }
     else {
       ret = tr->getNumOfRetrial() >= retryThreshold || ! tr->getResponse().empty();
-      LL_DEBUG("tx %s has been tried %d (out of %d) times", tr->getNumOfRetrial(), retryThreshold);
-      LL_DEBUG("tx %s has been responded with %s", tr->getResponse().empty() ? "not yet" : tr->getResponse());
+      LL_DEBUG("tx %s has been tried %d (out of %d) times", tx_hash.c_str(), tr->getNumOfRetrial(), retryThreshold);
+      LL_DEBUG("tx %s has been responded with %s", tx_hash.c_str(), tr->getResponse().empty() ? "not yet" : tr->getResponse());
     }
     t.commit();
 
