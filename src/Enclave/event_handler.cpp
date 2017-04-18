@@ -105,6 +105,7 @@ int handle_request(int nonce,
           break;
         case INVALID_PARAMS:
           error_flag = TC_INPUT_ERROR;
+          break;
         case NO_ERROR:
           append_as_uint256(resp_data, delay, sizeof(delay));
           break;
@@ -117,9 +118,10 @@ int handle_request(int nonce,
       switch (steamHandler.handler(data, data_len, &found)) {
         case UNKNOWN_ERROR:
         case WEB_ERROR:
-          return TC_INTERNAL_ERROR;
+          error_flag = TC_INTERNAL_ERROR;
+          break;
         case INVALID_PARAMS:
-          error_flag = 1;
+          error_flag = TC_INPUT_ERROR;
           break;
         case NO_ERROR:
           append_as_uint256(resp_data, found, sizeof(found));
@@ -138,7 +140,7 @@ int handle_request(int nonce,
           error_flag = TC_INTERNAL_ERROR;
           break;
         case NO_ERROR:
-          LL_INFO("Closing pricing is %d", closing_price);
+          LL_DEBUG("closing pricing is %d", closing_price);
           append_as_uint256(resp_data, closing_price, sizeof(closing_price));
           break;
         default:
@@ -153,10 +155,10 @@ int handle_request(int nonce,
       switch (uSPSScraper.handler(data, data_len, &pkg_status)) {
         case UNKNOWN_ERROR:
         case WEB_ERROR:
-          return TC_INTERNAL_ERROR;
-          // treat invalid_params as no_error
+          error_flag = TC_INTERNAL_ERROR;
+          break;
         case INVALID_PARAMS:
-          error_flag = 1;
+          error_flag = TC_INPUT_ERROR;
         case NO_ERROR:
           append_as_uint256(resp_data, pkg_status, sizeof(pkg_status));
           break;
@@ -169,9 +171,11 @@ int handle_request(int nonce,
       switch (coinMarket.handler(data, data_len, &coin_value)) {
         case UNKNOWN_ERROR:
         case WEB_ERROR:
-          return TC_INTERNAL_ERROR;
+          error_flag = TC_INTERNAL_ERROR;
+          break;
         case INVALID_PARAMS:
-          error_flag = 1;
+          error_flag = TC_INPUT_ERROR;
+          break;
         case NO_ERROR:
           append_as_uint256(resp_data, coin_value, sizeof(coin_value));
           break;
@@ -179,19 +183,21 @@ int handle_request(int nonce,
       break;
     }
     case TYPE_WEATHER: {
-    	WeatherScraper weatherScraper;
-    	int temperature;
-    	switch(weatherScraper.handler(data, data_len, &temperature)){
-    		case UNKNOWN_ERROR:
-    		case WEB_ERROR:
-    			return TC_INTERNAL_ERROR;
-    		case INVALID_PARAMS:
-    			error_flag = 1; 
-    		case NO_ERROR:
-    			append_as_uint256(resp_data, temperature, sizeof(temperature));
-    			break;
-    	};
-    	break;
+      WeatherScraper weatherScraper;
+      int temperature;
+      switch (weatherScraper.handler(data, data_len, &temperature)) {
+        case UNKNOWN_ERROR:
+        case WEB_ERROR:
+          error_flag = TC_INTERNAL_ERROR;
+          break;
+        case INVALID_PARAMS:
+          error_flag = TC_INPUT_ERROR;
+          break;
+        case NO_ERROR:
+          append_as_uint256(resp_data, temperature, sizeof(temperature));
+          break;
+      };
+      break;
     }
     case TYPE_CURRENT_VOTE: {
       double r1 = 0, r2 = 0, r3 = 0;
@@ -201,7 +207,7 @@ int handle_request(int nonce,
       break;
     }
     default :
-      LL_CRITICAL("Unknown request type: %" PRIu64, type);
+      LL_CRITICAL("Unknown request type: %"PRIu64, type);
       return -1;
   }
 
