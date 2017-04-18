@@ -58,6 +58,7 @@
 #include <chrono>
 #include <iomanip>
 #include <thread>
+#include <math.h>
 
 #include "monitor.h"
 #include "EthRPC.h"
@@ -72,8 +73,8 @@ size_t resp_data_len = 0;
 
 void Monitor::loop() {
   // keeps track of the blocks that have been processed
-  blocknum_t next_block_num = 0;
-  next_block_num = driver.getLastBlock();
+  blocknum_t next_block_num = 766948;
+  next_block_num = max(driver.getLastBlock(), next_block_num);
   next_block_num++;
 
   int ret = 0;
@@ -157,11 +158,14 @@ void Monitor::loop() {
               LL_INFO("this request %s has fulfilled (or can't be fulfilled), skipping", _current_tx_hash.c_str());
               continue;
           }
-            // if no record found, create a new one
-          TransactionRecord log_entry(next_block_num, _current_tx_hash, request.getRawRequest());
-          driver.logTransaction(log_entry);
-          LL_INFO("request %s logged", _current_tx_hash.c_str());
+          LL_DEBUG("request %s has not been fulfilled", _current_tx_hash.c_str());
 
+            // if no record found, create a new one
+          if (!driver.isLogged(_current_tx_hash)) {
+            TransactionRecord log_entry(next_block_num, _current_tx_hash, request.getRawRequest());
+            driver.logTransaction(log_entry);
+            LL_INFO("request %s logged", _current_tx_hash.c_str());
+          }
 
           sgx_status_t ecall_ret;
           long nonce = eth_getTransactionCount();
