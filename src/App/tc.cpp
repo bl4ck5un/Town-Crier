@@ -90,7 +90,14 @@ int main(int argc, const char *argv[]) {
   fs::create_directory(fs::path(config.get_working_dir()));
 
   // logging to file
-  fs::path log_path = fs::path(config.get_working_dir()) / "tc.log";
+  fs::path log_path;
+  char _log_tag[100] = {0};
+  std::time_t _current_time = std::time(NULL);
+  if (std::strftime(_log_tag, sizeof _log_tag, "%F-%T", std::localtime(&_current_time))) {
+    log_path = fs::path(config.get_working_dir()) / ("tc" + string(_log_tag) + ".log");
+  } else {
+    log_path = fs::path(config.get_working_dir()) / ("tc.log");
+  }
   loguru::add_file(log_path.c_str(), loguru::Append, loguru::Verbosity_MAX);
 
   LL_INFO("config:\n%s", config.to_string().c_str());
@@ -123,7 +130,7 @@ int main(int argc, const char *argv[]) {
   const static string db_name = (fs::path(config.get_working_dir()) / "tc.db").string();
   LOG_F(INFO, "using db %s", db_name.c_str());
   bool create_db = false;
-  if (fs::exists(db_name) && ! config.is_run_as_daemon()) {
+  if (fs::exists(db_name) && !config.is_run_as_daemon()) {
     std::cout << "Do you want to clean up the database? y/[n] ";
     std::string new_db;
     std::getline(std::cin, new_db);
