@@ -162,10 +162,12 @@ void Monitor::loop() {
 
             // if no record found, create a new one
           if (!driver.isLogged(_current_tx_hash)) {
-            TransactionRecord log_entry(next_block_num, _current_tx_hash, request.getRawRequest());
-            driver.logTransaction(log_entry);
+            TransactionRecord _log_record(next_block_num, _current_tx_hash, request.getRawRequest());
+            driver.logTransaction(_log_record);
             LL_INFO("request %s logged", _current_tx_hash.c_str());
           }
+
+          OdbDriver::record_ptr log_entry = driver.getLogByHash(_current_tx_hash);
 
           sgx_status_t ecall_ret;
           long nonce = eth_getTransactionCount();
@@ -178,7 +180,7 @@ void Monitor::loop() {
           if (ecall_ret != SGX_SUCCESS || ret != TC_SUCCESS) {
             // increment the number and skip
             LL_ERROR("handle_request returned %d", ret);
-            log_entry.incrementNumOfRetrial();
+            log_entry->incrementNumOfRetrial();
             continue;
           } else {
             string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
@@ -187,10 +189,10 @@ void Monitor::loop() {
             string resp_txn_hash = send_transaction(resp_txn);
             LL_INFO("Response sent");
 
-            log_entry.incrementNumOfRetrial();
-            log_entry.setResponse(resp_txn);
-            log_entry.setResponseTime(std::time(0));
-            driver.updateLog(log_entry);
+            log_entry->incrementNumOfRetrial();
+            log_entry->setResponse(resp_txn);
+            log_entry->setResponseTime(std::time(0));
+            driver.updateLog(*log_entry);
           }
         }
         LL_INFO("Done processing block %ld", next_block_num);
