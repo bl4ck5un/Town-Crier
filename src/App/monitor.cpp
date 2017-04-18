@@ -108,8 +108,7 @@ void Monitor::loop() {
         // reset error counter after one success
         monitor_retry_counter = 0;
         throw NothingTodoException();
-      }
-      else {
+      } else {
         // wakeup the monitor
         isSleeping = false;
       }
@@ -119,9 +118,9 @@ void Monitor::loop() {
          * so we need to handle interrupt here too. */
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
         if (quit.load()) {
-            LL_INFO("Ctrl-C pressed, cleaning up...");
-            ret = 1;
-            break;
+          LL_INFO("Ctrl-C pressed, cleaning up...");
+          ret = 1;
+          break;
         }
         LL_LOG("processing block %d", next_block_num);
 
@@ -157,12 +156,12 @@ void Monitor::loop() {
 
           /* try to get txn from the database */
           if (driver.isProcessed(_current_tx_hash, maxRetry)) {
-              LL_INFO("this request %s has fulfilled (or can't be fulfilled), skipping", _current_tx_hash.c_str());
-              continue;
+            LL_INFO("request %s has been fulfilled (or can't be fulfilled), skipping", _current_tx_hash.c_str());
+            continue;
           }
           LL_DEBUG("request %s has not been fulfilled", _current_tx_hash.c_str());
 
-            // if no record found, create a new one
+          // if no record found, create a new one
           if (!driver.isLogged(_current_tx_hash)) {
             TransactionRecord _log_record(next_block_num, _current_tx_hash, request.getRawRequest());
             driver.logTransaction(_log_record);
@@ -202,7 +201,7 @@ void Monitor::loop() {
         monitor_retry_counter = 0;
       }
     }
-    catch (const NothingTodoException& e) {
+    catch (const NothingTodoException &e) {
       if (!isSleeping) {
         LL_INFO("Nothing to do. Going to sleep...");
         isSleeping = true;
