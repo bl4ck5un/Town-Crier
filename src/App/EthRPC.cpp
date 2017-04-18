@@ -76,7 +76,7 @@ string send_transaction(const std::string &rawTransaction) {
   std::string param(rawTransaction);
 
   std::string res = rpc_client->eth_sendRawTransaction(param);
-  LL_INFO("Response recorded in the blockchain (txHash = %s)", res.c_str());
+  LL_INFO("response recorded (%s)", res.c_str());
 
   return res;
 }

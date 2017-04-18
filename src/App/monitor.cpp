@@ -73,8 +73,7 @@ size_t resp_data_len = 0;
 
 void Monitor::loop() {
   // keeps track of the blocks that have been processed
-  blocknum_t next_block_num = 766948;
-  next_block_num = max(driver.getLastBlock(), next_block_num);
+  blocknum_t next_block_num = driver.getLastBlock();
   next_block_num++;
 
   int ret = 0;
@@ -122,7 +121,7 @@ void Monitor::loop() {
           ret = 1;
           break;
         }
-        LL_LOG("processing block %d", next_block_num);
+        LL_INFO("processing block %d", next_block_num);
 
         Json::Value txn_list;
         string filter_id = eth_new_filter(next_block_num, next_block_num);
@@ -152,7 +151,7 @@ void Monitor::loop() {
           tc::RequestParser request(_current_tx[DATA_FIELD_NAME].asString());
           string _current_tx_hash = _current_tx[TX_HASH_FIELD_NAME].asString();
 
-          LL_INFO("parsed tx: %s", request.toString().c_str());
+          LL_INFO("parsed request: %s", request.toString().c_str());
 
           /* try to get txn from the database */
           if (driver.isProcessed(_current_tx_hash, maxRetry)) {
@@ -172,7 +171,7 @@ void Monitor::loop() {
 
           sgx_status_t ecall_ret;
           long nonce = eth_getTransactionCount();
-          LL_LOG("nonce obtained %d\n", nonce);
+          LL_INFO("nonce obtained %d", nonce);
           // TODO: change nonce to have long type
           ecall_ret = handle_request(eid, &ret, nonce, request.getId(), request.getType(),
                                      request.getData(), request.getDataLen(),
@@ -185,10 +184,9 @@ void Monitor::loop() {
             continue;
           } else {
             string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
-            LL_LOG("resp bin %s", resp_txn.c_str());
+            LL_DEBUG("resp: %s", resp_txn.c_str());
 
             string resp_txn_hash = send_transaction(resp_txn);
-            LL_INFO("Response sent");
 
             log_entry->incrementNumOfRetrial();
             log_entry->setResponse(resp_txn);
