@@ -91,9 +91,9 @@ int main(int argc, const char *argv[]) {
 
   // logging to file
   fs::path log_path;
-  char _log_tag[100];
+  char _log_tag[100] = {0};
   std::time_t _current_time = std::time(NULL);
-  if (!std::strftime(_log_tag, sizeof _log_tag, "%F-%T", std::localtime(&_current_time))) {
+  if (std::strftime(_log_tag, sizeof _log_tag, "%F-%T", std::localtime(&_current_time))) {
     log_path = fs::path(config.get_working_dir()) / ("tc" + string(_log_tag) + ".log");
   } else {
     log_path = fs::path(config.get_working_dir()) / ("tc.log");
