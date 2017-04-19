@@ -64,7 +64,7 @@
 #include "bookkeeping/database.hxx"
 #include "key-utils.h"
 #include "monitor.h"
-#include "request-parser.hxx"
+#include "request-parser.h"
 #include "stdint.h"
 #include "tc-exception.hxx"
 #include "utils.h"

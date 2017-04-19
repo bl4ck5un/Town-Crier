@@ -56,7 +56,7 @@
 #include "Enclave_u.h"
 #include "EthRPC.h"
 #include "Log.h"
-#include "request-parser.hxx"
+#include "request-parser.h"
 
 // TX_BUF_SIZE is defined in Constants.h
 uint8_t resp_buffer[TX_BUF_SIZE] = {0};

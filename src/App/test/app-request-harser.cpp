@@ -43,7 +43,7 @@
 
 #include <gtest/gtest.h>
 
-#include "App/request-parser.hxx"
+#include "App/request-parser.h"
 #include "App/utils.h"
 #include "App/Converter.h"
 

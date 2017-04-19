@@ -41,61 +41,70 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include <sgx_tseal.h>
-#include <unistd.h>
+#ifndef SRC_APP_REQUEST_PARSER_H_
+#define SRC_APP_REQUEST_PARSER_H_
 
-#include <ctime>
-#include <iostream>
+#include <cstdint>
 #include <string>
 
-#include "Log.h"
-#include "Enclave_u.h"
+using std::string;
 
-int ocall_print_string(const char* str) {
-  /* Proxy/Bridge will check the length and null-terminate
-   * the input string to prevent buffer overflow.
-   */
-  int ret = printf("%s", str);
-  fflush(stdout);
-  return ret;
-}
+namespace tc {
+class RequestParser {
+  // RequestInfo(uint64 id, uint8 requestType, address requester, uint fee,
+  // address callbackAddr, bytes32 paramsHash,
+  // bytes32 timestamp, bytes32[] requestData);
 
-/* defining log functions for enclave's usage */
+  // Byte code of ABI encoding:
+  // 0x00 - 0x20 bytes : id
+  // 0x20 - 0x40 bytes : requestType
+  // 0x40 - 0x60 bytes : requester
+  // 0x60 - 0x80       : fee
+  // 0x80 - 0xa0       : cb
+  // 0xa0 - 0xc0       : hash
+  // 0xc0 - 0xe0       : timestamp
+  // 0xe0 - 0x100       : offset of requestData
+  // 0x100 - 0x120      : reqLen (in bytes32)
+  // 0x120 - ...       : reqData
+ public:
+  static const int REQUEST_MIN_LEN = 2 * 120;
+  static const int ENTRY_LEN = 2 * 32;
+  static const int ADDRESS_LEN = 2 * 20;
+  static const int ADDRESS_LEADING_ZERO = 2 * 12;
 
-#define __OCALL_LOG_FUNC(LVL) \
-  void ocall_log_##LVL(const char* str) { LOG_F(LVL, "%s", str); }
+ private:
+  const string raw_request;
+  uint64_t id;
+  uint64_t type;
 
-__OCALL_LOG_FUNC(FATAL)
-__OCALL_LOG_FUNC(ERROR)
-__OCALL_LOG_FUNC(WARNING)
-__OCALL_LOG_FUNC(INFO)
-__OCALL_LOG_FUNC(1)
-__OCALL_LOG_FUNC(2)
-__OCALL_LOG_FUNC(3)
-__OCALL_LOG_FUNC(4)
-__OCALL_LOG_FUNC(5)
-__OCALL_LOG_FUNC(6)
-__OCALL_LOG_FUNC(7)
-__OCALL_LOG_FUNC(8)
-__OCALL_LOG_FUNC(9)
+ private:
+  uint8_t requester[20];
+  uint64_t fee;
+  uint8_t callback[20];
+  uint8_t param_hash[32];
+  uint64_t timestamp;
+  size_t data_len;
+  uint8_t *data;
 
-void ocall_sleep(int milisec) {
-  LL_INFO("Waiting for %d", milisec / 1000);
-  for (int i = 0; i < milisec / 1000; i++) {
-    printf(".");
-#ifdef _WIN32
-    Sleep(1000);
-#else
-    sleep(1);
-#endif
-  }
-  printf("\n");
-}
+ public:
+  explicit RequestParser(const std::string &input);
+  ~RequestParser();
+  uint64_t getId() const;
+  uint64_t getType() const;
+  const uint8_t *getRequester() const;
+  uint64_t getFee() const;
+  const uint8_t *getCallback() const;
+  const uint8_t *getParamHash() const;
+  uint64_t getTimestamp() const;
+  size_t getDataLen() const;
+  uint8_t *getData() const;
+  const string &getRawRequest() const;
+  const string toString() const;
 
-time_t ocall_time() { return time(NULL); }
+  size_t getRequesterLen();
+  size_t getCallbackLen();
+  size_t getParamHashLen();
+};
+}  // namespace tc
 
-void write(uint32_t sealed_data_size, sgx_sealed_data_t* p_sealed_data,
-           char* filename) {
-  FILE* fp = fopen(filename, "wb");
-  fwrite(p_sealed_data, sealed_data_size, 1, fp);
-}
+#endif  // SRC_APP_REQUEST_PARSER_H_
