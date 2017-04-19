@@ -40,20 +40,20 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef ETH_RPC_H
-#define ETH_RPC_H
+#ifndef SRC_APP_ETHRPC_H_
+#define SRC_APP_ETHRPC_H_
 
-#include <string>
-#include "ethrpcclient.h"
-#include "types.hxx"
 #include <jsonrpccpp/client/connectors/httpclient.h>
+#include <string>
 
-using namespace std;
+#include "App/ethrpcclient.h"
+#include "App/types.hxx"
+
+using std::string;
 
 string send_transaction(const ::std::string &rawTransaction);
-void eth_getfilterlogs(const string &filter_id, Json::Value &tx);
+void eth_getfilterlogs(const string &filter_id, Json::Value *tx);
 blocknum_t eth_blockNumber();
-long eth_getTransactionCount();
-string eth_new_filter(unsigned long from, unsigned long to);
-
-#endif
+uint64_t eth_getTransactionCount();
+string eth_new_filter(blocknum_t from, blocknum_t to);
+#endif  // SRC_APP_ETHRPC_H_

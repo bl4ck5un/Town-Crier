@@ -41,32 +41,24 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-/*!
- * @file: EthRPC.cpp
- * @brief: This file provides wrapper functions around Etherium RPC calls
- *
- * It provides functionality for talking to the blockchain and checking specific state
- * Additionally, the Request object parses the data received from the blockchain
- */
+#include "Enclave_u.h"
+#include "Log.h"
+#include "App/EthRPC.h"
+#include "Constants.h"
+
+#include <jsonrpccpp/client/connectors/httpclient.h>
 
 #include <cstdio>
 #include <cstdlib>
 #include <stdexcept>
 #include <iomanip>
 #include <sstream>
-#include <jsonrpccpp/client/connectors/httpclient.h>
-
-#include "Enclave_u.h"
-#include "Log.h"
-#include "EthRPC.h"
-#include "Constants.h"
 #include <iostream>
 #include <map>
+#include <string>
+
 #include "json/json.h"
 #include "types.hxx"
-
-using namespace jsonrpc;
-using namespace std;
 
 ethRPCClient *rpc_client;
 
@@ -101,7 +93,8 @@ string eth_new_filter(blocknum_t from, blocknum_t to) {
   Json::Value filter_opt;
   filter_opt["address"] = TC_ADDRESS;
 
-  filter_opt["topics"][0] = "0x295780EA261767C398D062898E5648587D7B8CA371FFD203BE8B4F9A43454FFA";
+  filter_opt["topics"][0] =
+      "0x295780EA261767C398D062898E5648587D7B8CA371FFD203BE8B4F9A43454FFA";
   filter_opt["fromBlock"] = static_cast<Json::Value::UInt64 >(from);
   filter_opt["toBlock"] = static_cast<Json::Value::UInt64 >(to);
 
@@ -111,18 +104,18 @@ string eth_new_filter(blocknum_t from, blocknum_t to) {
 /* eth_getfilterlogs [hostname] [port] [filter_id] [result] returns the logged events of [filter_id]
  * Given the [filter_id] writes to [result] an array containing the required data
  */
-void eth_getfilterlogs(const string &filter_id, Json::Value &txnContainer) {
+void eth_getfilterlogs(const string &filter_id, Json::Value *txnContainer) {
   if (filter_id.empty()) {
     throw invalid_argument("filter_id is empty");
   }
-  txnContainer = rpc_client->eth_getFilterLogs(filter_id);
+  *txnContainer = rpc_client->eth_getFilterLogs(filter_id);
 }
 
 /*!
  * @return the highest block number that geth has seen so far
  */
 blocknum_t eth_blockNumber() {
-  unsigned long ret;
+  blocknum_t ret;
   std::string blk = rpc_client->eth_blockNumber();
   LL_DEBUG("eth_blockNumber returns %s", blk.c_str());
   std::stringstream ss;
@@ -131,9 +124,10 @@ blocknum_t eth_blockNumber() {
   return ret;
 }
 
-long eth_getTransactionCount() {
-  unsigned long ret;
-  std::string txn_count = rpc_client->eth_getTransactionCount(SGX_ADDRESS, "pending");
+uint64_t eth_getTransactionCount() {
+  uint64_t ret;
+  std::string txn_count = rpc_client->eth_getTransactionCount(
+      SGX_ADDRESS, "pending");
   std::stringstream ss;
   ss << std::hex << txn_count;
   ss >> ret;
