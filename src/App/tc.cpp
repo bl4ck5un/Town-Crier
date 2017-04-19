@@ -59,7 +59,7 @@
 #include "Constants.h"
 #include "Enclave_u.h"
 #include "EthRPC.h"
-#include "StatusRPCServer.h"
+#include "StatRPCServer.h"
 #include "attestation.h"
 #include "bookkeeping/database.hxx"
 #include "key-utils.h"
@@ -172,9 +172,9 @@ int main(int argc, const char *argv[]) {
 
   jsonrpc::HttpServer status_server_connector(config.get_status_server_port(),
                                               "", "", 3);
-  StatusRPCServer status_rpc_server(status_server_connector, eid);
+  tc::StatRPCServer stat_srvr(status_server_connector, eid, driver);
   if (config.is_status_server_enabled()) {
-    status_rpc_server.StartListening();
+    stat_srvr.StartListening();
     LOG_F(INFO, "RPC server started");
   }
 
@@ -182,7 +182,7 @@ int main(int argc, const char *argv[]) {
   monitor.loop();
 
   if (config.is_status_server_enabled()) {
-    status_rpc_server.StopListening();
+    stat_srvr.StopListening();
   }
   sgx_destroy_enclave(eid);
   delete rpc_client;

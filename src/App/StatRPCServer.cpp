@@ -41,45 +41,46 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include <iostream>
-#include "StatusRPCServer.h"
-#include "attestation.h"
-#include "Converter.h"
-#include "tc-exception.hxx"
+#include "App/StatRPCServer.h"
 
+#include <iostream>
+
+#include "App/Converter.h"
+#include "App/attestation.h"
+#include "App/tc-exception.hxx"
 #include "external/base64.hxx"
 
-StatusRPCServer::StatusRPCServer(AbstractServerConnector &connector, sgx_enclave_id_t eid)
-    : AbstractStatusServer(connector), eid(eid) {
-}
+using tc::StatRPCServer;
 
-std::string StatusRPCServer::attest() {
+StatRPCServer::StatRPCServer(AbstractServerConnector &connector,
+                             sgx_enclave_id_t eid, const OdbDriver &db)
+    : AbstractStatusServer(connector), eid(eid), stat_db(db) {}
+
+std::string StatRPCServer::attest() {
   try {
     std::vector<uint8_t> attestation;
     get_attestation(this->eid, &attestation);
-    char b64_buf[2 * attestation.size()];
-    int buf_used = ext::b64_ntop(attestation.data(), attestation.size(), b64_buf, sizeof b64_buf);
+    char b64_buf[4096] = {0};
+    int buf_used = ext::b64_ntop(attestation.data(), attestation.size(),
+                                 b64_buf, sizeof b64_buf);
     if (buf_used < 0) {
       return "";
     } else {
       return string(b64_buf);
     }
-  }
-  catch (tc::EcallException &e) {
+  } catch (tc::EcallException &e) {
     return e.what();
-  }
-  catch (std::exception &e) {
+  } catch (std::exception &e) {
     return e.what();
-  }
-  catch (...) {
+  } catch (...) {
     return "unknown exception";
   }
-
-  return "";
 }
 
-Json::Value StatusRPCServer::status() {
+Json::Value StatRPCServer::status() {
   Json::Value status;
-  status["numberOfBlocks"] = 0;
+  status["numberOfScannedBlocks"] = static_cast<Json::Value::UInt64>(stat_db.getLastBlock());
+  status["numberOfReponseSent"] = static_cast<Json::Value::UInt64>(stat_db.getNumOfResponse());
+
   return status;
 }

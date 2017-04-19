@@ -7,7 +7,7 @@ set(TC_SRC_FILES tc.cpp monitor.cpp attestation.cpp request-parser.cpp
         bookkeeping/transaction-record.hxx
         bookkeeping/transaction-record-odb.cxx
         Converter.cpp utils.cpp types.cpp
-        EthRPC.cpp StatusRPCServer.cpp
+        EthRPC.cpp StatRPCServer.cpp
         external/base64.cpp
         key-utils.cpp
         tc-exception.cpp config.cpp config.h)
