@@ -40,17 +40,18 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef SRC_APP_STATUSRPCSERVER_H_
-#define SRC_APP_STATUSRPCSERVER_H_
-
-#include "abstractstatusserver.h"
+#ifndef SRC_APP_STATRPCSERVER_H_
+#define SRC_APP_STATRPCSERVER_H_
 
 #include <jsonrpccpp/server/connectors/httpserver.h>
 #include <sgx_eid.h>
 
+#include <string>
+
+#include "App/abstractstatusserver.h"
 #include "App/bookkeeping/database.hxx"
 
-using namespace ::jsonrpc;
+using jsonrpc::AbstractServerConnector;
 
 namespace tc {
 
@@ -58,13 +59,15 @@ class StatRPCServer : public AbstractStatusServer {
  private:
   sgx_enclave_id_t eid;
   const OdbDriver& stat_db;
+
  public:
-  StatRPCServer(AbstractServerConnector &connector, sgx_enclave_id_t eid, const OdbDriver& db);
+  StatRPCServer(
+      AbstractServerConnector& connector,  // NOLINT(runtime/references)
+      sgx_enclave_id_t eid, const OdbDriver& db);
   // curl -d '{"id": 1, "jsonrpc": "2.0", "method": "status"}'  localhost:8123
   std::string attest() override;
   Json::Value status() override;
 };
-}
+}  // namespace tc
 
-
-#endif  // SRC_APP_STATUSRPCSERVER_H_
+#endif  // SRC_APP_STATRPCSERVER_H_

@@ -44,6 +44,8 @@
 #include "App/StatRPCServer.h"
 
 #include <iostream>
+#include <string>
+#include <vector>
 
 #include "App/Converter.h"
 #include "App/attestation.h"
@@ -79,8 +81,10 @@ std::string StatRPCServer::attest() {
 
 Json::Value StatRPCServer::status() {
   Json::Value status;
-  status["numberOfScannedBlocks"] = static_cast<Json::Value::UInt64>(stat_db.getLastBlock());
-  status["numberOfReponseSent"] = static_cast<Json::Value::UInt64>(stat_db.getNumOfResponse());
+  status["numberOfScannedBlocks"] =
+      static_cast<Json::Value::UInt64>(stat_db.getLastBlock());
+  status["numberOfReponseSent"] =
+      static_cast<Json::Value::UInt64>(stat_db.getNumOfResponse());
 
   return status;
 }
