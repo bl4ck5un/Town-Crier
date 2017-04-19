@@ -178,7 +178,7 @@ int main(int argc, const char *argv[]) {
     LOG_F(INFO, "RPC server started");
   }
 
-  Monitor monitor(driver, eid, nonce_offset, quit);
+  Monitor monitor(&driver, eid, nonce_offset, quit);
   monitor.loop();
 
   if (config.is_status_server_enabled()) {

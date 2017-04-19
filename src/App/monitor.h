@@ -40,36 +40,43 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#pragma once
-#include "stdint.h"
-#include "bookkeeping/database.hxx"
+#ifndef SRC_APP_MONITOR_H_
+#define SRC_APP_MONITOR_H_
+
 #include <sgx_edger8r.h>
+#include <stdint.h>
 #include <atomic>
 
 #include "Constants.h"
+#include "bookkeeping/database.hxx"
 
 class Monitor {
  private:
-  OdbDriver &driver;
+  OdbDriver* driver;
   const sgx_enclave_id_t eid;
   const int nonceOffset;
 
   const std::atomic_bool &quit;
 
-  const static int maxRetry = 5;
-  const static int nothingToDoSleepSec = 5;
+  static const int maxRetry = 5;
+  static const int nothingToDoSleepSec = 5;
   bool isSleeping;
 
  public:
-  Monitor(OdbDriver &driver, sgx_enclave_id_t eid, int nonceOffset, std::atomic_bool &quit) :
-      driver(driver), eid(eid), nonceOffset(nonceOffset), quit(quit), isSleeping(false) {}
+  Monitor(OdbDriver* driver, sgx_enclave_id_t eid, int nonceOffset,
+          const std::atomic_bool &quit)
+      : driver(driver),
+        eid(eid),
+        nonceOffset(nonceOffset),
+        quit(quit),
+        isSleeping(false) {}
 
   void loop();
 };
 
 class NothingTodoException : public std::exception {
  public:
-  char const * what() const noexcept override {
-    return "Nothing to do";
-  }
+  char const *what() const noexcept override { return "Nothing to do"; }
 };
+
+#endif  // SRC_APP_MONITOR_H_

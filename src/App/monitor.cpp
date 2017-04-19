@@ -45,11 +45,12 @@
 
 #include <math.h>
 #include <unistd.h>
-#include <chrono>
 #include <iomanip>
 #include <iostream>
-#include <thread>
+#include <chrono>  // NOLINT
+#include <thread>  // NOLINT
 #include <string>
+#include <algorithm>
 
 #include "Converter.h"
 #include "Enclave_u.h"
@@ -63,7 +64,7 @@ size_t resp_data_len = 0;
 
 void Monitor::loop() {
   // keeps track of the blocks that have been processed
-  blocknum_t next_block_num = driver.getLastBlock();
+  blocknum_t next_block_num = driver->getLastBlock();
   next_block_num++;
 
   int ret = 0;
@@ -126,7 +127,7 @@ void Monitor::loop() {
           TransactionRecord _dummy_tr(
               next_block_num, "no_tx_in_" + std::to_string(next_block_num), "");
           _dummy_tr.setResponse("no_tx_in_" + std::to_string(next_block_num));
-          driver.logTransaction(_dummy_tr);
+          driver->logTransaction(_dummy_tr);
         }
 
         for (auto _current_tx : txn_list) {
@@ -148,7 +149,7 @@ void Monitor::loop() {
           LL_INFO("parsed request: %s", request.toString().c_str());
 
           /* try to get txn from the database */
-          if (driver.isProcessed(_current_tx_hash, maxRetry)) {
+          if (driver->isProcessed(_current_tx_hash, maxRetry)) {
             LL_INFO(
                 "request %s has been fulfilled (or can't be fulfilled), "
                 "skipping",
@@ -159,15 +160,15 @@ void Monitor::loop() {
                    _current_tx_hash.c_str());
 
           // if no record found, create a new one
-          if (!driver.isLogged(_current_tx_hash)) {
+          if (!driver->isLogged(_current_tx_hash)) {
             TransactionRecord _log_record(next_block_num, _current_tx_hash,
                                           request.getRawRequest());
-            driver.logTransaction(_log_record);
+            driver->logTransaction(_log_record);
             LL_INFO("request %s logged", _current_tx_hash.c_str());
           }
 
           OdbDriver::record_ptr log_entry =
-              driver.getLogByHash(_current_tx_hash);
+              driver->getLogByHash(_current_tx_hash);
 
           sgx_status_t ecall_ret;
           uint64_t nonce = eth_getTransactionCount();
@@ -192,7 +193,7 @@ void Monitor::loop() {
             log_entry->incrementNumOfRetrial();
             log_entry->setResponse(resp_txn);
             log_entry->setResponseTime(std::time(0));
-            driver.updateLog(*log_entry);
+            driver->updateLog(*log_entry);
           }
         }
         LL_INFO("Done processing block %ld", next_block_num);
