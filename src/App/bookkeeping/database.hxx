@@ -29,14 +29,14 @@ class OdbDriver {
   typedef unique_ptr<TransactionRecord> record_ptr;
   typedef odb::result<TransactionRecord> transaction_record;
 
-  OdbDriver(string filename, bool isOverwrite = false) {
+  explicit OdbDriver(string filename, bool isOverwrite = false) {
     if (filename.empty()) {
       throw invalid_argument("invalid filename");
     }
     int flag = isOverwrite ? SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE : SQLITE_OPEN_READWRITE;
     db = OdbDriver::db_ptr(new odb::sqlite::database(filename, flag));
 
-    if (flag & SQLITE_OPEN_CREATE) {
+    if ((flag & SQLITE_OPEN_CREATE) != 0) {
       connection_ptr c(db->connection());
       c->execute("PRAGMA foreign_keys=OFF");
       transaction t(db->begin());
@@ -47,8 +47,9 @@ class OdbDriver {
   }
 
   void logTransaction(TransactionRecord tr) {
-    if (isLogged(tr.getTxHash()))
+    if (isLogged(tr.getTxHash())) {
       return;
+}
     transaction t(db->begin());
     db->persist(tr);
     t.commit();
@@ -74,7 +75,8 @@ class OdbDriver {
 
     vector<TransactionRecord> unfulfilled_tx;
 
-    if (r.empty()) return unfulfilled_tx;
+    if (r.empty()) { return unfulfilled_tx;
+}
 
     for (auto it = r.begin(); it != r.end(); it++) {
       unfulfilled_tx.push_back(*it);
@@ -131,7 +133,7 @@ class OdbDriver {
     transaction t(db->begin());
     record_ptr rc(db->query_one<TransactionRecord>(query_record::tx_hash == tr.getTxHash()));
 
-    if (rc.get() != 0) {
+    if (rc.get() != nullptr) {
       rc->setResponse(tr.getResponse());
       rc->setResponseTime(tr.getResponseTime());
       rc->setNumOfRetrial(tr.getNumOfRetrial());

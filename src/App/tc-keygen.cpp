@@ -74,11 +74,11 @@ void print_key(sgx_enclave_id_t eid, string keyfile) {
   unsigned char pubkey[PUBKEY_LEN];
   unsigned char address[ADDRESS_LEN];
 
-  size_t buffer_used = (size_t) ext::b64_pton(buffer.str().c_str(), secret_sealed, sizeof secret_sealed);
+  size_t buffer_used = static_cast<size_t>( ext::b64_pton(buffer.str().c_str(), secret_sealed, sizeof secret_sealed));
 
   int ret = 0;
   sgx_status_t ecall_ret;
-  ecall_ret = ecdsa_keygen_unseal(eid, &ret, (sgx_sealed_data_t *) (secret_sealed), buffer_used, pubkey, address);
+  ecall_ret = ecdsa_keygen_unseal(eid, &ret, reinterpret_cast<sgx_sealed_data_t *> (secret_sealed), buffer_used, pubkey, address);
   if (ecall_ret != SGX_SUCCESS || ret != 0) {
     LL_CRITICAL("ecall failed");
     print_error_message(ecall_ret);
@@ -109,7 +109,7 @@ void keygen (sgx_enclave_id_t eid, string keyfile) {
   }
 
   char secret_sealed_b64[SECRETKEY_SEALED_LEN*2];
-  buffer_used = (size_t) ext::b64_ntop(secret_sealed, sizeof secret_sealed, secret_sealed_b64, sizeof secret_sealed_b64);
+  buffer_used = static_cast<size_t>( ext::b64_ntop(secret_sealed, sizeof secret_sealed, secret_sealed_b64, sizeof secret_sealed_b64));
 
   std::ofstream of(keyfile);
   if (! of.is_open()) {

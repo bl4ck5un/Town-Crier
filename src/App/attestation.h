@@ -40,15 +40,15 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef APP_REMOTE_ATT_H
-#define APP_REMOTE_ATT_H
+#ifndef SRC_APP_ATTESTATION_H_
+#define SRC_APP_ATTESTATION_H_
 
 #include <sgx_eid.h>
 #include <vector>
 #include <stdexcept>
 #include <cstdint>
 
-void get_attestation(sgx_enclave_id_t eid, std::vector<uint8_t>&);
+void get_attestation(sgx_enclave_id_t eid, std::vector<uint8_t> *);
 int time_calibrate(sgx_enclave_id_t eid);
 
-#endif
+#endif  // SRC_APP_ATTESTATION_H_

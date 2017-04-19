@@ -43,13 +43,11 @@
 
 #define LOGURU_IMPLEMENTATION 1
 
-#include "sgx_error.h"
+#include <iostream>
+
 #include "attestation.h"
 #include "utils.h"
 #include "Converter.h"
-
-#include <sgx_eid.h>
-#include <iostream>
 
 int main() {
   sgx_enclave_id_t eid;
@@ -64,7 +62,7 @@ int main() {
 
   try {
     std::vector<unsigned char> quote;
-    get_attestation(eid, quote);
+    get_attestation(eid, &quote);
     std::cout << bufferToHex(quote, false) << std::endl;
 
   }

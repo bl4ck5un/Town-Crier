@@ -41,33 +41,33 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
+
+// system headers
 #include <jsonrpccpp/server/connectors/httpserver.h>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
+
+// SGX headers
+#include "sgx_uae_service.h"
 
 #include <atomic>
 #include <csignal>
-#include <fstream>
 #include <iostream>
-#include <thread>
-
-#include "sgx_uae_service.h"
-#include "sgx_urts.h"
+#include <string>
 
 #include "Constants.h"
 #include "Enclave_u.h"
 #include "EthRPC.h"
-#include "monitor.h"
 #include "StatusRPCServer.h"
 #include "attestation.h"
 #include "bookkeeping/database.hxx"
+#include "key-utils.h"
+#include "monitor.h"
 #include "request-parser.hxx"
 #include "stdint.h"
-#include "utils.h"
-#include "key-utils.h"
 #include "tc-exception.hxx"
+#include "utils.h"
 
 #define LOGURU_IMPLEMENTATION 1
 #include "Log.h"
@@ -97,8 +97,10 @@ int main(int argc, const char *argv[]) {
   fs::path log_path;
   char _log_tag[100] = {0};
   std::time_t _current_time = std::time(NULL);
-  if (std::strftime(_log_tag, sizeof _log_tag, "%F-%T", std::localtime(&_current_time))) {
-    log_path = fs::path(config.get_working_dir()) / ("tc" + string(_log_tag) + ".log");
+  if (std::strftime(_log_tag, sizeof _log_tag, "%F-%T",
+                    std::localtime(&_current_time))) {
+    log_path =
+        fs::path(config.get_working_dir()) / ("tc" + string(_log_tag) + ".log");
   } else {
     log_path = fs::path(config.get_working_dir()) / ("tc.log");
   }
@@ -131,7 +133,8 @@ int main(int argc, const char *argv[]) {
 #endif
   }
 
-  const static string db_name = (fs::path(config.get_working_dir()) / "tc.db").string();
+  static const string db_name =
+      (fs::path(config.get_working_dir()) / "tc.db").string();
   LOG_F(INFO, "using db %s", db_name.c_str());
   bool create_db = false;
   if (fs::exists(db_name) && !config.is_run_as_daemon()) {
@@ -152,7 +155,7 @@ int main(int argc, const char *argv[]) {
     LOG_F(FATAL, "Failed to initialize the enclave");
     std::exit(-1);
   } else {
-    LOG_F(INFO, "Enclave %lld created", eid);
+    LOG_F(INFO, "Enclave %ld created", eid);
   }
 
   string address;
@@ -162,13 +165,13 @@ int main(int argc, const char *argv[]) {
     LL_INFO("using address %s", address.c_str());
 
     provision_key(eid, config.get_sealed_sig_key());
-  }
-  catch (const tc::EcallException &e) {
-    LL_CRITICAL(e.what());
+  } catch (const tc::EcallException &e) {
+    LL_CRITICAL("%s", e.what());
     exit(-1);
   }
 
-  jsonrpc::HttpServer status_server_connector(config.get_status_server_port(), "", "", 3);
+  jsonrpc::HttpServer status_server_connector(config.get_status_server_port(),
+                                              "", "", 3);
   StatusRPCServer status_rpc_server(status_server_connector, eid);
   if (config.is_status_server_enabled()) {
     status_rpc_server.StartListening();

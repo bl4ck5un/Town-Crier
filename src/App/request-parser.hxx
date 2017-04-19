@@ -43,7 +43,7 @@ class RequestParser {
   uint8_t *data;
 
  public:
-  RequestParser(const std::string &input);
+  explicit RequestParser(const std::string &input);
   ~RequestParser();
   unsigned long getId() const;
   unsigned long getType() const;
@@ -69,6 +69,6 @@ class RequestParser {
     return sizeof param_hash;
   }
 };
-}
+}  // namespace tc
 
 #endif //TOWN_CRIER_REQUESTPARSER_HXX

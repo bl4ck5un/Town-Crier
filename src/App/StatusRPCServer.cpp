@@ -56,7 +56,7 @@ StatusRPCServer::StatusRPCServer(AbstractServerConnector &connector, sgx_enclave
 std::string StatusRPCServer::attest() {
   try {
     std::vector<uint8_t> attestation;
-    get_attestation(this->eid, attestation);
+    get_attestation(this->eid, &attestation);
     char b64_buf[2 * attestation.size()];
     int buf_used = ext::b64_ntop(attestation.data(), attestation.size(), b64_buf, sizeof b64_buf);
     if (buf_used < 0) {

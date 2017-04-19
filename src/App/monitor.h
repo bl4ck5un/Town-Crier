@@ -69,7 +69,7 @@ class Monitor {
 
 class NothingTodoException : public std::exception {
  public:
-  virtual char const * what() const noexcept {
+  char const * what() const noexcept override {
     return "Nothing to do";
   }
 };

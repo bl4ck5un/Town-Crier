@@ -41,28 +41,29 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-//
-// Created by fanz on 4/13/17.
-//
+#include "App/config.h"
 
-#include "config.h"
+#include <pwd.h>
+#include <sys/types.h>
 
+#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <iostream>
-#include <boost/filesystem.hpp>
 
-#include <sys/types.h>
-#include <pwd.h>
+using std::string;
+using std::cerr;
+using std::cout;
+using std::endl;
+using std::stringstream;
 
-using namespace std;
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-inline const char* homedir() {
-  const char* home_dir;
+inline const char *homedir() {
+  const char *home_dir;
   if ((home_dir = getenv("HOME")) == NULL) {
-    home_dir = getpwuid(getuid())->pw_dir;
+    home_dir = getpwuid(getuid())->pw_dir; // NOLINT
   }
 
   return home_dir;
@@ -74,12 +75,17 @@ tc::Config::Config(int argc, const char **argv) {
 
   try {
     po::options_description desc("Allowed options");
-    desc.add_options()(
-        "help,h", "print this message")(
-        "rpc", po::bool_switch(&opt_status_enabled)->default_value(DFT_STATUS_ENABLED), "Launch RPC server")(
-        "daemon,d", po::bool_switch(&opt_run_as_daemon)->default_value(DFT_RUN_AS_DAEMON), "Run TC as a daemon")(
-        "config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE), "Path to a config file")(
-        "cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR), "Working directory (where log and db are stored");
+    desc.add_options()("help,h", "print this message")(
+        "rpc",
+        po::bool_switch(&opt_status_enabled)->default_value(DFT_STATUS_ENABLED),
+        "Launch RPC server")(
+        "daemon,d",
+        po::bool_switch(&opt_run_as_daemon)->default_value(DFT_RUN_AS_DAEMON),
+        "Run TC as a daemon")(
+        "config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE),
+        "Path to a config file")(
+        "cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR),
+        "Working directory (where log and db are stored");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -89,8 +95,7 @@ tc::Config::Config(int argc, const char **argv) {
       exit(0);
     }
     po::notify(vm);
-  }
-  catch (po::required_option &e) {
+  } catch (po::required_option &e) {
     cerr << e.what() << endl;
     exit(-1);
   } catch (std::exception &e) {
@@ -106,14 +111,10 @@ tc::Config::Config(int argc, const char **argv) {
   try {
     boost::property_tree::ini_parser::read_ini(opt_config_file, pt);
     cfg_geth_rpc_addr = pt.get<string>("RPC.RPChost");
-//    httpclient = new jsonrpc::HttpClient(st);
-//    rpc_client = new ethRPCClient(*httpclient);
-
     cfg_pid_fn = pt.get<string>("daemon.pid_file");
     cfg_status_port = pt.get<int>("status.port");
     cfg_sealed_sig_key = pt.get<string>("sealed.sig_key");
     cfg_enclave_path = pt.get<string>("init.enclave_path");
-
   } catch (const std::exception &e) {
     std::cout << e.what() << std::endl;
     exit(-1);
@@ -136,36 +137,18 @@ string tc::Config::to_string() {
   return ss.str();
 }
 
-bool tc::Config::is_status_server_enabled() const {
-  return opt_status_enabled;
-}
-bool tc::Config::is_run_as_daemon() const {
-  return opt_run_as_daemon;
-}
-const string &tc::Config::get_config_file() const {
-  return opt_config_file;
-}
-const string &tc::Config::get_working_dir() const {
-  return opt_working_dir;
-}
+bool tc::Config::is_status_server_enabled() const { return opt_status_enabled; }
+bool tc::Config::is_run_as_daemon() const { return opt_run_as_daemon; }
+const string &tc::Config::get_config_file() const { return opt_config_file; }
+const string &tc::Config::get_working_dir() const { return opt_working_dir; }
 const string &tc::Config::get_geth_rpc_addr() const {
   return cfg_geth_rpc_addr;
 }
-int tc::Config::get_status_server_port() const {
-  return cfg_status_port;
-}
-const string &tc::Config::get_pid_filename() const {
-  return cfg_pid_fn;
-}
+int tc::Config::get_status_server_port() const { return cfg_status_port; }
+const string &tc::Config::get_pid_filename() const { return cfg_pid_fn; }
 const string &tc::Config::get_sealed_sig_key() const {
   return cfg_sealed_sig_key;
 }
-const string &tc::Config::get_enclave_path() const {
-  return cfg_enclave_path;
-}
-const string& tc::Config::get_current_dir() const {
-  return current_dir;
-}
-const string& tc::Config::get_home_dir() const {
-  return home_dir;
-}
+const string &tc::Config::get_enclave_path() const { return cfg_enclave_path; }
+const string &tc::Config::get_current_dir() const { return current_dir; }
+const string &tc::Config::get_home_dir() const { return home_dir; }

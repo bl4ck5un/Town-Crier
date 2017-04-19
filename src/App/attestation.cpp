@@ -48,13 +48,14 @@
 #include <string>
 
 #include "Enclave_u.h"
-#include "attestation.h"
+#include "App/attestation.h"
 #include "Log.h"
 #include "Constants.h"
-#include "utils.h"
+#include "App/utils.h"
 #include "tc-exception.hxx"
 
-using namespace std;
+using std::vector;
+using std::to_string;
 
 int time_calibrate(sgx_enclave_id_t eid) {
   time_t wtc_time = time(NULL);
@@ -66,7 +67,7 @@ int time_calibrate(sgx_enclave_id_t eid) {
   return ret;
 }
 
-void get_attestation(sgx_enclave_id_t eid, vector<uint8_t> &out) {
+void get_attestation(sgx_enclave_id_t eid, vector<uint8_t> *out) {
   sgx_target_info_t qe_info;
   sgx_epid_group_id_t p_gid;
   sgx_report_t report;
@@ -80,17 +81,24 @@ void get_attestation(sgx_enclave_id_t eid, vector<uint8_t> &out) {
   ecall_ret = ecall_create_report(eid, &ret, &qe_info, &report);
   if (ecall_ret != SGX_SUCCESS || ret) {
     LL_DEBUG("ecall_create_report: ecall_ret=%x, ret=%x", ecall_ret, ret);
-    throw tc::EcallException(ecall_ret, "ecall_create_report returned " + to_string(ret));
+    throw tc::EcallException(ecall_ret,
+                             "ecall_create_report returned " + to_string(ret));
   }
 
   memset(spid.id, 0x88, sizeof spid.id);
   uint32_t quote_size;
   sgx_get_quote_size(NULL, &quote_size);
-  sgx_quote_t *quote = (sgx_quote_t *) malloc(quote_size);
-  ecall_ret = sgx_get_quote(&report, SGX_LINKABLE_SIGNATURE, &spid, NULL, NULL, 0, NULL, quote, quote_size);
+  sgx_quote_t *quote = reinterpret_cast<sgx_quote_t *>(malloc(quote_size));
+  ecall_ret = sgx_get_quote(&report,
+                            SGX_LINKABLE_SIGNATURE,
+                            &spid, NULL, NULL, 0, NULL,
+                            quote, quote_size);
   if (ecall_ret != SGX_SUCCESS) {
     print_error_message((sgx_status_t) ret);
     throw tc::EcallException(ecall_ret, "sgx_get_quote failed");
   }
-  out.insert(out.begin(), (uint8_t *) quote, (uint8_t *) quote + quote_size);
+  out->insert(out->begin(),
+              reinterpret_cast<uint8_t *>(quote),
+              reinterpret_cast<uint8_t *>(quote + quote_size));
+  free(quote);
 }

@@ -69,7 +69,7 @@ include_directories(
         ${MBEDTLS_LIB_DIR}/include
         ../vendor/gtest/include
         ../Common
-        ../App
+        ../
 )
 
 target_link_libraries(tc
