@@ -129,7 +129,7 @@ void Monitor::loop() {
 
         Json::Value txn_list;
         string filter_id = eth_new_filter(next_block_num, next_block_num);
-        eth_getfilterlogs(filter_id, txn_list);
+        eth_getfilterlogs(filter_id, &txn_list);
 
         LL_DEBUG("block %d: get %zu tx", next_block_num, txn_list.size());
 

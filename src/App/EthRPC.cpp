@@ -62,6 +62,8 @@
 
 ethRPCClient *rpc_client;
 
+using std::invalid_argument;
+
 /*!
  * Send raw transactions to geth
  * @param raw encoded transaction
@@ -105,6 +107,7 @@ string eth_new_filter(blocknum_t from, blocknum_t to) {
  * Given the [filter_id] writes to [result] an array containing the required data
  */
 void eth_getfilterlogs(const string &filter_id, Json::Value *txnContainer) {
+  txnContainer->clear();
   if (filter_id.empty()) {
     throw invalid_argument("filter_id is empty");
   }
