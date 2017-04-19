@@ -56,6 +56,7 @@
 
 using std::vector;
 using std::to_string;
+using std::invalid_argument;
 
 int time_calibrate(sgx_enclave_id_t eid) {
   time_t wtc_time = time(NULL);
@@ -68,6 +69,9 @@ int time_calibrate(sgx_enclave_id_t eid) {
 }
 
 void get_attestation(sgx_enclave_id_t eid, vector<uint8_t> *out) {
+  if (out == nullptr) {
+    throw invalid_argument("null output ptr");
+  }
   sgx_target_info_t qe_info;
   sgx_epid_group_id_t p_gid;
   sgx_report_t report;
@@ -97,8 +101,9 @@ void get_attestation(sgx_enclave_id_t eid, vector<uint8_t> *out) {
     print_error_message((sgx_status_t) ret);
     throw tc::EcallException(ecall_ret, "sgx_get_quote failed");
   }
+  LL_DEBUG("quote size=%zu", quote_size);
   out->insert(out->begin(),
               reinterpret_cast<uint8_t *>(quote),
-              reinterpret_cast<uint8_t *>(quote + quote_size));
+              reinterpret_cast<uint8_t *>(quote) + quote_size);
   free(quote);
 }

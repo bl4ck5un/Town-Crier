@@ -48,9 +48,9 @@
 #include <odb/sqlite/database.hxx>
 #include <odb/schema-catalog.hxx>
 
-#include "../bookkeeping/transaction-record.hxx"
-#include "../bookkeeping/transaction-record-odb.hxx"
-#include "../bookkeeping/database.hxx"
+#include "App/bookkeeping/transaction-record.hxx"
+#include "App/bookkeeping/transaction-record-odb.hxx"
+#include "App/bookkeeping/database.hxx"
 
 using namespace std;
 using namespace odb::core;

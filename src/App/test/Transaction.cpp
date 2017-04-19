@@ -42,11 +42,11 @@
 //
 
 #include <gtest/gtest.h>
-#include <tc-exception.hxx>
 
-#include "utils.h"
-#include "Enclave_u.h"
-#include "key-utils.h"
+#include "App/tc-exception.hxx"
+#include "App/utils.h"
+#include "App/Enclave_u.h"
+#include "App/key-utils.h"
 
 class TransactionSuiteTest : public ::testing::Test {
  protected:

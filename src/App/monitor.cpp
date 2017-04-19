@@ -41,35 +41,21 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-/*!
- * @file Monitor.cpp
- * @brief Main event loops of Town Crier
- *
- * the main monitor loop that receives requests from the Town Crier
- * contract, relays the request to the Enclave, and then relays the response from the
- * Enclave back to the Town Crier contract. In addition, Monitor.cpp can be run in various modes
- * useful to debugging and running benchmarks it contains various flags:
- *      VERBOSE: Debugging flag that allows outputs various variable values
- *      E2E_BENCHMARK: Run a benchmark test on the enclave, to determing the
- *                     time it tries to run an handle_request enclave call
- *                     Note: The monitor loops terminates after one call to Handle Request
- *
- * @bug: no known bugs
- */
+#include "App/monitor.h"
 
-#include <iostream>
+#include <math.h>
 #include <unistd.h>
 #include <chrono>
 #include <iomanip>
+#include <iostream>
 #include <thread>
-#include <math.h>
+#include <string>
 
-#include "monitor.h"
+#include "Converter.h"
+#include "Enclave_u.h"
 #include "EthRPC.h"
 #include "Log.h"
-#include "Enclave_u.h"
 #include "request-parser.hxx"
-#include "Converter.h"
 
 // TX_BUF_SIZE is defined in Constants.h
 uint8_t resp_buffer[TX_BUF_SIZE] = {0};
@@ -97,14 +83,15 @@ void Monitor::loop() {
     if (monitor_retry_counter > 0) {
       // doubling the sleeping time
       sleep_time_sec *= 2;
-      sleep_time_sec = min(sleep_time_sec, (uint) 32);
+      sleep_time_sec = min(sleep_time_sec, (uint)32);
       LL_ERROR("retry in %d seconds", sleep_time_sec);
       sleep(sleep_time_sec);
     }
 
     try {
       blocknum_t current_highest_block = eth_blockNumber();
-      LL_DEBUG("Highest block is %ld, waiting for block %ld...", current_highest_block, next_block_num);
+      LL_DEBUG("Highest block is %ld, waiting for block %ld...",
+               current_highest_block, next_block_num);
 
       // if we've scanned all of them
       if (next_block_num > current_highest_block) {
@@ -117,7 +104,8 @@ void Monitor::loop() {
       }
 
       for (; next_block_num <= current_highest_block; next_block_num++) {
-        /* when TC is run for the first time, this loop will be executed for millions of time very quickly
+        /* when TC is run for the first time, this loop will be executed for
+         * millions of time very quickly
          * so we need to handle interrupt here too. */
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
         if (quit.load()) {
@@ -135,7 +123,8 @@ void Monitor::loop() {
 
         if (txn_list.empty()) {
           /* log the empty blocks too */
-          TransactionRecord _dummy_tr(next_block_num, "no_tx_in_" + std::to_string(next_block_num), "");
+          TransactionRecord _dummy_tr(
+              next_block_num, "no_tx_in_" + std::to_string(next_block_num), "");
           _dummy_tr.setResponse("no_tx_in_" + std::to_string(next_block_num));
           driver.logTransaction(_dummy_tr);
         }
@@ -147,7 +136,8 @@ void Monitor::loop() {
 
           LL_DEBUG("raw_request: %s", _current_tx.toStyledString().c_str());
 
-          if (!(_current_tx.isMember(DATA_FIELD_NAME) && _current_tx.isMember(TX_HASH_FIELD_NAME))) {
+          if (!(_current_tx.isMember(DATA_FIELD_NAME) &&
+                _current_tx.isMember(TX_HASH_FIELD_NAME))) {
             LL_ERROR("get bad RPC data, skipping this tx");
             continue;
           }
@@ -159,27 +149,34 @@ void Monitor::loop() {
 
           /* try to get txn from the database */
           if (driver.isProcessed(_current_tx_hash, maxRetry)) {
-            LL_INFO("request %s has been fulfilled (or can't be fulfilled), skipping", _current_tx_hash.c_str());
+            LL_INFO(
+                "request %s has been fulfilled (or can't be fulfilled), "
+                "skipping",
+                _current_tx_hash.c_str());
             continue;
           }
-          LL_DEBUG("request %s has not been fulfilled", _current_tx_hash.c_str());
+          LL_DEBUG("request %s has not been fulfilled",
+                   _current_tx_hash.c_str());
 
           // if no record found, create a new one
           if (!driver.isLogged(_current_tx_hash)) {
-            TransactionRecord _log_record(next_block_num, _current_tx_hash, request.getRawRequest());
+            TransactionRecord _log_record(next_block_num, _current_tx_hash,
+                                          request.getRawRequest());
             driver.logTransaction(_log_record);
             LL_INFO("request %s logged", _current_tx_hash.c_str());
           }
 
-          OdbDriver::record_ptr log_entry = driver.getLogByHash(_current_tx_hash);
+          OdbDriver::record_ptr log_entry =
+              driver.getLogByHash(_current_tx_hash);
 
           sgx_status_t ecall_ret;
-          long nonce = eth_getTransactionCount();
+          uint64_t nonce = eth_getTransactionCount();
           LL_INFO("nonce obtained %d", nonce);
-          // TODO: change nonce to have long type
-          ecall_ret = handle_request(eid, &ret, nonce, request.getId(), request.getType(),
-                                     request.getData(), request.getDataLen(),
-                                     resp_buffer, &resp_data_len);
+          // TODO(FAN): change nonce to have long type
+          ecall_ret =
+              handle_request(eid, &ret, nonce, request.getId(),
+                             request.getType(), request.getData(),
+                             request.getDataLen(), resp_buffer, &resp_data_len);
 
           if (ecall_ret != SGX_SUCCESS || ret != TC_SUCCESS) {
             // increment the number and skip
@@ -202,29 +199,24 @@ void Monitor::loop() {
         // reset retry_counter upon each success
         monitor_retry_counter = 0;
       }
-    }
-    catch (const NothingTodoException &e) {
+    } catch (const NothingTodoException &e) {
       if (!isSleeping) {
         LL_INFO("Nothing to do. Going to sleep...");
         isSleeping = true;
       }
       sleep(Monitor::nothingToDoSleepSec);
-    }
-    catch (const jsonrpc::JsonRpcException &ex) {
+    } catch (const jsonrpc::JsonRpcException &ex) {
       LL_ERROR("RPC error: %s", ex.what());
       monitor_retry_counter++;
-    }
-    catch (const std::invalid_argument &ex) {
+    } catch (const std::invalid_argument &ex) {
       LL_ERROR("Invalid Argument: %s", ex.what());
       monitor_retry_counter++;
-    }
-    catch (const std::exception &ex) {
+    } catch (const std::exception &ex) {
       LL_ERROR("Unexpected std exception %s", ex.what());
       monitor_retry_counter++;
-    }
-    catch (...) {
+    } catch (...) {
       LL_ERROR("Unexpected exception!");
       monitor_retry_counter++;
     }
-  } // while (true)
+  }  // while (true)
 }

@@ -63,6 +63,9 @@ void hexToBuffer(const string &str, unsigned char *buffer, size_t bufSize) {
 }
 
 void hexToBuffer(const string &hex, vector<uint8_t> *buffer) {
+  if (buffer == nullptr) {
+    throw invalid_argument("null output ptr");
+  }
   if (hex.size() == 0) {
     buffer->clear();
     return;

@@ -43,9 +43,9 @@
 
 #include <gtest/gtest.h>
 
-#include "../request-parser.hxx"
-#include "../utils.h"
-#include "../Converter.h"
+#include "App/request-parser.hxx"
+#include "App/utils.h"
+#include "App/Converter.h"
 
 TEST (RequestHandling, hex_and_unhex) {
   uint8_t b[4];
@@ -61,7 +61,7 @@ TEST (RequestHandling, hex_and_unhex) {
   ASSERT_EQ(0, memcmp(buffer, buffer_ref, sizeof buffer));
 
   vector<uint8_t> bufferVec;
-  hexToBuffer(hexString, bufferVec);
+  hexToBuffer(hexString, &bufferVec);
   for (auto i = 0; i < bufferVec.size(); i++) { ASSERT_EQ(buffer_ref[i], bufferVec.at(i)); }
 
   memset(b, 0x8a, 4);

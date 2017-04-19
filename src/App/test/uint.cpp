@@ -44,10 +44,10 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "utils.h"
+#include "App/utils.h"
 #include "macros.h"
-#include "Converter.h"
-#include "Enclave_u.h"
+#include "App/Converter.h"
+#include "App/Enclave_u.h"
 
 using namespace std;
 

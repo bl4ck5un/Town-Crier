@@ -42,12 +42,12 @@
 //
 
 #include <gtest/gtest.h>
-
-#include "utils.h"
-#include "Enclave_u.h"
-#include "attestation.h"
 #include <vector>
-#include "Converter.h"
+
+#include "App/utils.h"
+#include "App/Enclave_u.h"
+#include "App/attestation.h"
+#include "App/Converter.h"
 
 using namespace std;
 
@@ -57,7 +57,7 @@ TEST (Attestation, att) {
   ASSERT_EQ(0, ret);
   try {
     vector<uint8_t> att;
-    get_attestation(eid, att);
+    get_attestation(eid, &att);
     LL_INFO("attestation: %s", bufferToHex(att, true).c_str());
   }
   catch (const exception& e) {
