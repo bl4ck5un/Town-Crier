@@ -41,4 +41,31 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include "App/types.h"
+#ifndef SRC_APP_TC_EXCEPTION_H_
+#define SRC_APP_TC_EXCEPTION_H_
+
+#include <sgx_error.h>
+
+#include <exception>
+#include <string>
+
+#include "App/utils.h"
+
+using std::string;
+
+namespace tc {
+class EcallException : public std::exception {
+ private:
+  sgx_status_t ecall_ret;
+  std::string why;
+
+ public:
+  EcallException(sgx_status_t ecall_ret, std::string _why)
+      : ecall_ret(ecall_ret) {
+    this->why = sgx_error_message(ecall_ret) + "; " + _why;
+  }
+  virtual char const *what() const noexcept { return why.c_str(); }
+};
+}  // namespace tc
+
+#endif  // SRC_APP_TC_EXCEPTION_H_

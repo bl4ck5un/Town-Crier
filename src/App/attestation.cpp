@@ -52,7 +52,7 @@
 #include "Log.h"
 #include "Constants.h"
 #include "App/utils.h"
-#include "tc-exception.hxx"
+#include "tc-exception.h"
 
 using std::vector;
 using std::to_string;

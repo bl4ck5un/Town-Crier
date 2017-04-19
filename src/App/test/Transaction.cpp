@@ -43,7 +43,7 @@
 
 #include <gtest/gtest.h>
 
-#include "App/tc-exception.hxx"
+#include "App/tc-exception.h"
 #include "App/utils.h"
 #include "App/Enclave_u.h"
 #include "App/key-utils.h"

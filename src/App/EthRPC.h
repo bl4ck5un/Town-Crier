@@ -47,7 +47,7 @@
 #include <string>
 
 #include "App/ethrpcclient.h"
-#include "App/types.hxx"
+#include "App/types.h"
 
 using std::string;
 

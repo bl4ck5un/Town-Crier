@@ -41,4 +41,10 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include "App/types.h"
+#ifndef SRC_APP_TYPES_H_
+#define SRC_APP_TYPES_H_
+
+#include <cstdint>
+typedef uint64_t blocknum_t;
+
+#endif  // SRC_APP_TYPES_H_

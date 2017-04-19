@@ -66,7 +66,7 @@
 #include "monitor.h"
 #include "request-parser.h"
 #include "stdint.h"
-#include "tc-exception.hxx"
+#include "tc-exception.h"
 #include "utils.h"
 
 #define LOGURU_IMPLEMENTATION 1

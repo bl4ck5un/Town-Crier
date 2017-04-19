@@ -59,7 +59,7 @@
 #include "Log.h"
 #include "external/base64.hxx"
 
-#include "App/tc-exception.hxx"
+#include "App/tc-exception.h"
 #include "Converter.h"
 #include "Enclave_u.h"
 

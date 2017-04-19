@@ -58,7 +58,7 @@
 #include <string>
 
 #include "json/json.h"
-#include "types.hxx"
+#include "types.h"
 
 ethRPCClient *rpc_client;
 

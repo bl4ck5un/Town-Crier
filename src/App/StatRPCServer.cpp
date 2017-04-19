@@ -49,7 +49,7 @@
 
 #include "App/Converter.h"
 #include "App/attestation.h"
-#include "App/tc-exception.hxx"
+#include "App/tc-exception.h"
 #include "external/base64.hxx"
 
 using tc::StatRPCServer;

@@ -41,8 +41,4 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-//
-// Created by fanz on 4/5/17.
-//
-
-#include "tc-exception.hxx"
+#include "App/tc-exception.h"

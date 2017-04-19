@@ -8,7 +8,7 @@
 
 #include <memory>
 #include <iostream>
-#include "../types.hxx"
+#include "App/types.h"
 #include "transaction-record.hxx"
 #include "transaction-record-odb.hxx"
 #include "Log.h"
