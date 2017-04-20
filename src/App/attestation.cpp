@@ -41,18 +41,18 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include <sgx_uae_service.h>
 #include <sgx_report.h>
+#include <sgx_uae_service.h>
 #include <sgx_utils.h>
 #include <time.h>
 #include <string>
 
-#include "Enclave_u.h"
+#include "App/Enclave_u.h"
 #include "App/attestation.h"
-#include "Log.h"
-#include "Constants.h"
+#include "App/tc-exception.h"
 #include "App/utils.h"
-#include "tc-exception.h"
+#include "Common/Constants.h"
+#include "Common/Log.h"
 
 using std::vector;
 using std::to_string;
@@ -93,17 +93,14 @@ void get_attestation(sgx_enclave_id_t eid, vector<uint8_t> *out) {
   uint32_t quote_size;
   sgx_get_quote_size(NULL, &quote_size);
   sgx_quote_t *quote = reinterpret_cast<sgx_quote_t *>(malloc(quote_size));
-  ecall_ret = sgx_get_quote(&report,
-                            SGX_LINKABLE_SIGNATURE,
-                            &spid, NULL, NULL, 0, NULL,
-                            quote, quote_size);
+  ecall_ret = sgx_get_quote(&report, SGX_LINKABLE_SIGNATURE, &spid, NULL, NULL,
+                            0, NULL, quote, quote_size);
   if (ecall_ret != SGX_SUCCESS) {
-    print_error_message((sgx_status_t) ret);
+    print_error_message((sgx_status_t)ret);
     throw tc::EcallException(ecall_ret, "sgx_get_quote failed");
   }
   LL_DEBUG("quote size=%zu", quote_size);
-  out->insert(out->begin(),
-              reinterpret_cast<uint8_t *>(quote),
+  out->insert(out->begin(), reinterpret_cast<uint8_t *>(quote),
               reinterpret_cast<uint8_t *>(quote) + quote_size);
   free(quote);
 }

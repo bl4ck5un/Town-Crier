@@ -47,32 +47,31 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ini_parser.hpp>
+#include <stdint.h>
 
 // SGX headers
-#include "sgx_uae_service.h"
+#include <sgx_uae_service.h>
 
 #include <atomic>
 #include <csignal>
 #include <iostream>
 #include <string>
 
-#include "Constants.h"
-#include "Enclave_u.h"
-#include "EthRPC.h"
-#include "StatRPCServer.h"
-#include "attestation.h"
-#include "bookkeeping/database.hxx"
-#include "key-utils.h"
-#include "monitor.h"
-#include "request-parser.h"
-#include "stdint.h"
-#include "tc-exception.h"
-#include "utils.h"
+#include "Common/Constants.h"
+#include "App/Enclave_u.h"
+#include "App/EthRPC.h"
+#include "App/StatRPCServer.h"
+#include "App/attestation.h"
+#include "App/bookkeeping/database.h"
+#include "App/key-utils.h"
+#include "App/monitor.h"
+#include "App/request-parser.h"
+#include "App/tc-exception.h"
+#include "App/utils.h"
 
 #define LOGURU_IMPLEMENTATION 1
-#include "Log.h"
-
-#include "config.h"
+#include "Common/Log.h"
+#include "App/config.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;

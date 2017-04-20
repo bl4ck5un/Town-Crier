@@ -41,18 +41,21 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include <iostream>
-#include "gtest/gtest.h"
+#ifndef SRC_APP_TEST_SGXTESTBASE_H_
+#define SRC_APP_TEST_SGXTESTBASE_H_
 
-#include "App/Enclave_u.h"
-#include "App/test/SGXTestBase.h"
+#include "App/utils.h"
 
-class UintTestSuite : public SGXTestBase {};
+class SGXTestBase : public ::testing::Test {
+ protected:
+  sgx_enclave_id_t eid;
+  virtual void SetUp() {
+    initialize_enclave(ENCLAVE_FILENAME, &eid);
+  }
 
-TEST_F(UintTestSuite, uint) {
-  sgx_status_t st;
-  int ret;
-  st = uint_utils_test(eid, &ret);
-  ASSERT_EQ(0, st);
-  ASSERT_EQ(0, ret);
-}
+  virtual void TearDown() {
+    sgx_destroy_enclave(eid);
+  }
+};
+
+#endif  // SRC_APP_TEST_SGXTESTBASE_H_

@@ -35,6 +35,7 @@ add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp utils.cpp Enclave
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
 add_executable(TestMain EXCLUDE_FROM_ALL
         ${TEST_SRC_FILES}
+        test/SGXTestBase.h
         attestation.cpp
         utils.cpp
         Enclave_u.c
@@ -68,7 +69,6 @@ include_directories(
         ${JSONRPCCPP_INCLUDE_DIRS}
         ${MBEDTLS_LIB_DIR}/include
         ../vendor/gtest/include
-        ../Common
         ../
 )
 

@@ -47,8 +47,8 @@
 #include <stdint.h>
 #include <atomic>
 
-#include "Constants.h"
-#include "bookkeeping/database.hxx"
+#include "Common/Constants.h"
+#include "App/bookkeeping/database.h"
 
 class Monitor {
  private:

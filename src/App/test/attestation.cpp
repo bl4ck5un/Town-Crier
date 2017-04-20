@@ -44,28 +44,24 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-#include "App/utils.h"
+#include "App/Converter.h"
 #include "App/Enclave_u.h"
 #include "App/attestation.h"
-#include "App/Converter.h"
+#include "App/utils.h"
+#include "App/test/SGXTestBase.h"
 
-using namespace std;
+using std::vector;
+using std::exception;
 
-TEST (Attestation, att) {
-  sgx_enclave_id_t eid;
-  int ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
-  ASSERT_EQ(0, ret);
+class Attestation : public SGXTestBase {};
+
+TEST_F(Attestation, att) {
   try {
     vector<uint8_t> att;
     get_attestation(eid, &att);
     LL_INFO("attestation: %s", bufferToHex(att, true).c_str());
-  }
-  catch (const exception& e) {
+  } catch (const exception& e) {
     LL_CRITICAL("error: %s", e.what());
     FAIL();
   }
-
-  ASSERT_EQ(0, ret);
-
-  sgx_destroy_enclave(eid);
 }

@@ -52,11 +52,11 @@
 #include <string>
 #include <algorithm>
 
-#include "Converter.h"
-#include "Enclave_u.h"
-#include "EthRPC.h"
-#include "Log.h"
-#include "request-parser.h"
+#include "App/Converter.h"
+#include "App/Enclave_u.h"
+#include "App/EthRPC.h"
+#include "Common/Log.h"
+#include "App/request-parser.h"
 
 // TX_BUF_SIZE is defined in Constants.h
 uint8_t resp_buffer[TX_BUF_SIZE] = {0};

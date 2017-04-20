@@ -1,3 +1,16 @@
 #!/bin/bash -e
 
-cpplint.py App/tc-keygen.cpp App/tc-exception.h App/monitor.cpp App/request-parser.cpp App/mbedtls_sgx_net.c App/eth_api.json App/config.cpp App/utils.h App/Converter.cpp App/tc-att.cpp App/monitor.h App/config.h App/Converter.h App/utils.cpp App/test/app-odb.cpp App/test/RLP.cpp App/test/sealing.cpp App/test/Regex.cpp App/test/Transaction.cpp App/test/app-request-harser.cpp App/test/uint.cpp App/test/attestation.cpp App/test/test_scrapers.cpp App/test/TestMain.cpp App/test/test_tls.cpp App/test/ABI.cpp App/test/keygen.cpp App/attestation.cpp App/request-parser.h App/ocalls.cpp App/StatRPCServer.h App/types.cpp App/bookkeeping/database.hxx App/bookkeeping/database.cpp App/tc-exception.cpp App/StatRPCServer.cpp App/key-utils.h App/EthRPC.cpp App/EthRPC.h App/key-utils.cpp App/tc.cpp App/types.h App/attestation.h
+CPPLINT=./utils/cpplint.py
+
+if [[ ! -x $CPPLINT ]]
+then
+    curl https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py -o $CPPLINT
+    chmod u+x $CPPLINT
+fi
+
+find App -type f | grep -v Enclave_u | \
+    grep -v external | \
+    grep -v transaction-record |\
+    grep -v abstractstatusserver.h |\
+    grep -v ethrpcclient.h |\
+    xargs $CPPLINT

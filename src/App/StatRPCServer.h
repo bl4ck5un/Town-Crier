@@ -49,7 +49,7 @@
 #include <string>
 
 #include "App/abstractstatusserver.h"
-#include "App/bookkeeping/database.hxx"
+#include "App/bookkeeping/database.h"
 
 using jsonrpc::AbstractServerConnector;
 

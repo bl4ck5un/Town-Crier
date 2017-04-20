@@ -42,23 +42,21 @@
 //
 
 #include <gtest/gtest.h>
+#include <odb/database.hxx>
+#include <odb/schema-catalog.hxx>
+#include <odb/sqlite/database.hxx>
 
 #include <memory>
-#include <odb/database.hxx>
-#include <odb/sqlite/database.hxx>
-#include <odb/schema-catalog.hxx>
+#include <vector>
 
-#include "App/bookkeeping/transaction-record.hxx"
+#include "App/bookkeeping/database.h"
 #include "App/bookkeeping/transaction-record-odb.hxx"
-#include "App/bookkeeping/database.hxx"
-
-using namespace std;
-using namespace odb::core;
+#include "App/bookkeeping/transaction-record.hxx"
 
 typedef odb::query<TransactionRecord> Query;
 typedef odb::result<TransactionRecord> Result;
 
-string db_name = "test.db";
+#define db_name "test.db"
 
 TEST(OdbTest, basic) {
   OdbDriver driver(db_name, true);
@@ -95,10 +93,8 @@ TEST(OdbTest, newDB) {
 
     ASSERT_EQ(5, driver.getLastBlock());
     ASSERT_EQ(4, driver.getNumOfResponse());
-
-  }
-  catch (const odb::exception &e) {
-    std::remove(db_name.c_str());
+  } catch (const odb::exception &e) {
+    std::remove(db_name);
     cerr << e.what() << endl;
     FAIL();
   }
@@ -108,9 +104,13 @@ TEST(OdbTest, newDB) {
   vector<TransactionRecord> rc = driver.getAllLogs();
   ASSERT_EQ(5, rc.size());
   auto it = rc.begin();
-  ASSERT_STREQ("0xaaa1", it->getTxHash().c_str()); it++;
-  ASSERT_STREQ("0xaaa2", it->getTxHash().c_str()); it++;
-  ASSERT_STREQ("0xaaa3", it->getTxHash().c_str()); it++;
-  ASSERT_STREQ("0xaaa4", it->getTxHash().c_str()); it++;
+  ASSERT_STREQ("0xaaa1", it->getTxHash().c_str());
+  it++;
+  ASSERT_STREQ("0xaaa2", it->getTxHash().c_str());
+  it++;
+  ASSERT_STREQ("0xaaa3", it->getTxHash().c_str());
+  it++;
+  ASSERT_STREQ("0xaaa4", it->getTxHash().c_str());
+  it++;
   ASSERT_STREQ("0xaaa5", it->getTxHash().c_str());
 }

@@ -48,7 +48,7 @@
 #include <iostream>
 #include <string>
 
-#include "Log.h"
+#include "Common/Log.h"
 #include "Enclave_u.h"
 
 int ocall_print_string(const char* str) {

@@ -44,7 +44,7 @@
 #include "gtest/gtest.h"
 
 #define LOGURU_IMPLEMENTATION 1
-#include "Log.h"
+#include "Common/Log.h"
 
 int main(int argc, char **argv) {
   loguru::g_stderr_verbosity = LOG_LEVEL_INFO;
