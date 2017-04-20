@@ -18,6 +18,7 @@ script:
 - ./src/lint.sh
 - make -C src/Enclave/mbedtls-SGX
 - mkdir -p src/build && cd src/build && cmake .. && make all && make TestMain
+- ./TestMain
 notifications:
   slack:
     secure: jsc58HqOjk0uJtipWAgHsjaL6Ee4N1YZ99wqtemZ7alk06dWsYyGdcGIGBS7F4m4YkrTg8QpoAIiJSFKCYM6W0C5nYSKn8SqF3MbulLfY428jVX4NgvdnydoXMJUw7JgvRckMNUcyE2EIIp7qvPF1q4ZZAyL5h1o7NGmZa83WRdU0InFM55wAqkGy5LPNWIjN1Uz6UOa/eKy/eVmUebkp9nMHvcJcJGWaZx6are282rgNs7Xbt6c+TdU082s6pcIWAs3ONrAg+CMGxFCi6bbx5KtBqHe/MZ/FCENgQC0dbivgghw4yLmY0CxSrK7/Zf7QYQe66P4joXNrGwmGiA7i//nkcRcDTtDHbzPPDBkIvWL8PNg6DskxMVc4S0poD4EYbAvtj7btGkAg5FWwT+QdQkuqnf+FkpORL1Eq9E86Y42PFmFONFMSrXzD0smc9b6zqErOd1kmfSApRjPoMvhZSxRE0CLCtMyHoMr3ZhWE1E0wyJrFerjPtKqNH4yDDJ04Omdr7FyatYeU59c0HWWlaa1ZE2A9vURZeRvZGaoNA9yOUpzbl0tYAoO2QUswz1s4R/3Wu3f7d199SJtUzQtnL1DxDaiG8b+K5xI4Ww6+9GEM2CyftbUTiWeCfKg7D/5KgUYBibzMAALPygnStoYedZd2jQ4N4/JIQKRlMJBcNo=

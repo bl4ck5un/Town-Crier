@@ -1,5 +1,8 @@
-#!/bin/bash -e
+#!/bin/bash -ex
 
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+pushd $DIR
 CPPLINT=./utils/cpplint.py
 
 if [[ ! -x $CPPLINT ]]
@@ -14,3 +17,5 @@ find App -type f | grep -v Enclave_u | \
     grep -v abstractstatusserver.h |\
     grep -v ethrpcclient.h |\
     xargs $CPPLINT
+
+popd
