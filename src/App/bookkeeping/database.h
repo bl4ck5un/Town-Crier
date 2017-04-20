@@ -183,8 +183,8 @@ class OdbDriver {
 
   void updateLog(TransactionRecord tr) {
     transaction t(db->begin());
-    record_ptr rc(db->query_one<TransactionRecord>(query_record::tx_hash ==
-                                                   tr.getTxHash()));
+    record_ptr rc(db->query_one<TransactionRecord>(
+        query_record::tx_hash == tr.getTxHash()));
 
     if (rc.get() != nullptr) {
       rc->setResponse(tr.getResponse());
@@ -209,7 +209,8 @@ class OdbDriver {
   size_t getNumOfResponse() const {
     transaction t(db->begin());
     TransactionStat ts(
-        db->query_value<TransactionStat>(query_stat::response != ""));
+        db->query_value<TransactionStat>(query_stat::response != "" &&
+            !query_stat::response.like("no_tx_in_%")));
     size_t bn = ts.count;
     t.commit();
 
