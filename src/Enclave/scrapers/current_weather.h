@@ -56,7 +56,6 @@ public:
 
 private:
   string construct_query( string request);
-	int parse_response(string resp) const;
 };
 
 #endif //CURRENT_WEATHER_H

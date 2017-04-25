@@ -53,40 +53,6 @@
 
 using namespace std;
 
-int WeatherScraper::parse_response(string resp) const {
-  LL_INFO("ret %s", resp.c_str());    
-
-  picojson::value v;
-  std::string err = picojson::parse(v, resp);
-  if (! err.empty()) {
-    LL_CRITICAL("Error in picojson");
-  }
-
-
-  if(!v.is<picojson::object>()) {
-    LL_CRITICAL("JSON is not an object");
-  }
-
-
-  const picojson::value::object& obj = v.get<picojson::object>();
-  picojson::value v1 = obj.find("query")->second;
-  const picojson::object& obj2 =  v1.get<picojson::object>();
-  picojson::value v2 = obj2.find("results")->second;
-  if (v2.is<picojson::null>()){
-    return -1;
-  }
-  const picojson::object& obj3 = v2.get<picojson::object>();
-  picojson::value v3 = obj3.find("channel")->second;   
-  const picojson::object& obj4 = v3.get<picojson::object>();
-  picojson::value v4 = obj4.find("item")->second;
-  const picojson::object& obj5 = v4.get<picojson::object>();
-  picojson::value v5 = obj5.find("condition")->second;
-  const picojson::object& obj6 = v5.get<picojson::object>();
-  picojson::value v6 = obj6.find("temp")->second;
-  const std::string& temperature = v6.get<std::string>();
-  return atoi(temperature.c_str());
-}
-
 /* The Data is structured as follows:
  * 0x00 - 0x20 int 
  */
@@ -129,10 +95,38 @@ err_code WeatherScraper::weather_current(string request, double* r) {
   YahooYQL yahooYQL(query, YahooYQL::JSON, "store://datatables.org/alltableswithkeys");
   string resp;
   err_code ret = yahooYQL.execute(resp);
-  int tmp_int = parse_response(resp);
-  if (tmp_int == -1){
+  LL_INFO("resp: %s", resp.c_str());
+
+  picojson::value v;
+  std::string err = picojson::parse(v, resp);
+  if (! err.empty()) {
+    LL_CRITICAL("Error in picojson");
+    return INVALID_PARAMS;
+  }
+
+  if(!v.is<picojson::object>()) {
+    LL_CRITICAL("JSON is not an object");
+    return INVALID_PARAMS;
+  }
+
+  const picojson::value::object& obj = v.get<picojson::object>();
+  picojson::value v1 = obj.find("query")->second;
+  const picojson::object& obj2 =  v1.get<picojson::object>();
+  picojson::value v2 = obj2.find("results")->second;
+  if (v2.is<picojson::null>()){
     return WEB_ERROR;
   }
+  const picojson::object& obj3 = v2.get<picojson::object>();
+  picojson::value v3 = obj3.find("channel")->second;   
+  const picojson::object& obj4 = v3.get<picojson::object>();
+  picojson::value v4 = obj4.find("item")->second;
+  const picojson::object& obj5 = v4.get<picojson::object>();
+  picojson::value v5 = obj5.find("condition")->second;
+  const picojson::object& obj6 = v5.get<picojson::object>();
+  picojson::value v6 = obj6.find("temp")->second;
+  const std::string& temperature = v6.get<std::string>();
+  int tmp_int = atoi(temperature.c_str());
+
   *r = (double)tmp_int;
   return ret;
 
