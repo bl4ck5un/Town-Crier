@@ -63,10 +63,13 @@ int WeatherScraper::parse_response(string resp) const {
   }
 
   string tmp = v.serialize();
-  LL_INFO("serialize: %s", tmp.c_str());
+  if(tmp.find("null") == std::string::npos){
+    return -1;
+  }
   if(!v.is<picojson::object>()) {
     LL_CRITICAL("JSON is not an object");
   }
+
 
   const picojson::value::object& obj = v.get<picojson::object>();
   picojson::value v1 = obj.find("query")->second;
@@ -126,7 +129,11 @@ err_code WeatherScraper::weather_current(string request, double* r) {
   YahooYQL yahooYQL(query, YahooYQL::JSON, "store://datatables.org/alltableswithkeys");
   string resp;
   err_code ret = yahooYQL.execute(resp);
-  parse_response(resp);
+  int tmp_int = parse_response(resp);
+  if (tmp_int == -1){
+    return WEB_ERROR;
+  }
+  *r = (double)tmp_int;
   return ret;
 
 }

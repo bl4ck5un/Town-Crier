@@ -52,13 +52,14 @@ int weather_self_test(){
 
 	//Null Checker
 	double r = 0.0;
-	if (weatherScraper.weather_current("2487889",&r) != NO_ERROR){
+
+	if (weatherScraper.weather_current("2487889",&r) == INVALID_PARAMS ){
 		return -1;
 	}
 
 	weatherScraper.set_qtype(2);
-	if (weatherScraper.weather_current("Chicago,IL", &r) == NO_ERROR){
-		return 0;
+	if (weatherScraper.weather_current("Chicago,IL", &r) == INVALID_PARAMS){
+		return -1;
 	}
 	return 0;
 }
