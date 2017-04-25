@@ -62,10 +62,7 @@ int WeatherScraper::parse_response(string resp) const {
     LL_CRITICAL("Error in picojson");
   }
 
-  string tmp = v.serialize();
-  if(tmp.find("null") == std::string::npos){
-    return -1;
-  }
+
   if(!v.is<picojson::object>()) {
     LL_CRITICAL("JSON is not an object");
   }
@@ -75,6 +72,9 @@ int WeatherScraper::parse_response(string resp) const {
   picojson::value v1 = obj.find("query")->second;
   const picojson::object& obj2 =  v1.get<picojson::object>();
   picojson::value v2 = obj2.find("results")->second;
+  if (v2.is<picojson::null>()){
+    return -1;
+  }
   const picojson::object& obj3 = v2.get<picojson::object>();
   picojson::value v3 = obj3.find("channel")->second;   
   const picojson::object& obj4 = v3.get<picojson::object>();
