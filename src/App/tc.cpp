@@ -1,74 +1,77 @@
 //
 // Copyright (c) 2016-2017 by Cornell University.  All Rights Reserved.
 //
-// Permission to use the "TownCrier" software ("TownCrier"), officially docketed at
-// the Center for Technology Licensing at Cornell University as D-7364, developed
-// through research conducted at Cornell University, and its associated copyrights
-// solely for educational, research and non-profit purposes without fee is hereby
-// granted, provided that the user agrees as follows:
+// Permission to use the "TownCrier" software ("TownCrier"), officially
+// docketed at the Center for Technology Licensing at Cornell University
+// as D-7364, developed through research conducted at Cornell University,
+// and its associated copyrights solely for educational, research and
+// non-profit purposes without fee is hereby granted, provided that the
+// user agrees as follows:
 //
-// The permission granted herein is solely for the purpose of compiling the
-// TowCrier source code. No other rights to use TownCrier and its associated
-// copyrights for any other purpose are granted herein, whether commercial or
-// non-commercial.
+// The permission granted herein is solely for the purpose of compiling
+// the TowCrier source code. No other rights to use TownCrier and its
+// associated copyrights for any other purpose are granted herein,
+// whether commercial or non-commercial.
 //
-// Those desiring to incorporate TownCrier software into commercial products or use
-// TownCrier and its associated copyrights for commercial purposes must contact the
-// Center for Technology Licensing at Cornell University at 395 Pine Tree Road,
-// Suite 310, Ithaca, NY 14850; email: ctl-connect@cornell.edu; Tel: 607-254-4698;
-// FAX: 607-254-5454 for a commercial license.
+// Those desiring to incorporate TownCrier software into commercial
+// products or use TownCrier and its associated copyrights for commercial
+// purposes must contact the Center for Technology Licensing at Cornell
+// University at 395 Pine Tree Road, Suite 310, Ithaca, NY 14850; email:
+// ctl-connect@cornell.edu; Tel: 607-254-4698; FAX: 607-254-5454 for a
+// commercial license.
 //
-// IN NO EVENT SHALL CORNELL UNIVERSITY BE LIABLE TO ANY PARTY FOR DIRECT,
-// INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS,
-// ARISING OUT OF THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS, EVEN IF
-// CORNELL UNIVERSITY MAY HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+// IN NO EVENT SHALL CORNELL UNIVERSITY BE LIABLE TO ANY PARTY FOR
+// DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES,
+// INCLUDING LOST PROFITS, ARISING OUT OF THE USE OF TOWNCRIER AND ITS
+// ASSOCIATED COPYRIGHTS, EVEN IF CORNELL UNIVERSITY MAY HAVE BEEN
+// ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
-// THE WORK PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND CORNELL UNIVERSITY HAS NO
-// OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
-// MODIFICATIONS.  CORNELL UNIVERSITY MAKES NO REPRESENTATIONS AND EXTENDS NO
-// WARRANTIES OF ANY KIND, EITHER IMPLIED OR EXPRESS, INCLUDING, BUT NOT LIMITED
-// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
-// PURPOSE, OR THAT THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS WILL NOT
-// INFRINGE ANY PATENT, TRADEMARK OR OTHER RIGHTS.
+// THE WORK PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND CORNELL
+// UNIVERSITY HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES,
+// ENHANCEMENTS, OR MODIFICATIONS.  CORNELL UNIVERSITY MAKES NO
+// REPRESENTATIONS AND EXTENDS NO WARRANTIES OF ANY KIND, EITHER IMPLIED
+// OR EXPRESS, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+// MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, OR THAT THE USE
+// OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS WILL NOT INFRINGE ANY
+// PATENT, TRADEMARK OR OTHER RIGHTS.
 //
-// TownCrier was developed with funding in part by the National Science Foundation
-// (NSF grants CNS-1314857, CNS-1330599, CNS-1453634, CNS-1518765, CNS-1514261), a
-// Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
-// VMWare Research Award.
+// TownCrier was developed with funding in part by the National Science
+// Foundation (NSF grants CNS-1314857, CNS-1330599, CNS-1453634,
+// CNS-1518765, CNS-1514261), a Packard Fellowship, a Sloan Fellowship,
+// Google Faculty Research Awards, and a VMWare Research Award.
 //
 
+
+// system headers
 #include <jsonrpccpp/server/connectors/httpserver.h>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
+#include <stdint.h>
+
+// SGX headers
+#include <sgx_uae_service.h>
 
 #include <atomic>
 #include <csignal>
-#include <fstream>
 #include <iostream>
-#include <thread>
+#include <string>
 
-#include "sgx_uae_service.h"
-#include "sgx_urts.h"
-
-#include "Constants.h"
-#include "Enclave_u.h"
-#include "EthRPC.h"
-#include "monitor.h"
-#include "StatusRPCServer.h"
-#include "attestation.h"
-#include "bookkeeping/database.hxx"
-#include "request-parser.hxx"
-#include "stdint.h"
-#include "utils.h"
-#include "key-utils.h"
-#include "tc-exception.hxx"
+#include "Common/Constants.h"
+#include "App/Enclave_u.h"
+#include "App/EthRPC.h"
+#include "App/StatRPCServer.h"
+#include "App/attestation.h"
+#include "App/bookkeeping/database.h"
+#include "App/key-utils.h"
+#include "App/monitor.h"
+#include "App/request-parser.h"
+#include "App/tc-exception.h"
+#include "App/utils.h"
 
 #define LOGURU_IMPLEMENTATION 1
-#include "Log.h"
-
-#include "config.h"
+#include "Common/Log.h"
+#include "App/config.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -93,8 +96,10 @@ int main(int argc, const char *argv[]) {
   fs::path log_path;
   char _log_tag[100] = {0};
   std::time_t _current_time = std::time(NULL);
-  if (std::strftime(_log_tag, sizeof _log_tag, "%F-%T", std::localtime(&_current_time))) {
-    log_path = fs::path(config.get_working_dir()) / ("tc" + string(_log_tag) + ".log");
+  if (std::strftime(_log_tag, sizeof _log_tag, "%F-%T",
+                    std::localtime(&_current_time))) {
+    log_path =
+        fs::path(config.get_working_dir()) / ("tc" + string(_log_tag) + ".log");
   } else {
     log_path = fs::path(config.get_working_dir()) / ("tc.log");
   }
@@ -127,7 +132,8 @@ int main(int argc, const char *argv[]) {
 #endif
   }
 
-  const static string db_name = (fs::path(config.get_working_dir()) / "tc.db").string();
+  static const string db_name =
+      (fs::path(config.get_working_dir()) / "tc.db").string();
   LOG_F(INFO, "using db %s", db_name.c_str());
   bool create_db = false;
   if (fs::exists(db_name) && !config.is_run_as_daemon()) {
@@ -148,7 +154,7 @@ int main(int argc, const char *argv[]) {
     LOG_F(FATAL, "Failed to initialize the enclave");
     std::exit(-1);
   } else {
-    LOG_F(INFO, "Enclave %lld created", eid);
+    LOG_F(INFO, "Enclave %ld created", eid);
   }
 
   string address;
@@ -158,24 +164,24 @@ int main(int argc, const char *argv[]) {
     LL_INFO("using address %s", address.c_str());
 
     provision_key(eid, config.get_sealed_sig_key());
-  }
-  catch (const tc::EcallException &e) {
-    LL_CRITICAL(e.what());
+  } catch (const tc::EcallException &e) {
+    LL_CRITICAL("%s", e.what());
     exit(-1);
   }
 
-  jsonrpc::HttpServer status_server_connector(config.get_status_server_port(), "", "", 3);
-  StatusRPCServer status_rpc_server(status_server_connector, eid);
+  jsonrpc::HttpServer status_server_connector(config.get_status_server_port(),
+                                              "", "", 3);
+  tc::StatRPCServer stat_srvr(status_server_connector, eid, driver);
   if (config.is_status_server_enabled()) {
-    status_rpc_server.StartListening();
+    stat_srvr.StartListening();
     LOG_F(INFO, "RPC server started");
   }
 
-  Monitor monitor(driver, eid, nonce_offset, quit);
+  Monitor monitor(&driver, eid, nonce_offset, quit);
   monitor.loop();
 
   if (config.is_status_server_enabled()) {
-    status_rpc_server.StopListening();
+    stat_srvr.StopListening();
   }
   sgx_destroy_enclave(eid);
   delete rpc_client;
