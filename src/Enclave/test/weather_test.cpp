@@ -47,18 +47,18 @@
 
 int weather_self_test(){
 	WeatherScraper weatherScraper;
-	
+	/* Check with WOEID */
+	weatherScraper.set_qtype(1);
+
 	//Null Checker
 	double r = 0.0;
-	if (weatherScraper.weather_current("42.4406","-76.4966", NULL) != INVALID_PARAMS){
+	if (weatherScraper.weather_current("2487889",&r) != NO_ERROR){
 		return -1;
 	}
 
-	//Test out regular performance
-	if(weatherScraper.weather_current("42.4406","-76.4966", &r) != NO_ERROR){
-		return -1;
+	weatherScraper.set_qtype(2);
+	if (weatherScraper.weather_current("Chicago,IL", &r) == NO_ERROR){
+		return 0;
 	}
-	LL_INFO("New York (42.4406,-76.4966) location returns: %f", r);
-
 	return 0;
 }
