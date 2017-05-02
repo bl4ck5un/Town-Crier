@@ -57,7 +57,7 @@
 #include "App/utils.h"
 #include "Common/macros.h"
 #include "Common/Log.h"
-#include "external/base64.hxx"
+#include "Common/external/base64.hxx"
 
 #include "App/tc-exception.h"
 #include "Converter.h"

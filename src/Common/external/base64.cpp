@@ -118,11 +118,11 @@ static const char Pad64 = '=';
            characters followed by one "=" padding character.
    */
 
-int ext::b64_ntop(u_char const *src, size_t srclength, char *target,
+int ext::b64_ntop(unsigned char const *src, size_t srclength, char *target,
                   size_t targsize) {
   size_t datalength = 0;
-  u_char input[3];
-  u_char output[4];
+  unsigned char input[3];
+  unsigned char output[4];
   size_t i;
 
   while (2 < srclength) {
@@ -184,9 +184,9 @@ int ext::b64_ntop(u_char const *src, size_t srclength, char *target,
    it returns the number of data bytes stored at the target, or -1 on error.
  */
 
-int ext::b64_pton(const char *src, u_char *target, size_t targsize) {
+int ext::b64_pton(const char *src, unsigned char *target, size_t targsize) {
   int tarindex, state, ch;
-  u_char nextbyte;
+  unsigned char nextbyte;
   const char *pos;
 
   state = 0;

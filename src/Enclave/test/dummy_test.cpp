@@ -41,50 +41,44 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include "App/StatRPCServer.h"
+#include <stdio.h>
+#include "enc.h"
 
-#include <iostream>
-#include <string>
-#include <vector>
+using namespace std;
 
-#include "App/Converter.h"
-#include "App/attestation.h"
-#include "App/tc-exception.h"
-#include "Common/external/base64.hxx"
-
-using tc::StatRPCServer;
-
-StatRPCServer::StatRPCServer(AbstractServerConnector &connector,
-                             sgx_enclave_id_t eid, const OdbDriver &db)
-    : AbstractStatusServer(connector), eid(eid), stat_db(db) {}
-
-std::string StatRPCServer::attest() {
+int dummy_test() {
+  HybridEncryption encrypt;
   try {
-    std::vector<uint8_t> attestation;
-    get_attestation(this->eid, &attestation);
-    char b64_buf[4096] = {0};
-    int buf_used = ext::b64_ntop(attestation.data(), attestation.size(),
-                                 b64_buf, sizeof b64_buf);
-    if (buf_used < 0) {
-      return "";
-    } else {
-      return string(b64_buf);
-    }
-  } catch (tc::EcallException &e) {
-    return e.what();
-  } catch (std::exception &e) {
-    return e.what();
-  } catch (...) {
-    return "unknown exception";
+    ECPointBuffer server_pubkey;
+    mbedtls_mpi server_seckey;
+    mbedtls_mpi_init(&server_seckey);
+    encrypt.initServer(&server_seckey, server_pubkey);
+
+    string user_secret = "user_secret";
+
+    hexdump("input", user_secret.data(), user_secret.size());
+
+    string cipher_b64 = encrypt.hybridEncrypt(server_pubkey,
+                                              reinterpret_cast<const uint8_t *>(user_secret.data()),
+                                              user_secret.size());
+
+    printf_sgx("ciphertext (base64): %s\n", cipher_b64.c_str());
+
+    HybridCiphertext ciphertext = encrypt.decode(cipher_b64);
+
+    vector<uint8_t> cleartext;
+    encrypt.hybridDecrypt(ciphertext, &server_seckey, cleartext);
+
+    hexdump("decrypted", &cleartext[0], cleartext.size());
+    return memcmp(&cleartext[0], &user_secret[0], cleartext.size());
   }
-}
+  catch (const exception &e) {
+    LL_CRITICAL("%s", e.what());
+    return -1;
+  }
+  catch (...) {
+    LL_CRITICAL("Unknown exception");
+    return -1;
+  }
 
-Json::Value StatRPCServer::status() {
-  Json::Value status;
-  status["numberOfScannedBlocks"] =
-      static_cast<Json::Value::UInt64>(stat_db.getLastBlock());
-  status["numberOfReponseSent"] =
-      static_cast<Json::Value::UInt64>(stat_db.getNumOfResponse());
-
-  return status;
 }
