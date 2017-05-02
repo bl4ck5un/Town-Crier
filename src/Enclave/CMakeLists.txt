@@ -13,24 +13,26 @@ set(SOURCE_FILES
         scrapers/yahoo_yql.cpp
         scrapers/scraper_utils.cpp
         scrapers/yahoo_yql_stock.cpp
-        eth_ecdsa.cpp
-        Enclave_t.c
-        event_handler.cpp
+        scrapers/steam2.cpp
+        scrapers/stock_ticker.cpp
         scrapers/flight.cpp
         external/keccak.c
         external/csv_parser.cpp
-        tls_client_tiny.cpp
-        scrapers/steam2.cpp
-        scrapers/stock_ticker.cpp
-        eth_transaction.cpp
-        enclave_exception_hdlr.c
-        eth_abi.cpp
-        encoding.cpp
-        commons.cpp
         external/slre.c
+        external/http_parser.c
+        Enclave_t.c
+        commons.cpp
+        encoding.cpp
+        eth_ecdsa.cpp
+        eth_transaction.cpp
+        eth_abi.cpp
+        enclave_exception_hdlr.c
+        event_handler.cpp
+        tls_client_tiny.cpp
+        hybrid_cipher.cpp
         ../Common/external/base64.cpp
         ${LIB_MBEDTLS_PATH}
-        external/http_parser.c)
+        )
 
 add_definitions(-DENCLAVE_STD_ALT)
 

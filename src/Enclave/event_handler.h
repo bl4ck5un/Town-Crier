@@ -44,6 +44,7 @@
 #define ENCLAVE_EVENTHANDLER_H
 
 #include <stddef.h>
+#include <stdint.h>
 
 #if defined(__cplusplus)
 extern "C" {
