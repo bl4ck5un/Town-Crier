@@ -55,7 +55,7 @@
 
 using namespace std;
 /* Define USPS Scraper specific constants */
-#define USPS_API "production.shippingapis.com"
+#define USPS_API "stg-production.shippingapis.com"
 #define USERID "063CORNE4274"
 
 
@@ -68,7 +68,6 @@ err_code USPSScraper::handler(const uint8_t *req, size_t len, int *resp_data){
 		LL_CRITICAL("Data_len %zu*32 is not 32", len / 32);
 		return INVALID_PARAMS;
 	}
-
 	//Parse the raw array to get the required params
 	char tracking_num[32] = {0};
 	memcpy(tracking_num, req, 0x20);
@@ -79,7 +78,6 @@ err_code USPSScraper::handler(const uint8_t *req, size_t len, int *resp_data){
 
 
 err_code USPSScraper::ups_tracking (const char* tracking_num, int* status){
-	
 	if (tracking_num == NULL){
 		LL_CRITICAL("Error: Passed in NULL Pointer");
 		*status = -1;
@@ -87,8 +85,8 @@ err_code USPSScraper::ups_tracking (const char* tracking_num, int* status){
 	}
 
 	/* Build the query */ 
-	std::string query = "/ShippingAPI.dll?API=TrackV2&XML=<TrackRequest USERID=063CORNE4274><TrackID ID=\"" + std::string(tracking_num) + "\"></TrackID></TrackRequest>";
-	HttpRequest httpRequest(USPS_API, query);
+	std::string query = "/ShippingAPI.dll?API=TrackV2&XML=<TrackRequest USERID=\"063CORNE4274\"><TrackID ID=\"" + std::string(tracking_num) + "\"></TrackID></TrackRequest>";
+	HttpRequest httpRequest("secure.shippingapis.com", query, true );
 	HttpsClient httpClient(httpRequest);
 	std::string result; 
 	try{
@@ -140,7 +138,7 @@ std::string USPSScraper::parse_response(const char* resp){
 	char* tmp = (char*)resp; 
 	std::string buf_string(resp); 
 	//cout << buf_string << "\n";
-	
+	LL_INFO("req is %s", resp);
 	std::size_t pos = buf_string.find("id=\"tt_spStatus\"");
 	if (pos == std::string::npos){
 		std::string no_pkg = "Package not found";

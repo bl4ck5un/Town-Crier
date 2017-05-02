@@ -42,28 +42,46 @@
 //
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <Debug.h>
+#include "hybrid_cipher.h"
 
-#include "tls_client.h"
-#include "scrapers/current_weather.h"
-#include "Log.h"
+using namespace std;
 
-int weather_self_test(){
-	WeatherScraper weatherScraper;
-	/* Check with WOEID */
-	weatherScraper.set_qtype(1);
+int dummy_test() {
+  HybridEncryption encrypt;
+  try {
+    ECPointBuffer server_pubkey;
+//    mbedtls_mpi server_seckey;
+//    mbedtls_mpi_init(&server_seckey);
+//    encrypt.initServer(&server_seckey, server_pubkey);
 
-	//Null Checker
-	double r = 0.0;
+    encrypt.initServer(server_pubkey);
+    hexdump("server public key", server_pubkey, sizeof(ECPointBuffer));
 
-	if (weatherScraper.weather_current("2487889",&r) == INVALID_PARAMS ){
-		return -1;
-	}
+    string user_secret = "user_secret";
 
-	weatherScraper.set_qtype(2);
-	if (weatherScraper.weather_current("Chicago,IL", &r) == INVALID_PARAMS){
-		return -1;
-	}
-	return 0;
+    hexdump("input", user_secret.data(), user_secret.size());
+
+    string cipher_b64 = encrypt.hybridEncrypt(server_pubkey,
+                                              reinterpret_cast<const uint8_t *>(user_secret.data()),
+                                              user_secret.size());
+
+    printf_sgx("ciphertext (base64): %s\n", cipher_b64.c_str());
+
+    HybridCiphertext ciphertext = encrypt.decode(cipher_b64);
+
+    vector<uint8_t> cleartext;
+    encrypt.hybridDecrypt(ciphertext, cleartext);
+
+    hexdump("decrypted", &cleartext[0], cleartext.size());
+    return memcmp(&cleartext[0], &user_secret[0], cleartext.size());
+  }
+  catch (const exception &e) {
+    LL_CRITICAL("%s", e.what());
+    return -1;
+  }
+  catch (...) {
+    LL_CRITICAL("Unknown exception");
+    return -1;
+  }
+
 }

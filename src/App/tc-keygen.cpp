@@ -52,7 +52,7 @@
 
 #include "App/Converter.h"
 #include "App/Enclave_u.h"
-#include "App/external/base64.hxx"
+#include "Common/external/base64.hxx"
 #include "Common/macros.h"
 #include "App/utils.h"
 

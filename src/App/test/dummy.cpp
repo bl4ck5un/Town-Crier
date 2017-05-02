@@ -41,29 +41,18 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <Debug.h>
+#include <iostream>
+#include "gtest/gtest.h"
 
-#include "tls_client.h"
-#include "scrapers/current_weather.h"
-#include "Log.h"
+#include "App/Enclave_u.h"
+#include "App/test/SGXTestBase.h"
 
-int weather_self_test(){
-	WeatherScraper weatherScraper;
-	/* Check with WOEID */
-	weatherScraper.set_qtype(1);
+class dummyTest: public SGXTestBase {};
 
-	//Null Checker
-	double r = 0.0;
-
-	if (weatherScraper.weather_current("2487889",&r) == INVALID_PARAMS ){
-		return -1;
-	}
-
-	weatherScraper.set_qtype(2);
-	if (weatherScraper.weather_current("Chicago,IL", &r) == INVALID_PARAMS){
-		return -1;
-	}
-	return 0;
+TEST_F(dummyTest, hybridEncryption) {
+  sgx_status_t st;
+  int ret;
+  st = dummy_test(eid, &ret);
+  ASSERT_EQ(0, st);
+  ASSERT_EQ(0, ret);
 }

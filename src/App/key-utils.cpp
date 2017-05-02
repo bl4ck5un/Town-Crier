@@ -57,7 +57,7 @@
 #include "App/utils.h"
 #include "Common/macros.h"
 #include "Common/Log.h"
-#include "external/base64.hxx"
+#include "Common/external/base64.hxx"
 
 #include "App/tc-exception.h"
 #include "Converter.h"
@@ -100,7 +100,7 @@ void provision_key(sgx_enclave_id_t eid, string sealed_key) {
 
   int ret = 0;
   sgx_status_t ecall_ret;
-  ecall_ret = tc_provision_key(
+  ecall_ret = tc_provision_ecdsa_key(
       eid, &ret, reinterpret_cast<sgx_sealed_data_t*>(_sealed_key_buf),
       buffer_used);
   if (ecall_ret != SGX_SUCCESS || ret != 0) {

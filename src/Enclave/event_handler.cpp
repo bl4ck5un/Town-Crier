@@ -41,13 +41,12 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include <Log.h>
+#include "event_handler.h"
 #include <string>
 #include <inttypes.h>
 
-#include "scrapers/yahoo_yql_stock.h"
-#include "event_handler.h"
 #include "scrapers.h"
+#include "scrapers/yahoo_yql_stock.h"
 #include "scrapers/Scraper.h"
 #include "scrapers/flight.h"
 #include "scrapers/utils.h"
@@ -56,13 +55,15 @@
 #include "scrapers/steam2.h"
 #include "scrapers/current_coinmarket.h"
 #include "scrapers/current_weather.h"
-#include "time.h"
 #include "eth_transaction.h"
 #include "eth_abi.h"
 #include "Enclave_t.h"
 #include "external/keccak.h"
 #include "Constants.h"
+#include "time.h"
 #include "Log.h"
+
+#include "hybrid_cipher.h"
 
 /*
  * testing data
@@ -203,11 +204,22 @@ int handle_request(int nonce,
       break;
     }
     case TYPE_CURRENT_VOTE: {
-      double r1 = 0, r2 = 0, r3 = 0;
+      double r1 = 0, r2 = 0;
       yahoo_current("GOOG", &r1);
-      google_current("GOOG", &r3);
       google_current("GOOG", &r2);
       break;
+    }
+    case TYPE_ENCRYPT_TEST: {
+      HybridEncryption dec_ctx;
+      ECPointBuffer tc_pubkey;
+      dec_ctx.initServer(tc_pubkey);
+
+      string user_secret = "secret";
+      string cipher_b64 = dec_ctx.hybridEncrypt(tc_pubkey, reinterpret_cast<uint8_t*>(&user_secret[0]), user_secret.length());
+
+      HybridCiphertext cipher = dec_ctx.decode(cipher_b64);
+      vector<uint8_t > cleartext;
+      dec_ctx.hybridDecrypt(cipher, cleartext);
     }
     default :
       LL_CRITICAL("Unknown request type: %"PRIu64, type);

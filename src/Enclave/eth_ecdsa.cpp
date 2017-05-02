@@ -193,7 +193,7 @@ int ecdsa_keygen_unseal(const sgx_sealed_data_t *secret, size_t secret_len,
  * @param address
  * @return
  */
-int tc_provision_key(const sgx_sealed_data_t *secret, size_t secret_len) {
+int tc_provision_ecdsa_key(const sgx_sealed_data_t *secret, size_t secret_len) {
   // used by edge8r
   (void)secret_len;
 

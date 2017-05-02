@@ -31,7 +31,7 @@ enclave {
                     [user_check] unsigned char* pubkey,
                     [user_check] unsigned char *address);
 
-        public int tc_provision_key(
+        public int tc_provision_ecdsa_key(
                     [in,size=secret_len] const sgx_sealed_data_t *secret,
                     size_t secret_len);
 
