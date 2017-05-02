@@ -83,7 +83,7 @@ TEST_F(Keygen, provision) {
   tc_get_address(eid, &ret, pubkey_result, address_result);
   ASSERT_EQ(ret, TC_KEY_NOT_PROVISIONED);
 
-  ecall_status = tc_provision_key(
+  ecall_status = tc_provision_ecdsa_key(
       eid, &ret, reinterpret_cast<sgx_sealed_data_t*>(secret_sealed),
       buffer_used);
   if (SGX_SUCCESS != ecall_status || ret != 0) {

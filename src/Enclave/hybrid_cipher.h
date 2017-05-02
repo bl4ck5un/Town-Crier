@@ -21,8 +21,13 @@
 #include "external/base64.hxx"
 #include "Log.h"
 #include "Debug.h"
+#include "macros.h"
 
 using namespace std;
+
+
+// key-util
+int tc_provision_hybrid_key(const sgx_sealed_data_t *secret, size_t secret_len);
 
 #define DEBUG_BUFFER(title, buf, len) do { \
   mbedtls_debug_print_buf(&dummy_ssl_ctx, 0, __FILE__,__LINE__, title, buf, len); } \
@@ -84,6 +89,7 @@ class HybridEncryption {
   void load_pubkey(const mbedtls_ecp_group *grp, mbedtls_ecp_point *p, const ECPointBuffer buf);
   const char *err(int err);
 
+
   void hybridEncrypt(const ECPointBuffer tc_pubkey,
                      const AESIv aes_iv,
                      const uint8_t *data,
@@ -100,12 +106,17 @@ class HybridEncryption {
 
  public:
   HybridEncryption();
-  string encode(const HybridCiphertext &ciphertext);
-  HybridCiphertext decode(const string &cipher_b64);
+  static string encode(const HybridCiphertext &ciphertext);
+  static HybridCiphertext decode(const string &cipher_b64);
+
+  // public util functions
+  static int secretToPubkey(const mbedtls_mpi *seckey, ECPointBuffer pubkey);
   void dump_ciphertext(const HybridCiphertext &ciphertext);
   void fill_random(unsigned char *out, size_t len);
 
   void initServer(mbedtls_mpi *seckey, ECPointBuffer pubkey);
+  void initServer(ECPointBuffer pubkey);
+  void hybridDecrypt(const HybridCiphertext &ciphertext, vector <uint8_t> &cleartext);
   void hybridDecrypt(const HybridCiphertext &ciphertext, const mbedtls_mpi *secret_key, vector <uint8_t> &cleartext);
   string hybridEncrypt(const ECPointBuffer tc_pubkey, const uint8_t *data, size_t data_len);
 };

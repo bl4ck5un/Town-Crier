@@ -1,9 +1,43 @@
+#include <mbedtls-SGX/include/mbedtls/bignum.h>
 #include "hybrid_cipher.h"
 
 using namespace std;
 
-const AESIv HybridEncryption::iv = {0x99};
 
+
+
+#define PREDEFINED_HYBRID_SECKEY "cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8"
+static mbedtls_mpi g_secret_hybrid_key;
+
+
+int tc_provision_hybrid_key(const sgx_sealed_data_t *secret, size_t secret_len) {
+  // used by edge8r
+  (void) secret_len;
+
+  uint32_t decrypted_text_length = sgx_get_encrypt_txt_len(secret);
+  uint8_t y[decrypted_text_length];
+  sgx_status_t st;
+
+  st = sgx_unseal_data(secret, NULL, 0, y, &decrypted_text_length);
+  if (st != SGX_SUCCESS) {
+    LL_CRITICAL("unseal returned %#x", st);
+    return -1;
+  }
+
+  // initialize the global secret key
+  mbedtls_mpi_init(&g_secret_hybrid_key);
+  return mbedtls_mpi_read_binary(&g_secret_hybrid_key, y, sizeof y);
+}
+
+int tc_get_hybrid_pubkey(ECPointBuffer pubkey) {
+  if (g_secret_hybrid_key.p == NULL) {
+    LL_CRITICAL("key has not been provisioned yet. Call tc_provision_key() first");
+    return TC_KEY_NOT_PROVISIONED;
+  }
+  return HybridEncryption::secretToPubkey(&g_secret_hybrid_key, pubkey);
+}
+
+const AESIv HybridEncryption::iv = {0x99};
 
 void HybridEncryption::dump_pubkey(const mbedtls_ecp_group *grp, const mbedtls_ecp_point *p, ECPointBuffer buf) {
   size_t olen;
@@ -120,6 +154,30 @@ void HybridEncryption::initServer(mbedtls_mpi *seckey, ECPointBuffer pubkey) {
 
   ret = mbedtls_mpi_copy(seckey, &ecdh_ctx_tc.d);
   CHECK_RET(ret);
+}
+
+void HybridEncryption::initServer(ECPointBuffer pubkey) {
+#ifndef PREDEFINED_HYBRID_SECKEY
+  if (g_secret_hybrid_key.p == NULL) {
+    LL_CRITICAL("key not provisioned yet");
+  }
+#else
+  LL_CRITICAL("*** PREDEFINED SECRET KEY IS USED ***");
+  LL_CRITICAL("*** DISABLE THIS BEFORE DEPLOY ***");
+  ret = mbedtls_mpi_read_string(&g_secret_hybrid_key, 16, PREDEFINED_HYBRID_SECKEY);
+  if (ret != 0) {
+    LL_CRITICAL("Error: mbedtls_mpi_read_string returned %d", ret);
+    return;
+  }
+  HybridEncryption::secretToPubkey(&g_secret_hybrid_key, pubkey);
+#endif
+}
+
+void HybridEncryption::hybridDecrypt(const HybridCiphertext &ciphertext, vector<uint8_t> &cleartext) {
+  if (g_secret_hybrid_key.p == NULL) {
+    throw runtime_error("hybrid key not provisioned yet. Run initServer() first");
+  }
+  this->hybridDecrypt(ciphertext, &g_secret_hybrid_key, cleartext);
 }
 
 void HybridEncryption::hybridDecrypt(const HybridCiphertext &ciphertext,
@@ -262,4 +320,43 @@ void HybridEncryption::aes_gcm_256_dec(const AESKey aesKey,
                                  ciphertext, cleartext);
   mbedtls_gcm_free(&ctx);
   CHECK_RET(ret);
+}
+
+
+int HybridEncryption::secretToPubkey(const mbedtls_mpi *seckey, ECPointBuffer pubkey) {
+  if (pubkey == NULL || seckey == NULL) {
+    return -1;
+  }
+
+  mbedtls_ecdsa_context ctx;
+  unsigned char __pubkey[65];
+  size_t buflen = 0;
+  int ret;
+
+  mbedtls_ecdsa_init(&ctx);
+  mbedtls_ecp_group_load(&ctx.grp, EC_GROUP);
+
+  mbedtls_mpi_copy(&ctx.d, seckey);
+
+  ret = mbedtls_ecp_mul(&ctx.grp, &ctx.Q, &ctx.d, &ctx.grp.G, NULL, NULL);
+  if (ret != 0) {
+    LL_CRITICAL("Error: mbedtls_ecp_mul returned %d", ret);
+    return -1;
+  }
+
+  ret = mbedtls_ecp_point_write_binary(&ctx.grp, &ctx.Q, MBEDTLS_ECP_PF_UNCOMPRESSED, &buflen, __pubkey, 65);
+  if (ret == MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL) {
+    LL_CRITICAL("buffer too small");
+    return -1;
+  } else if (ret == MBEDTLS_ERR_ECP_BAD_INPUT_DATA) {
+    LL_CRITICAL("bad input data");
+    return -1;
+  }
+  if (buflen != 65) {
+    LL_CRITICAL("ecp serialization is incorrect olen=%ld", buflen);
+  }
+
+  // copy to user space
+  memcpy(pubkey, __pubkey, 65);
+  return 0;
 }

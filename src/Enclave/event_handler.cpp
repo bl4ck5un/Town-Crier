@@ -211,17 +211,15 @@ int handle_request(int nonce,
     }
     case TYPE_ENCRYPT_TEST: {
       HybridEncryption dec_ctx;
-      mbedtls_mpi secret_key;
-      mbedtls_mpi_init(&secret_key);
       ECPointBuffer tc_pubkey;
-      dec_ctx.initServer(&secret_key, tc_pubkey);
+      dec_ctx.initServer(tc_pubkey);
 
       string user_secret = "secret";
       string cipher_b64 = dec_ctx.hybridEncrypt(tc_pubkey, reinterpret_cast<uint8_t*>(&user_secret[0]), user_secret.length());
 
       HybridCiphertext cipher = dec_ctx.decode(cipher_b64);
       vector<uint8_t > cleartext;
-      dec_ctx.hybridDecrypt(cipher, &secret_key, cleartext);
+      dec_ctx.hybridDecrypt(cipher, cleartext);
     }
     default :
       LL_CRITICAL("Unknown request type: %"PRIu64, type);

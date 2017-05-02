@@ -50,9 +50,12 @@ int dummy_test() {
   HybridEncryption encrypt;
   try {
     ECPointBuffer server_pubkey;
-    mbedtls_mpi server_seckey;
-    mbedtls_mpi_init(&server_seckey);
-    encrypt.initServer(&server_seckey, server_pubkey);
+//    mbedtls_mpi server_seckey;
+//    mbedtls_mpi_init(&server_seckey);
+//    encrypt.initServer(&server_seckey, server_pubkey);
+
+    encrypt.initServer(server_pubkey);
+    hexdump("server public key", server_pubkey, sizeof(ECPointBuffer));
 
     string user_secret = "user_secret";
 
@@ -67,7 +70,7 @@ int dummy_test() {
     HybridCiphertext ciphertext = encrypt.decode(cipher_b64);
 
     vector<uint8_t> cleartext;
-    encrypt.hybridDecrypt(ciphertext, &server_seckey, cleartext);
+    encrypt.hybridDecrypt(ciphertext, cleartext);
 
     hexdump("decrypted", &cleartext[0], cleartext.size());
     return memcmp(&cleartext[0], &user_secret[0], cleartext.size());
