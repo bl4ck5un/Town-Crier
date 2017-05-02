@@ -119,7 +119,8 @@ TEST_F(Keygen, HybridKey) {
   }
 
   // the first byte of EC point binary is always 4
-  // this byte is not returned by ecdsa_keygen_seal following Ethereum conventions.
+  // this byte is not returned by ecdsa_keygen_seal following Ethereum
+  // conventions.
   // but we need it for hybrid encryption.
   pubkey_ref[0] = 0x04;
 
@@ -127,7 +128,10 @@ TEST_F(Keygen, HybridKey) {
   tc_get_hybrid_pubkey(eid, &ret, pubkey_result);
   ASSERT_EQ(ret, TC_KEY_NOT_PROVISIONED);
 
-  ecall_status = tc_provision_hybrid_key(eid, &ret, reinterpret_cast<sgx_sealed_data_t*>(secret_sealed), buffer_used);
+  ecall_status = tc_provision_hybrid_key(eid,
+                &ret,
+                reinterpret_cast<sgx_sealed_data_t*>(secret_sealed),
+                buffer_used);
   if (SGX_SUCCESS != ecall_status || ret != 0) {
     LL_CRITICAL("ecall failed");
     print_error_message(ecall_status);
