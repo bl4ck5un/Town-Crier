@@ -42,7 +42,7 @@
 //
 
 #include <stdio.h>
-#include "enc.h"
+#include "hybrid_cipher.h"
 
 using namespace std;
 
