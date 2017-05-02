@@ -56,7 +56,7 @@ void WolframQuery::set_query(std::string query){
 	this->query = query;
 }
 void WolframQuery::set_appid(std::string appId){
-	this->appid = appId
+	this->appid = appId;
 }
 std::string WolframQuery::get_url(){
 	std::string tmp = "/v2/input=" + this->query + "&appid=" + this->appid;

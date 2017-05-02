@@ -149,7 +149,6 @@ class OdbDriver {
     record_ptr tr(
         db->query_one<TransactionRecord>(query_record::tx_hash == tx_hash));
     if (!tr) {
-      LL_DEBUG("tx %s is not in db", tx_hash.c_str());
       ret = false;
     } else {
       ret = true;

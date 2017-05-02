@@ -125,7 +125,6 @@ void eth_getfilterlogs(const string &filter_id, Json::Value *txnContainer) {
 blocknum_t eth_blockNumber() {
   blocknum_t ret;
   std::string blk = rpc_client->eth_blockNumber();
-  LL_DEBUG("eth_blockNumber returns %s", blk.c_str());
   std::stringstream ss;
   ss << std::hex << blk;
   ss >> ret;

@@ -45,18 +45,18 @@
 
 #include <math.h>
 #include <unistd.h>
+#include <algorithm>
+#include <chrono>  // NOLINT
 #include <iomanip>
 #include <iostream>
-#include <chrono>  // NOLINT
-#include <thread>  // NOLINT
 #include <string>
-#include <algorithm>
+#include <thread>  // NOLINT
 
 #include "App/Converter.h"
 #include "App/Enclave_u.h"
 #include "App/EthRPC.h"
-#include "Common/Log.h"
 #include "App/request-parser.h"
+#include "Common/Log.h"
 
 // TX_BUF_SIZE is defined in Constants.h
 uint8_t resp_buffer[TX_BUF_SIZE] = {0};
@@ -91,8 +91,9 @@ void Monitor::loop() {
 
     try {
       blocknum_t current_highest_block = eth_blockNumber();
-      LL_DEBUG("Highest block is %ld, waiting for block %ld...",
-               current_highest_block, next_block_num);
+      LL_DEBUG("HEAD=%ld, done=%ld(-1). %ld behind head...",
+               current_highest_block, next_block_num,
+               current_highest_block - next_block_num);
 
       // if we've scanned all of them
       if (next_block_num > current_highest_block) {
@@ -120,7 +121,7 @@ void Monitor::loop() {
         string filter_id = eth_new_filter(next_block_num, next_block_num);
         eth_getfilterlogs(filter_id, &txn_list);
 
-        LL_DEBUG("block %d: get %zu tx", next_block_num, txn_list.size());
+        LL_DEBUG("block %d => get %zu tx", next_block_num, txn_list.size());
 
         if (txn_list.empty()) {
           /* log the empty blocks too */
