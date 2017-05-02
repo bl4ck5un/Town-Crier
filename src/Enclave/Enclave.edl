@@ -35,9 +35,16 @@ enclave {
                     [in,size=secret_len] const sgx_sealed_data_t *secret,
                     size_t secret_len);
 
+        public int tc_provision_hybrid_key(
+                    [in,size=secret_len] const sgx_sealed_data_t *secret,
+                    size_t secret_len);
+
         public int tc_get_address(
                     [user_check] unsigned char* pubkey,
                     [user_check] unsigned char *address);
+
+        public int tc_get_hybrid_pubkey(
+                    [user_check] uint8_t pubkey[65]);
     };
 
     untrusted {

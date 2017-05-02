@@ -50,9 +50,6 @@ int dummy_test() {
   HybridEncryption encrypt;
   try {
     ECPointBuffer server_pubkey;
-//    mbedtls_mpi server_seckey;
-//    mbedtls_mpi_init(&server_seckey);
-//    encrypt.initServer(&server_seckey, server_pubkey);
 
     encrypt.initServer(server_pubkey);
     hexdump("server public key", server_pubkey, sizeof(ECPointBuffer));

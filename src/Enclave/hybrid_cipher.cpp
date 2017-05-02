@@ -3,12 +3,9 @@
 
 using namespace std;
 
-
-
-
 #define PREDEFINED_HYBRID_SECKEY "cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8"
-static mbedtls_mpi g_secret_hybrid_key;
 
+static mbedtls_mpi g_secret_hybrid_key;
 
 int tc_provision_hybrid_key(const sgx_sealed_data_t *secret, size_t secret_len) {
   // used by edge8r
@@ -87,7 +84,7 @@ HybridEncryption::HybridEncryption() {
   mbedtls_debug_set_threshold(-1);
 }
 
-void HybridEncryption::dump_ciphertext(const HybridCiphertext &ciphertext) {
+void HybridEncryption::print_ciphertxt(const HybridCiphertext &ciphertext) {
   hexdump("user pubkey", ciphertext.user_pubkey, ciphertext.USER_PUBKEY_LEN);
   hexdump("aes iv", ciphertext.aes_iv, ciphertext.AES_IV_LEN);
   hexdump("gcm tag", ciphertext.gcm_tag, ciphertext.GCM_TAG_LEN);
@@ -130,10 +127,6 @@ HybridCiphertext HybridEncryption::decode(const string &cipher_b64) {
   ciphertext.data.insert(ciphertext.data.end(), cipher, cipher + o_len - ciphertext.HEADER_LEN);
 
   return ciphertext;
-}
-
-void HybridEncryption::fill_random(unsigned char *out, size_t len) {
-  mbedtls_ctr_drbg_random(&ctr_drbg, out, len);
 }
 
 void HybridEncryption::initServer(mbedtls_mpi *seckey, ECPointBuffer pubkey) {
@@ -321,7 +314,6 @@ void HybridEncryption::aes_gcm_256_dec(const AESKey aesKey,
   mbedtls_gcm_free(&ctx);
   CHECK_RET(ret);
 }
-
 
 int HybridEncryption::secretToPubkey(const mbedtls_mpi *seckey, ECPointBuffer pubkey) {
   if (pubkey == NULL || seckey == NULL) {

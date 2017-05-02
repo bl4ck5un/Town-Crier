@@ -25,16 +25,12 @@
 
 using namespace std;
 
-
-// key-util
-int tc_provision_hybrid_key(const sgx_sealed_data_t *secret, size_t secret_len);
+#define CHECK_RET(ret) do { if (ret != 0) { throw runtime_error(err(ret)); }} while (0);
+#define CHECK_RET_GO(ret, label) do { if (ret != 0) { goto label; }} while (0);
 
 #define DEBUG_BUFFER(title, buf, len) do { \
   mbedtls_debug_print_buf(&dummy_ssl_ctx, 0, __FILE__,__LINE__, title, buf, len); } \
  while (0);
-
-#define CHECK_RET(ret) do { if (ret != 0) { throw runtime_error(err(ret)); }} while (0);
-#define CHECK_RET_GO(ret, label) do { if (ret != 0) { goto label; }} while (0);
 
 static void my_debug(void *ctx, int level, const char *file, int line,
                      const char *str) {
@@ -104,21 +100,24 @@ class HybridEncryption {
                        const uint8_t *ciphertext, size_t ciphertext_len,
                        const GCMTag tag, uint8_t *cleartext);
 
+  void initServer(mbedtls_mpi *seckey, ECPointBuffer pubkey);
+  void hybridDecrypt(const HybridCiphertext &ciphertext, const mbedtls_mpi *secret_key, vector <uint8_t> &cleartext);
  public:
-  HybridEncryption();
+  // public utility functions
   static string encode(const HybridCiphertext &ciphertext);
   static HybridCiphertext decode(const string &cipher_b64);
-
-  // public util functions
   static int secretToPubkey(const mbedtls_mpi *seckey, ECPointBuffer pubkey);
-  void dump_ciphertext(const HybridCiphertext &ciphertext);
-  void fill_random(unsigned char *out, size_t len);
+  static void print_ciphertxt(const HybridCiphertext &ciphertext);
 
-  void initServer(mbedtls_mpi *seckey, ECPointBuffer pubkey);
+  HybridEncryption();
+
   void initServer(ECPointBuffer pubkey);
-  void hybridDecrypt(const HybridCiphertext &ciphertext, vector <uint8_t> &cleartext);
-  void hybridDecrypt(const HybridCiphertext &ciphertext, const mbedtls_mpi *secret_key, vector <uint8_t> &cleartext);
   string hybridEncrypt(const ECPointBuffer tc_pubkey, const uint8_t *data, size_t data_len);
+  void hybridDecrypt(const HybridCiphertext &ciphertext, vector <uint8_t> &cleartext);
 };
+
+// key-util
+int tc_provision_hybrid_key(const sgx_sealed_data_t *secret, size_t secret_len);
+int tc_get_hybrid_pubkey(ECPointBuffer pubkey);
 
 #endif //MBEDTLS_SGX_ENC_H
