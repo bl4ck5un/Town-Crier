@@ -65,9 +65,7 @@ class USPSScraper : Scraper{
 public:
 	err_code handler(const uint8_t *req, size_t len, int *resp_data);
 	err_code ups_tracking (const char* tracking_num, int* status);
-
-private:
-	std::string parse_response(const char* resp);
+	std::string parse_response(const string);
 };
 
 #endif
