@@ -97,7 +97,7 @@ int handle_request(int nonce,
         return -1;
       }
       dump_buf("data:", data, data_len);
-      return 0;
+      return -1;
     }
     case TYPE_FLIGHT_INS: {
       FlightScraper flightHandler;
