@@ -224,8 +224,9 @@ int handle_request(int nonce,
         hexdump("decrypted message", &cleartext[0], cleartext.size());
 
         // decrypted message is the base64 encoded data
+        string encoded_message(cleartext.begin(), cleartext.end());
         uint8_t decrypted_data[cleartext.size()];
-        int decrypted_data_len = ext::b64_pton(reinterpret_cast<char*>(&cleartext[0]),
+        int decrypted_data_len = ext::b64_pton(encoded_message.c_str(),
                                                decrypted_data, sizeof decrypted_data);
 
         if (decrypted_data_len == -1) {
@@ -240,7 +241,7 @@ int handle_request(int nonce,
       catch (...) {
         LL_CRITICAL("unknown exception happened while decrypting. See dump below.");
       }
-
+      break;
     }
     default :
       LL_CRITICAL("Unknown request type: %"PRIu64, type);
