@@ -20,17 +20,21 @@ set(SOURCE_FILES
         scrapers/flight.cpp
         external/keccak.c
         external/csv_parser.cpp
-        tls_client_tiny.cpp
-        scrapers/steam2.cpp
-        scrapers/stock_ticker.cpp
-        eth_transaction.cpp
-        enclave_exception_hdlr.c
-        eth_abi.cpp
-        encoding.cpp
-        commons.cpp
         external/slre.c
+        external/http_parser.c
+        Enclave_t.c
+        commons.cpp
+        encoding.cpp
+        eth_ecdsa.cpp
+        eth_transaction.cpp
+        eth_abi.cpp
+        enclave_exception_hdlr.c
+        event_handler.cpp
+        tls_client_tiny.cpp
+        hybrid_cipher.cpp
+        ../Common/external/base64.cpp
         ${LIB_MBEDTLS_PATH}
-        external/http_parser.c)
+        )
 
 add_definitions(-DENCLAVE_STD_ALT)
 
@@ -88,6 +92,5 @@ add_custom_command(TARGET enclave
         -enclave ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.so
         -out ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so
         COMMENT "Signing the enclave. Written to ${CMAKE_BINARY_DIR}")
-
 
 install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so DESTINATION tc)

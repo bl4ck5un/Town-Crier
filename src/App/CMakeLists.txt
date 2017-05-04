@@ -7,8 +7,8 @@ set(TC_SRC_FILES tc.cpp monitor.cpp attestation.cpp request-parser.cpp
         bookkeeping/transaction-record.hxx
         bookkeeping/transaction-record-odb.cxx
         Converter.cpp utils.cpp types.cpp
-        EthRPC.cpp StatusRPCServer.cpp
-        external/base64.cpp
+        EthRPC.cpp StatRPCServer.cpp
+        ../Common/external/base64.cpp
         key-utils.cpp
         tc-exception.cpp config.cpp config.h)
 
@@ -26,7 +26,7 @@ add_custom_command(
 add_executable(tc ${TC_SRC_FILES})
 add_executable(tc-keygen
         tc-keygen.cpp
-        external/base64.cpp
+        ../Common/external/base64.cpp
         utils.cpp Converter.cpp
         Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp utils.cpp Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
@@ -35,6 +35,7 @@ add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp utils.cpp Enclave
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
 add_executable(TestMain EXCLUDE_FROM_ALL
         ${TEST_SRC_FILES}
+        test/SGXTestBase.h
         attestation.cpp
         utils.cpp
         Enclave_u.c
@@ -45,7 +46,7 @@ add_executable(TestMain EXCLUDE_FROM_ALL
         bookkeeping/transaction-record-odb.cxx
         mbedtls_sgx_net.c
         Converter.cpp
-        external/base64.cpp
+        ../Common/external/base64.cpp
         types.cpp request-parser.cpp
         key-utils.cpp)
 
@@ -68,8 +69,7 @@ include_directories(
         ${JSONRPCCPP_INCLUDE_DIRS}
         ${MBEDTLS_LIB_DIR}/include
         ../vendor/gtest/include
-        ../Common
-        ../App
+        ../
 )
 
 target_link_libraries(tc
