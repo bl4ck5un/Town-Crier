@@ -31,13 +31,20 @@ enclave {
                     [user_check] unsigned char* pubkey,
                     [user_check] unsigned char *address);
 
-        public int tc_provision_key(
+        public int tc_provision_ecdsa_key(
+                    [in,size=secret_len] const sgx_sealed_data_t *secret,
+                    size_t secret_len);
+
+        public int tc_provision_hybrid_key(
                     [in,size=secret_len] const sgx_sealed_data_t *secret,
                     size_t secret_len);
 
         public int tc_get_address(
                     [user_check] unsigned char* pubkey,
                     [user_check] unsigned char *address);
+
+        public int tc_get_hybrid_pubkey(
+                    [user_check] uint8_t pubkey[65]);
     };
 
     untrusted {
@@ -56,7 +63,6 @@ enclave {
         void ocall_log_8        ([in,string] const char* str);
         void ocall_log_9        ([in,string] const char* str);
 
-        long long rdtsc();
         void ocall_sleep(int milisec);
         time_t ocall_time();
     };

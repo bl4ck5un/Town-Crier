@@ -43,22 +43,13 @@
 
 #include <gtest/gtest.h>
 
-#include "utils.h"
-#include "Enclave_u.h"
+#include "App/utils.h"
+#include "App/Enclave_u.h"
+#include "App/test/SGXTestBase.h"
 
-class TLSSuiteTest : public ::testing::Test {
- protected:
-  sgx_enclave_id_t eid;
-  virtual void SetUp() {
-    initialize_enclave(ENCLAVE_FILENAME, &eid);
-  }
+class TLS : public SGXTestBase {};
 
-  virtual void TearDown() {
-    sgx_destroy_enclave(eid);
-  }
-};
-
-TEST_F (TLSSuiteTest, SSLSuite) {
+TEST_F(TLS, all) {
   int ret = 0;
   ssl_self_test(eid, &ret);
   EXPECT_EQ(0, ret);

@@ -40,12 +40,8 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-//
-// Created by fanz on 4/13/17.
-//
-
-#ifndef TOWN_CRIER_CONFIG_H
-#define TOWN_CRIER_CONFIG_H
+#ifndef SRC_APP_CONFIG_H_
+#define SRC_APP_CONFIG_H_
 
 #include <string>
 
@@ -93,6 +89,6 @@ class Config {
   string to_string();
 };
 
-}
+}  // namespace tc
 
-#endif //TOWN_CRIER_CONFIG_H
+#endif  // SRC_APP_CONFIG_H_

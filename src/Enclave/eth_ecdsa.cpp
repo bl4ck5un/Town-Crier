@@ -41,18 +41,18 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include <string.h>
-#include <sgx_tseal.h>
 #include <mbedtls-SGX/include/mbedtls/bignum.h>
+#include <sgx_tseal.h>
+#include <string.h>
 #include <stdexcept>
 #include <string>
 
 using std::runtime_error;
 
-#include "eth_ecdsa.h"
-#include "external/keccak.h"
 #include "Debug.h"
 #include "Log.h"
+#include "eth_ecdsa.h"
+#include "external/keccak.h"
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"
@@ -64,22 +64,22 @@ using std::runtime_error;
 #include "mbedtls/platform.h"
 #else
 #include <stdio.h>
-#define mbedtls_printf     printf
+#define mbedtls_printf printf
 #endif
 
-#if defined(MBEDTLS_ECDSA_C) && \
-    defined(MBEDTLS_ENTROPY_C) && defined(MBEDTLS_CTR_DRBG_C)
-#include "mbedtls/entropy.h"
+#if defined(MBEDTLS_ECDSA_C) && defined(MBEDTLS_ENTROPY_C) && \
+    defined(MBEDTLS_CTR_DRBG_C)
+#include "mbedtls/bignum.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/ecdsa.h"
-#include "mbedtls/bignum.h"
+#include "mbedtls/entropy.h"
 #include "mbedtls/error.h"
 #endif
 #include "mbedtls/sha256.h"
 #define SIGN_DEBUG
-#undef  SIGN_DEBUG
+#undef SIGN_DEBUG
 
-#define ECPARAMS    MBEDTLS_ECP_DP_SECP256K1
+#define ECPARAMS MBEDTLS_ECP_DP_SECP256K1
 
 // pubkey: 64 Bytes
 // SHA3-256: 32 Bytes
@@ -87,65 +87,71 @@ using std::runtime_error;
 /*
 ---- ADDRESS -------------------------------
 SEC: cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8
-PUB: bb48ae3726c5737344a54b3463fec499cb108a7d11ba137ba3c7d043bd6d7e14994f60462a3f91550749bb2ae5411f22b7f9bee79956a463c308ad508f3557df
+PUB:
+bb48ae3726c5737344a54b3463fec499cb108a7d11ba137ba3c7d043bd6d7e14994f60462a3f91550749bb2ae5411f22b7f9bee79956a463c308ad508f3557df
 ADR: 89b44e4d3c81ede05d0f5de8d1a68f754d73d997
 */
 
-#define PREDEFINED_SECKEY "cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8"
+#define PREDEFINED_SECKEY \
+  "cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8"
 static mbedtls_mpi g_secret_key;
 
 /*!
- * @brief generate a key pair (or generate a pubkey and address from a secret key)
- *        see cpp-ethereum/utils/secp256k1/secp256k1.c:249 secp256k1_ec_pubkey_create
+ * @brief generate a key pair (or generate a pubkey and address from a secret
+ * key)
+ *        see cpp-ethereum/utils/secp256k1/secp256k1.c:249
+ * secp256k1_ec_pubkey_create
  * @param seckey NULL or a pointer to a secret key
  * @param pubkey [out,size=64] output buffer for the public key
  * @param address [out,size=20] output buffer for the address
  * @return 0 if succeed
  */
-int __ecdsa_seckey_to_pubkey(const mbedtls_mpi *seckey, unsigned char *pubkey, unsigned char *address) {
- if (pubkey == NULL || address == NULL || seckey == NULL) {
-   return -1;
- }
+int __ecdsa_seckey_to_pubkey(const mbedtls_mpi *seckey, unsigned char *pubkey,
+                             unsigned char *address) {
+  if (pubkey == NULL || address == NULL || seckey == NULL) {
+    return -1;
+  }
 
- mbedtls_ecdsa_context ctx;
- unsigned char __pubkey[65];
- unsigned char __address[32];
- size_t buflen = 0;
- int ret;
+  mbedtls_ecdsa_context ctx;
+  unsigned char __pubkey[65];
+  unsigned char __address[32];
+  size_t buflen = 0;
+  int ret;
 
- mbedtls_ecdsa_init(&ctx);
- mbedtls_ecp_group_load(&ctx.grp, ECPARAMS);
+  mbedtls_ecdsa_init(&ctx);
+  mbedtls_ecp_group_load(&ctx.grp, ECPARAMS);
 
- mbedtls_mpi_copy(&ctx.d, seckey);
+  mbedtls_mpi_copy(&ctx.d, seckey);
 
- ret = mbedtls_ecp_mul(&ctx.grp, &ctx.Q, &ctx.d, &ctx.grp.G, NULL, NULL);
- if (ret != 0) {
-   LL_CRITICAL("Error: mbedtls_ecp_mul returned %d", ret);
-   return -1;
- }
+  ret = mbedtls_ecp_mul(&ctx.grp, &ctx.Q, &ctx.d, &ctx.grp.G, NULL, NULL);
+  if (ret != 0) {
+    LL_CRITICAL("Error: mbedtls_ecp_mul returned %d", ret);
+    return -1;
+  }
 
- ret = mbedtls_ecp_point_write_binary(&ctx.grp, &ctx.Q, MBEDTLS_ECP_PF_UNCOMPRESSED, &buflen, __pubkey, 65);
- if (ret == MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL) {
-   LL_CRITICAL("buffer too small");
-   return -1;
- } else if (ret == MBEDTLS_ERR_ECP_BAD_INPUT_DATA) {
-   LL_CRITICAL("bad input data");
-   return -1;
- }
- if (buflen != 65) {
-   LL_CRITICAL("ecp serialization is incorrect olen=%ld", buflen);
- }
+  ret = mbedtls_ecp_point_write_binary(
+      &ctx.grp, &ctx.Q, MBEDTLS_ECP_PF_UNCOMPRESSED, &buflen, __pubkey, 65);
+  if (ret == MBEDTLS_ERR_ECP_BUFFER_TOO_SMALL) {
+    LL_CRITICAL("buffer too small");
+    return -1;
+  } else if (ret == MBEDTLS_ERR_ECP_BAD_INPUT_DATA) {
+    LL_CRITICAL("bad input data");
+    return -1;
+  }
+  if (buflen != 65) {
+    LL_CRITICAL("ecp serialization is incorrect olen=%ld", buflen);
+  }
 
- ret = keccak(__pubkey + 1, 64, __address, 32);
- if (ret != 0) {
-   LL_CRITICAL("keccak returned %d", ret);
-   return -1;
- }
+  ret = keccak(__pubkey + 1, 64, __address, 32);
+  if (ret != 0) {
+    LL_CRITICAL("keccak returned %d", ret);
+    return -1;
+  }
 
- // copy to user space
- memcpy(pubkey, __pubkey + 1, 64);
- memcpy(address, __address + 12, 20);
- return 0;
+  // copy to user space
+  memcpy(pubkey, __pubkey + 1, 64);
+  memcpy(address, __address + 12, 20);
+  return 0;
 }
 
 /*!
@@ -156,9 +162,10 @@ int __ecdsa_seckey_to_pubkey(const mbedtls_mpi *seckey, unsigned char *pubkey, u
  * @param address
  * @return
  */
-int ecdsa_keygen_unseal(const sgx_sealed_data_t *secret, size_t secret_len, unsigned char* pubkey, unsigned char *address) {
+int ecdsa_keygen_unseal(const sgx_sealed_data_t *secret, size_t secret_len,
+                        unsigned char *pubkey, unsigned char *address) {
   // used by edge8r
-  (void) secret_len;
+  (void)secret_len;
 
   uint32_t decrypted_text_length = sgx_get_encrypt_txt_len(secret);
   uint8_t y[decrypted_text_length];
@@ -186,9 +193,9 @@ int ecdsa_keygen_unseal(const sgx_sealed_data_t *secret, size_t secret_len, unsi
  * @param address
  * @return
  */
-int tc_provision_key(const sgx_sealed_data_t *secret, size_t secret_len) {
+int tc_provision_ecdsa_key(const sgx_sealed_data_t *secret, size_t secret_len) {
   // used by edge8r
-  (void) secret_len;
+  (void)secret_len;
 
   uint32_t decrypted_text_length = sgx_get_encrypt_txt_len(secret);
   uint8_t y[decrypted_text_length];
@@ -213,21 +220,24 @@ int tc_provision_key(const sgx_sealed_data_t *secret, size_t secret_len) {
  */
 int tc_get_address(unsigned char *pubkey, unsigned char *address) {
   if (g_secret_key.p == NULL) {
-    LL_CRITICAL("key has not been provisioned yet. Call tc_provision_key() first");
+    LL_CRITICAL(
+        "key has not been provisioned yet. Call tc_provision_key() first");
     return TC_KEY_NOT_PROVISIONED;
   }
   return __ecdsa_seckey_to_pubkey(&g_secret_key, pubkey, address);
 }
 
 /*!
- * generate a new key pair and return the sealed secret key, the public key and the address
+ * generate a new key pair and return the sealed secret key, the public key and
+ * the address
  * @param o_sealed
  * @param olen
  * @param o_pubkey
  * @param o_address
  * @return
  */
-int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen, unsigned char *o_pubkey, unsigned char *o_address) {
+int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen,
+                      unsigned char *o_pubkey, unsigned char *o_address) {
   mbedtls_ecp_group grp;
   int ret = 0;
 
@@ -245,11 +255,13 @@ int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen, unsigned char *o_pu
     return -1;
   }
 #else
-  mbedtls_mpi_fill_random(&secret, grp.nbits / 8, mbedtls_sgx_drbg_random, NULL);
+  mbedtls_mpi_fill_random(&secret, grp.nbits / 8, mbedtls_sgx_drbg_random,
+                          NULL);
 #endif
 
   unsigned char secret_buffer[32];
-  if (mbedtls_mpi_write_binary(&secret, secret_buffer, sizeof secret_buffer) != 0) {
+  if (mbedtls_mpi_write_binary(&secret, secret_buffer, sizeof secret_buffer) !=
+      0) {
     LL_CRITICAL("can't run secret to buffer");
     ret = -1;
     goto exit;
@@ -258,10 +270,11 @@ int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen, unsigned char *o_pu
   // seal the data
   {
     uint32_t len = sgx_calc_sealed_data_size(0, sizeof(secret_buffer));
-    sgx_sealed_data_t* seal_buffer = (sgx_sealed_data_t*) malloc(len);
+    sgx_sealed_data_t *seal_buffer = (sgx_sealed_data_t *)malloc(len);
     LL_LOG("sealed secret length is %d", len);
 
-    sgx_status_t st = sgx_seal_data(0, NULL, sizeof secret_buffer, secret_buffer, len, seal_buffer);
+    sgx_status_t st = sgx_seal_data(0, NULL, sizeof secret_buffer,
+                                    secret_buffer, len, seal_buffer);
     if (st != SGX_SUCCESS) {
       LL_LOG("Failed to seal. Ecall returned %d", st);
       ret = -1;
@@ -280,13 +293,14 @@ int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen, unsigned char *o_pu
   }
   LL_LOG("returning from keygen_seal");
 
-  exit:
+exit:
   mbedtls_mpi_free(&secret);
   mbedtls_ecp_group_free(&grp);
   return ret;
 }
 
-int ecdsa_sign(const uint8_t *data, size_t in_len, uint8_t *rr, uint8_t *ss, uint8_t *vv) {
+int ecdsa_sign(const uint8_t *data, size_t in_len, uint8_t *rr, uint8_t *ss,
+               uint8_t *vv) {
   int ret;
   mbedtls_ecdsa_context ctx_sign, ctx_verify;
   mbedtls_entropy_context entropy;
@@ -302,7 +316,8 @@ int ecdsa_sign(const uint8_t *data, size_t in_len, uint8_t *rr, uint8_t *ss, uin
   mbedtls_ecp_group_load(&ctx_sign.grp, ECPARAMS);
 
   if (g_secret_key.p == NULL) {
-    LL_CRITICAL("signing key not provisioned yet. Call tc_provision_key() first");
+    LL_CRITICAL(
+        "signing key not provisioned yet. Call tc_provision_key() first");
     return -1;
   }
   ret = mbedtls_mpi_copy(&ctx_sign.d, &g_secret_key);
@@ -310,14 +325,15 @@ int ecdsa_sign(const uint8_t *data, size_t in_len, uint8_t *rr, uint8_t *ss, uin
     LL_CRITICAL("Error: mbedtls_mpi_copy returned %d", ret);
     return -1;
   }
-  ret = mbedtls_ecp_mul(&ctx_sign.grp, &ctx_sign.Q, &ctx_sign.d, &ctx_sign.grp.G, NULL, NULL);
+  ret = mbedtls_ecp_mul(&ctx_sign.grp, &ctx_sign.Q, &ctx_sign.d,
+                        &ctx_sign.grp.G, NULL, NULL);
   if (ret != 0) {
     LL_CRITICAL("Error: mbedtls_ecp_mul returned %d", ret);
     return -1;
   }
 
-  ret = mbedtls_ecdsa_sign_with_v(&ctx_sign.grp, &r, &s, vv, &ctx_sign.d,
-                                  data, in_len, mbedtls_sgx_drbg_random, NULL);
+  ret = mbedtls_ecdsa_sign_with_v(&ctx_sign.grp, &r, &s, vv, &ctx_sign.d, data,
+                                  in_len, mbedtls_sgx_drbg_random, NULL);
   if (ret != 0) {
     LL_CRITICAL("mbedtls_ecdsa_sign_bitcoin returned %#x", ret);
     goto exit;
@@ -333,7 +349,7 @@ int ecdsa_sign(const uint8_t *data, size_t in_len, uint8_t *rr, uint8_t *ss, uin
   } else {
   }
 
-  exit:
+exit:
   if (ret != 0) {
     char error_buf[100];
     mbedtls_strerror(ret, error_buf, 100);

@@ -43,8 +43,8 @@
 
 #include <gtest/gtest.h>
 
-#include "utils.h"
-#include "Enclave_u.h"
+#include "App/utils.h"
+#include "App/Enclave_u.h"
 
 class RegExTestSuite : public ::testing::Test {
  protected:

@@ -40,12 +40,8 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-//
-// Created by fanz on 4/4/17.
-//
-
-#ifndef TOWN_CRIER_KEY_UTILS_H
-#define TOWN_CRIER_KEY_UTILS_H
+#ifndef SRC_APP_KEY_UTILS_H_
+#define SRC_APP_KEY_UTILS_H_
 
 #include <sgx_eid.h>
 #include <string>
@@ -55,4 +51,4 @@ using std::string;
 string unseal_key(sgx_enclave_id_t eid, string sealed_key);
 void provision_key(sgx_enclave_id_t eid, string sealed_key);
 
-#endif //TOWN_CRIER_KEY_UTILS_H
+#endif  // SRC_APP_KEY_UTILS_H_

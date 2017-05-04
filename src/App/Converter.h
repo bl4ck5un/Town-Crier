@@ -40,18 +40,18 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef TC_LINUX_CONVERTER_H
-#define TC_LINUX_CONVERTER_H
+#ifndef SRC_APP_CONVERTER_H_
+#define SRC_APP_CONVERTER_H_
 
+#include <cstdint>
 #include <string>
 #include <vector>
-#include <cstdint>
 
 using std::string;
 using std::vector;
 
 void hexToBuffer(const string &str, unsigned char *buffer, size_t bufSize);
-void hexToBuffer(const string &hex, vector<uint8_t> &buffer);
-string bufferToHex(const unsigned char *buffer, size_t bufSize, bool prefix = false);
-string bufferToHex(vector<unsigned char> const &  buffer, bool prefix = false);
-#endif //TC_LINUX_CONVERTER_H
+void hexToBuffer(const string &hex, vector<uint8_t> *buffer);
+string bufferToHex(const unsigned char *, size_t, bool prefix = false);
+string bufferToHex(vector<unsigned char> const &buffer, bool prefix = false);
+#endif  // SRC_APP_CONVERTER_H_

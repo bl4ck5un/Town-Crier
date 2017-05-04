@@ -43,15 +43,14 @@
 
 #include <gtest/gtest.h>
 
-#include "utils.h"
-#include "Enclave_u.h"
+#include "App/utils.h"
+#include "App/Enclave_u.h"
 
-TEST (SealData, All) {
+TEST(SealData, All) {
   sgx_enclave_id_t eid;
   int ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
   ASSERT_EQ(0, ret);
   seal_data_test(eid, &ret);
   ASSERT_EQ(0, ret);
-
   sgx_destroy_enclave(eid);
 }

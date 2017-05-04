@@ -44,26 +44,15 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "utils.h"
-#include "macros.h"
-#include "Converter.h"
-#include "Enclave_u.h"
+#include "App/Converter.h"
+#include "App/Enclave_u.h"
+#include "App/test/SGXTestBase.h"
+#include "App/utils.h"
+#include "Common/macros.h"
 
-using namespace std;
+class Keygen : public SGXTestBase {};
 
-class KeygenTestSuite : public ::testing::Test {
- protected:
-  sgx_enclave_id_t eid;
-  virtual void SetUp() {
-    initialize_enclave(ENCLAVE_FILENAME, &eid);
-  }
-
-  virtual void TearDown() {
-    sgx_destroy_enclave(eid);
-  }
-};
-
-TEST_F (KeygenTestSuite, keygen) {
+TEST_F(Keygen, keygen) {
   sgx_status_t st;
   int ret;
   st = keygen_test(eid, &ret);
@@ -71,7 +60,7 @@ TEST_F (KeygenTestSuite, keygen) {
   ASSERT_EQ(0, ret);
 }
 
-TEST_F(KeygenTestSuite, provision) {
+TEST_F(Keygen, signingKey) {
   unsigned char secret_sealed[SECRETKEY_SEALED_LEN];
   unsigned char pubkey_ref[PUBKEY_LEN];
   unsigned char address_ref[ADDRESS_LEN];
@@ -80,7 +69,8 @@ TEST_F(KeygenTestSuite, provision) {
   size_t buffer_used = 0;
   int ret;
   sgx_status_t ecall_status;
-  ecall_status = ecdsa_keygen_seal(eid, &ret, secret_sealed, &buffer_used, pubkey_ref, address_ref);
+  ecall_status = ecdsa_keygen_seal(eid, &ret, secret_sealed, &buffer_used,
+                                   pubkey_ref, address_ref);
   if (ecall_status != SGX_SUCCESS || ret != 0) {
     LL_CRITICAL("ecall failed");
     print_error_message(ecall_status);
@@ -93,7 +83,9 @@ TEST_F(KeygenTestSuite, provision) {
   tc_get_address(eid, &ret, pubkey_result, address_result);
   ASSERT_EQ(ret, TC_KEY_NOT_PROVISIONED);
 
-  ecall_status = tc_provision_key(eid, &ret, (sgx_sealed_data_t *) secret_sealed, buffer_used);
+  ecall_status = tc_provision_ecdsa_key(
+      eid, &ret, reinterpret_cast<sgx_sealed_data_t*>(secret_sealed),
+      buffer_used);
   if (SGX_SUCCESS != ecall_status || ret != 0) {
     LL_CRITICAL("ecall failed");
     print_error_message(ecall_status);
@@ -105,4 +97,49 @@ TEST_F(KeygenTestSuite, provision) {
 
   ASSERT_EQ(0, memcmp(pubkey_ref, pubkey_result, PUBKEY_LEN));
   ASSERT_EQ(0, memcmp(address_ref, address_result, ADDRESS_LEN));
+}
+
+TEST_F(Keygen, HybridKey) {
+  unsigned char secret_sealed[SECRETKEY_SEALED_LEN];
+  // Hybrid pubkey length = 65, an EC point
+  unsigned char pubkey_ref[65];
+  unsigned char address_ref[ADDRESS_LEN];
+
+  // call into enclave to fill the above three buffers
+  size_t buffer_used = 0;
+  int ret;
+  sgx_status_t ecall_status;
+  ecall_status = ecdsa_keygen_seal(eid, &ret, secret_sealed, &buffer_used,
+                                   pubkey_ref + 1, address_ref);
+  if (ecall_status != SGX_SUCCESS || ret != 0) {
+    LL_CRITICAL("ecall failed");
+    print_error_message(ecall_status);
+    LL_CRITICAL("ecdsa_keygen_seal returns %d", ret);
+    FAIL();
+  }
+
+  // the first byte of EC point binary is always 4
+  // this byte is not returned by ecdsa_keygen_seal following Ethereum
+  // conventions.
+  // but we need it for hybrid encryption.
+  pubkey_ref[0] = 0x04;
+
+  unsigned char pubkey_result[65];
+  tc_get_hybrid_pubkey(eid, &ret, pubkey_result);
+  ASSERT_EQ(ret, TC_KEY_NOT_PROVISIONED);
+
+  ecall_status = tc_provision_hybrid_key(eid,
+                &ret,
+                reinterpret_cast<sgx_sealed_data_t*>(secret_sealed),
+                buffer_used);
+  if (SGX_SUCCESS != ecall_status || ret != 0) {
+    LL_CRITICAL("ecall failed");
+    print_error_message(ecall_status);
+    LL_CRITICAL("ecdsa_keygen_seal returns %d", ret);
+    FAIL();
+  }
+
+  tc_get_hybrid_pubkey(eid, &ret, pubkey_result);
+
+  ASSERT_EQ(0, memcmp(pubkey_ref, pubkey_result, 65));
 }

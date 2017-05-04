@@ -4,7 +4,7 @@
 #include <string>
 #include <odb/core.hxx>
 
-#include "../types.hxx"
+#include "App/types.h"
 
 using namespace std;
 

@@ -41,59 +41,50 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-/* Define wolfrasm scraper constant */
+#include "App/StatRPCServer.h"
 
-#define APPID "A8V8R2-523WY42ULW"
+#include <iostream>
+#include <string>
+#include <vector>
 
-/*** Implement the WolframQuery class ***/
+#include "App/Converter.h"
+#include "App/attestation.h"
+#include "App/tc-exception.h"
+#include "Common/external/base64.hxx"
 
-/* Constructor for the WolframQuery class */
-WolframQuery::WolframQuery(std::string query){
-	this->query = query;
-	this->appid = APPID; /* Make this a constant */
-}
-void WolframQuery::set_query(std::string query){
-	this->query = query;
-}
-void WolframQuery::set_appid(std::string appId){
-	this->appid = appId;
-}
-std::string WolframQuery::get_url(){
-	std::string tmp = "/v2/input=" + this->query + "&appid=" + this->appid;
-	return tmp;
-}
+using tc::StatRPCServer;
 
-/*** Implement the WolframQueryResults class ***/
+StatRPCServer::StatRPCServer(AbstractServerConnector &connector,
+                             sgx_enclave_id_t eid, const OdbDriver &db)
+    : AbstractStatusServer(connector), eid(eid), stat_db(db) {}
 
-/* WolframResults constructor */
-WolframQueryResult::WolframQueryResult(char* xml){
-	this->xml = xml;
-}
-
-/* Return a pointer to the raw xml file */
-char* WolframQueryResult::get_raw_data(){
-	return this->xml;
-}
-
-/*** Implement the WolfRamScraper class ***/
-void WolframScraper::create_query(std::string query){
-	WolframQuery wolframQuery(query);
-	this->httpRequest = new HttpRequest("api.wolframalpha.com",query.get_url());
-	this-> httpClient = new HttpClient(httpRequest);
-}
-/* Function that performs the HTTPS request and return the xml file */
-WolframQueryResult WolframScraper::perform_query(){
-	wolfram_error ret;
-	try{
-		HttpResponse resp = httpClient.getResponse();
-	}
-	catch(std::runtime_error &e){
-		LL_CRITICAL("Https error: %s", e.what());
-    	LL_CRITICAL("Details: %s", httpClient.getError().c_str());
-    	httpClient.close();
-    	return NO_RESP;
-	}
-	WolframQueryResult wolframQueryResult(resp.c_str());
-	/* Do something with these results */
+std::string StatRPCServer::attest() {
+  try {
+    std::vector<uint8_t> attestation;
+    get_attestation(this->eid, &attestation);
+    char b64_buf[4096] = {0};
+    int buf_used = ext::b64_ntop(attestation.data(), attestation.size(),
+                                 b64_buf, sizeof b64_buf);
+    if (buf_used < 0) {
+      return "";
+    } else {
+      return string(b64_buf);
+    }
+  } catch (tc::EcallException &e) {
+    return e.what();
+  } catch (std::exception &e) {
+    return e.what();
+  } catch (...) {
+    return "unknown exception";
+  }
 }
 
+Json::Value StatRPCServer::status() {
+  Json::Value status;
+  status["numberOfScannedBlocks"] =
+      static_cast<Json::Value::UInt64>(stat_db.getLastBlock());
+  status["numberOfReponseSent"] =
+      static_cast<Json::Value::UInt64>(stat_db.getNumOfResponse());
+
+  return status;
+}

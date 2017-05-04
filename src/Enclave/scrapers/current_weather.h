@@ -36,13 +36,26 @@
 // Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
 // VMWare Research Award.
 //
+#ifndef CURRENT_WEATHER_H
+#define CURRENT_WEATHER_H
+
 #include "Scraper.h"
 
 class WeatherScraper : Scraper {
 public:
+  /* Define the data type the user sends */
+	enum WeatherQuery {
+    WOEID = 0, 
+    CITYNAME,
+    LATLONG
+	} WeatherQueryType;
+
 	err_code handler(const uint8_t *req, size_t data_len, int *resp_data);
-	err_code weather_current(const char* lattitude, const char* longitude, double* r);
+  err_code weather_current(string query, double* r);
+  void set_qtype(int type);
 
 private:
-	double parse_response(const char* resp);
+  string construct_query( string request);
 };
+
+#endif //CURRENT_WEATHER_H

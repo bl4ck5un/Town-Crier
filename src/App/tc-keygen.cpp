@@ -43,16 +43,18 @@
 
 #define LOGURU_IMPLEMENTATION 1
 
-#include <iostream>
-#include <fstream>
+#include <sgx_error.h>
 #include <boost/program_options.hpp>
 
-#include "Converter.h"
-#include "Enclave_u.h"
-#include "macros.h"
-#include "sgx_error.h"
-#include "utils.h"
-#include "external/base64.hxx"
+#include <fstream>
+#include <iostream>
+#include <string>
+
+#include "App/Converter.h"
+#include "App/Enclave_u.h"
+#include "Common/external/base64.hxx"
+#include "Common/macros.h"
+#include "App/utils.h"
 
 using std::cout;
 using std::endl;
@@ -60,7 +62,7 @@ using std::endl;
 void print_key(sgx_enclave_id_t eid, string keyfile) {
   LL_INFO("printing key from %s", keyfile.c_str());
   std::ifstream in_keyfile(keyfile);
-  if (! in_keyfile.is_open()){
+  if (!in_keyfile.is_open()) {
     std::cerr << "cannot open key file" << endl;
     std::exit(-1);
   }
@@ -74,23 +76,26 @@ void print_key(sgx_enclave_id_t eid, string keyfile) {
   unsigned char pubkey[PUBKEY_LEN];
   unsigned char address[ADDRESS_LEN];
 
-  size_t buffer_used = (size_t) ext::b64_pton(buffer.str().c_str(), secret_sealed, sizeof secret_sealed);
+  size_t buffer_used = static_cast<size_t>(
+      ext::b64_pton(buffer.str().c_str(), secret_sealed, sizeof secret_sealed));
 
   int ret = 0;
   sgx_status_t ecall_ret;
-  ecall_ret = ecdsa_keygen_unseal(eid, &ret, (sgx_sealed_data_t *) (secret_sealed), buffer_used, pubkey, address);
+  ecall_ret = ecdsa_keygen_unseal(
+      eid, &ret, reinterpret_cast<sgx_sealed_data_t *>(secret_sealed),
+      buffer_used, pubkey, address);
   if (ecall_ret != SGX_SUCCESS || ret != 0) {
     LL_CRITICAL("ecall failed");
     print_error_message(ecall_ret);
     LL_CRITICAL("ecdsa_keygen_unseal returns %d", ret);
 
     std::exit(-1);
-  } 
+  }
   cout << "PublicKey: " << bufferToHex(pubkey, sizeof pubkey, true) << endl;
   cout << "Address: " << bufferToHex(address, sizeof address, true) << endl;
 }
 
-void keygen (sgx_enclave_id_t eid, string keyfile) {
+void keygen(sgx_enclave_id_t eid, string keyfile) {
   LL_INFO("generating key to %s", keyfile.c_str());
   unsigned char secret_sealed[SECRETKEY_SEALED_LEN];
   unsigned char pubkey[PUBKEY_LEN];
@@ -100,7 +105,8 @@ void keygen (sgx_enclave_id_t eid, string keyfile) {
   size_t buffer_used = 0;
   int ret;
   sgx_status_t ecall_status;
-  ecall_status = ecdsa_keygen_seal(eid, &ret, secret_sealed, &buffer_used, pubkey, address);
+  ecall_status = ecdsa_keygen_seal(eid, &ret, secret_sealed, &buffer_used,
+                                   pubkey, address);
   if (ecall_status != SGX_SUCCESS || ret != 0) {
     LL_CRITICAL("ecall failed");
     print_error_message(ecall_status);
@@ -108,11 +114,13 @@ void keygen (sgx_enclave_id_t eid, string keyfile) {
     std::exit(-1);
   }
 
-  char secret_sealed_b64[SECRETKEY_SEALED_LEN*2];
-  buffer_used = (size_t) ext::b64_ntop(secret_sealed, sizeof secret_sealed, secret_sealed_b64, sizeof secret_sealed_b64);
+  char secret_sealed_b64[SECRETKEY_SEALED_LEN * 2];
+  buffer_used = static_cast<size_t>(
+      ext::b64_ntop(secret_sealed, sizeof secret_sealed, secret_sealed_b64,
+                    sizeof secret_sealed_b64));
 
   std::ofstream of(keyfile);
-  if (! of.is_open()) {
+  if (!of.is_open()) {
     LL_CRITICAL("cannot open key file: %s", keyfile.c_str());
     std::exit(-1);
   }
@@ -134,8 +142,7 @@ int main(int argc, const char *argv[]) {
 
   try {
     po::options_description desc("Allowed options");
-    desc.add_options()(
-        "help,h", "print this message")(
+    desc.add_options()("help,h", "print this message")(
         "print", po::value(&key_input), "print")(
         "keygen", po::value(&key_output), "keygen");
 
@@ -147,8 +154,7 @@ int main(int argc, const char *argv[]) {
       return -1;
     }
     po::notify(vm);
-  }
-  catch (po::required_option &e) {
+  } catch (po::required_option &e) {
     std::cerr << e.what() << endl;
     return -1;
   } catch (std::exception &e) {
@@ -179,8 +185,7 @@ int main(int argc, const char *argv[]) {
 
   if (!key_input.empty()) {
     print_key(eid, key_input);
-  }
-  else if (!key_output.empty()) {
+  } else if (!key_output.empty()) {
     keygen(eid, key_output);
   }
 

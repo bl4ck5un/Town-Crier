@@ -41,59 +41,31 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-/* Define wolfrasm scraper constant */
+#ifndef SRC_APP_TC_EXCEPTION_H_
+#define SRC_APP_TC_EXCEPTION_H_
 
-#define APPID "A8V8R2-523WY42ULW"
+#include <sgx_error.h>
 
-/*** Implement the WolframQuery class ***/
+#include <exception>
+#include <string>
 
-/* Constructor for the WolframQuery class */
-WolframQuery::WolframQuery(std::string query){
-	this->query = query;
-	this->appid = APPID; /* Make this a constant */
-}
-void WolframQuery::set_query(std::string query){
-	this->query = query;
-}
-void WolframQuery::set_appid(std::string appId){
-	this->appid = appId;
-}
-std::string WolframQuery::get_url(){
-	std::string tmp = "/v2/input=" + this->query + "&appid=" + this->appid;
-	return tmp;
-}
+#include "App/utils.h"
 
-/*** Implement the WolframQueryResults class ***/
+using std::string;
 
-/* WolframResults constructor */
-WolframQueryResult::WolframQueryResult(char* xml){
-	this->xml = xml;
-}
+namespace tc {
+class EcallException : public std::exception {
+ private:
+  sgx_status_t ecall_ret;
+  std::string why;
 
-/* Return a pointer to the raw xml file */
-char* WolframQueryResult::get_raw_data(){
-	return this->xml;
-}
+ public:
+  EcallException(sgx_status_t ecall_ret, std::string _why)
+      : ecall_ret(ecall_ret) {
+    this->why = sgx_error_message(ecall_ret) + "; " + _why;
+  }
+  virtual char const *what() const noexcept { return why.c_str(); }
+};
+}  // namespace tc
 
-/*** Implement the WolfRamScraper class ***/
-void WolframScraper::create_query(std::string query){
-	WolframQuery wolframQuery(query);
-	this->httpRequest = new HttpRequest("api.wolframalpha.com",query.get_url());
-	this-> httpClient = new HttpClient(httpRequest);
-}
-/* Function that performs the HTTPS request and return the xml file */
-WolframQueryResult WolframScraper::perform_query(){
-	wolfram_error ret;
-	try{
-		HttpResponse resp = httpClient.getResponse();
-	}
-	catch(std::runtime_error &e){
-		LL_CRITICAL("Https error: %s", e.what());
-    	LL_CRITICAL("Details: %s", httpClient.getError().c_str());
-    	httpClient.close();
-    	return NO_RESP;
-	}
-	WolframQueryResult wolframQueryResult(resp.c_str());
-	/* Do something with these results */
-}
-
+#endif  // SRC_APP_TC_EXCEPTION_H_

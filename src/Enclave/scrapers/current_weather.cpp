@@ -50,75 +50,121 @@
 #include "tls_client.h"
 #include "current_weather.h"
 #include "utils.h"
+#include "yahoo_yql.h"
+#include "../external/picojson.h"
 
 #define API_KEY "9b0ede9af16533e1557ad783c2dfe40d"
 
-double WeatherScraper::parse_response(const char* resp) {
-    
-    double ret = 0;
-    const char * end;
-    const char * temp = resp;
-
-    std::string buf_string(resp);
-    std::size_t pos = buf_string.find("temperature\":");
-
-    if (pos == std::string::npos){
-        return 0.0;
-    }
-
-    temp += (pos + 13);
-    end = temp;
-    while (*end != ',') {
-        end += 1;
-    }
-    ret = std::strtod(temp, NULL);
-    return ret;
-}
+using namespace std;
 
 /* The Data is structured as follows:
  * 0x00 - 0x20 int 
  */
 err_code WeatherScraper::handler(const uint8_t *req, size_t data_len, int *resp_data){
     
-    if (data_len != 32){
-        LL_CRITICAL("data_len %zu*32 is not 32",data_len / 32);
-        return INVALID_PARAMS;
-    }
-    char lat[32] = {0};
-    char lng[32] = {0};
+  if (data_len != 2*32){
+    LL_CRITICAL("data_len %zu*32 is not 32",data_len / 32);
+    return INVALID_PARAMS;
+  }
+  char qType[32] = {0};
+  char query[32] = {0};
 
-    memcpy(lat, req, 0x20);
-    memcpy(lng, req + 0x20, 0x20);
-    
-    double tmp;
-    err_code ret = weather_current((const char*)lat, (const char*)lng, &tmp); 
-    *resp_data = (int) tmp;
-    return ret;
+  memcpy(qType, req, 0x20);
+  memcpy(query, req + 0x20, 0x20);
+
+  if(qType[0] == '1'){
+    this->WeatherQueryType = WOEID;
+  }
+  if(qType[0] == '2'){
+    this->WeatherQueryType = CITYNAME;
+  }
+  if(qType[0] == '3'){
+    this->WeatherQueryType = LATLONG;
+  }
+
+  double tmp;
+  err_code ret = weather_current(string(query), &tmp); 
+  *resp_data = tmp;
+  return ret;
 }
 
-err_code WeatherScraper::weather_current(const char* lattitude, const char* longitude, double* r) {
-    /* Null Checker */
-    if (r == NULL){
-        LL_CRITICAL("Error: Passed null pointers");
-        return INVALID_PARAMS;
-    }
+err_code WeatherScraper::weather_current(string request, double* r) {
+  /* Null Checker */
+  if (request.size() == 0 ||r == NULL){
+    LL_CRITICAL("Error: Passed null pointers");
+    return INVALID_PARAMS;
+  }
+  string query = this->construct_query(request);
 
-    std::string query = "/forecast/9b0ede9af16533e1557ad783c2dfe40d/" + \
-                        std::string(lattitude) + "," + std::string(longitude);
-    LL_INFO("Query: %s", query.c_str());
-    HttpRequest httpRequest("api.darksky.net", query, true);
-    HttpsClient httpClient(httpRequest);
+  YahooYQL yahooYQL(query, YahooYQL::JSON, "store://datatables.org/alltableswithkeys");
+  string resp;
+  err_code ret = yahooYQL.execute(resp);
+  LL_INFO("resp: %s", resp.c_str());
 
-    try {
-        HttpResponse response = httpClient.getResponse();
-        *r = parse_response(response.getContent().c_str());
-    }
-    catch (std::runtime_error& e){
-        LL_CRITICAL("Https error: %s", e.what());
-        LL_CRITICAL("Details: %s", httpClient.getError().c_str());
-        httpClient.close();
-        return WEB_ERROR;
-    }
-    return NO_ERROR;
+  picojson::value v;
+  std::string err = picojson::parse(v, resp);
+  if (! err.empty()) {
+    LL_CRITICAL("Error in picojson");
+    return INVALID_PARAMS;
+  }
+
+  if(!v.is<picojson::object>()) {
+    LL_CRITICAL("JSON is not an object");
+    return INVALID_PARAMS;
+  }
+
+  const picojson::value::object& obj = v.get<picojson::object>();
+  picojson::value v1 = obj.find("query")->second;
+  const picojson::object& obj2 =  v1.get<picojson::object>();
+  picojson::value v2 = obj2.find("results")->second;
+  if (v2.is<picojson::null>()){
+    return WEB_ERROR;
+  }
+  const picojson::object& obj3 = v2.get<picojson::object>();
+  picojson::value v3 = obj3.find("channel")->second;   
+  const picojson::object& obj4 = v3.get<picojson::object>();
+  picojson::value v4 = obj4.find("item")->second;
+  const picojson::object& obj5 = v4.get<picojson::object>();
+  picojson::value v5 = obj5.find("condition")->second;
+  const picojson::object& obj6 = v5.get<picojson::object>();
+  picojson::value v6 = obj6.find("temp")->second;
+  const std::string& temperature = v6.get<std::string>();
+  int tmp_int = atoi(temperature.c_str());
+
+  *r = (double)tmp_int;
+  return ret;
+
+}
+/* For testing purposes only */
+void WeatherScraper::set_qtype(int type){
+  switch(type){
+    case 1:
+      this->WeatherQueryType = WOEID;
+      break;
+    case 2:
+      this->WeatherQueryType = CITYNAME;
+      break;
+    case 3:
+      this->WeatherQueryType = LATLONG;
+      break;
+    default:
+      LL_CRITICAL("Error");
+      break;
+  }
 }
 
+string WeatherScraper::construct_query(string request){
+  string q;
+  switch (this->WeatherQueryType){
+    case WOEID:
+      q = "select item.condition from weather.forecast where woeid = " + request;
+      break;
+    case CITYNAME:
+      q = "select item.condition from weather.forecast where woeid in (select woeid from geo.places(1) where text=\""+ request + "\")";
+      break;
+    case LATLONG:
+      q = "";
+      break;
+  }
+  return q;
+}

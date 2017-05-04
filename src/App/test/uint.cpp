@@ -44,26 +44,12 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "utils.h"
-#include "macros.h"
-#include "Converter.h"
-#include "Enclave_u.h"
+#include "App/Enclave_u.h"
+#include "App/test/SGXTestBase.h"
 
-using namespace std;
+class UintTestSuite : public SGXTestBase {};
 
-class UintTestSuite : public ::testing::Test {
- protected:
-  sgx_enclave_id_t eid;
-  virtual void SetUp() {
-    initialize_enclave(ENCLAVE_FILENAME, &eid);
-  }
-
-  virtual void TearDown() {
-    sgx_destroy_enclave(eid);
-  }
-};
-
-TEST_F (UintTestSuite, uint) {
+TEST_F(UintTestSuite, uint) {
   sgx_status_t st;
   int ret;
   st = uint_utils_test(eid, &ret);

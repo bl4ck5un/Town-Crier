@@ -41,8 +41,4 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-//
-// Created by fanz on 1/23/17.
-//
-
-#include "types.hxx"
+#include "App/types.h"
