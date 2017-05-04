@@ -214,12 +214,14 @@ int handle_request(int nonce,
       ECPointBuffer tc_pubkey;
       dec_ctx.initServer(tc_pubkey);
 
-      string user_secret = "secret";
-      string cipher_b64 = dec_ctx.hybridEncrypt(tc_pubkey, reinterpret_cast<uint8_t*>(&user_secret[0]), user_secret.length());
+      string cipher_b64 = dec_ctx.hybridEncrypt(tc_pubkey,
+                                                data,
+                                                data_len);
 
       HybridCiphertext cipher = dec_ctx.decode(cipher_b64);
       vector<uint8_t > cleartext;
       dec_ctx.hybridDecrypt(cipher, cleartext);
+      hexdump("decrypted message", &cleartext[0], cleartext.size());
     }
     default :
       LL_CRITICAL("Unknown request type: %"PRIu64, type);
