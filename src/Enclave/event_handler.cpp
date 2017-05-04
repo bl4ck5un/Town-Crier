@@ -236,10 +236,12 @@ int handle_request(int nonce,
         hexdump("decoded message", decrypted_data, (size_t) decrypted_data_len);
       }
       catch (const std::exception& e) {
-        LL_CRITICAL("decryption error: %s. See dump below.", e.what());
+        LL_CRITICAL("decryption error: %s. See dump above.", e.what());
+        return -1;
       }
       catch (...) {
-        LL_CRITICAL("unknown exception happened while decrypting. See dump below.");
+        LL_CRITICAL("unknown exception happened while decrypting. See dump above.");
+        return -1;
       }
       break;
     }
