@@ -222,6 +222,17 @@ int handle_request(int nonce,
         vector<uint8_t > cleartext;
         dec_ctx.hybridDecrypt(cipher, cleartext);
         hexdump("decrypted message", &cleartext[0], cleartext.size());
+
+        // decrypted message is the base64 encoded data
+        uint8_t decrypted_data[cleartext.size()];
+        int decrypted_data_len = ext::b64_pton(reinterpret_cast<char*>(&cleartext[0]),
+                                               decrypted_data, sizeof decrypted_data);
+
+        if (decrypted_data_len == -1) {
+          throw runtime_error("can't decode user message");
+        }
+
+        hexdump("decoded message", decrypted_data, (size_t) decrypted_data_len);
       }
       catch (const std::exception& e) {
         LL_CRITICAL("decryption error: %s. See dump below.", e.what());
