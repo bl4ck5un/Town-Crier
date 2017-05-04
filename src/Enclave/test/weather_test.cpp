@@ -40,6 +40,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <Debug.h>
+#include <Log.h>
 
 #include "tls_client.h"
 #include "scrapers/current_weather.h"

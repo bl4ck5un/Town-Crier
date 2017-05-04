@@ -13,6 +13,7 @@ set(SOURCE_FILES
         scrapers/yahoo_yql.cpp
         scrapers/scraper_utils.cpp
         scrapers/yahoo_yql_stock.cpp
+        scrapers/wolfram.cpp
         eth_ecdsa.cpp
         Enclave_t.c
         event_handler.cpp
@@ -35,7 +36,7 @@ add_definitions(-DENCLAVE_STD_ALT)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
 
-SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES} scrapers/utils.h scrapers/UPS_Tracking.h scrapers/Scraper.cpp scrapers/Scraper.h scrapers/steam2.h scrapers/flight.h scrapers/stockticker.h scrapers/current_coinmarket.h scrapers/current_weather.h external/gmtime.cpp)
+SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES} scrapers/utils.h scrapers/UPS_Tracking.h scrapers/Scraper.cpp scrapers/Scraper.h scrapers/steam2.h scrapers/flight.h scrapers/stockticker.h scrapers/wolfram.h scrapers/current_coinmarket.h scrapers/current_weather.h external/gmtime.cpp)
 
 set_directory_properties(PROPERTIES
         ADDITIONAL_MAKE_CLEAN_FILES "Enclave_t.c; Enclave_t.h")
