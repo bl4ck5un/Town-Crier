@@ -2,12 +2,17 @@
 #  JSONRPCCPP_FOUND - system has sqlite
 #  JSONRPCCPP_INCLUDE_DIRS - the sqlite include directory
 #  JSONRPCCPP_LIBRARIES - Link these to use sqlite
-#
+
+IF(APPLE)
+    set(EXT dylib)
+ELSE()
+    set(EXT so)
+ENDIF(APPLE)
 
 FIND_PATH(JSONRPCCPP_INCLUDE_DIRS jsonrpccpp/version.h)
-FIND_LIBRARY(JSONRPCCPP_SERVER_LIBRARY libjsonrpccpp-server.so)
-FIND_LIBRARY(JSONRPCCPP_CLIENT_LIBRARY libjsonrpccpp-client.so)
-FIND_LIBRARY(JSONRPCCPP_COMMON_LIBRARY libjsonrpccpp-common.so)
+FIND_LIBRARY(JSONRPCCPP_SERVER_LIBRARY libjsonrpccpp-server.${EXT})
+FIND_LIBRARY(JSONRPCCPP_CLIENT_LIBRARY libjsonrpccpp-client.${EXT})
+FIND_LIBRARY(JSONRPCCPP_COMMON_LIBRARY libjsonrpccpp-common.${EXT})
 
 # handle the QUIETLY and REQUIRED arguments and set JSONRPCCPP_FOUND to TRUE
 # if all listed variables are TRUE, hide their existence from configuration view
