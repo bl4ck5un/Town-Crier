@@ -214,14 +214,22 @@ int handle_request(int nonce,
       ECPointBuffer tc_pubkey;
       dec_ctx.initServer(tc_pubkey);
 
-      string cipher_b64 = dec_ctx.hybridEncrypt(tc_pubkey,
-                                                data,
-                                                data_len);
+      try {
+        string cipher_b64 = dec_ctx.hybridEncrypt(tc_pubkey, data, data_len);
+        HybridCiphertext cipher = dec_ctx.decode(cipher_b64);
+        vector<uint8_t > cleartext;
+        dec_ctx.hybridDecrypt(cipher, cleartext);
+        hexdump("decrypted message", &cleartext[0], cleartext.size());
+      }
+      catch (const std::exception& e) {
+        LL_CRITICAL("decryption error: %s. See dump below.", e.what());
+        hexdump("errored cipher", data, data_len);
+      }
+      catch (...) {
+        LL_CRITICAL("unknown exception happened while decrypting. See dump below.");
+        hexdump("errored cipher", data, data_len);
+      }
 
-      HybridCiphertext cipher = dec_ctx.decode(cipher_b64);
-      vector<uint8_t > cleartext;
-      dec_ctx.hybridDecrypt(cipher, cleartext);
-      hexdump("decrypted message", &cleartext[0], cleartext.size());
     }
     default :
       LL_CRITICAL("Unknown request type: %"PRIu64, type);
