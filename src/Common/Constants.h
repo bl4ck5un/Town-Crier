@@ -56,7 +56,8 @@
 #define TYPE_COINMARKET     0x5
 #define TYPE_WEATHER        0X6
 #define TYPE_CURRENT_VOTE   0x7
-
+#define TYPE_WOLFRAM		0x8
+ 
 /* Possible return values to be used in Enclave-Relay Connections */
 #define TC_SUCCESS          0x0
 #define TC_INPUT_ERROR      0x1

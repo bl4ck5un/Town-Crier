@@ -53,6 +53,7 @@
 #include "scrapers/steam2.h"
 #include "scrapers/current_coinmarket.h"
 #include "scrapers/current_weather.h"
+#include "scrapers/wolfram.h"
 #include "time.h"
 #include "eth_transaction.h"
 #include "eth_abi.h"
@@ -205,6 +206,22 @@ int handle_request(int nonce,
       google_current("GOOG", &r3);
       google_current("GOOG", &r2);
       break;
+    }
+    case TYPE_WOLFRAM: {
+      WolframScraper wolframScraper;
+      int status;
+      switch (wolframScraper.handler(data, data_len,&status)){
+        case UNKNOWN_ERROR:
+        case WEB_ERROR:
+          error_flag = TC_INTERNAL_ERROR;
+          break;
+        case INVALID_PARAMS:
+          error_flag = TC_INPUT_ERROR;
+          break;
+        case NO_ERROR:
+          append_as_uint256(resp_data, status, sizeof(status));
+          break;
+      }
     }
     default :
       LL_CRITICAL("Unknown request type: %"PRIu64, type);

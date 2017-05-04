@@ -4,11 +4,7 @@
 #include <string>
 #include "Scraper.h"
 #include "utils.h"
-enum wolfram_error{
-	No_ERR=0,		/* Produced a valid query */
-	INVALID, 		/* Invalid query */
-	NO_RESP,		/* Wolfram website irresponsive */
-};
+
 
 class WolframQueryResult{
 private:
