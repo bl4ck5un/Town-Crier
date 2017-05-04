@@ -62,20 +62,25 @@ using namespace std;
  * 		0x00 - 0x20 string tracking_number
  */
 err_code USPSScraper::handler(const uint8_t *req, size_t len, int *resp_data){
-	if(len != 32){
-		LL_CRITICAL("Data_len %zu*32 is not 32", len / 32);
+	if(len != 2*32){
+		LL_CRITICAL("Data_len %zu*32 is not 2*32", len / 32);
 		return INVALID_PARAMS;
 	}
 	//Parse the raw array to get the required params
-	char tracking_num[32] = {0};
-	memcpy(tracking_num, req, 0x20);
+	// char tracking_num[32] = {0};
+	// char carrier_name[32] = {0};
+	std::string tracking_num(req, req + 0x20);
+	std::string carrier_name(req + 0x20, req + 0x40);
+	// memcpy(tracking_num, req, 0x20);
+	// memcpy(carrier_name, req + 0x20, 0x20);
 
 	LL_DEBUG("Tracking Number is: %s", tracking_num);
 
-	return ups_tracking(tracking_num, resp_data);
+	return ups_tracking(tracking_num, carrier_name, resp_data);
 }
 
-err_code USPSScraper::ups_tracking (std::string tracking_num, int* status){
+err_code USPSScraper::ups_tracking (const std::string& tracking_num, const std::string& carrier_name, int* status){
+	
 	if (tracking_num.size() == 0){
 		LL_CRITICAL("Error: Passed in NULL Pointer");
 		*status = -1;
@@ -83,12 +88,13 @@ err_code USPSScraper::ups_tracking (std::string tracking_num, int* status){
 	}
 
 	/* Build the query */ 
-	std::string query = "/v2/trackers?tracker[tracking_code]=" + tracking_num + "&tracker[carrier]=USPS";
+	std::string query = "/v2/trackers?tracker[tracking_code]=" + tracking_num + "&tracker[carrier]=" + carrier_name;
  	std::vector<string> header;
+ 	LL_INFO("query: %s", query.c_str());
 
  	std::string auth = "Authorization: Basic " + this->APIKEY;
  	LL_INFO("auth: %s", auth.c_str());
- 	header.push_back("Host: " + this->HOST);
+ 	//header.push_back("Host: " + this->HOST);
  	header.push_back(auth);
 
 	//"/ShippingAPI.dll?API=TrackV2&XML=<TrackRequest USERID=\"063CORNE4274\"><TrackID ID=\"" + std::string(tracking_num) + "\"></TrackID></TrackRequest>";

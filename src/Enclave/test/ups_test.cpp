@@ -12,7 +12,9 @@ int ups_self_test() {
   int resp;
   //std::string status = uspsScraper.parse_response(example_json);
   //LL_INFO("status: %s", status.c_str());
-  uspsScraper.ups_tracking("EZ1000000001,", &resp);
+  /* empty strings */ 
+
+  uspsScraper.ups_tracking("EZ2000000002", "USPS", &resp);
   return 0;
 }
 
