@@ -78,7 +78,7 @@ err_code USPSScraper::handler(const uint8_t *req, size_t len, int *resp_data){
 	// memcpy(tracking_num, req, 0x20);
 	// memcpy(carrier_name, req + 0x20, 0x20);
 
-	LL_DEBUG("Tracking Number is: %s", tracking_num);
+	LL_DEBUG("Tracking Number is: %s", tracking_num.c_str());
 
 	return ups_tracking(tracking_num, carrier_name, resp_data);
 }
@@ -98,16 +98,14 @@ err_code USPSScraper::ups_tracking (const std::string& tracking_num, const std::
 
  	std::string auth = "Authorization: Basic " + this->APIKEY;
  	LL_INFO("auth: %s", auth.c_str());
- 	//header.push_back("Host: " + this->HOST);
  	header.push_back(auth);
 
-	//"/ShippingAPI.dll?API=TrackV2&XML=<TrackRequest USERID=\"063CORNE4274\"><TrackID ID=\"" + std::string(tracking_num) + "\"></TrackID></TrackRequest>";
 	HttpRequest httpRequest(this->HOST, query, header,true);
 	HttpsClient httpClient(httpRequest);
 	std::string result; 
 	try{
 		HttpResponse response = httpClient.getResponse();
-        result = parse_response(response.getContent());
+	  result = parse_response(response.getContent());
 	}
 	catch (std::runtime_error& e){
         LL_CRITICAL("Https error: %s", e.what());
