@@ -42,7 +42,14 @@
 //
 
 #include "encoding.h"
+
+#include <string>
+
 #include "commons.h"
+#include "Debug.h"
+
+using std::vector;
+using std::string;
 
 uint8_t get_n_th_byte(uint64_t in, int n) {
   if (n > 8) {
@@ -71,15 +78,24 @@ int append_as_uint256(bytes &out, uint64_t in, int len) {
   return 0;
 }
 
-uint8_t bytesRequired(int _i) {
+// compute how many (non-zero) bytes there are in _i
+template<typename T>
+static uint8_t byte_length(T _i) {
   uint8_t i = 0;
   for (; _i != 0; ++i, _i >>= 8) {}
   return i;
 }
 
+uint8_t bytesRequired(uint64_t _i) { return byte_length<uint64_t>(_i); }
+
 bytes::bytes(bytes a, bytes b) {
-  std::vector<uint8_t >::insert(std::vector<uint8_t>::end(), a.begin(), a.end());
-  std::vector<uint8_t >::insert(std::vector<uint8_t>::end(), b.begin(), b.end());
+  std::vector<uint8_t>::insert(std::vector<uint8_t>::end(), a.begin(), a.end());
+  std::vector<uint8_t>::insert(std::vector<uint8_t>::end(), b.begin(), b.end());
+}
+
+void bytes::replace(const bytes &in) {
+  vector<uint8_t>::clear();
+  vector<uint8_t>::insert(vector<uint8_t>::end(), in.begin(), in.end());
 }
 
 void bytes::from_hex(const char *src) {
@@ -91,9 +107,9 @@ void bytes::from_hex(const char *src) {
   }
 }
 
-void bytes::rlp(bytes &out, unsigned len) {
-  int i;
-  size_t len_len;
+void bytes::rlp(bytes &out, size_t len) {
+  int32_t i;
+  int32_t len_len;
   if (len == 1 && (std::vector<uint8_t>::operator[](0)) < 0x80) {
     out.push_back(std::vector<uint8_t>::operator[](0));
     return;
@@ -103,12 +119,13 @@ void bytes::rlp(bytes &out, unsigned len) {
     out.push_back(0x80 + static_cast<uint8_t>(len));
     for (i = 0; i < len; i++) out.push_back(std::vector<uint8_t>::operator[](i));
   } else {
-    len_len = bytesRequired(len);
+    len_len = byte_length<size_t>(len);
     if (len_len > 8) { throw std::invalid_argument("Error: len_len > 8"); }
     out.push_back(0xb7 + static_cast<uint8_t>(len_len));
 
-    for (i = len_len - 1; i >= 0; i--) out.push_back(static_cast<uint8_t>((len >> (8 * i)) & 0xFF));
-    for (i = 0; i < len; i++) out.push_back(std::vector<uint8_t>::operator[](i));
+    vector<uint8_t> b_len = itob(len);
+    out.insert(out.end(), b_len.begin(), b_len.end());
+    out.insert(out.end(), vector<uint8_t>::begin(), vector<uint8_t>::begin() + len);
   }
 }
 
@@ -116,46 +133,55 @@ void bytes::to_rlp(bytes &out) {
   return rlp(out, std::vector<uint8_t>::size());
 }
 
-bytes32::bytes32(uint64_t in) {
-  // padding with 0
-  size_t byteLen = sizeof in;
-  std::vector<uint8_t >::insert(std::vector<uint8_t>::end(), 32 - byteLen, 0);
-  // push big-endian int
-  for (int i = byteLen - 1; i >= 0; i--) { std::vector<uint8_t>::push_back(get_n_th_byte(in, i)); }
+void bytes::toString(const string &title) {
+#ifdef DEBUG
+  int debugging;
+  ocall_is_debug(&debugging);
+  if (debugging) {
+    hexdump(title.c_str(), &std::vector<uint8_t>::operator[](0),
+            std::vector<uint8_t>::size());
+  }
+#endif
 }
 
+void bytes::toString() { toString("bytes"); }
+
+bytes32::bytes32(uint64_t in) {
+  // push big-endian int (i.e. prepend 0 until 32 bytes)
+  BYTE b_in = itob(in, 32);
+  vector::insert(vector::end(), b_in.begin(), b_in.end());
+}
 
 bytes32::bytes32(std::string in) {
   if (in.length() > 32) {
     throw std::invalid_argument("too big");
   }
   // push string
-  std::vector<uint8_t >::insert(std::vector<uint8_t>::end(), in.begin(), in.end());
-  // padding with 0
-  std::vector<uint8_t >::insert(std::vector<uint8_t>::end(), 32 - in.length(), 0x0);
+  vector::insert(vector::end(), in.begin(), in.end());
+  // rear padding with 0
+  vector::insert(vector::end(), 32 - in.length(), 0);
 }
 
-// This function assumes src to be a zero terminated sanitized string with
-// an even number of [0-9a-f] characters, and target to be sufficiently large
-/*
-    convert a hex string to a byte array
-    [in]  src 
-    [out] target 
-    [out] len: how many bytes get written to the target
-*/
-void bytes32::from_hex(const char *src) {
-  _size = 0;
-  if (strlen(src) % 2 != 0) { LL_CRITICAL("Error: input is not of even len\n"); }
-  if (strncmp(src, "0x", 2) == 0) src += 2;
-  while (*src && src[1]) {
-    try { bytes::operator[](_size) = hex2int(*src) * 16 + hex2int(src[1]); }
-    catch (std::invalid_argument e) { printf_sgx("Error: can't convert %s to bytes\n", src); }
-    src += 2;
-    _size++;
+void bytes32::replace(const BYTE &in) {
+  if (in.size() > 32) {
+    throw std::invalid_argument("too large");
   }
-  if (_size == 1 && bytes::operator[](0) == 0) _size = 0;
+
+  vector<uint8_t>::clear();
+  vector<uint8_t>::insert(vector<uint8_t>::end(), in.begin(), in.end());
 }
 
-void bytes32::to_rlp(bytes &out) {
-  bytes::rlp(out, _size);
+std::vector<uint8_t> itob(uint64_t num, size_t width) {
+  std::vector<uint8_t> out;
+  size_t len_len = byte_length<size_t>(num);
+  for (long i = len_len - 1; i >= 0; i--) {
+    out.push_back(static_cast<uint8_t>((num >> (8 * i)) & 0xFF));
+  }
+
+  // prepend zero until width
+  if (width > out.size()) {
+    out.insert(out.begin(), width - out.size(), 0x0);
+  }
+
+  return out;
 }

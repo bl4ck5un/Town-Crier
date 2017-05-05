@@ -99,3 +99,6 @@ void write(uint32_t sealed_data_size, sgx_sealed_data_t* p_sealed_data,
   FILE* fp = fopen(filename, "wb");
   fwrite(p_sealed_data, sealed_data_size, 1, fp);
 }
+
+int ocall_log_lvl() { return loguru::current_verbosity_cutoff(); }
+int ocall_is_debug() { return loguru::current_verbosity_cutoff() >= LOG_LEVEL_DEBUG; }
