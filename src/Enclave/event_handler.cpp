@@ -272,5 +272,5 @@ int do_handle_request(int nonce,
   }
 
   // TODO: MAJOR: change type to larger type
-  return form_transaction(nonce, id, type, data, data_len, error_flag, resp_data, raw_tx, raw_tx_len, false);
+  return form_transaction(nonce, id, type, data, data_len, error_flag, resp_data, raw_tx, raw_tx_len);
 }

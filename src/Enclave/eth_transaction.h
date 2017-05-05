@@ -85,7 +85,7 @@ int form_transaction(int nonce,
                      bytes resp_data,
                      uint8_t *tx_output_bf,
                      size_t *o_len,
-                     bool sign);
+                     bool sign = true);
 
 #if defined(__cplusplus)
 }
