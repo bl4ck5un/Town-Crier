@@ -98,7 +98,7 @@ int handle_request(int nonce,
         return -1;
       }
       dump_buf("data:", data, data_len);
-      return 0;
+      return -1;
     }
     case TYPE_FLIGHT_INS: {
       FlightScraper flightHandler;
@@ -238,12 +238,27 @@ int handle_request(int nonce,
         vector<uint8_t > cleartext;
         dec_ctx.hybridDecrypt(cipher, cleartext);
         hexdump("decrypted message", &cleartext[0], cleartext.size());
+
+        // decrypted message is the base64 encoded data
+        string encoded_message(cleartext.begin(), cleartext.end());
+        uint8_t decrypted_data[cleartext.size()];
+        int decrypted_data_len = ext::b64_pton(encoded_message.c_str(),
+                                               decrypted_data, sizeof decrypted_data);
+
+        if (decrypted_data_len == -1) {
+          throw runtime_error("can't decode user message");
+        }
+
+        hexdump("decoded message", decrypted_data, (size_t) decrypted_data_len);
+        return -1;
       }
       catch (const std::exception& e) {
-        LL_CRITICAL("decryption error: %s. See dump below.", e.what());
+        LL_CRITICAL("decryption error: %s. See dump above.", e.what());
+        return -1;
       }
       catch (...) {
-        LL_CRITICAL("unknown exception happened while decrypting. See dump below.");
+        LL_CRITICAL("unknown exception happened while decrypting. See dump above.");
+        return -1;
       }
     }
     default :
