@@ -225,6 +225,7 @@ int handle_request(int nonce,
           append_as_uint256(resp_data, status, sizeof(status));
           break;
       }
+    }
     case TYPE_ENCRYPT_TEST: {
       HybridEncryption dec_ctx;
       ECPointBuffer tc_pubkey;
