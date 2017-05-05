@@ -51,7 +51,7 @@ add_executable(TestMain EXCLUDE_FROM_ALL
         key-utils.cpp)
 
 find_package(CURL REQUIRED)
-find_package(Boost QUIET REQUIRED COMPONENTS program_options filesystem system log)
+find_package(Boost QUIET REQUIRED COMPONENTS program_options filesystem system)
 find_package(Sqlite REQUIRED)
 find_package(LibODB REQUIRED)
 find_package(Jsoncpp REQUIRED)
