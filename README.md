@@ -10,6 +10,48 @@ queries and manage user credentials.
 Please read on for installation instructions. If you want to learn how Town Crier works,
 you can read our [CCS'16 paper](https://www.cs.cornell.edu/~fanz/files/pubs/tc-ccs16-final.pdf).
 
+# Get Started
+
+## Using Docker (recommended)
+
+First, make sure Docker is ready. This usually can be verified by running
+
+    docker run hello-world
+
+If you see reasonable output from the above command, then your Docker setup
+should be good to go.
+
+Second, pull the docker iamge and clone the source code 
+
+    docker pull bl4ck5un/intel-sgx-sdk-ubuntu-16.04
+    git clone https://github.com/bl4ck5un/Town-Crier
+    cd Town-Crier
+
+Then, use `docker run` to get an shell, then you can use it to build and run
+Town Crier:
+
+    docker run -v $(PWD):/home/tc/TownCrier -ti bl4ck5un/intel-sgx-sdk-ubuntu-16.04
+
+
+Alternatively, you can also use `docker run` non-interactively, e.g.:
+
+```shell
+# build gtest
+docker run -v $(PWD):/home/tc/TownCrier -w "/home/tc/TownCrier/src/utils" bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "./build_gtest.sh"
+
+# make everything
+docker run -v $(PWD):/home/tc/TownCrier -w "/home/tc/TownCrier/src" bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "mkdir -p build; cd build; cmake ..; make; make TestMain"
+
+# run tests
+docker run -v $(PWD):/home/tc/TownCrier -w "/home/tc/TownCrier/src/build" bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "./TestMain"
+
+# optinally, lint the code
+docker run -v $(PWD):/home/tc/TownCrier bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "TownCrier/src/lint.sh"
+```
+
+See `.travis.yml` for an example of how Docker is used to build and test Town
+Crier.
+
 # Prerequisites
 
 This section enumerates the required dependencies to compile Town Crier on your platform.
