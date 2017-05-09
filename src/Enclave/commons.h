@@ -42,27 +42,27 @@
 
 #ifndef TOWN_CRIER_COMMONS_H
 #define TOWN_CRIER_COMMONS_H
+
 #include <stdint.h>
+
 #include <vector>
+#include <cassert>
+
 #include "Log.h"
 #include "encoding.h"
 
-// home-made Big-endian long int
-// NOTE: no leading zeros. Starts with useful bytes.
-// size is the actual bytes that is used
-// for example, bytes32 (0xAAFF) is
-// AA, FF, 00, 00, .. , 00,
-// size = 2
-
 #define ROUND_TO_32(x) ((x + 31) / 32 * 32)
+
+const uint8_t HEX_BASE =16;
+const uint8_t DEC_BASE =10;
 
 static uint8_t hex2int(char input) {
   if (input >= '0' && input <= '9')
-    return (uint8_t) input - '0';
+    return static_cast<uint8_t>(input - '0');
   if (input >= 'A' && input <= 'F')
-    return (uint8_t) input - 'A' + 10;
+    return static_cast<uint8_t>(input - 'A' + 10);
   if (input >= 'a' && input <= 'f')
-    return (uint8_t) input - 'a' + 10;
+    return static_cast<uint8_t>(input - 'a' + 10);
   throw std::invalid_argument("Invalid input string");
 }
 
@@ -75,12 +75,12 @@ inline void from_hex(const char* src, char* target)
 {
   while(*src && src[1])
   {
-    *(target++) = (char) hex2int(*src)*16 + hex2int(src[1]);
+    *(target++) = hex2int(*src)*HEX_BASE + hex2int(src[1]);
     src += 2;
   }
 }
 
-inline std::string to_hex(const unsigned char *data, int len) {
+inline std::string to_hex(const unsigned char *data, size_t len) {
   std::string s(len * 2, ' ');
   for (int i = 0; i < len; ++i) {
     s[2 * i] = hexmap[(data[i] & 0xF0) >> 4];
@@ -89,7 +89,6 @@ inline std::string to_hex(const unsigned char *data, int len) {
   return s;
 }
 
-#include <cassert>
 
 template<typename T>
 T swap_endian(T u) {
@@ -106,18 +105,6 @@ T swap_endian(T u) {
     dest.u8[k] = source.u8[sizeof(T) - k - 1];
 
   return dest.u;
-}
-
-inline uint32_t swap_uint32(uint32_t num) {
-  return ((num >> 24) & 0xff) | // move byte 3 to byte 0
-      ((num << 8) & 0xff0000) | // move byte 1 to byte 2
-      ((num >> 8) & 0xff00) | // move byte 2 to byte 1
-      ((num << 24) & 0xff000000); // byte 0 to byte 3
-}
-
-inline uint64_t swap_uint64(uint64_t num) {
-  return ((static_cast<uint64_t>(swap_uint32(num & 0xffffffff))) << 32) |
-      (static_cast<uint64_t>(swap_uint32((num >> 32) & 0xffffffff)));
 }
 
 // convert [buf, buf + n] to a T

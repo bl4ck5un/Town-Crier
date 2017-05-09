@@ -107,7 +107,7 @@ TEST(RequestHandling, hex_and_unhex) {
 
 TEST(RequestHandling, parsing) {
   std::string raw = std::string(RAW_DATA);
-  tc::RequestParser r(raw);
+  tc::RequestParser r(raw, "hash");
 
   EXPECT_EQ(0x2340abc, r.getId());
   EXPECT_EQ(2, r.getType());
@@ -126,6 +126,8 @@ TEST(RequestHandling, parsing) {
 
   EXPECT_EQ(0xBA9C0, r.getTimestamp());
   EXPECT_EQ(6 * 32, r.getDataLen());
+
+  r.dumpData();
 
   EXPECT_EQ(1, r.getData()[0x20 - 1]);
   EXPECT_EQ(2, r.getData()[0x40 - 1]);

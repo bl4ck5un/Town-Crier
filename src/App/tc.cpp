@@ -176,6 +176,7 @@ int main(int argc, const char *argv[]) {
   }
 
   Monitor monitor(&driver, eid, quit);
+//  monitor.dontSendResponse();
   monitor.loop();
 
   if (config.is_status_server_enabled()) {

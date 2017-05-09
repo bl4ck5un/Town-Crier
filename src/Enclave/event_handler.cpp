@@ -75,8 +75,29 @@ Request(app, 3, ['GOOG', pad(1262390400,64)]);;
 Request(app, 4, ['1ZE331480394808282']);
 Request(app, 5, ['bitcoin']);
  */
-
 int handle_request(int nonce,
+                   uint64_t id,
+                   uint64_t type,
+                   const uint8_t *data,
+                   size_t data_len,
+                   uint8_t *raw_tx,
+                   size_t *raw_tx_len) {
+  try {
+    int ret = do_handle_request(nonce, id, type, data, data_len, raw_tx, raw_tx_len);
+    return ret;
+  }
+
+  catch (const std::exception& e) {
+    LL_CRITICAL("exception while handling request: %s", e.what());
+  }
+  catch (...) {
+    LL_CRITICAL("unknown error while handling request");
+  }
+
+  return TC_INTERNAL_ERROR;
+}
+
+int do_handle_request(int nonce,
                    uint64_t id,
                    uint64_t type,
                    const uint8_t *data,
@@ -268,6 +289,6 @@ int handle_request(int nonce,
   }
 
   // TODO: MAJOR: change type to larger type
-  hexdump("get response", &resp_data[0], resp_data.size());
-  return form_transaction(nonce, 32, id, type, data, data_len, error_flag, resp_data, raw_tx, raw_tx_len);
+
+  return form_transaction(nonce, id, type, data, data_len, error_flag, resp_data, raw_tx, raw_tx_len, false);
 }

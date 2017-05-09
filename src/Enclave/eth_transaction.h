@@ -67,7 +67,7 @@ public:
     bytes32 s;
     uint8_t v;
     TX(Type p);
-    void rlp_encode(bytes &out, bool withSig = true);
+    void rlpEncode(bytes &out, bool withSig = true);
 };
 
 
@@ -77,7 +77,6 @@ extern "C" {
 
 void rlp_item(const uint8_t*, const int, bytes&);
 int form_transaction(int nonce,
-                     int nonce_len,
                      uint64_t request_id,
                      uint8_t request_type,
                      const uint8_t *request_data,
@@ -86,7 +85,7 @@ int form_transaction(int nonce,
                      bytes resp_data,
                      uint8_t *tx_output_bf,
                      size_t *o_len,
-                     bool sign=true);
+                     bool sign);
 
 #if defined(__cplusplus)
 }

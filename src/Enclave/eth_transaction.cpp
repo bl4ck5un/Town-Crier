@@ -58,13 +58,6 @@
 
 #include "eth_transaction.h"
 
-// uncomment to dump transactions
-// #define VERBOSE
-
-#ifdef VERBOSE
-#include "Debug.h"
-#endif
-
 void rlp_item(const uint8_t *input, const int len, bytes &out) {
   int i;
   size_t len_len;
@@ -89,55 +82,38 @@ void rlp_item(const uint8_t *input, const int len, bytes &out) {
   }
 }
 
-int set_byte_length(bytes32 *d) {
-  mbedtls_mpi tmp;
-  mbedtls_mpi_init(&tmp);
-  size_t len, i;
-  if (mbedtls_mpi_read_binary(&tmp, &(*d)[0], 32) != 0) {
-    LL_CRITICAL("Error reading mpi from binary!\n");
-    return -1;
-  }
-  len = mbedtls_mpi_bitlen(&tmp);
-  len = (len + 7) / 8;
-
-  // d uses len bytes at right
-  // need to move to the begining of the d->d
-  for (i = 0; i < len; i++) {
-    (*d)[i] = (*d)[32 - len + i];
-    (*d)[32 - len + i] = 0;
-  }
-
-  d->set_size(len);
-  mbedtls_mpi_free(&tmp);
-  return 0;
-}
-
 TX::TX(TX::Type p) {
   this->m_type = p;
   this->v = 0;
 }
 
-void TX::rlp_encode(bytes &out, bool withSig) {
+void TX::rlpEncode(bytes &out, bool withSig) {
   int i;
   uint8_t len_len, b;
   m_nonce.to_rlp(out);
+  m_nonce.toString("nonce");
   m_gasPrice.to_rlp(out);
+  m_gasPrice.toString("gasPrice");
   m_gas.to_rlp(out);
+  m_gas.toString("gas");
   if (m_type == MessageCall) {
     m_receiveAddress.to_rlp(out);
+    m_receiveAddress.toString("receiveAddr");
   }
   m_value.to_rlp(out);
+  m_value.toString("value");
   m_data.to_rlp(out);
+  m_data.toString("data");
   // v is also different
   if (withSig) {
     rlp_item((const uint8_t *) &v, 1, out);
     r.to_rlp(out);
     s.to_rlp(out);
   }
-  int len = out.size();
+  size_t len = out.size();
   // list header
   if (len < 56) {
-    out.insert(out.begin(), 0xc0 + static_cast<uint8_t>(len));
+    out.insert(out.begin(), static_cast<uint8_t>(0xc0 + len));
   } else {
     len_len = bytesRequired(len);
     if (len_len > 4) {
@@ -159,7 +135,6 @@ void TX::rlp_encode(bytes &out, bool withSig) {
 #define DELIVER_CALL_SIGNATURE "deliver(uint64,bytes32,uint64,bytes32)"
 
 int form_transaction(int nonce,
-                     int nonce_len,
                      uint64_t request_id,
                      uint8_t request_type,
                      const uint8_t *request_data,
@@ -169,7 +144,7 @@ int form_transaction(int nonce,
                      uint8_t *tx_output_bf,
                      size_t *o_len,
                      bool with_sig) {
-  LL_DEBUG("foring transaction for nonce=%d, id=%d, type=%d, date_len=%d, err=%d",
+  LL_DEBUG("foring transaction for nonce=%ld, id=%d, type=%d, date_len=%zu, err=%d",
            nonce, request_id, request_type, request_data_len, resp_error);
   if (tx_output_bf == NULL || o_len == NULL) {
     LL_CRITICAL("Error: tx_output_bf or o_len gets NULL input\n");
@@ -181,11 +156,7 @@ int form_transaction(int nonce,
 
   TX tx(TX::MessageCall);
 
-  assert(nonce_len == 32);
-
-
   // calculate a _tx_hash of input
-  bytes32 param_hash;
   // note that the raw input = request_id || request_data
   size_t __hash_input_len = 1 + request_data_len;
   uint8_t *__hash_input = static_cast<uint8_t *>(malloc(__hash_input_len));
@@ -194,13 +165,18 @@ int form_transaction(int nonce,
   __hash_input[0] = request_type;
   memcpy(__hash_input + 1, request_data, request_data_len);
 
-  keccak(__hash_input, __hash_input_len, &param_hash[0], 32);
+  uint8_t __hash_out[32];
+  keccak(__hash_input, __hash_input_len, __hash_out, sizeof __hash_out);
   free(__hash_input);
 
-  bytes32 resp_b32;
+  bytes32 param_hash(__hash_out, sizeof __hash_out);
+  param_hash.toString("hash");
+
+  bytes32 resp_b32(0);
   if (resp_error) {
     resp_b32.clear();
   } else {
+    // TODO: note that only the first 32 bytes are taken
     memcpy(&resp_b32[0], &resp_data[0], 32);
   }
 
@@ -217,47 +193,61 @@ int form_transaction(int nonce,
   ABI_Generic_Array _abi_array(args);
 
   // encoding the function call per ABI
-  bytes encoded_abi_call;
-  if (_abi_array.encode(encoded_abi_call) != 0) {
+  bytes encoded_delivery_call;
+  if (_abi_array.encode(encoded_delivery_call) != 0) {
     LL_CRITICAL("abi_encoded returned non-zero\n");
     return TC_INTERNAL_ERROR;
   }
 
-  uint8_t func_selector[32];
-  ret = keccak((unsigned const char *) DELIVER_CALL_SIGNATURE, strlen(DELIVER_CALL_SIGNATURE), func_selector, 32);
+  // compute function selector as the first 4 bytes
+  // of SHA3(DELIVER_CALL_SIGNATURE)
+  bytes32 func_selector(0);
+  ret = keccak((unsigned const char *) DELIVER_CALL_SIGNATURE, strlen(DELIVER_CALL_SIGNATURE), &func_selector[0], 32);
   if (ret) {
     LL_CRITICAL("SHA3 returned %d\n", ret);
     return TC_INTERNAL_ERROR;
   }
 
-  dump_buf("encoded_abi_call", &encoded_abi_call[0], encoded_abi_call.size());
+  func_selector.toString("func selector");
 
   // insert the function selector to the begining of the encoded abi
-  for (int i = 0; i < 4; i++) { encoded_abi_call.insert(encoded_abi_call.begin(), func_selector[3 - i]); }
+  // for (int i = 0; i < 4; i++) { encoded_delivery_call.insert(encoded_delivery_call.begin(), func_selector[3 - i]); }
+  encoded_delivery_call.insert(encoded_delivery_call.begin(), func_selector.begin(), func_selector.begin() + 4);
+
+  encoded_delivery_call.toString("encoded data");
 
   // construct a TX
 
   // 1) encode the nonce
-  // TODO: why 4? Look up the nonce size in the yellow book
-  bytes nonce_bytes;
-  append_as_uint256(nonce_bytes, nonce, 4);
-  memcpy(&tx.m_nonce[0], &nonce_bytes[0], nonce_bytes.size());
-  set_byte_length(&tx.m_nonce);
+  BYTE b_nonce = itob(nonce);
+  tx.m_nonce.replace(b_nonce);
 
   tx.m_gasPrice.from_hex(GASPRICE);
   tx.m_gas.from_hex(GASLIMIT);
   tx.m_receiveAddress.from_hex(TC_ADDRESS);
 
   tx.m_data.clear();
-  tx.m_data = encoded_abi_call;
+  tx.m_data.replace(encoded_delivery_call);
 
   try {
-    tx.rlp_encode(out, false);
+    tx.rlpEncode(out, false);
   }
-  catch (std::invalid_argument &ex) {
-    LL_CRITICAL("%s\n", ex.what());
+  catch (const std::invalid_argument &e) {
+    LL_CRITICAL("%s", e.what());
     return TC_INTERNAL_ERROR;
   }
+
+  catch (const std::exception& e) {
+    LL_CRITICAL("%s", e.what());
+    return TC_INTERNAL_ERROR;
+  }
+
+  catch (...) {
+    LL_CRITICAL("unknown ex");
+    return TC_INTERNAL_ERROR;
+  }
+
+  out.toString("tx w/o sig");
 
   // prepare for signing
   uint8_t _tx_hash[32];
@@ -267,6 +257,8 @@ int form_transaction(int nonce,
     return TC_INTERNAL_ERROR;
   }
 
+  tx.r.resize(32, 0);
+  tx.s.resize(32, 0);
   if (with_sig) {
     if ((ret = ecdsa_sign(_tx_hash, 32, &tx.r[0], &tx.s[0], &tx.v)) != 0) {
       LL_CRITICAL("Error: signing returned %d\n", ret);
@@ -278,12 +270,10 @@ int form_transaction(int nonce,
     memset(&tx.s[0], 0, 32);
     tx.v = 27;
   }
-  tx.r.set_size(32);
-  tx.s.set_size(32);
 
   // RLP encode the final output with signature
   out.clear();
-  tx.rlp_encode(out, true);
+  tx.rlpEncode(out, true);
 
   if (out.size() > TX_BUF_SIZE) {
     LL_CRITICAL("Error buffer size (%d) is too small.\n", TX_BUF_SIZE);

@@ -63,6 +63,9 @@ enclave {
         void ocall_log_8        ([in,string] const char* str);
         void ocall_log_9        ([in,string] const char* str);
 
+        int ocall_log_lvl();
+        int ocall_is_debug();
+
         void ocall_sleep(int milisec);
         time_t ocall_time();
     };
