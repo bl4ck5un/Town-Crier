@@ -224,12 +224,17 @@ err_code FlightScraper::handler(const uint8_t *req, size_t data_len, int *resp_d
 }
 
 err_code FlightScraper::handleEncryptedQuery(const uint8_t* data, size_t data_len, int* resp_data) {
+  hexdump("encrypted_data", data, data_len);
   string _json_encoded_flight_info;
   try {
     _json_encoded_flight_info = decrypt_query(data, data_len);
   }
   catch (const DecryptionException& e) {
     LL_CRITICAL("Can't decrypt: %s", e.what());
+    return INVALID_PARAMS;
+  }
+  catch (...) {
+    LL_CRITICAL("unknown error");
     return INVALID_PARAMS;
   }
 
