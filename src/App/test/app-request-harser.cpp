@@ -127,6 +127,8 @@ TEST(RequestHandling, parsing) {
   EXPECT_EQ(0xBA9C0, r.getTimestamp());
   EXPECT_EQ(6 * 32, r.getDataLen());
 
+  r.dumpData();
+
   EXPECT_EQ(1, r.getData()[0x20 - 1]);
   EXPECT_EQ(2, r.getData()[0x40 - 1]);
   EXPECT_EQ(3, r.getData()[0x60 - 1]);

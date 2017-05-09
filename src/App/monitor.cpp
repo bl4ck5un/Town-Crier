@@ -118,7 +118,12 @@ void Monitor::loop() {
     if (next_block_num > current_highest_block) {
       // reset error counter after one success
       monitor_retry_counter = 0;
-      throw NothingTodoException();
+      if (!isSleeping) {
+        LL_INFO("Nothing to do. Going to sleep...");
+        isSleeping = true;
+      }
+      sleep(Monitor::nothingToDoSleepSec);
+      continue;
     } else {
       // wake up the monitor
       isSleeping = false;
@@ -139,12 +144,6 @@ void Monitor::loop() {
 
         this->_process_one_block(next_block_num);
         monitor_retry_counter = 0;
-      } catch (const NothingTodoException &e) {
-        if (!isSleeping) {
-          LL_INFO("Nothing to do. Going to sleep...");
-          isSleeping = true;
-        }
-        sleep(Monitor::nothingToDoSleepSec);
       } catch (const jsonrpc::JsonRpcException &ex) {
         LL_ERROR("RPC error: %s", ex.what());
         monitor_retry_counter++;

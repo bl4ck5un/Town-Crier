@@ -3,6 +3,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
 
 set(TC_SRC_FILES tc.cpp monitor.cpp attestation.cpp request-parser.cpp
         mbedtls_sgx_net.c Enclave_u.c ocalls.cpp
+        debug.cpp
         bookkeeping/database.cpp
         bookkeeping/transaction-record.hxx
         bookkeeping/transaction-record-odb.cxx
@@ -46,6 +47,7 @@ add_executable(TestMain EXCLUDE_FROM_ALL
         test/SGXTestBase.h
         attestation.cpp
         utils.cpp
+        debug.cpp
         Enclave_u.c
         ocalls.cpp
         EthRPC.cpp

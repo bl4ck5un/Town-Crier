@@ -52,6 +52,7 @@
 #include "App/utils.h"
 #include "Common/Constants.h"
 #include "Common/Log.h"
+#include "App/debug.h"
 
 using tc::RequestParser;
 using std::stringstream;
@@ -137,10 +138,7 @@ void RequestParser::valueOf(const std::string &input, const std::string &hash) {
     throw invalid_argument("request data is too large");
   }
 
-  this->data.resize(this->data_len);
-  hexToBuffer(input.substr((offset)), &this->data);
-//  this->data = static_cast<uint8_t *>(malloc(this->data_len));
-//  hexToBuffer(input.substr(offset), this->data, this->data_len);
+  hexToBuffer(input.substr(offset), &this->data);
 }
 
 RequestParser::RequestParser(const string &input, const string &hash)
@@ -171,3 +169,7 @@ size_t RequestParser::getRequesterLen() { return sizeof requester; }
 size_t RequestParser::getCallbackLen() { return sizeof callback; }
 size_t RequestParser::getParamHashLen() { return sizeof param_hash; }
 const string &RequestParser::getTransactionHash() const { return tx_hash; }
+
+void RequestParser::dumpData() const {
+  hexdump("data", getData(), getDataLen());
+}

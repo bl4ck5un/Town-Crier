@@ -107,6 +107,7 @@ class RequestParser {
   const string &getRawRequest() const;
   const string &getTransactionHash() const;
   const string toString() const;
+  void dumpData() const;
 
   size_t getRequesterLen();
   size_t getCallbackLen();
