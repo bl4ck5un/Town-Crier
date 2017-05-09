@@ -235,9 +235,11 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
         string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
         LL_DEBUG("resp: %s", resp_txn.c_str());
 
-        //! send tx only when configured to
         if (send_tx) {
           string resp_txn_hash = send_transaction(resp_txn);
+          LL_INFO("resp record: %s", resp_txn_hash.c_str());
+        } else {
+          LL_INFO("will NOT send tx");
         }
 
         log_entry->incrementNumOfRetrial();
