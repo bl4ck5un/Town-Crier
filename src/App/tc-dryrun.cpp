@@ -103,7 +103,7 @@ int main(int argc, const char* argv[]) {
   std::atomic<bool> quit(false);
 
   Monitor monitor(&driver, eid, quit);
-  monitor.dontSentTx();
+  monitor.dontSendResponse();
 
   try {
     monitor._process_one_block(blocknum);

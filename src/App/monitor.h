@@ -79,7 +79,7 @@ class Monitor {
       quit(quit),
       isSleeping(false) {}
 
-  void dontSentTx() { this->send_tx = false; }
+  void dontSendResponse() { this->send_tx = false; }
 
   void loop();
   void _process_one_block(blocknum_t blocknum);
