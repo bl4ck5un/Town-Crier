@@ -53,6 +53,7 @@
 #include <thread>  // NOLINT
 #include <queue>
 #include <memory>
+#include <utility>
 
 #include "App/Converter.h"
 #include "App/Enclave_u.h"
@@ -139,7 +140,6 @@ void Monitor::loop() {
 
         this->_process_one_block(next_block_num);
         monitor_retry_counter = 0;
-
       } catch (const NothingTodoException &e) {
         if (!isSleeping) {
           LL_INFO("Nothing to do. Going to sleep...");
@@ -253,7 +253,7 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
       LL_CRITICAL("bad request");
       continue;
     }
-    catch (const std::exception& e) {
+    catch (const std::exception &e) {
       LL_CRITICAL("error happen while processing ", e.what());
       failed_requests.push(std::move(request));
       LL_CRITICAL("%s pushed to failed queue", request->toString());
@@ -262,7 +262,7 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
   }
 
   LL_LOG("going over the failed tx");
-  while (! failed_requests.empty()) {
+  while (!failed_requests.empty()) {
     LL_CRITICAL("redoing work for %s", failed_requests.front()->getTransactionHash().c_str());
     failed_requests.pop();
   }

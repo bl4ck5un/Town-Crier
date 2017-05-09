@@ -89,11 +89,11 @@ class RequestParser {
   string tx_hash;
 
  public:
-  explicit RequestParser() {};
-  explicit RequestParser(const string &input, const string& hash);
+  RequestParser() {}
+  explicit RequestParser(const string &input, const string &hash);
   ~RequestParser();
 
-  void valueOf(const string &input, const string& hash);
+  void valueOf(const string &input, const string &hash);
 
   uint64_t getId() const;
   uint64_t getType() const;
@@ -117,7 +117,7 @@ class RequestParser {
 class RequestParserException : public std::exception {
   string reason;
  public:
-  RequestParserException(const string &what) { reason = what; }
+  explicit RequestParserException(const string &what) { reason = what; }
   char const *what() const noexcept override { return reason.c_str(); }
 };
 
