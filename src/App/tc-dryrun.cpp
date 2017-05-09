@@ -67,15 +67,13 @@ using std::to_string;
 extern ethRPCClient *rpc_client;
 jsonrpc::HttpClient *httpclient;
 
-//! To check the input to TC contract
-//! The input is the hex dump from e.g. https://ropsten.etherscan.io/tx/0xae0b86ba708dd40d344fe0b85948331765c91a6fa3419992ea5c19609f3ca489
 int main(int argc, const char* argv[]) {
   if (argc < 2) {
     cerr << "Usage: " << argv[0] << " block_num" << endl;
     std::exit(-1);
   }
 
-  loguru::g_stderr_verbosity = loguru::Verbosity_WARNING;
+  loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
   loguru::init(argc, argv);
 
   sgx_enclave_id_t eid;
