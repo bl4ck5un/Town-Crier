@@ -41,30 +41,49 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
+#include "App/debug.h"
+
 #include <stdio.h>
-#include <stdlib.h>
-#include <Debug.h>
-#include <Log.h>
+#define printf_sgx printf
 
-#include "tls_client.h"
-#include "scrapers/current_weather.h"
-#include "Log.h"
+void hexdump(const char *title, void const *data, size_t len) {
+  unsigned int i;
+  unsigned int r, c;
 
-int weather_self_test(){
-	WeatherScraper weatherScraper;
-	/* Check with WOEID */
-	weatherScraper.set_qtype(1);
+  if (!data)
+    return;
 
-	//Null Checker
-	double r = 0.0;
+  printf_sgx("%s\n", title);
 
-	if (weatherScraper.weather_current("2487889",&r) == INVALID_PARAMS ){
-		return -1;
-	}
+  for (r = 0, i = 0; r < (len / 16 + (len % 16 != 0)); r++, i += 16) {
+    printf_sgx("0x%04X:   ", i); /* location of first byte in line */
 
-	weatherScraper.set_qtype(2);
-	if (weatherScraper.weather_current("Chicago,IL", &r) == INVALID_PARAMS){
-		return -1;
-	}
-	return 0;
+    for (c = i; c < i + 8; c++) /* left half of hex dump */
+      if (c < len)
+        printf_sgx("%02X ", ((unsigned char const *) data)[c]);
+      else
+        printf_sgx("   "); /* pad if short line */
+
+    printf_sgx("  ");
+
+    for (c = i + 8; c < i + 16; c++) /* right half of hex dump */
+      if (c < len)
+        printf_sgx("%02X ", ((unsigned char const *) data)[c]);
+      else
+        printf_sgx("   "); /* pad if short line */
+
+    printf_sgx("   ");
+
+    for (c = i; c < i + 16; c++) /* ASCII dump */
+      if (c < len) {
+        if (((unsigned char const *) data)[c] >= 32 &&
+            ((unsigned char const *) data)[c] < 127)
+          printf_sgx("%c", ((char const *) data)[c]);
+        else
+          printf_sgx("."); /* put this for non-printables */
+      } else {
+        printf_sgx(" "); /* pad if short line */
+      }
+    printf_sgx("\n");
+  }
 }

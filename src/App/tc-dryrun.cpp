@@ -41,30 +41,80 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <Debug.h>
-#include <Log.h>
+#define LOGURU_IMPLEMENTATION 1
 
-#include "tls_client.h"
-#include "scrapers/current_weather.h"
-#include "Log.h"
+#include <stdint.h>
 
-int weather_self_test(){
-	WeatherScraper weatherScraper;
-	/* Check with WOEID */
-	weatherScraper.set_qtype(1);
+#include <iostream>
+#include <vector>
+#include <string>
 
-	//Null Checker
-	double r = 0.0;
+#include "Enclave_u.h"
 
-	if (weatherScraper.weather_current("2487889",&r) == INVALID_PARAMS ){
-		return -1;
-	}
+#include "Common/Constants.h"
+#include "App/Converter.h"
+#include "App/utils.h"
+#include "App/request-parser.h"
+#include "App/debug.h"
+#include "App/monitor.h"
+#include "App/EthRPC.h"
 
-	weatherScraper.set_qtype(2);
-	if (weatherScraper.weather_current("Chicago,IL", &r) == INVALID_PARAMS){
-		return -1;
-	}
-	return 0;
+using std::vector;
+using std::cerr;
+using std::endl;
+using std::to_string;
+
+extern ethRPCClient *rpc_client;
+jsonrpc::HttpClient *httpclient;
+
+int main(int argc, const char* argv[]) {
+  if (argc < 2) {
+    cerr << "Usage: " << argv[0] << " block_num" << endl;
+    std::exit(-1);
+  }
+
+  loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
+  loguru::init(argc, argv);
+
+  sgx_enclave_id_t eid;
+  sgx_status_t st;
+  int ret;
+
+  ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
+  if (ret != 0) {
+    LL_CRITICAL("Failed to initialize the enclave");
+    std::exit(-1);
+  } else {
+    LL_INFO("enclave %lu created", eid);
+  }
+
+  blocknum_t blocknum = std::strtoul(argv[1], nullptr, 10);
+
+  try {
+    httpclient = new jsonrpc::HttpClient("http://localhost:8200");
+    rpc_client = new ethRPCClient(*httpclient);
+  } catch (const std::exception &e) {
+    std::cout << e.what() << std::endl;
+    exit(-1);
+  }
+
+  string db_name = "tmp_db_" + to_string(blocknum);
+  OdbDriver driver(db_name, true);
+  std::atomic<bool> quit(false);
+
+  Monitor monitor(&driver, eid, quit);
+  monitor.dontSendResponse();
+
+  try {
+    monitor._process_one_block(blocknum);
+  }
+  catch (const std::exception & e) {
+    cerr << e.what() << endl;
+  }
+
+  catch (...) {
+    cerr << "unknown" << endl;
+  }
+
+  return 0;
 }

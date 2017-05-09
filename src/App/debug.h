@@ -41,30 +41,11 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <Debug.h>
-#include <Log.h>
+#ifndef SRC_APP_DEBUG_H_
+#define SRC_APP_DEBUG_H_
 
-#include "tls_client.h"
-#include "scrapers/current_weather.h"
-#include "Log.h"
+#include <cstddef>
 
-int weather_self_test(){
-	WeatherScraper weatherScraper;
-	/* Check with WOEID */
-	weatherScraper.set_qtype(1);
+void hexdump(const char* title, void const * data, size_t len);
 
-	//Null Checker
-	double r = 0.0;
-
-	if (weatherScraper.weather_current("2487889",&r) == INVALID_PARAMS ){
-		return -1;
-	}
-
-	weatherScraper.set_qtype(2);
-	if (weatherScraper.weather_current("Chicago,IL", &r) == INVALID_PARAMS){
-		return -1;
-	}
-	return 0;
-}
+#endif  // SRC_APP_DEBUG_H_
