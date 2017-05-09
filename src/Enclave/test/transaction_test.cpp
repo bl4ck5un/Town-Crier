@@ -86,7 +86,6 @@ int transaction_rlp_test() {
   uint64_t error_code = 0xee;
 
   int ret = form_transaction(nonce,
-                             nonce_len,
                              request_id,
                              request_type,
                              req_data,
@@ -94,7 +93,8 @@ int transaction_rlp_test() {
                              error_code,
                              std::vector<uint8_t>(resp_data, resp_data + 32),
                              transaction,
-                             &o_len, true);
+                             &o_len,
+                             true);
 
   const char* ans_hex =
       "f8ea80850ba43b7400832dc6c094c3847c4de90b83cb3f6b1e004c9e6345e0b9fc2780b884487a6e32000000000000000000000000000000000000000000000000000000000000000112782fc26e16afcc619e7b7ce654ae7059990a5082316d8ffb2987e1e66940ca00000000000000000000000000000000000000000000000000000000000000ee0000000000000000000000000000000000000000000000000000000000000000";

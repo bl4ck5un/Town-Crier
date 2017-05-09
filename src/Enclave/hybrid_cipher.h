@@ -123,7 +123,7 @@ class DecryptionException: public std::exception {
   const string reason;
  public:
   DecryptionException(string reason): reason(reason) {}
-  const char* what() const { return reason.c_str(); }
+  const char* what() const throw() { return reason.c_str(); }
 };
 
 

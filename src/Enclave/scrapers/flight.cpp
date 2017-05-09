@@ -240,9 +240,9 @@ err_code FlightScraper::handleEncryptedQuery(const uint8_t* data, size_t data_le
     return INVALID_PARAMS;
   }
 
-  if (_flight_info_obj.get("flight_id").is<string>() && _flight_info_obj.get("timestamp").is<long>()) {
+  if (_flight_info_obj.get("flight_id").is<string>() && _flight_info_obj.get("timestamp").is<double>()) {
     string flight_id = _flight_info_obj.get("flight_id").get<string>();
-    long timestamp = _flight_info_obj.get("timestamp").get<long>();
+    long timestamp = static_cast<long>(_flight_info_obj.get("timestamp").get<double>());
 
     int delay = 0;
     switch (get_flight_delay(timestamp, flight_id.c_str(), &delay)) {

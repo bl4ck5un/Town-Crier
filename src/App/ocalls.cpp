@@ -51,7 +51,7 @@
 #include "Common/Log.h"
 #include "Enclave_u.h"
 
-int ocall_print_string(const char* str) {
+int ocall_print_string(const char *str) {
   /* Proxy/Bridge will check the length and null-terminate
    * the input string to prevent buffer overflow.
    */
@@ -94,8 +94,16 @@ void ocall_sleep(int milisec) {
 
 time_t ocall_time() { return time(NULL); }
 
-void write(uint32_t sealed_data_size, sgx_sealed_data_t* p_sealed_data,
-           char* filename) {
-  FILE* fp = fopen(filename, "wb");
+void write(uint32_t sealed_data_size, sgx_sealed_data_t *p_sealed_data,
+           char *filename) {
+  FILE *fp = fopen(filename, "wb");
   fwrite(p_sealed_data, sealed_data_size, 1, fp);
+}
+
+int ocall_log_lvl() {
+  return loguru::current_verbosity_cutoff();
+}
+
+int ocall_is_debug() {
+  return loguru::current_verbosity_cutoff() >= LOG_LEVEL_DEBUG;
 }

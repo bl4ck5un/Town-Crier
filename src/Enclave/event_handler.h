@@ -61,6 +61,13 @@ int handle_request(int nonce,
                    uint8_t *raw_tx,
                    size_t *raw_tx_len);
 
+int do_handle_request(int nonce,
+                      uint64_t id,
+                      uint64_t type,
+                      const uint8_t *data,
+                      size_t data_len,
+                      uint8_t *raw_tx,
+                      size_t *raw_tx_len);
 #if defined(__cplusplus)
 }
 #endif
