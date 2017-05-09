@@ -50,32 +50,46 @@
 #include <vector>
 #include "Log.h"
 
+typedef std::vector<uint8_t> BYTE;
+
 class bytes : public std::vector<uint8_t> {
  protected:
-  void rlp(bytes &out, unsigned len);
+  void rlp(bytes &out, size_t len);
  public:
   bytes() {}
   bytes(bytes a, bytes b);
   bytes(size_t len) : std::vector<uint8_t>(len, static_cast<uint8_t>(0)) {}
   bytes(std::vector<uint8_t> data) : std::vector<uint8_t>(data) {}
+  void replace(const bytes &);
   virtual void from_hex(const char *src);
   virtual void to_rlp(bytes &out);
+  void toString(const std::string &title);
+  void toString();
 };
 
 class bytes32 : public bytes {
-  unsigned _size;
+ private:
  public:
-  bytes32() : bytes(32) { _size = 0; }
+  bytes32() {}
+  bytes32(const uint8_t *data, size_t len) {
+    std::vector<uint8_t>::insert(std::vector<uint8_t>::begin(),
+                                 data,
+                                 data + len);
+  }
+  // build bytes32 from uint64_t, pre padding with 0
   bytes32(uint64_t);
+  // build bytes32 from string, rear padding with 0
   bytes32(std::string);
-  unsigned size() const { return _size; }
-  void set_size(int size) { _size = size; }
-  void from_hex(const char *src);
-  void to_rlp(bytes &);
+  void replace(const bytes32 &in) { bytes::replace(in); }
+  void replace(const BYTE &in);
 };
 
 uint8_t get_n_th_byte(uint64_t in, int n);
 int append_as_uint256(bytes &out, uint64_t in, int len);
-uint8_t bytesRequired(int _i);
+uint8_t bytesRequired(uint64_t _i);
+
+//! split an integer @code{num} to an byte array
+//! prepend 0 until reaching @code{width}
+std::vector<uint8_t> itob(uint64_t num, size_t width = 0);
 
 #endif //TOWN_CRIER_ENCODING_H
