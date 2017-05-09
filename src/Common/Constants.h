@@ -61,7 +61,7 @@
 #define TYPE_WEATHER        0X6
 #define TYPE_CURRENT_VOTE   0x7
 #define TYPE_ENCRYPT_TEST   0x8
-#define TYPE_WOLFRAM		    0x9
+#define TYPE_WOLFRAM		0x9
 
 
 /* Possible return values to be used in Enclave-Relay Connections */

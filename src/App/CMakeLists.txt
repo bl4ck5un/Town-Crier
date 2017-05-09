@@ -29,7 +29,15 @@ add_executable(tc-keygen
         ../Common/external/base64.cpp
         utils.cpp Converter.cpp
         Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
+
 add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp utils.cpp Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
+add_executable(tc-test
+        tc-dryrun.cpp monitor.cpp
+        request-parser.cpp
+        Converter.cpp utils.cpp
+        Enclave_u.c ocalls.cpp mbedtls_sgx_net.c debug.cpp
+        bookkeeping/database.cpp bookkeeping/transaction-record-odb.cxx bookkeeping/transaction-record.hxx
+        EthRPC.cpp)
 
 # Source files for tests
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
@@ -86,6 +94,12 @@ target_link_libraries(tc-att
         ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
         -lpthread -ldl)
 
+target_link_libraries(tc-test
+        ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
+        ${LIBODB_LIBRARIES} ${SQLITE_LIBRARIES}
+        ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
+        -lpthread -ldl)
+
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
 set(TEST_PROGRAM_LDFLAGS " ${LIBGTEST}/libgtest_main.a")
 
@@ -110,6 +124,9 @@ add_custom_command(TARGET tc
 
 add_dependencies(tc enclave)
 add_dependencies(TestMain enclave)
+add_dependencies(tc-test enclave)
+add_dependencies(tc-keygen enclave)
+add_dependencies(tc-att enclave)
 
 install(TARGETS tc DESTINATION tc)
 install(FILES ${CMAKE_SOURCE_DIR}/config-systemd DESTINATION tc)
