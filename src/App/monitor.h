@@ -46,10 +46,12 @@
 #include <sgx_edger8r.h>
 #include <stdint.h>
 #include <atomic>
+#include <queue>
 
 #include "Common/Constants.h"
 #include "App/bookkeeping/database.h"
 #include "App/types.h"
+#include "App/request-parser.h"
 
 class Monitor {
  private:
@@ -63,6 +65,8 @@ class Monitor {
   bool isSleeping;
 
   bool send_tx;
+
+  std::queue<std::unique_ptr<tc::RequestParser>> failed_requests;
 
  public:
   Monitor(OdbDriver *driver, sgx_enclave_id_t eid,

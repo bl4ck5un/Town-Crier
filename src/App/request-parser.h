@@ -46,8 +46,10 @@
 
 #include <cstdint>
 #include <string>
+#include <vector>
 
 using std::string;
+using std::vector;
 
 namespace tc {
 class RequestParser {
@@ -76,19 +78,23 @@ class RequestParser {
   const string raw_request;
   uint64_t id;
   uint64_t type;
-
- private:
   uint8_t requester[20];
   uint64_t fee;
   uint8_t callback[20];
   uint8_t param_hash[32];
   uint64_t timestamp;
   size_t data_len;
-  uint8_t *data;
+  vector<uint8_t> data;
+
+  string tx_hash;
 
  public:
-  explicit RequestParser(const std::string &input);
+  explicit RequestParser() {};
+  explicit RequestParser(const string &input, const string& hash);
   ~RequestParser();
+
+  void valueOf(const string &input, const string& hash);
+
   uint64_t getId() const;
   uint64_t getType() const;
   const uint8_t *getRequester() const;
@@ -97,8 +103,9 @@ class RequestParser {
   const uint8_t *getParamHash() const;
   uint64_t getTimestamp() const;
   size_t getDataLen() const;
-  uint8_t *getData() const;
+  const uint8_t * getData() const;
   const string &getRawRequest() const;
+  const string &getTransactionHash() const;
   const string toString() const;
 
   size_t getRequesterLen();
@@ -106,5 +113,12 @@ class RequestParser {
   size_t getParamHashLen();
 };
 }  // namespace tc
+
+class RequestParserException : public std::exception {
+  string reason;
+ public:
+  RequestParserException(const string &what) { reason = what; }
+  char const *what() const noexcept override { return reason.c_str(); }
+};
 
 #endif  // SRC_APP_REQUEST_PARSER_H_

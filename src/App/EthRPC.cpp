@@ -91,17 +91,23 @@ string send_transaction(const std::string &rawTransaction) {
  * Postcondition: [id] is a valid id that can be used with eth_get_filter_logs
  */
 string eth_new_filter(blocknum_t from, blocknum_t to) {
+  LL_DEBUG("created new filter for blocks: %d to %d", from, to);
   if (from < 0 || to < 0) {
     throw invalid_argument("from or to is smaller than 0");
   }
 
+  std::stringstream ss;
+
   Json::Value filter_opt;
   filter_opt["address"] = TC_ADDRESS;
 
-  filter_opt["topics"][0] =
-      "0x295780EA261767C398D062898E5648587D7B8CA371FFD203BE8B4F9A43454FFA";
-  filter_opt["fromBlock"] = static_cast<Json::Value::UInt64>(from);
-  filter_opt["toBlock"] = static_cast<Json::Value::UInt64>(to);
+  filter_opt["topics"][0] = "0x295780EA261767C398D062898E5648587D7B8CA371FFD203BE8B4F9A43454FFA";
+  ss << "0x" << std::hex << from;
+  filter_opt["fromBlock"] = ss.str();
+
+  ss.str("");
+  ss << "0x" << std::hex << to;
+  filter_opt["toBlock"] = ss.str();
 
   return rpc_client->eth_newFilter(filter_opt);
 }
@@ -133,8 +139,7 @@ blocknum_t eth_blockNumber() {
 
 uint64_t eth_getTransactionCount() {
   uint64_t ret;
-  std::string txn_count =
-      rpc_client->eth_getTransactionCount(SGX_ADDRESS, "pending");
+  std::string txn_count = rpc_client->eth_getTransactionCount(SGX_ADDRESS, "pending");
   std::stringstream ss;
   ss << std::hex << txn_count;
   ss >> ret;

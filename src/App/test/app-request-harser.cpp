@@ -107,7 +107,7 @@ TEST(RequestHandling, hex_and_unhex) {
 
 TEST(RequestHandling, parsing) {
   std::string raw = std::string(RAW_DATA);
-  tc::RequestParser r(raw);
+  tc::RequestParser r(raw, "hash");
 
   EXPECT_EQ(0x2340abc, r.getId());
   EXPECT_EQ(2, r.getType());
