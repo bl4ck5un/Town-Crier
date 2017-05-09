@@ -238,12 +238,22 @@ err_code FlightScraper::handleEncryptedQuery(const uint8_t* data, size_t data_le
     return INVALID_PARAMS;
   }
 
+  // test against block 899735
+  // test against block 899795
+
   picojson::value _flight_info_obj;
   string err_msg = picojson::parse(_flight_info_obj, _json_encoded_flight_info);
   if (!err_msg.empty() || !_flight_info_obj.is<picojson::object>()) {
     LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
     return INVALID_PARAMS;
   }
+
+  if (! _flight_info_obj.is<picojson::object>()) {
+    LL_CRITICAL("can't build json object");
+    return INVALID_PARAMS;
+  }
+
+  LL_DEBUG("got json object: %s", _flight_info_obj.to_str());
 
   if (_flight_info_obj.get("flight_id").is<string>() && _flight_info_obj.get("timestamp").is<double>()) {
     string flight_id = _flight_info_obj.get("flight_id").get<string>();
