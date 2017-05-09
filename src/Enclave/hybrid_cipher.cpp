@@ -34,6 +34,35 @@ int tc_get_hybrid_pubkey(ECPointBuffer pubkey) {
   return HybridEncryption::secretToPubkey(&g_secret_hybrid_key, pubkey);
 }
 
+
+const string& decrypt_query(const uint8_t* data, size_t data_len) {
+  HybridEncryption dec_ctx;
+  ECPointBuffer tc_pubkey;
+  dec_ctx.initServer(tc_pubkey);
+
+  string cipher_b64(data, data + data_len);
+  hexdump("encrypted query: ", data, data_len);
+
+  try {
+    HybridCiphertext cipher = dec_ctx.decode(cipher_b64);
+    vector<uint8_t> cleartext;
+    dec_ctx.hybridDecrypt(cipher, cleartext);
+    hexdump("decrypted message", &cleartext[0], cleartext.size());
+
+    // decrypted message is the base64 encoded data
+    string encoded_message(cleartext.begin(), cleartext.end());
+    return encoded_message;
+  }
+  catch (const std::exception &e) {
+    LL_CRITICAL("decryption error: %s. See dump above.", e.what());
+    throw DecryptionException(e.what());
+  }
+  catch (...) {
+    LL_CRITICAL("unknown exception happened while decrypting. See dump above.");
+    throw DecryptionException("unknown exception");
+  }
+}
+
 const AESIv HybridEncryption::iv = {0x99};
 
 void HybridEncryption::dump_pubkey(const mbedtls_ecp_group *grp, const mbedtls_ecp_point *p, ECPointBuffer buf) {

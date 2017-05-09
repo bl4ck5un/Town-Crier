@@ -76,6 +76,7 @@ class FlightScraper : Scraper {
   const static char* AUTH_CODE;
  public:
   err_code handler(const uint8_t *req, size_t data_len, int *resp_data);
+  err_code handleEncryptedQuery(const uint8_t* data, size_t data_len, int* resp_data);
   flight_error get_flight_delay(uint64_t unix_epoch_time, const char *flight, int *resp);
  private:
   flight_error parse_response(const string& resp, int *delay, uint64_t unix_epoch_time);

@@ -241,11 +241,12 @@ int form_transaction(int nonce,
     LL_CRITICAL("%s", e.what());
     return TC_INTERNAL_ERROR;
   }
-
   catch (...) {
     LL_CRITICAL("unknown ex");
     return TC_INTERNAL_ERROR;
   }
+
+  out.toString("tx w/o sig");
 
   // prepare for signing
   uint8_t _tx_hash[32];
@@ -272,7 +273,7 @@ int form_transaction(int nonce,
   // RLP encode the final output with signature
   out.clear();
   tx.rlpEncode(out, true);
-
+  
   out.toString("final tx");
 
   if (out.size() > TX_BUF_SIZE) {
