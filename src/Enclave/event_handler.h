@@ -45,6 +45,9 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string>
+
+using std::string;
 
 #if defined(__cplusplus)
 extern "C" {

@@ -57,15 +57,8 @@
 
 using std::string;
 
-// for uint_bytes
 #include "commons.h"
-
-//    A few notes on integration
-//    - username & password should be passed as an Authorization header field, with Base64(user:password)
-//      as its content.
-//    - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
-//
-
+#include "hybrid_cipher.h"
 
 const char *FlightScraper::HOST = "Host: flightxml.flightaware.com";
 const char
@@ -228,4 +221,49 @@ err_code FlightScraper::handler(const uint8_t *req, size_t data_len, int *resp_d
     default:
       return UNKNOWN_ERROR;
   }
+}
+
+err_code FlightScraper::handleEncryptedQuery(const uint8_t* data, size_t data_len, int* resp_data) {
+  string _json_encoded_flight_info;
+  try {
+    _json_encoded_flight_info = decrypt_query(data, data_len);
+  }
+  catch (const DecryptionException& e) {
+    LL_CRITICAL("Can't decrypt: %s", e.what());
+    return INVALID_PARAMS;
+  }
+
+  picojson::value _flight_info_obj;
+  string err_msg = picojson::parse(_flight_info_obj, _json_encoded_flight_info);
+  if (!err_msg.empty() || !_flight_info_obj.is<picojson::object>()) {
+    LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
+    return INVALID_PARAMS;
+  }
+
+  if (_flight_info_obj.get("flight_id").is<string>() && _flight_info_obj.get("timestamp").is<long>()) {
+    string flight_id = _flight_info_obj.get("flight_id").get<string>();
+    long timestamp = _flight_info_obj.get("timestamp").get<long>();
+
+    int delay = 0;
+    switch (get_flight_delay(timestamp, flight_id.c_str(), &delay)) {
+      case INVALID:*resp_data = -1;
+        return INVALID_PARAMS;
+
+      case NOT_FOUND:*resp_data = -1;
+        return INVALID_PARAMS;
+
+      case HTTP_ERROR:*resp_data = -1;
+        return WEB_ERROR;
+
+      case DEPARTED:
+      case DELAYED:
+      case CANCELLED:
+      case NOT_DEPARTED:*resp_data = delay;
+        return NO_ERROR;
+      case INTERNAL_ERR:
+      default:return UNKNOWN_ERROR;
+    }
+  }
+
+  return INVALID_PARAMS;
 }
