@@ -135,19 +135,17 @@ int main(int argc, const char *argv[]) {
   static const string db_name =
       (fs::path(config.get_working_dir()) / "tc.db").string();
   LOG_F(INFO, "using db %s", db_name.c_str());
-  bool create_db = false;
+  bool overwrite_old_db = false;
   if (fs::exists(db_name) && !config.is_run_as_daemon()) {
     std::cout << "Do you want to clean up the database? y/[n] ";
     std::string new_db;
     std::getline(std::cin, new_db);
-    create_db = new_db == "y";
+    overwrite_old_db = new_db == "y";
   } else {
-    create_db = true;
+    overwrite_old_db = true;
   }
-  LL_INFO("using new db: %d", create_db);
-  OdbDriver driver(db_name, create_db);
-
-  int nonce_offset = 0;
+  LL_INFO("using new db: %d", overwrite_old_db);
+  OdbDriver driver(db_name, overwrite_old_db);
 
   ret = initialize_enclave(config.get_enclave_path().c_str(), &eid);
   if (ret != 0) {
@@ -177,7 +175,7 @@ int main(int argc, const char *argv[]) {
     LOG_F(INFO, "RPC server started");
   }
 
-  Monitor monitor(&driver, eid, nonce_offset, quit);
+  Monitor monitor(&driver, eid, quit);
   monitor.loop();
 
   if (config.is_status_server_enabled()) {
