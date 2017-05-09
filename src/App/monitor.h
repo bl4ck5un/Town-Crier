@@ -46,15 +46,18 @@
 #include <sgx_edger8r.h>
 #include <stdint.h>
 #include <atomic>
+#include <queue>
+#include <memory>
 
 #include "Common/Constants.h"
 #include "App/bookkeeping/database.h"
+#include "App/types.h"
+#include "App/request-parser.h"
 
 class Monitor {
  private:
-  OdbDriver* driver;
+  OdbDriver *driver;
   const sgx_enclave_id_t eid;
-  const int nonceOffset;
 
   const std::atomic_bool &quit;
 
@@ -62,16 +65,24 @@ class Monitor {
   static const int nothingToDoSleepSec = 5;
   bool isSleeping;
 
+  bool send_tx;
+
+  std::queue<std::unique_ptr<tc::RequestParser>> failed_requests;
+
  public:
-  Monitor(OdbDriver* driver, sgx_enclave_id_t eid, int nonceOffset,
+  Monitor(OdbDriver *driver, sgx_enclave_id_t eid,
           const std::atomic_bool &quit)
-      : driver(driver),
-        eid(eid),
-        nonceOffset(nonceOffset),
-        quit(quit),
-        isSleeping(false) {}
+      :
+      send_tx(true),
+      driver(driver),
+      eid(eid),
+      quit(quit),
+      isSleeping(false) {}
+
+  void dontSendResponse() { this->send_tx = false; }
 
   void loop();
+  void _process_one_block(blocknum_t blocknum);
 };
 
 class NothingTodoException : public std::exception {

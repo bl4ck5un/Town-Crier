@@ -54,6 +54,7 @@
 enum usps_state{
 	INPUT_ERROR=0,
 	PACKAGE_NOT_FOUND,
+	PRE_TRANSIT,
 	ORDER_PROCESSED,
 	SHIPPED,
 	IN_TRANSIT,
@@ -62,12 +63,14 @@ enum usps_state{
 };
 
 class USPSScraper : Scraper{
+private:
+	const std::string APIKEY = "NkRXcVAzeERlRUZPQmtlckJpczRCZzo=";
+	const std::string HOST = "api.easypost.com";
+
 public:
 	err_code handler(const uint8_t *req, size_t len, int *resp_data);
-	err_code ups_tracking (const char* tracking_num, int* status);
-
-private:
-	std::string parse_response(const char* resp);
+	err_code ups_tracking (const std::string& tracking_num, const std::string& carrier_name, int* status);
+	std::string parse_response(const string);
 };
 
 #endif

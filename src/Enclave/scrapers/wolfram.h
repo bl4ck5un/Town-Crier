@@ -43,46 +43,37 @@
 #ifndef WOLFRAM_H
 #define WOLFRAM_H
 
-enum wolfram_error{
-	NO_ERROR=0,		/* Produced a valid query */
-	INVALID, 		/* Invalid query */
-	NO_RESP,		/* Wolfram website irresponsive */
-}
+#include <string>
+#include "Scraper.h"
+#include "utils.h"
 
-class WolframQuery{ 
+
+class WolframQueryResult{
 private:
-	std::string query;
-	std::string appid;
-	/* More stuff can be added here for parsing */
+	std::string xml; /* The XML response from the wolfram website */
 public:
-	WolframQuery(std::string query); 
+	WolframQueryResult(std::string xml);
+	std::string get_raw_data();
+};
 
-	/* Getter and setter functions */
-	void set_query(std::string query)
-	void set_appid(std::string appID);
-	std::string get_url();
-}
-class WolframResultParser(){
-	WolframResultParser()
-}
-
-class WolframScraper : Scraper{
+class WolframScraper : Scraper {
 private:
-	HttpRequest httpRequest; 
-	HttpClient httpClient;
+	const std::string HOST = "api.wolframalpha.com";
+	const std::string APPID = "A8V8R2-523WY42ULW";
+	std::string url;
 
 public:
-	WolframScraper();
-	void WolframScraper::create_query(std::string query);
-	err_code handler(uint8_t *req, int data_len, int *resp_data);
-	wolfram_error query_website(std::string query);
-}
+	enum WolframQuery{
+		SIMPLE=0, 	/* Request simple 1 line answers */
+		GENERAL		/* Request more general responses */
+	} wolframQueryType;
 
+	//WolframScraper(int qtype);
+	void create_query(std::string query);
+	err_code handler(const uint8_t *req, size_t data_len, int *resp_data);
 
-class WolframQueryResult(){
-private:
-	char* xml; /* The XML response from the wolfram website */
-public:
-	WolframQueryResult(char* xml);
-	char* get_raw_data();
-}
+	WolframQueryResult perform_query();
+	void set_qtype(int type);
+};
+
+#endif
