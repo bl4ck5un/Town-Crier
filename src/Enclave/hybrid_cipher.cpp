@@ -35,7 +35,7 @@ int tc_get_hybrid_pubkey(ECPointBuffer pubkey) {
 }
 
 
-const string& decrypt_query(const uint8_t* data, size_t data_len) {
+const string decrypt_query(const uint8_t* data, size_t data_len) {
   HybridEncryption dec_ctx;
   ECPointBuffer tc_pubkey;
   dec_ctx.initServer(tc_pubkey);
@@ -191,7 +191,9 @@ void HybridEncryption::initServer(ECPointBuffer pubkey) {
     LL_CRITICAL("Error: mbedtls_mpi_read_string returned %d", ret);
     return;
   }
+  LL_DEBUG("before secretToPubkey");
   HybridEncryption::secretToPubkey(&g_secret_hybrid_key, pubkey);
+  LL_DEBUG("after secretToPubkey");
 #endif
 }
 
