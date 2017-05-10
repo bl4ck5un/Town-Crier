@@ -66,7 +66,7 @@ inline const char *homedir() {
   return home_dir;
 }
 
-tc::Config::Config(const po::options_description& additional_opts, int argc, const char **argv) {
+tc::Config::Config(const po::options_description &additional_opts, int argc, const char **argv) {
   this->current_dir = fs::current_path().string();
   this->home_dir = homedir();
 
@@ -77,9 +77,9 @@ tc::Config::Config(const po::options_description& additional_opts, int argc, con
         "daemon,d", po::bool_switch(&opt_run_as_daemon)->default_value(DFT_RUN_AS_DAEMON), "Run TC as a daemon")(
         "config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE), "Path to a config file")(
         "cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR), "Working dir (where log and db are stored");
-    
+
     desc.add(additional_opts);
-    
+
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
 

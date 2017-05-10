@@ -43,9 +43,10 @@
 #ifndef SRC_APP_CONFIG_H_
 #define SRC_APP_CONFIG_H_
 
-#include <string>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+
+#include <string>
 
 using std::string;
 
@@ -88,12 +89,12 @@ class Config {
 
   string current_dir;
   string home_dir;
-  
+
   void parseConfigFile();
 
  public:
   Config(int argc, const char *argv[]);
-  Config(const po::options_description&, int argc, const char *argv[]);
+  Config(const po::options_description &, int argc, const char *argv[]);
   string to_string();
 };
 

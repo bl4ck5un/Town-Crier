@@ -85,13 +85,13 @@ void exitGraceful(int) { quit.store(true); }
 int main(int argc, const char *argv[]) {
   // init logging
   loguru::init(argc, argv);
-  
+
   bool send_response;
-  long block_num;
-  po::options_description desc("Allowed options");
+  blocknum_t block_num;
+  po::options_description desc("Additional Options");
   desc.add_options()
       ("send,s", po::bool_switch(&send_response)->default_value(false), "Send real response")
-      ("block,b", po::value(&block_num)->required(), "Send real response");
+      ("block,b", po::value(&block_num)->required(), "block number to use");
 
   tc::Config config(desc, argc, argv);
   cout << config.to_string();
@@ -146,7 +146,7 @@ int main(int argc, const char *argv[]) {
   try {
     monitor._process_one_block(0);
   }
-  catch (const std::exception & e) {
+  catch (const std::exception &e) {
     cerr << e.what() << endl;
   }
   catch (...) {
