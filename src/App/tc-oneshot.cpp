@@ -141,10 +141,11 @@ int main(int argc, const char *argv[]) {
   }
 
   Monitor monitor(&driver, eid, quit);
-  monitor.dontSendResponse();
+  if (!send_response)
+    monitor.dontSendResponse();
 
   try {
-    monitor._process_one_block(0);
+    monitor._process_one_block(block_num);
   }
   catch (const std::exception &e) {
     cerr << e.what() << endl;

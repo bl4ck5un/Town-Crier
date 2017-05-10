@@ -185,7 +185,7 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
       const string DATA_FIELD_NAME = "data";
       const string TX_HASH_FIELD_NAME = "transactionHash";
 
-      LL_DEBUG("raw_request: %s", _current_tx.asCString());
+      LL_DEBUG("raw_request: %s", _current_tx.toStyledString().c_str());
 
       if (!(_current_tx.isMember(DATA_FIELD_NAME) && _current_tx.isMember(TX_HASH_FIELD_NAME))) {
         LL_ERROR("get bad RPC data, skipping this tx");
@@ -238,13 +238,13 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
         if (send_tx) {
           string resp_txn_hash = send_transaction(resp_txn);
           LL_INFO("resp record: %s", resp_txn_hash.c_str());
+          log_entry->setResponse(resp_txn_hash);
+          log_entry->setResponseTime(std::time(0));
         } else {
           LL_INFO("will NOT send tx");
         }
 
         log_entry->incrementNumOfRetrial();
-        log_entry->setResponse(resp_txn);
-        log_entry->setResponseTime(std::time(0));
 
         driver->updateLog(*log_entry);
       }
