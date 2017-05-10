@@ -57,15 +57,8 @@
 
 using std::string;
 
-// for uint_bytes
 #include "commons.h"
-
-//    A few notes on integration
-//    - username & password should be passed as an Authorization header field, with Base64(user:password)
-//      as its content.
-//    - This website is using HTTP 1.1, which requires a Host header field. Otherwise 400.
-//
-
+#include "hybrid_cipher.h"
 
 const char *FlightScraper::HOST = "Host: flightxml.flightaware.com";
 const char
@@ -228,4 +221,59 @@ err_code FlightScraper::handler(const uint8_t *req, size_t data_len, int *resp_d
     default:
       return UNKNOWN_ERROR;
   }
+}
+
+err_code FlightScraper::handleEncryptedQuery(const uint8_t* data, size_t data_len, int* resp_data) {
+  hexdump("encrypted_data", data, data_len);
+  string _json_encoded_flight_info;
+  try {
+    _json_encoded_flight_info = decrypt_query(data, data_len);
+    LL_INFO("decrypted flight info: %s", _json_encoded_flight_info.c_str());
+  }
+  catch (const DecryptionException& e) {
+    LL_CRITICAL("Can't decrypt: %s", e.what());
+    return INVALID_PARAMS;
+  }
+  catch (...) {
+    LL_CRITICAL("unknown error");
+    return INVALID_PARAMS;
+  }
+
+  // test against block 899735
+  // test against block 899795
+  picojson::value _flight_info_obj;
+  string err_msg = picojson::parse(_flight_info_obj, _json_encoded_flight_info);
+  if (!err_msg.empty() || !_flight_info_obj.is<picojson::object>()) {
+    LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
+    return INVALID_PARAMS;
+  }
+
+  if (_flight_info_obj.get("flight").is<string>() && _flight_info_obj.get("time").is<double>()) {
+    string flight_id = _flight_info_obj.get("flight").get<string>();
+    long timestamp = static_cast<long>(_flight_info_obj.get("time").get<double>());
+
+    LL_INFO("querying flight info for %s@%ld", flight_id.c_str(), timestamp);
+
+    int delay = 0;
+    switch (get_flight_delay(timestamp, flight_id.c_str(), &delay)) {
+      case INVALID:*resp_data = -1;
+        return INVALID_PARAMS;
+
+      case NOT_FOUND:*resp_data = -1;
+        return INVALID_PARAMS;
+
+      case HTTP_ERROR:*resp_data = -1;
+        return WEB_ERROR;
+
+      case DEPARTED:
+      case DELAYED:
+      case CANCELLED:
+      case NOT_DEPARTED:*resp_data = delay;
+        return NO_ERROR;
+      case INTERNAL_ERR:
+      default:return UNKNOWN_ERROR;
+    }
+  }
+
+  return INVALID_PARAMS;
 }

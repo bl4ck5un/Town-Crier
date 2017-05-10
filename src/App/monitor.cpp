@@ -235,14 +235,16 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
         string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
         LL_DEBUG("resp: %s", resp_txn.c_str());
 
-        //! send tx only when configured to
         if (send_tx) {
           string resp_txn_hash = send_transaction(resp_txn);
+          LL_INFO("resp record: %s", resp_txn_hash.c_str());
+          log_entry->setResponse(resp_txn_hash);
+          log_entry->setResponseTime(std::time(0));
+        } else {
+          LL_INFO("will NOT send tx");
         }
 
         log_entry->incrementNumOfRetrial();
-        log_entry->setResponse(resp_txn);
-        log_entry->setResponseTime(std::time(0));
 
         driver->updateLog(*log_entry);
       }

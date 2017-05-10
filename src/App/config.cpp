@@ -57,9 +57,6 @@ using std::cout;
 using std::endl;
 using std::stringstream;
 
-namespace po = boost::program_options;
-namespace fs = boost::filesystem;
-
 inline const char *homedir() {
   const char *home_dir;
   if ((home_dir = getenv("HOME")) == NULL) {
@@ -69,23 +66,19 @@ inline const char *homedir() {
   return home_dir;
 }
 
-tc::Config::Config(int argc, const char **argv) {
+tc::Config::Config(const po::options_description &additional_opts, int argc, const char **argv) {
   this->current_dir = fs::current_path().string();
   this->home_dir = homedir();
 
   try {
     po::options_description desc("Allowed options");
     desc.add_options()("help,h", "print this message")(
-        "rpc",
-        po::bool_switch(&opt_status_enabled)->default_value(DFT_STATUS_ENABLED),
-        "Launch RPC server")(
-        "daemon,d",
-        po::bool_switch(&opt_run_as_daemon)->default_value(DFT_RUN_AS_DAEMON),
-        "Run TC as a daemon")(
-        "config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE),
-        "Path to a config file")(
-        "cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR),
-        "Working directory (where log and db are stored");
+        "rpc", po::bool_switch(&opt_status_enabled)->default_value(DFT_STATUS_ENABLED), "Launch RPC server")(
+        "daemon,d", po::bool_switch(&opt_run_as_daemon)->default_value(DFT_RUN_AS_DAEMON), "Run TC as a daemon")(
+        "config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE), "Path to a config file")(
+        "cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR), "Working dir (where log and db are stored");
+
+    desc.add(additional_opts);
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -106,6 +99,11 @@ tc::Config::Config(int argc, const char **argv) {
     exit(-1);
   }
 
+  parseConfigFile();
+  cout << "config done." << endl;
+}
+
+void tc::Config::parseConfigFile() {
   // parse the config files
   boost::property_tree::ptree pt;
   try {
@@ -119,7 +117,40 @@ tc::Config::Config(int argc, const char **argv) {
     std::cout << e.what() << std::endl;
     exit(-1);
   }
+}
 
+tc::Config::Config(int argc, const char **argv) {
+  this->current_dir = fs::current_path().string();
+  this->home_dir = homedir();
+
+  try {
+    po::options_description desc("Allowed options");
+    desc.add_options()("help,h", "print this message")(
+        "rpc", po::bool_switch(&opt_status_enabled)->default_value(DFT_STATUS_ENABLED), "Launch RPC server")(
+        "daemon,d", po::bool_switch(&opt_run_as_daemon)->default_value(DFT_RUN_AS_DAEMON), "Run TC as a daemon")(
+        "config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE), "Path to a config file")(
+        "cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR), "Working dir (where log and db are stored");
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+
+    if (vm.count("help")) {
+      cerr << desc << endl;
+      exit(0);
+    }
+    po::notify(vm);
+  } catch (po::required_option &e) {
+    cerr << e.what() << endl;
+    exit(-1);
+  } catch (std::exception &e) {
+    cerr << e.what() << endl;
+    exit(-1);
+  } catch (...) {
+    cerr << "Unknown error!" << endl;
+    exit(-1);
+  }
+
+  parseConfigFile();
   cout << "config done." << endl;
 }
 

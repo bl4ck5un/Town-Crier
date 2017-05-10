@@ -41,79 +41,121 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#define LOGURU_IMPLEMENTATION 1
 
+// system headers
+#include <jsonrpccpp/server/connectors/httpserver.h>
+#include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 #include <stdint.h>
 
+// SGX headers
+#include <sgx_uae_service.h>
+
+#include <atomic>
+#include <csignal>
 #include <iostream>
-#include <vector>
 #include <string>
 
-#include "Enclave_u.h"
-
 #include "Common/Constants.h"
-#include "App/Converter.h"
-#include "App/utils.h"
-#include "App/request-parser.h"
-#include "App/debug.h"
-#include "App/monitor.h"
+#include "App/Enclave_u.h"
 #include "App/EthRPC.h"
+#include "App/StatRPCServer.h"
+#include "App/attestation.h"
+#include "App/bookkeeping/database.h"
+#include "App/key-utils.h"
+#include "App/monitor.h"
+#include "App/request-parser.h"
+#include "App/tc-exception.h"
+#include "App/utils.h"
 
-using std::vector;
-using std::cerr;
-using std::endl;
-using std::to_string;
+#define LOGURU_IMPLEMENTATION 1
+#include "Common/Log.h"
+#include "App/config.h"
+
+namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 extern ethRPCClient *rpc_client;
 jsonrpc::HttpClient *httpclient;
 
-int main(int argc, const char* argv[]) {
-  if (argc < 2) {
-    cerr << "Usage: " << argv[0] << " block_num" << endl;
-    std::exit(-1);
-  }
+std::atomic<bool> quit(false);
+void exitGraceful(int) { quit.store(true); }
 
-  loguru::g_stderr_verbosity = loguru::Verbosity_INFO;
+int main(int argc, const char *argv[]) {
+  // init logging
   loguru::init(argc, argv);
 
-  sgx_enclave_id_t eid;
-  sgx_status_t st;
-  int ret;
+  bool send_response;
+  blocknum_t block_num;
+  po::options_description desc("Additional Options");
+  desc.add_options()
+      ("send,s", po::bool_switch(&send_response)->default_value(false), "Send real response")
+      ("block,b", po::value(&block_num)->required(), "block number to use");
 
-  ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
-  if (ret != 0) {
-    LL_CRITICAL("Failed to initialize the enclave");
-    std::exit(-1);
-  } else {
-    LL_INFO("enclave %lu created", eid);
-  }
+  tc::Config config(desc, argc, argv);
+  cout << config.to_string();
 
-  blocknum_t blocknum = std::strtoul(argv[1], nullptr, 10);
+  // create working dir if not existed
+  fs::create_directory(fs::path(config.get_working_dir()));
+
+  // logging to file
+  LL_INFO("config:\n%s", config.to_string().c_str());
 
   try {
-    httpclient = new jsonrpc::HttpClient("http://localhost:8200");
+    httpclient = new jsonrpc::HttpClient(config.get_geth_rpc_addr());
     rpc_client = new ethRPCClient(*httpclient);
   } catch (const std::exception &e) {
     std::cout << e.what() << std::endl;
     exit(-1);
   }
 
-  string db_name = "tmp_db_" + to_string(blocknum);
-  OdbDriver driver(db_name, true);
-  std::atomic<bool> quit(false);
+  int ret;
+  sgx_enclave_id_t eid;
+  sgx_status_t st;
 
-  Monitor monitor(&driver, eid, quit);
-  monitor.dontSendResponse();
+  static const string db_name = (fs::path(config.get_working_dir()) / "tc.db").string();
+  LOG_F(INFO, "using db %s", db_name.c_str());
+
+  // always reuse database
+  OdbDriver driver(db_name, false);
+
+  ret = initialize_enclave(config.get_enclave_path().c_str(), &eid);
+  if (ret != 0) {
+    LOG_F(FATAL, "Failed to initialize the enclave");
+    std::exit(-1);
+  } else {
+    LOG_F(INFO, "Enclave %ld created", eid);
+  }
+
+  string address;
 
   try {
-    monitor._process_one_block(blocknum);
+    address = unseal_key(eid, config.get_sealed_sig_key());
+    LL_INFO("using address %s", address.c_str());
+
+    provision_key(eid, config.get_sealed_sig_key());
+  } catch (const tc::EcallException &e) {
+    LL_CRITICAL("%s", e.what());
+    exit(-1);
   }
-  catch (const std::exception & e) {
+
+  Monitor monitor(&driver, eid, quit);
+  if (!send_response)
+    monitor.dontSendResponse();
+
+  try {
+    monitor._process_one_block(block_num);
+  }
+  catch (const std::exception &e) {
     cerr << e.what() << endl;
   }
   catch (...) {
     cerr << "unknown" << endl;
   }
 
-  return 0;
+  sgx_destroy_enclave(eid);
+  delete rpc_client;
+  delete httpclient;
+  LL_INFO("all enclave closed successfully");
 }

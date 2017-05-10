@@ -45,7 +45,7 @@
 
 #define TX_BUF_SIZE 2048
 
-#define TC_ADDRESS  "0xc3847c4de90b83cb3f6b1e004c9e6345e0b9fc27"
+#define TC_ADDRESS  "0xC3847C4dE90B83CB3F6B1e004c9E6345e0b9fc27"
 #define GASPRICE    "0x0BA43B7400"  // 50000000000
 #define GASLIMIT    "0x2DC6C0"      // 3000000
 
@@ -62,6 +62,7 @@
 #define TYPE_CURRENT_VOTE   0x7
 #define TYPE_ENCRYPT_TEST   0x8
 #define TYPE_WOLFRAM		0x9
+#define TYPE_FLIGHT_INS_ENC	0x10
 
 
 /* Possible return values to be used in Enclave-Relay Connections */

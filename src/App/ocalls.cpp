@@ -101,9 +101,9 @@ void write(uint32_t sealed_data_size, sgx_sealed_data_t *p_sealed_data,
 }
 
 int ocall_log_lvl() {
-  return loguru::current_verbosity_cutoff();
+  return loguru::g_stderr_verbosity;
 }
 
 int ocall_is_debug() {
-  return loguru::current_verbosity_cutoff() >= LOG_LEVEL_DEBUG;
+  return loguru::g_stderr_verbosity >= LOG_LEVEL_DEBUG;
 }

@@ -116,8 +116,19 @@ class HybridEncryption {
   void hybridDecrypt(const HybridCiphertext &ciphertext, vector <uint8_t> &cleartext);
 };
 
+
 // key-util
+class DecryptionException: public std::exception {
+ private:
+  const string reason;
+ public:
+  DecryptionException(string reason): reason(reason) {}
+  const char* what() const throw() { return reason.c_str(); }
+};
+
+
 int tc_provision_hybrid_key(const sgx_sealed_data_t *secret, size_t secret_len);
 int tc_get_hybrid_pubkey(ECPointBuffer pubkey);
+const string decrypt_query(const uint8_t* data, size_t data_len);
 
 #endif //MBEDTLS_SGX_ENC_H

@@ -1,7 +1,7 @@
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wno-attributes")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
 
-set(TC_SRC_FILES tc.cpp monitor.cpp attestation.cpp request-parser.cpp
+set(TC_SRC_FILES monitor.cpp attestation.cpp request-parser.cpp
         mbedtls_sgx_net.c Enclave_u.c ocalls.cpp
         debug.cpp
         bookkeeping/database.cpp
@@ -24,7 +24,8 @@ add_custom_command(
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-add_executable(tc ${TC_SRC_FILES})
+add_executable(tc tc.cpp ${TC_SRC_FILES})
+add_executable(tc-oneshot tc-oneshot.cpp ${TC_SRC_FILES})
 add_executable(tc-keygen
         tc-keygen.cpp
         ../Common/external/base64.cpp
@@ -88,17 +89,23 @@ target_link_libraries(tc
         ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY}
         -lpthread -ldl)
 
-target_link_libraries(tc-keygen
-        ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
-        -lpthread -ldl)
-
-target_link_libraries(tc-att
-        ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
+target_link_libraries(tc-oneshot
+        ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
+        ${LIBODB_LIBRARIES} ${MHD_LIBRARIES} ${SQLITE_LIBRARIES} ${Boost_LIBRARIES}
+        ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY}
         -lpthread -ldl)
 
 target_link_libraries(tc-test
         ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
         ${LIBODB_LIBRARIES} ${SQLITE_LIBRARIES}
+        ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
+        -lpthread -ldl)
+
+target_link_libraries(tc-keygen
+        ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
+        -lpthread -ldl)
+
+target_link_libraries(tc-att
         ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
         -lpthread -ldl)
 

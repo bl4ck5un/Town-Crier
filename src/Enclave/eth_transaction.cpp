@@ -241,7 +241,6 @@ int form_transaction(int nonce,
     LL_CRITICAL("%s", e.what());
     return TC_INTERNAL_ERROR;
   }
-
   catch (...) {
     LL_CRITICAL("unknown ex");
     return TC_INTERNAL_ERROR;
@@ -261,7 +260,7 @@ int form_transaction(int nonce,
   tx.s.resize(32, 0);
   if (with_sig) {
     if ((ret = ecdsa_sign(_tx_hash, 32, &tx.r[0], &tx.s[0], &tx.v)) != 0) {
-      LL_CRITICAL("Error: signing returned %d\n", ret);
+      LL_CRITICAL("Error: signing returned %d", ret);
       return TC_INTERNAL_ERROR;
     }
   } else {
@@ -274,6 +273,8 @@ int form_transaction(int nonce,
   // RLP encode the final output with signature
   out.clear();
   tx.rlpEncode(out, true);
+  
+  out.toString("final tx");
 
   if (out.size() > TX_BUF_SIZE) {
     LL_CRITICAL("Error buffer size (%d) is too small.\n", TX_BUF_SIZE);
