@@ -129,6 +129,6 @@ class DecryptionException: public std::exception {
 
 int tc_provision_hybrid_key(const sgx_sealed_data_t *secret, size_t secret_len);
 int tc_get_hybrid_pubkey(ECPointBuffer pubkey);
-const string& decrypt_query(const uint8_t* data, size_t data_len);
+const string decrypt_query(const uint8_t* data, size_t data_len);
 
 #endif //MBEDTLS_SGX_ENC_H
