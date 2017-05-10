@@ -52,8 +52,10 @@
 #include "utils.h"
 #include "tls_client.h"
 
-/*** Implement the WolframQueryResults class ***/
 using namespace std;
+
+const std::string WolframScraper::HOST = "api.wolframalpha.com";
+const std::string WolframScraper::APPID = "A8V8R2-523WY42ULW";
 
 /* WolframResults constructor */
 WolframQueryResult::WolframQueryResult(string xml){
@@ -72,7 +74,7 @@ string WolframQueryResult::get_raw_data(){
 // }
 
 void WolframScraper::create_query(std::string query){
-
+  // TODO(Oscar): C++. string::replace?
   char* tmp = (char*)query.c_str();
   for(int i = 0; i < query.size(); i++){
     if (tmp[i] == ' '){
@@ -87,7 +89,7 @@ void WolframScraper::create_query(std::string query){
 
 err_code WolframScraper::handler(const uint8_t *req, size_t data_len, int *resp_data){
   if (data_len != 2*32){
-    LL_CRITICAL("Data len %d*2 does not equal 2*32", data_len);
+    LL_CRITICAL("Data len %zu*2 does not equal 2*32", data_len);
     return INVALID_PARAMS;
   }
   //Parse the request type followed by the query

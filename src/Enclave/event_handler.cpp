@@ -43,6 +43,9 @@
 
 #include "event_handler.h"
 #include <string>
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS
+#endif
 #include <inttypes.h>
 
 #include "scrapers.h"
@@ -87,7 +90,7 @@ int handle_request(int nonce,
     return ret;
   }
 
-  catch (const std::exception& e) {
+  catch (const std::exception &e) {
     LL_CRITICAL("exception while handling request: %s", e.what());
   }
   catch (...) {
@@ -98,12 +101,12 @@ int handle_request(int nonce,
 }
 
 int do_handle_request(int nonce,
-                   uint64_t id,
-                   uint64_t type,
-                   const uint8_t *data,
-                   size_t data_len,
-                   uint8_t *raw_tx,
-                   size_t *raw_tx_len) {
+                      uint64_t id,
+                      uint64_t type,
+                      const uint8_t *data,
+                      size_t data_len,
+                      uint8_t *raw_tx,
+                      size_t *raw_tx_len) {
   bytes resp_data;
   int error_flag = 0;
 

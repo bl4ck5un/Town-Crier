@@ -50,27 +50,27 @@
 #include "tls_client.h"
 #include "../../Common/Constants.h"
 
-/* Define valid states of packages */ 
-enum usps_state{
-	INPUT_ERROR=0,
-	PACKAGE_NOT_FOUND,
-	PRE_TRANSIT,
-	ORDER_PROCESSED,
-	SHIPPED,
-	IN_TRANSIT,
-	OUT_FOR_DELIVERY,
-	DELIVERED,
+/* Define valid states of packages */
+enum usps_state {
+  INPUT_ERROR = 0,
+  PACKAGE_NOT_FOUND,
+  PRE_TRANSIT,
+  ORDER_PROCESSED,
+  SHIPPED,
+  IN_TRANSIT,
+  OUT_FOR_DELIVERY,
+  DELIVERED,
 };
 
-class USPSScraper : Scraper{
-private:
-	const std::string APIKEY = "NkRXcVAzeERlRUZPQmtlckJpczRCZzo=";
-	const std::string HOST = "api.easypost.com";
+class USPSScraper : Scraper {
+ private:
+  static const std::string APIKEY;
+  static const std::string HOST;
 
-public:
-	err_code handler(const uint8_t *req, size_t len, int *resp_data);
-	err_code ups_tracking (const std::string& tracking_num, const std::string& carrier_name, int* status);
-	std::string parse_response(const string);
+ public:
+  err_code handler(const uint8_t *req, size_t len, int *resp_data);
+  err_code ups_tracking(const std::string &tracking_num, const std::string &carrier_name, int *status);
+  std::string parse_response(const string);
 };
 
 #endif

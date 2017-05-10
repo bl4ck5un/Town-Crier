@@ -181,10 +181,6 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
   for (auto _current_tx : txn_list) {
     auto request = std::unique_ptr<tc::RequestParser>(new tc::RequestParser());
     try {
-      /* process each request transaction */
-      const string DATA_FIELD_NAME = "data";
-      const string TX_HASH_FIELD_NAME = "transactionHash";
-
       LL_DEBUG("raw_request: %s", _current_tx.toStyledString().c_str());
 
       if (!(_current_tx.isMember(DATA_FIELD_NAME) && _current_tx.isMember(TX_HASH_FIELD_NAME))) {

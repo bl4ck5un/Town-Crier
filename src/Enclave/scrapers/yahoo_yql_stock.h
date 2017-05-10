@@ -87,7 +87,7 @@ class YahooYQLStock : public Scraper {
 
     // if longer than 2100-1-1
     if (unix_epoch > 0xF4865700) {
-      LL_CRITICAL("unix_epoch %d is too far to the future", unix_epoch);
+      LL_CRITICAL("unix_epoch %ld is too far to the future", unix_epoch);
       return INVALID_PARAMS;
     }
 

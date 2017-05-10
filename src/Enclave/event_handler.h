@@ -72,6 +72,4 @@ int do_handle_request(int nonce,
 }
 #endif
 
-
-
 #endif

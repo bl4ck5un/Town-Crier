@@ -40,14 +40,12 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-//
-// Created by sgx on 2/7/17.
-//
-
 #ifndef TOWN_CRIER_UTILS_H
 #define TOWN_CRIER_UTILS_H
-#define __STDC_FORMAT_MACROS // non needed in C, only in C++
 
+#ifndef __STDC_FORMAT_MACROS
+#define __STDC_FORMAT_MACROS
+#endif
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>

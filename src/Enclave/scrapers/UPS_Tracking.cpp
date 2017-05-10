@@ -46,7 +46,6 @@
 #include <string>
 #include <Log.h>
 
-
 #include "UPS_Tracking.h"
 #include "utils.h"
 #include "tls_client.h"
@@ -60,142 +59,143 @@ using namespace std;
 #define USPS_API "stg-production.shippingapis.com"
 #define USERID "063CORNE4274"
 
+const std::string USPSScraper::APIKEY = "NkRXcVAzeERlRUZPQmtlckJpczRCZzo=";
+const std::string USPSScraper::HOST = "api.easypost.com";
 
-/* Method used to handle any UPSP data request 
+/* Method used to handle any UPSP data request
  * The Data is strcutured as follows
  * 		0x00 - 0x20 string tracking_number
  */
-err_code USPSScraper::handler(const uint8_t *req, size_t len, int *resp_data){
-	if(len != 2*32){
-		LL_CRITICAL("Data_len %zu*32 is not 2*32", len / 32);
-		return INVALID_PARAMS;
-	}
-	//Parse the raw array to get the required params
-	// char tracking_num[32] = {0};
-	// char carrier_name[32] = {0};
-	std::string tracking_num(req, req + 0x20);
-	std::string carrier_name(req + 0x20, req + 0x40);
-	// memcpy(tracking_num, req, 0x20);
-	// memcpy(carrier_name, req + 0x20, 0x20);
+err_code USPSScraper::handler(const uint8_t *req, size_t len, int *resp_data) {
+  if (len != 2 * 32) {
+    LL_CRITICAL("Data_len %zu*32 is not 2*32", len / 32);
+    return INVALID_PARAMS;
+  }
+  //Parse the raw array to get the required params
+  // char tracking_num[32] = {0};
+  // char carrier_name[32] = {0};
+  std::string tracking_num(req, req + 0x20);
+  std::string carrier_name(req + 0x20, req + 0x40);
+  // memcpy(tracking_num, req, 0x20);
+  // memcpy(carrier_name, req + 0x20, 0x20);
 
-	LL_DEBUG("Tracking Number is: %s", tracking_num.c_str());
+  LL_DEBUG("Tracking Number is: %s", tracking_num.c_str());
 
-	return ups_tracking(tracking_num, carrier_name, resp_data);
+  return ups_tracking(tracking_num, carrier_name, resp_data);
 }
 
-err_code USPSScraper::ups_tracking (const std::string& tracking_num, const std::string& carrier_name, int* status){
-	
-	if (tracking_num.size() == 0){
-		LL_CRITICAL("Error: Passed in NULL Pointer");
-		*status = -1;
-		return INVALID_PARAMS;
-	}
+err_code USPSScraper::ups_tracking(const std::string &tracking_num, const std::string &carrier_name, int *status) {
 
-	/* Build the query */ 
-	std::string query = "/v2/trackers?tracker[tracking_code]=" + tracking_num + "&tracker[carrier]=" + carrier_name;
- 	std::vector<string> header;
- 	LL_INFO("query: %s", query.c_str());
+  if (tracking_num.size() == 0) {
+    LL_CRITICAL("Error: Passed in NULL Pointer");
+    *status = -1;
+    return INVALID_PARAMS;
+  }
 
- 	std::string auth = "Authorization: Basic " + this->APIKEY;
- 	LL_INFO("auth: %s", auth.c_str());
- 	header.push_back(auth);
+  /* Build the query */
+  std::string query = "/v2/trackers?tracker[tracking_code]=" + tracking_num + "&tracker[carrier]=" + carrier_name;
+  std::vector<string> header;
+  LL_INFO("query: %s", query.c_str());
 
-	HttpRequest httpRequest(this->HOST, query, header,true);
-	HttpsClient httpClient(httpRequest);
-	std::string result; 
-	try{
-		HttpResponse response = httpClient.getResponse();
-	  result = parse_response(response.getContent());
-	}
-	catch (std::runtime_error& e){
-        LL_CRITICAL("Https error: %s", e.what());
-    	LL_CRITICAL("Details: %s", httpClient.getError().c_str());
-        httpClient.close();
-        *status = -1;
-        return WEB_ERROR;		
-	}
+  std::string auth = "Authorization: Basic " + this->APIKEY;
+  LL_INFO("auth: %s", auth.c_str());
+  header.push_back(auth);
 
-	// return an int according to the result. E.g. 1 for delivered, etc.
-    if(result.compare("Package not found") == 0){
-    	*status = PACKAGE_NOT_FOUND;
-    	return NO_ERROR;
-    }
-    if(result.compare("pre_transit") == 0){
-    	*status = PRE_TRANSIT;
-    	return NO_ERROR;
-    }
-    if(result.compare("Delivered") == 0){
-        *status = DELIVERED;
-        return NO_ERROR;
-    }
-    if(result.compare("Order processed") == 0){
-        *status = ORDER_PROCESSED;
-        return NO_ERROR;
-    }
-    if(result.compare("Shipped") == 0){
-        *status = SHIPPED;
-        return NO_ERROR;
-    }
-    if(result.compare("In transit") == 0){
-        *status = IN_TRANSIT;
-        return NO_ERROR;
-    }
-    if(result.compare("Out for delivery") == 0){
-        *status = OUT_FOR_DELIVERY;
-        return NO_ERROR;
-    }
-    else{
-    	LL_CRITICAL("failed to get information\n");
-        return INVALID_PARAMS;
-    }
+  HttpRequest httpRequest(this->HOST, query, header, true);
+  HttpsClient httpClient(httpRequest);
+  std::string result;
+  try {
+    HttpResponse response = httpClient.getResponse();
+    result = parse_response(response.getContent());
+  }
+  catch (std::runtime_error &e) {
+    LL_CRITICAL("Https error: %s", e.what());
+    LL_CRITICAL("Details: %s", httpClient.getError().c_str());
+    httpClient.close();
+    *status = -1;
+    return WEB_ERROR;
+  }
+
+  // return an int according to the result. E.g. 1 for delivered, etc.
+  if (result.compare("Package not found") == 0) {
+    *status = PACKAGE_NOT_FOUND;
+    return NO_ERROR;
+  }
+  if (result.compare("pre_transit") == 0) {
+    *status = PRE_TRANSIT;
+    return NO_ERROR;
+  }
+  if (result.compare("Delivered") == 0) {
+    *status = DELIVERED;
+    return NO_ERROR;
+  }
+  if (result.compare("Order processed") == 0) {
+    *status = ORDER_PROCESSED;
+    return NO_ERROR;
+  }
+  if (result.compare("Shipped") == 0) {
+    *status = SHIPPED;
+    return NO_ERROR;
+  }
+  if (result.compare("In transit") == 0) {
+    *status = IN_TRANSIT;
+    return NO_ERROR;
+  }
+  if (result.compare("Out for delivery") == 0) {
+    *status = OUT_FOR_DELIVERY;
+    return NO_ERROR;
+  } else {
+    LL_CRITICAL("failed to get information\n");
+    return INVALID_PARAMS;
+  }
 }
 
-std::string USPSScraper::parse_response(const string resp){
-	LL_INFO("resp: %s", resp.c_str());
+std::string USPSScraper::parse_response(const string resp) {
+  LL_INFO("resp: %s", resp.c_str());
 
-	picojson::value v;
-	std::string err = picojson::parse(v, resp);
-	if (! err.empty()){
-		LL_CRITICAL("Error in picojson");
-		return "INVALID_PARAMS";
-	} 
-	if (!v.is<picojson::object>()){
-		LL_CRITICAL("JSON is not an object");
-		return "INVALID_PARAMS";
-	}
-	const picojson::value::object& obj = v.get<picojson::object>();
-	picojson::value v1 = obj.find("trackers")->second; 
-	const picojson::value::array& tr_list = v1.get<picojson::array>();
-	const picojson::value::object& obj2 = tr_list[0].get<picojson::object>();
+  picojson::value v;
+  std::string err = picojson::parse(v, resp);
+  if (!err.empty()) {
+    LL_CRITICAL("Error in picojson");
+    return "INVALID_PARAMS";
+  }
+  if (!v.is<picojson::object>()) {
+    LL_CRITICAL("JSON is not an object");
+    return "INVALID_PARAMS";
+  }
+  const picojson::value::object &obj = v.get<picojson::object>();
+  picojson::value v1 = obj.find("trackers")->second;
+  const picojson::value::array &tr_list = v1.get<picojson::array>();
+  const picojson::value::object &obj2 = tr_list[0].get<picojson::object>();
 
-	picojson::value v2 = obj2.find("tracking_details")->second;
-	const picojson::value::array& tracking_history = v2.get<picojson::array>();
+  picojson::value v2 = obj2.find("tracking_details")->second;
+  const picojson::value::array &tracking_history = v2.get<picojson::array>();
 
-	const picojson::value::object& obj3 = tracking_history[tracking_history.size()-1].get<picojson::object>();
-	picojson::value v3 = obj3.find("status")->second;
-	const std::string& pkg_status = v3.get<std::string>();
-	LL_INFO("status of package: %s", pkg_status.c_str());
+  const picojson::value::object &obj3 = tracking_history[tracking_history.size() - 1].get<picojson::object>();
+  picojson::value v3 = obj3.find("status")->second;
+  const std::string &pkg_status = v3.get<std::string>();
+  LL_INFO("status of package: %s", pkg_status.c_str());
 
-	// char* tmp = (char*)resp; 
-	// std::string buf_string(resp); 
-	// //cout << buf_string << "\n";
-	// LL_INFO("req is %s", resp);
-	// std::size_t pos = buf_string.find("id=\"tt_spStatus\"");
-	// if (pos == std::string::npos){
-	// 	std::string no_pkg = "Package not found";
-	// 	return no_pkg;
-	// }
+  // char* tmp = (char*)resp;
+  // std::string buf_string(resp);
+  // //cout << buf_string << "\n";
+  // LL_INFO("req is %s", resp);
+  // std::size_t pos = buf_string.find("id=\"tt_spStatus\"");
+  // if (pos == std::string::npos){
+  // 	std::string no_pkg = "Package not found";
+  // 	return no_pkg;
+  // }
 
-	// //std::string new_tmp = tmp.substr(pos, pos + 20);
-	// //printf("test\n");
-	// std::size_t start = pos + 41; 
-	// pos += 41;
-	// while(tmp[pos] != '\t'){
-	// 	pos += 1;
-	// }
-	// std::size_t end = pos - 1;
-	// std::string token = buf_string.substr(start, end-start);
-	return pkg_status;
+  // //std::string new_tmp = tmp.substr(pos, pos + 20);
+  // //printf("test\n");
+  // std::size_t start = pos + 41;
+  // pos += 41;
+  // while(tmp[pos] != '\t'){
+  // 	pos += 1;
+  // }
+  // std::size_t end = pos - 1;
+  // std::string token = buf_string.substr(start, end-start);
+  return pkg_status;
 }
 
 /* Code used for testing

@@ -61,6 +61,10 @@ class Monitor {
 
   const std::atomic_bool &quit;
 
+  /* process each request transaction */
+  const string DATA_FIELD_NAME = "data";
+  const string TX_HASH_FIELD_NAME = "transactionHash";
+
   static const int maxRetry = 5;
   static const int nothingToDoSleepSec = 5;
   bool isSleeping;
