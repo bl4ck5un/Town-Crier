@@ -185,7 +185,7 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
       const string DATA_FIELD_NAME = "data";
       const string TX_HASH_FIELD_NAME = "transactionHash";
 
-      LL_DEBUG("raw_request: %s", _current_tx.toStyledString().c_str());
+      LL_DEBUG("raw_request: %s", _current_tx.asCString());
 
       if (!(_current_tx.isMember(DATA_FIELD_NAME) && _current_tx.isMember(TX_HASH_FIELD_NAME))) {
         LL_ERROR("get bad RPC data, skipping this tx");

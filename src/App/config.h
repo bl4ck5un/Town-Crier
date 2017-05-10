@@ -43,9 +43,15 @@
 #ifndef SRC_APP_CONFIG_H_
 #define SRC_APP_CONFIG_H_
 
+#include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
+
 #include <string>
 
 using std::string;
+
+namespace po = boost::program_options;
+namespace fs = boost::filesystem;
 
 namespace tc {
 
@@ -84,8 +90,11 @@ class Config {
   string current_dir;
   string home_dir;
 
+  void parseConfigFile();
+
  public:
   Config(int argc, const char *argv[]);
+  Config(const po::options_description &, int argc, const char *argv[]);
   string to_string();
 };
 
