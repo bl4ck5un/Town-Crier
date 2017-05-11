@@ -48,6 +48,7 @@
 #include <atomic>
 #include <queue>
 #include <memory>
+#include <string>
 
 #include "Common/Constants.h"
 #include "App/bookkeeping/database.h"
