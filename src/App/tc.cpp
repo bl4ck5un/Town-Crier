@@ -119,7 +119,7 @@ int main(int argc, const char *argv[]) {
   sgx_enclave_id_t eid;
   sgx_status_t st;
 
-  // register Ctrl-C handler
+  // register Ctrl-C handle
   std::signal(SIGINT, exitGraceful);
   // handle systemd termination signal
   std::signal(SIGTERM, exitGraceful);

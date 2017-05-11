@@ -87,7 +87,7 @@ void WolframScraper::create_query(std::string query){
   LL_INFO("url is : %s", this->url.c_str()); 
 }
 
-err_code WolframScraper::handler(const uint8_t *req, size_t data_len, int *resp_data){
+err_code WolframScraper::handle(const uint8_t *req, size_t data_len, int *resp_data){
   if (data_len != 2*32){
     LL_CRITICAL("Data len %zu*2 does not equal 2*32", data_len);
     return INVALID_PARAMS;

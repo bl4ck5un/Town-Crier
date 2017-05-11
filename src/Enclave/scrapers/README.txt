@@ -10,7 +10,7 @@ To add a new scraper:
 
  
 ** List of Events that town crier currently supports (Updated 4/9/2017) **
-Each of these contains a handler class that returns a desired value.  We describe the structure of the input data below:
+Each of these contains a handle class that returns a desired value.  We describe the structure of the input data below:
 	SteamTrade:
 		Input:
 			0x00 - 0x40 Enc API key

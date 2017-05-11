@@ -54,7 +54,7 @@
 static int test(const uint8_t *data) {
   YahooYQLStock yahooYQLStock;
   int closing_price;
-  err_code err = yahooYQLStock.handler(data, 32 * 2, &closing_price);
+  err_code err = yahooYQLStock.handle(data, 32 * 2, &closing_price);
   switch (err) {
     case NO_ERROR:
       LL_INFO("closingPrice is %d", closing_price);

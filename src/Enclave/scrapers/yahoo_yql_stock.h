@@ -73,7 +73,7 @@ class YahooYQLStock : public Scraper {
  *      0x40 - 0x60 Day
  *      0x60 - 0x80 Year
  */
-  err_code handler(const uint8_t *req, size_t data_len, int *resp_data) {
+  err_code handle(const uint8_t *req, size_t data_len, int *resp_data) {
     if (data_len != 32 * 2) {
       LL_CRITICAL("req_len %zu is not 2*32", data_len);
       return INVALID_PARAMS;

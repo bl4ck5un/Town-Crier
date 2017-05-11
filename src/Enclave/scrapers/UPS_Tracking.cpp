@@ -66,7 +66,7 @@ const std::string USPSScraper::HOST = "api.easypost.com";
  * The Data is strcutured as follows
  * 		0x00 - 0x20 string tracking_number
  */
-err_code USPSScraper::handler(const uint8_t *req, size_t len, int *resp_data) {
+err_code USPSScraper::handle(const uint8_t *req, size_t len, int *resp_data) {
   if (len != 2 * 32) {
     LL_CRITICAL("Data_len %zu*32 is not 2*32", len / 32);
     return INVALID_PARAMS;

@@ -68,7 +68,7 @@ class USPSScraper : Scraper {
   static const std::string HOST;
 
  public:
-  err_code handler(const uint8_t *req, size_t len, int *resp_data);
+  err_code handle(const uint8_t *req, size_t len, int *resp_data);
   err_code ups_tracking(const std::string &tracking_num, const std::string &carrier_name, int *status);
   std::string parse_response(const string);
 };

@@ -127,7 +127,7 @@ int do_handle_request(int nonce,
     case TYPE_FLIGHT_INS: {
       FlightScraper flightHandler;
       int delay = 0;
-      switch (flightHandler.handler(data, data_len, &delay)) {
+      switch (flightHandler.handle(data, data_len, &delay)) {
         case UNKNOWN_ERROR:
         case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
           break;
@@ -141,7 +141,7 @@ int do_handle_request(int nonce,
     case TYPE_STEAM_EX: {
       SteamScraper steamHandler;
       int found;
-      switch (steamHandler.handler(data, data_len, &found)) {
+      switch (steamHandler.handle(data, data_len, &found)) {
         case UNKNOWN_ERROR:
         case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
           break;
@@ -155,7 +155,7 @@ int do_handle_request(int nonce,
     case TYPE_FINANCE_INFO: {
       YahooYQLStock yahooYQLStock;
       int closing_price = 0;
-      switch (yahooYQLStock.handler(data, data_len, &closing_price)) {
+      switch (yahooYQLStock.handle(data, data_len, &closing_price)) {
         case INVALID_PARAMS:error_flag = TC_ERR_FLAG_INVALID_INPUT;
           break;
         case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
@@ -171,7 +171,7 @@ int do_handle_request(int nonce,
     case TYPE_UPS_TRACKING: {
       USPSScraper uSPSScraper;
       int pkg_status;
-      switch (uSPSScraper.handler(data, data_len, &pkg_status)) {
+      switch (uSPSScraper.handle(data, data_len, &pkg_status)) {
         case UNKNOWN_ERROR:
         case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
           break;
@@ -184,7 +184,7 @@ int do_handle_request(int nonce,
     case TYPE_COINMARKET: {
       CoinMarket coinMarket;
       int coin_value;
-      switch (coinMarket.handler(data, data_len, &coin_value)) {
+      switch (coinMarket.handle(data, data_len, &coin_value)) {
         case UNKNOWN_ERROR:
         case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
           break;
@@ -198,7 +198,7 @@ int do_handle_request(int nonce,
     case TYPE_WEATHER: {
       WeatherScraper weatherScraper;
       int temperature;
-      switch (weatherScraper.handler(data, data_len, &temperature)) {
+      switch (weatherScraper.handle(data, data_len, &temperature)) {
         case UNKNOWN_ERROR:
         case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
           break;
@@ -218,7 +218,7 @@ int do_handle_request(int nonce,
     case TYPE_WOLFRAM: {
       WolframScraper wolframScraper;
       int status;
-      switch (wolframScraper.handler(data, data_len, &status)) {
+      switch (wolframScraper.handle(data, data_len, &status)) {
         case UNKNOWN_ERROR:
         case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
           break;

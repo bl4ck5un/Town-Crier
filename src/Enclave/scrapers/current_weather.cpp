@@ -60,7 +60,7 @@ using namespace std;
 /* The Data is structured as follows:
  * 0x00 - 0x20 int 
  */
-err_code WeatherScraper::handler(const uint8_t *req, size_t data_len, int *resp_data){
+err_code WeatherScraper::handle(const uint8_t *req, size_t data_len, int *resp_data){
     
   if (data_len != 2*32){
     LL_CRITICAL("data_len %zu*32 is not 32",data_len / 32);

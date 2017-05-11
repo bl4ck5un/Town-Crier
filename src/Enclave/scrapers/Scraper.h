@@ -40,11 +40,6 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-//
-// Created by Oscar on 2/21/17.
-// Virtual class providing an interface for the Event handler to use.
-//
-
 #ifndef TOWN_CRIER_SCRAPER_H
 #define TOWN_CRIER_SCRAPER_H
 
@@ -53,7 +48,7 @@
 
 class Scraper {
 public:
-    virtual err_code handler(const uint8_t *req, size_t data_len, int *resp_data) = 0;
+    virtual err_code handle(const uint8_t *req, size_t data_len, int *resp_data) = 0;
 };
 
 

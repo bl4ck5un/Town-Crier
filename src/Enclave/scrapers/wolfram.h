@@ -69,7 +69,7 @@ class WolframScraper : Scraper {
 
   //WolframScraper(int qtype);
   void create_query(std::string query);
-  err_code handler(const uint8_t *req, size_t data_len, int *resp_data);
+  err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
 
   WolframQueryResult perform_query();
   void set_qtype(int type);

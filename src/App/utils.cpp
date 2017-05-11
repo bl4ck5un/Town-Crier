@@ -99,7 +99,7 @@ int initialize_enclave(const char *enclave_name, sgx_enclave_id_t *eid) {
 
   /* Step 3: save the launch token if it is updated */
   if (updated == -1 || fp == NULL) {
-    /* if the token is not updated, or file handler is invalid, do not perform
+    /* if the token is not updated, or file handle is invalid, do not perform
      * saving */
     if (fp != NULL) fclose(fp);
     return 0;

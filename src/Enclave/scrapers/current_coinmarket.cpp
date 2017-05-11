@@ -41,6 +41,8 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
+#include "current_coinmarket.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,69 +51,104 @@
 
 #include "utils.h"
 #include "tls_client.h"
-#include "current_coinmarket.h"
+#include "external/picojson.h"
+
+using std::string;
 
 /* Data is structure as follows,
- * 0x00 - 0x20 char Crypto Coin 
+ * 0x00 - 0x20  null-terminated string for asset id (https://api.coinmarketcap.com/v1/ticker/)
  */
-err_code CoinMarket::handler(const uint8_t *req, size_t data_len, int *resp_data){
-    if (data_len != 32){
-        LL_CRITICAL("data_len %zu*32 is not 32", data_len / 32);
-        return INVALID_PARAMS;
+err_code CoinMarket::handle(const uint8_t *req, size_t data_len, int *resp_data) {
+  if (data_len != 32) {
+    LL_CRITICAL("data_len %zu*32 is not 32", data_len / 32);
+    return INVALID_PARAMS;
+  }
+
+  string coin_id(string(req, req + 0x20).c_str());
+  string query = "/v1/ticker/" + coin_id + "/";
+
+  LL_LOG("query used: %s", query.c_str());
+  HttpRequest httpRequest("api.coinmarketcap.com", query, true);
+  HttpsClient httpClient(httpRequest);
+
+  try {
+    HttpResponse response = httpClient.getResponse();
+    picojson::value _json_resp;
+
+    string err_msg = picojson::parse(_json_resp, response.getContent());
+    if (!err_msg.empty() || !_json_resp.is<picojson::object>()) {
+      LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
+      return INVALID_PARAMS;
     }
-    unsigned char  symbol[33] = {0};
-    memcpy(symbol, req, 0x20);
-    double coinval;
-    err_code res = coinmarketcap_current((const char*)symbol,&coinval);
-    *resp_data = (int) coinval;
-    return res;
+
+    if (_json_resp.contains("error")) {
+      LL_CRITICAL("coinmarket return error: %s", _json_resp.get("error").is<string>() ?
+                                                 _json_resp.get("error").get<string>().c_str() : "unknown");
+      return INVALID_PARAMS;
+    }
+
+    if (_json_resp.is<picojson::array>()
+        && _json_resp.get<picojson::array>().size() == 1
+        && _json_resp.get<picojson::array>()[0].contains("price_usd")
+        && _json_resp.get<picojson::array>()[0].get("price_usd").is<double>()) {
+      *resp_data = (int) _json_resp.get<picojson::array>()[0].get("price_usd").get<double>();
+      return NO_ERROR;
+    }
+
+    return INVALID_PARAMS;
+  }
+  catch (std::exception &e) {
+    LL_CRITICAL("Https error: %s", e.what());
+    LL_CRITICAL("Details: %s", httpClient.getError().c_str());
+    httpClient.close();
+    return WEB_ERROR;
+  }
 }
 
-double CoinMarket::parse_response(const char* resp) {
-    double ret = 0;
-    const char * end;
-    const char * temp = resp;
+double CoinMarket::parse_response(const char *resp) {
+  double ret = 0;
+  const char *end;
+  const char *temp = resp;
 
-    std::string buf_string(resp);
-    std::size_t pos = buf_string.find("price_usd\": \"");
+  std::string buf_string(resp);
+  std::size_t pos = buf_string.find("price_usd\": \"");
 
-    if (pos == std::string::npos)
-    {
-        return 0.0;
-    }
-    temp += (pos + 13);
-    end = temp;
-    while (*end != '"') {
-        end += 1;
-    }
+  if (pos == std::string::npos) {
+    return 0.0;
+  }
+  temp += (pos + 13);
+  end = temp;
+  while (*end != '"') {
+    end += 1;
+  }
 
-    ret = std::strtod(temp, NULL);
-    return ret;
+  ret = std::strtod(temp, NULL);
+  return ret;
 }
 
-err_code CoinMarket::coinmarketcap_current(const char* symbol, double* r) {
-    /* Null Checker */
-    if (symbol == NULL || r == NULL){
-        LL_CRITICAL("Error: Passed null pointers");
-        return INVALID_PARAMS;
-    }
+err_code CoinMarket::coinmarketcap_current(const char *symbol, double *r) {
+  /* Null Checker */
+  if (symbol == NULL || r == NULL) {
+    LL_CRITICAL("Error: Passed null pointers");
+    return INVALID_PARAMS;
+  }
 
-    std::string query = "/v1/ticker/" + std::string(symbol) + "/";
-    HttpRequest httpRequest("api.coinmarketcap.com", query, true);
-    HttpsClient httpClient(httpRequest);
+  std::string query = "/v1/ticker/" + std::string(symbol) + "/";
+  HttpRequest httpRequest("api.coinmarketcap.com", query, true);
+  HttpsClient httpClient(httpRequest);
 
-    try {
-        HttpResponse response = httpClient.getResponse();
-        *r = parse_response(response.getContent().c_str());
-        return NO_ERROR;
-    }
-    catch (std::runtime_error& e){
-        LL_CRITICAL("Https error: %s", e.what());
-        LL_CRITICAL("Details: %s", httpClient.getError().c_str());
-        httpClient.close();
-        return WEB_ERROR;
-    }
-
+  try {
+    HttpResponse response = httpClient.getResponse();
+    *r = parse_response(response.getContent().c_str());
     return NO_ERROR;
+  }
+  catch (std::runtime_error &e) {
+    LL_CRITICAL("Https error: %s", e.what());
+    LL_CRITICAL("Details: %s", httpClient.getError().c_str());
+    httpClient.close();
+    return WEB_ERROR;
+  }
+
+  return NO_ERROR;
 }
 

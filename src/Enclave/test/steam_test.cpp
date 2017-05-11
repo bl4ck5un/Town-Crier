@@ -76,7 +76,7 @@ int steam_self_test() {
 
   string request_data = api_key + buyer_id + cutoff_time + item_len + items;
   dump_buf("Request", (unsigned char *) request_data.c_str(), request_data.length());
-  err = testScraper.handler((uint8_t *) request_data.c_str(), request_data.length(), &ret);
+  err = testScraper.handle((uint8_t *) request_data.c_str(), request_data.length(), &ret);
   return (err == NO_ERROR && ret == 1) ? 0 : 1;
 }
 

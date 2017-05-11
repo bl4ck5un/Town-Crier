@@ -182,7 +182,7 @@ flight_error FlightScraper::get_flight_delay(uint64_t unix_epoch_time, const cha
  *      0x00 - 0x20 string flight_number
  *      0x20 - 0x40 uint64 unix_epoch
  */
-err_code FlightScraper::handler(const uint8_t *req, size_t data_len, int *resp_data) {
+err_code FlightScraper::handle(const uint8_t *req, size_t data_len, int *resp_data) {
 
   if (data_len != 2 * 32) {
     LL_CRITICAL("Data_len %zu*32 is not 2*32", data_len / 32);
@@ -196,7 +196,7 @@ err_code FlightScraper::handler(const uint8_t *req, size_t data_len, int *resp_d
   // 0x20 - 0x40 uint64 flight_time
   uint64_t unix_epoch = uint_bytes<uint64_t>(req + 0x20, 32);
 
-  LL_DEBUG("unix_epoch=%lld, flight_number=%s", unix_epoch, flight_number);
+  LL_INFO("flight: unix_epoch=%lld, flight_number=%s", unix_epoch, flight_number);
 
   switch (get_flight_delay(unix_epoch, flight_number, &delay)) {
     case INVALID:

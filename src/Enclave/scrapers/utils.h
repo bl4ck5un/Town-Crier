@@ -50,9 +50,6 @@
 #include <stdio.h>
 #include <string.h>
 
-/* #include <sstream> *>/ 
-
-/* allows to differentiate between User error and server-side error */
 enum err_code {
   NO_ERROR = 0,
   INVALID_PARAMS, /* user supplied invalid parameters to the function */
