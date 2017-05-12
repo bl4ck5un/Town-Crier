@@ -52,6 +52,9 @@ class dummyTest: public SGXTestBase {};
 TEST_F(dummyTest, hybridEncryption) {
   sgx_status_t st;
   int ret;
+
+  init(eid);
+  set_env(eid, "a", "env");
   st = dummy_test(eid, &ret);
   ASSERT_EQ(0, st);
   ASSERT_EQ(0, ret);

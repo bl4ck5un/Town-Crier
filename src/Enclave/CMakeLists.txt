@@ -8,6 +8,8 @@ set(EXTERNAL_SRC_FILES
         external/http_parser.c)
 
 set(TC_SOURCE_FILES
+        env.cpp env.h
+        init.cpp
         Debug.c Enclave_t.c enclave_exception_hdlr.c
         create_report.cpp event_handler.cpp
         commons.cpp encoding.cpp tls_client_tiny.cpp hybrid_cipher.cpp

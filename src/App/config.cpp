@@ -57,6 +57,8 @@ using std::cout;
 using std::endl;
 using std::stringstream;
 
+const tc::Config* g_config;
+
 inline const char *homedir() {
   const char *home_dir;
   if ((home_dir = getenv("HOME")) == NULL) {

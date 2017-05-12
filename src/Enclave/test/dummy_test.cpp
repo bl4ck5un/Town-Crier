@@ -43,15 +43,16 @@
 
 #include <stdio.h>
 #include "hybrid_cipher.h"
+#include "env.h"
 
 using namespace std;
 
 int dummy_test() {
-  uint64_t a = 1;
-  long long b = 1;
-  printf_sgx("long long has size %zu\n", sizeof(long long));
-  printf_sgx("long has size %zu\n", sizeof(long));
-  printf_sgx("uint64_t has size %zu\n", sizeof(uint64_t));
+  string a = g_environment->get("a");
+  LL_CRITICAL("a => %s", a.c_str());
+  if (a != "env") {
+    return -1;
+  }
 
   HybridEncryption encrypt;
   try {
