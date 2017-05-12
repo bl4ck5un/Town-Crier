@@ -43,12 +43,10 @@
 #ifndef TOWN_CRIER_UTILS_H
 #define TOWN_CRIER_UTILS_H
 
-#ifndef __STDC_FORMAT_MACROS
-#define __STDC_FORMAT_MACROS
-#endif
-#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
+
+#include "external/inttypes.h"
 
 enum err_code {
   NO_ERROR = 0,

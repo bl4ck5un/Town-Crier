@@ -43,10 +43,7 @@
 
 #include "event_handler.h"
 #include <string>
-#ifndef __STDC_FORMAT_MACROS
-#define __STDC_FORMAT_MACROS
-#endif
-#include <inttypes.h>
+#include <external/inttypes.h>
 
 #include "scrapers.h"
 #include "scrapers/yahoo_yql_stock.h"

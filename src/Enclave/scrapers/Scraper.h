@@ -43,7 +43,9 @@
 #ifndef TOWN_CRIER_SCRAPER_H
 #define TOWN_CRIER_SCRAPER_H
 
-#include "../../Common/Constants.h"
+#include <stdint.h>
+
+#include "Constants.h"
 #include "utils.h"
 
 class Scraper {

@@ -104,7 +104,7 @@ void StockTickerScraper::CreateQuery(int month, int day, int year, std::string s
  *      0x40 - 0x60 Day
  *      0x60 - 0x80 Year
  */
-err_code StockTickerScraper::handler(const uint8_t *req, size_t data_len, int *resp_data) {
+err_code StockTickerScraper::handle(const uint8_t *req, size_t data_len, int *resp_data) {
   if (data_len != 32 * 4) {
     LL_CRITICAL("req_len %zu is not 4*32", data_len / 32);
     return INVALID_PARAMS;

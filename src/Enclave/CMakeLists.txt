@@ -1,46 +1,26 @@
 set(LIB_MBEDTLS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/mbedtls-SGX/lib/libmbedtls_sgx_t.a")
 
-set(SOURCE_FILES
-        Debug.c
-        create_report.cpp
-        scrapers/current_bloomberg.cpp
-        scrapers/current_Google.cpp
-        scrapers/current_Yahoo.cpp
-        scrapers/UPS_Tracking.cpp
-        scrapers/current_coinmarket.cpp
-        scrapers/current_weather.cpp
-        scrapers/steam2.cpp
-        scrapers/yahoo_yql.cpp
-        scrapers/scraper_utils.cpp
-        scrapers/yahoo_yql_stock.cpp
-        scrapers/wolfram.cpp
-        eth_ecdsa.cpp
-        Enclave_t.c
-        event_handler.cpp
-        scrapers/flight.cpp
+set(EXTERNAL_SRC_FILES
         external/keccak.c
         external/csv_parser.cpp
         external/slre.c
-        external/http_parser.c
-        Enclave_t.c
-        commons.cpp
-        encoding.cpp
-        eth_ecdsa.cpp
-        eth_transaction.cpp
-        eth_abi.cpp
-        enclave_exception_hdlr.c
-        event_handler.cpp
-        tls_client_tiny.cpp
-        hybrid_cipher.cpp
-        ../Common/external/base64.cpp
+        external/gmtime.cpp
+        external/http_parser.c)
+
+set(TC_SOURCE_FILES
+        Debug.c Enclave_t.c enclave_exception_hdlr.c
+        create_report.cpp event_handler.cpp
+        commons.cpp encoding.cpp tls_client_tiny.cpp hybrid_cipher.cpp
+        eth_ecdsa.cpp eth_transaction.cpp eth_abi.cpp
         ${LIB_MBEDTLS_PATH}
-        )
+        ../Common/external/base64.cpp)
 
 add_definitions(-DENCLAVE_STD_ALT)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
+FILE(GLOB SCRAPERS_SRC_FILES scrapers/*.cpp)
 
-SET(SOURCE_FILES ${SOURCE_FILES} ${TEST_SRC_FILES} scrapers/utils.h scrapers/UPS_Tracking.h scrapers/Scraper.cpp scrapers/Scraper.h scrapers/steam2.h scrapers/flight.h scrapers/stockticker.h scrapers/wolfram.h scrapers/current_coinmarket.h scrapers/current_weather.h external/gmtime.cpp)
+SET(SOURCE_FILES ${TC_SOURCE_FILES} ${TEST_SRC_FILES} ${SCRAPERS_SRC_FILES} ${EXTERNAL_SRC_FILES})
 
 set_directory_properties(PROPERTIES
         ADDITIONAL_MAKE_CLEAN_FILES "Enclave_t.c; Enclave_t.h")
@@ -50,8 +30,7 @@ add_custom_command(
         COMMAND ${SGX_EDGER8R} --trusted ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.edl
         --search-path ${TC_ROOT_DIR}/Enclave
         --search-path ${SGX_SDK}/include
-        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-)
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 add_library(enclave SHARED ${SOURCE_FILES})
@@ -62,11 +41,9 @@ include_directories(
         mbedtls-SGX/include
         ${SGX_SDK}/include
         ${SGX_SDK}/include/tlibc
-        ${SGX_SDK}/include/stlport
-        .
-)
+        ${SGX_SDK}/include/stlport)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -nostdinc -fvisibility=hidden -fpie -fstack-protector")
+set(CMAKE_C_FLAGS "${SGX_COMMON_CFLAGS} ${CMAKE_C_FLAGS} -nostdinc -fvisibility=hidden -fpie -fstack-protector")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++03 -nostdinc++")
 
 add_custom_command(
@@ -89,8 +66,28 @@ add_custom_command(TARGET enclave
         COMMAND ${SGX_ENCLAVE_SIGNER} sign
         -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
         -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
-        -enclave ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.so
-        -out ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so
-        COMMENT "Signing the enclave. Written to ${CMAKE_BINARY_DIR}")
+        -enclave enclave.so
+        -out enclave.signed.so
+        WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+        COMMENT "Signing the enclave. Written to ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so")
+
+add_custom_command(TARGET enclave
+        POST_BUILD
+        COMMAND ${SGX_ENCLAVE_SIGNER} gendata
+        -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
+        -enclave enclave.so
+        -out enclave.hex
+        WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+        COMMENT "Generating signing materials. Written to ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.hex")
+
+add_custom_target(release-enclave
+        DEPENDS enclave Enclave.config.xml release_pubkey.pem
+        COMMAND ${SGX_ENCLAVE_SIGNER} catsig -enclave enclave.so
+                -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
+                -key ${CMAKE_CURRENT_SOURCE_DIR}/release_pubkey.pem
+                -out enclave.release.so
+                -sig signature.hex
+                -unsigned enclave.hex
+        WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
 install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so DESTINATION tc)
