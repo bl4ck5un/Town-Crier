@@ -94,16 +94,16 @@ int main(int argc, const char *argv[]) {
       ("block,b", po::value(&block_num)->required(), "block number to use");
 
   tc::Config config(desc, argc, argv);
-  cout << config.to_string();
+  cout << config.toString();
 
   // create working dir if not existed
-  fs::create_directory(fs::path(config.get_working_dir()));
+  fs::create_directory(fs::path(config.getWorkingDir()));
 
   // logging to file
-  LL_INFO("config:\n%s", config.to_string().c_str());
+  LL_INFO("config:\n%s", config.toString().c_str());
 
   try {
-    httpclient = new jsonrpc::HttpClient(config.get_geth_rpc_addr());
+    httpclient = new jsonrpc::HttpClient(config.getGethRpcAddr());
     rpc_client = new ethRPCClient(*httpclient);
   } catch (const std::exception &e) {
     std::cout << e.what() << std::endl;
@@ -114,13 +114,13 @@ int main(int argc, const char *argv[]) {
   sgx_enclave_id_t eid;
   sgx_status_t st;
 
-  static const string db_name = (fs::path(config.get_working_dir()) / "tc.db").string();
+  static const string db_name = (fs::path(config.getWorkingDir()) / "tc.db").string();
   LOG_F(INFO, "using db %s", db_name.c_str());
 
   // always reuse database
   OdbDriver driver(db_name, false);
 
-  ret = initialize_enclave(config.get_enclave_path().c_str(), &eid);
+  ret = initialize_enclave(config.getEnclavePath().c_str(), &eid);
   if (ret != 0) {
     LOG_F(FATAL, "Failed to initialize the enclave");
     std::exit(-1);
@@ -131,10 +131,11 @@ int main(int argc, const char *argv[]) {
   string address;
 
   try {
-    address = unseal_key(eid, config.get_sealed_sig_key());
+    address = unseal_key(eid, config.getSealedSigKey());
     LL_INFO("using address %s", address.c_str());
 
-    provision_key(eid, config.get_sealed_sig_key());
+    provision_key(eid, config.getSealedSigKey(), tc::keyUtils::ECDSA_KEY);
+    provision_key(eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
   } catch (const tc::EcallException &e) {
     LL_CRITICAL("%s", e.what());
     exit(-1);

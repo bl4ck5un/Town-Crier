@@ -59,7 +59,7 @@ add_executable(TestMain EXCLUDE_FROM_ALL
         Converter.cpp
         ../Common/external/base64.cpp
         types.cpp request-parser.cpp
-        key-utils.cpp)
+        key-utils.cpp test/test-data.h)
 
 find_package(CURL REQUIRED)
 find_package(Boost QUIET REQUIRED COMPONENTS program_options filesystem system)

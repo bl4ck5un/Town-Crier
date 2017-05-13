@@ -51,7 +51,7 @@ int dummy_test() {
   try {
     ECPointBuffer server_pubkey;
 
-    encrypt.initServer(server_pubkey);
+    encrypt.queryPubkey(server_pubkey);
     hexdump("server public key", server_pubkey, sizeof(ECPointBuffer));
 
     string user_secret = "user_secret";

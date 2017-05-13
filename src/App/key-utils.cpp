@@ -93,18 +93,29 @@ string unseal_key(sgx_enclave_id_t eid, string sealed_key) {
   return bufferToHex(address, sizeof address, true);
 }
 
-void provision_key(sgx_enclave_id_t eid, string sealed_key) {
+void provision_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyType type) {
   unsigned char _sealed_key_buf[SECRETKEY_SEALED_LEN];
-  size_t buffer_used = (size_t)ext::b64_pton(
-      sealed_key.c_str(), _sealed_key_buf, sizeof _sealed_key_buf);
+  size_t buffer_used = (size_t)ext::b64_pton(sealed_key.c_str(), _sealed_key_buf, sizeof _sealed_key_buf);
 
   int ret = 0;
   sgx_status_t ecall_ret;
-  ecall_ret = tc_provision_ecdsa_key(
-      eid, &ret, reinterpret_cast<sgx_sealed_data_t*>(_sealed_key_buf),
-      buffer_used);
+
+  switch (type) {
+    case tc::keyUtils::ECDSA_KEY:
+      ecall_ret = tc_provision_ecdsa_key(eid, &ret,
+                                          reinterpret_cast<sgx_sealed_data_t*>(_sealed_key_buf), buffer_used);
+      break;
+    case tc::keyUtils::HYBRID_ENCRYPTION_KEY:
+      ecall_ret = tc_provision_hybrid_key(eid, &ret,
+                                          reinterpret_cast<sgx_sealed_data_t*>(_sealed_key_buf), buffer_used);
+      break;
+    default:
+      LL_CRITICAL("unknown key type");
+      ecall_ret = SGX_ERROR_UNEXPECTED;
+      ret = -1;
+  }
+
   if (ecall_ret != SGX_SUCCESS || ret != 0) {
-    throw tc::EcallException(ecall_ret,
-                             "tc_provision_key returns " + std::to_string(ret));
+    throw tc::EcallException(ecall_ret, "tc_provision_key returns " + std::to_string(ret));
   }
 }

@@ -45,14 +45,26 @@
 #include "gtest/gtest.h"
 
 #include "App/Enclave_u.h"
+#include "App/key-utils.h"
 #include "App/test/SGXTestBase.h"
+#include "App/test/test-data.h"
+#include "App/debug.h"
 
-class dummyTest: public SGXTestBase {};
+class dummyTest : public SGXTestBase {};
 
 TEST_F(dummyTest, hybridEncryption) {
   sgx_status_t st;
   int ret;
+
+  provision_key(eid, SEALED_KEY, tc::keyUtils::HYBRID_ENCRYPTION_KEY);
   st = dummy_test(eid, &ret);
+
   ASSERT_EQ(0, st);
   ASSERT_EQ(0, ret);
+
+  uint8_t pubkey[65];
+  tc_get_hybrid_pubkey(eid, &ret, pubkey);
+  ASSERT_EQ(0, ret);
+
+  hexdump("pubkey", pubkey, sizeof pubkey);
 }

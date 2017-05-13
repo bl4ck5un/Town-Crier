@@ -48,7 +48,17 @@
 
 using std::string;
 
+
+namespace tc {
+namespace keyUtils {
+enum KeyType {
+  ECDSA_KEY,
+  HYBRID_ENCRYPTION_KEY
+};
+}
+}
+
 string unseal_key(sgx_enclave_id_t eid, string sealed_key);
-void provision_key(sgx_enclave_id_t eid, string sealed_key);
+void provision_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyType);
 
 #endif  // SRC_APP_KEY_UTILS_H_

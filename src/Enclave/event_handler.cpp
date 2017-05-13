@@ -245,7 +245,7 @@ int do_handle_request(int nonce,
     case TYPE_ENCRYPT_TEST: {
       HybridEncryption dec_ctx;
       ECPointBuffer tc_pubkey;
-      dec_ctx.initServer(tc_pubkey);
+      dec_ctx.queryPubkey(tc_pubkey);
 
       string cipher_b64(data, data + data_len);
       hexdump("encrypted query: ", data, data_len);

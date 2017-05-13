@@ -63,17 +63,18 @@ class Config {
   const string DFT_WORKING_DIR = "/tmp/tc";
 
  public:
-  bool is_status_server_enabled() const;
-  bool is_run_as_daemon() const;
-  const string &get_config_file() const;
-  const string &get_working_dir() const;
-  const string &get_geth_rpc_addr() const;
+  bool isStatusServerEnabled() const;
+  bool isRunAsDaemon() const;
+  const string &getConfigFile() const;
+  const string &getWorkingDir() const;
+  const string &getGethRpcAddr() const;
   int get_status_server_port() const;
-  const string &get_pid_filename() const;
-  const string &get_sealed_sig_key() const;
-  const string &get_enclave_path() const;
-  const string &get_home_dir() const;
-  const string &get_current_dir() const;
+  const string &getPidFilename() const;
+  const string &getSealedSigKey() const;
+  const string &getSealedHybridKey() const;
+  const string &getEnclavePath() const;
+  const string &getHomeDir() const;
+  const string &getCurrentDir() const;
 
  private:
   bool opt_status_enabled;
@@ -85,6 +86,7 @@ class Config {
   int cfg_status_port;
   string cfg_pid_fn;
   string cfg_sealed_sig_key;
+  string cfg_sealed_hybrid_key;
   string cfg_enclave_path;
 
   string current_dir;
@@ -95,7 +97,7 @@ class Config {
  public:
   Config(int argc, const char *argv[]);
   Config(const po::options_description &, int argc, const char *argv[]);
-  string to_string();
+  string toString();
 };
 
 }  // namespace tc
