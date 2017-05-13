@@ -94,7 +94,11 @@ string unseal_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyType
     case tc::keyUtils::ECDSA_KEY:
       return bufferToHex(address, sizeof address, true);
     case tc::keyUtils::HYBRID_ENCRYPTION_KEY:
-      return bufferToHex(pubkey, sizeof pubkey, true);
+      char _base64_pubkey[2 * sizeof pubkey];
+      ret = ext::b64_ntop(pubkey, sizeof pubkey, _base64_pubkey, sizeof _base64_pubkey);
+      if (ret == -1)
+        throw std::runtime_error("unknown error");
+      return string(_base64_pubkey);
     default:
       throw std::runtime_error("unknown key type");
   }
