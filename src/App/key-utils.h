@@ -58,7 +58,7 @@ enum KeyType {
 }
 }
 
-string unseal_key(sgx_enclave_id_t eid, string sealed_key);
+string unseal_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyType key_type);
 void provision_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyType);
 
 #endif  // SRC_APP_KEY_UTILS_H_

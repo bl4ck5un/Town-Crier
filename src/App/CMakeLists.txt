@@ -103,7 +103,7 @@ target_link_libraries(TestMain
 
 add_custom_command(TARGET tc
         POST_BUILD
-        COMMAND cp -f ${CMAKE_SOURCE_DIR}/config* ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+        COMMAND cp -f ${CMAKE_SOURCE_DIR}/config-* ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
         COMMENT "Installing the configuration files")
 
 

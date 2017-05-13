@@ -159,8 +159,8 @@ int main(int argc, const char *argv[]) {
   string wallet_address, hybrid_pubkey;
 
   try {
-    wallet_address = unseal_key(eid, config.getSealedSigKey());
-    hybrid_pubkey = unseal_key(eid, config.getSealedHybridKey());
+    wallet_address = unseal_key(eid, config.getSealedSigKey(), tc::keyUtils::ECDSA_KEY);
+    hybrid_pubkey = unseal_key(eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
 
     LL_INFO("using wallet address at %s", wallet_address.c_str());
     LL_INFO("using hybrid pubkey: %s", hybrid_pubkey.c_str());

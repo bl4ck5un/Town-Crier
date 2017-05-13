@@ -50,10 +50,10 @@ class SGXTestBase : public ::testing::Test {
  protected:
   sgx_enclave_id_t eid;
   virtual void SetUp() {
-#ifdef TC_IN_RELEASE_MODE
-    initialize_enclave("enclave.debug.so", &eid);
-#else
+#ifdef TC_SGX_IN_RELEASE_MODE
     initialize_enclave("enclave.release.so", &eid);
+#else
+    initialize_enclave("enclave.debug.so", &eid);
 #endif
   }
 

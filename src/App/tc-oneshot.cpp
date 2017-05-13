@@ -128,11 +128,14 @@ int main(int argc, const char *argv[]) {
     LOG_F(INFO, "Enclave %ld created", eid);
   }
 
-  string address;
+  string wallet_address;
+  string hybrid_pubkey;
 
   try {
-    address = unseal_key(eid, config.getSealedSigKey());
-    LL_INFO("using address %s", address.c_str());
+    wallet_address = unseal_key(eid, config.getSealedSigKey(), tc::keyUtils::ECDSA_KEY);
+    hybrid_pubkey = unseal_key(eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
+    LL_INFO("using wallet address at %s", wallet_address.c_str());
+    LL_INFO("using hybrid pubkey: %s", hybrid_pubkey.c_str());
 
     provision_key(eid, config.getSealedSigKey(), tc::keyUtils::ECDSA_KEY);
     provision_key(eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);

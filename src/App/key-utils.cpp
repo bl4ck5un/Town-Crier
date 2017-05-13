@@ -73,7 +73,7 @@ using std::endl;
  * @param[in] sealed_key
  * @return a string of corresponding address
  */
-string unseal_key(sgx_enclave_id_t eid, string sealed_key) {
+string unseal_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyType key_type) {
   unsigned char secret_sealed[SECRETKEY_SEALED_LEN];
   unsigned char pubkey[PUBKEY_LEN];
   unsigned char address[ADDRESS_LEN];
@@ -90,7 +90,14 @@ string unseal_key(sgx_enclave_id_t eid, string sealed_key) {
     throw tc::EcallException(
         ecall_ret, "ecdsa_keygen_unseal failed with " + std::to_string(ret));
   }
-  return bufferToHex(address, sizeof address, true);
+  switch (key_type) {
+    case tc::keyUtils::ECDSA_KEY:
+      return bufferToHex(address, sizeof address, true);
+    case tc::keyUtils::HYBRID_ENCRYPTION_KEY:
+      return bufferToHex(pubkey, sizeof pubkey, true);
+    default:
+      throw std::runtime_error("unknown key type");
+  }
 }
 
 void provision_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyType type) {
