@@ -64,7 +64,7 @@ target_link_libraries(enclave "${SGX_COMMON_CFLAGS} \
     -Wl,--defsym,__ImageBase=0")
 
 set(DEBUG_ENCLAVE_NAME "enclave.debug.so")
-set(RELEASE_ENCLAVE_NAME "RELEASE_ENCLAVE_NAME")
+set(RELEASE_ENCLAVE_NAME "enclave.release.so")
 
 add_custom_command(TARGET enclave
         POST_BUILD
