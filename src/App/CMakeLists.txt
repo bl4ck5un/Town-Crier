@@ -32,7 +32,6 @@ add_executable(tc-keygen
         utils.cpp Converter.cpp
         Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 
-add_executable(tc-att tc-att.cpp attestation.cpp Converter.cpp utils.cpp Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 add_executable(tc-test
         tc-dryrun.cpp monitor.cpp
         request-parser.cpp
@@ -105,10 +104,6 @@ target_link_libraries(tc-keygen
         ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
         -lpthread -ldl)
 
-target_link_libraries(tc-att
-        ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
-        -lpthread -ldl)
-
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
 set(TEST_PROGRAM_LDFLAGS " ${LIBGTEST}/libgtest_main.a")
 
@@ -135,7 +130,6 @@ add_dependencies(tc enclave)
 add_dependencies(TestMain enclave)
 add_dependencies(tc-test enclave)
 add_dependencies(tc-keygen enclave)
-add_dependencies(tc-att enclave)
 
 install(TARGETS tc DESTINATION tc)
 install(FILES ${CMAKE_SOURCE_DIR}/config-systemd DESTINATION tc)

@@ -57,6 +57,8 @@ TEST_F(dummyTest, hybridEncryption) {
   int ret;
 
   provision_key(eid, SEALED_KEY, tc::keyUtils::HYBRID_ENCRYPTION_KEY);
+  init(eid);
+  set_env(eid, "a", "env");
   st = dummy_test(eid, &ret);
 
   ASSERT_EQ(0, st);

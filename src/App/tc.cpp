@@ -76,8 +76,7 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-extern ethRPCClient *rpc_client;
-jsonrpc::HttpClient *httpclient;
+extern ethRPCClient *geth_connector;
 
 std::atomic<bool> quit(false);
 void exitGraceful(int) { quit.store(true); }
@@ -108,8 +107,8 @@ int main(int argc, const char *argv[]) {
   LL_INFO("config:\n%s", config.toString().c_str());
 
   try {
-    httpclient = new jsonrpc::HttpClient(config.getGethRpcAddr());
-    rpc_client = new ethRPCClient(*httpclient);
+    jsonrpc::HttpClient* httpclient = new jsonrpc::HttpClient(config.getGethRpcAddr());
+    geth_connector = new ethRPCClient(*httpclient);
   } catch (const std::exception &e) {
     std::cout << e.what() << std::endl;
     exit(-1);
@@ -132,8 +131,10 @@ int main(int argc, const char *argv[]) {
 #endif
   }
 
-  static const string db_name =
-      (fs::path(config.getWorkingDir()) / "tc.db").string();
+  /*
+   * set up database
+   */
+  static const string db_name = (fs::path(config.getWorkingDir()) / "tc.db").string();
   LOG_F(INFO, "using db %s", db_name.c_str());
   bool overwrite_old_db = false;
   if (fs::exists(db_name) && !config.isRunAsDaemon()) {
@@ -179,6 +180,9 @@ int main(int argc, const char *argv[]) {
     LOG_F(INFO, "RPC server started");
   }
 
+  init(eid);
+  set_env(eid, "a", "env");
+
   Monitor monitor(&driver, eid, quit);
 //  monitor.dontSendResponse();
   monitor.loop();
@@ -187,7 +191,6 @@ int main(int argc, const char *argv[]) {
     stat_srvr.StopListening();
   }
   sgx_destroy_enclave(eid);
-  delete rpc_client;
-  delete httpclient;
+  delete geth_connector;
   LOG_F(INFO, "all enclave closed successfully");
 }

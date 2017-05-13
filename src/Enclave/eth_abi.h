@@ -43,10 +43,11 @@
 /*
  * Implementation of Ethereum ABI
  * https://github.com/ethereum/wiki/wiki/Ethereum-Contract-ABI
- *
- * This file is part of Town Crier
  */
-#pragma once
+
+#ifndef TC_ENCLAVE_ETH_ABI_H
+#define TC_ENCLAVE_ETH_ABI_H
+
 #include "commons.h"
 #include "encoding.h"
 #include <cstddef>
@@ -162,3 +163,4 @@ public:
     ~ABI_Generic_Array() {};
 };
 
+#endif

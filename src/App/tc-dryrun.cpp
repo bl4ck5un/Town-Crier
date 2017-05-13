@@ -64,7 +64,7 @@ using std::cerr;
 using std::endl;
 using std::to_string;
 
-extern ethRPCClient *rpc_client;
+extern ethRPCClient *geth_connector;
 jsonrpc::HttpClient *httpclient;
 
 int main(int argc, const char* argv[]) {
@@ -92,7 +92,7 @@ int main(int argc, const char* argv[]) {
 
   try {
     httpclient = new jsonrpc::HttpClient("http://localhost:8200");
-    rpc_client = new ethRPCClient(*httpclient);
+    geth_connector = new ethRPCClient(*httpclient);
   } catch (const std::exception &e) {
     std::cout << e.what() << std::endl;
     exit(-1);

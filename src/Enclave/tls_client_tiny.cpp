@@ -103,11 +103,14 @@ static const string printableRequest(const string &request) {
   std::string res;
   for (int i = 0; i < request.length(); ++i) {
     switch (request[i]) {
-      case '\r':res += "\\r";
+      case '\r':
+        res += "\\r";
         break;
-      case '\n':res += "\\n";
+      case '\n':
+        res += "\\n";
         break;
-      default:res += request[i];
+      default:
+        res += request[i];
     }
   }
   return res;
@@ -402,7 +405,7 @@ HttpResponse HttpsClient::getResponse() {
       MBEDTLS_ERR_SSL_CLIENT_RECONNECT (see below), or another negative
       error code.
     */
-    const unsigned char* data = buffer;
+    const unsigned char *data = buffer;
     int n_data = mbedtls_ssl_read(&ssl, buffer, sizeof(buffer));
 
     LL_TRACE("mbedtls_ssl_read returns %d (Content-Length=%d)", n_data, rt.contentlength);
@@ -419,20 +422,23 @@ HttpResponse HttpsClient::getResponse() {
     if (n_data < 0) {
       ret = n_data;
       switch (n_data) {
-        case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:LL_CRITICAL(" connection was closed gracefully");
+        case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
+          LL_CRITICAL(" connection was closed gracefully");
           http_free(&rt);
           throw runtime_error("connection was closed gracefully");
-        case MBEDTLS_ERR_NET_CONN_RESET:LL_CRITICAL(" connection was reset by peer");
+        case MBEDTLS_ERR_NET_CONN_RESET:
+          LL_CRITICAL(" connection was reset by peer");
           http_free(&rt);
           throw runtime_error("connected reset");
-        default:LL_CRITICAL(" mbedtls_ssl_read returned 0x%x", n_data);
+        default:
+          LL_CRITICAL(" mbedtls_ssl_read returned 0x%x", n_data);
           http_free(&rt);
           throw runtime_error("mbedtls_ssl_read returned non-sense");
       }
     }
     while (http_need_more && n_data) {
       int read;
-      http_need_more = http_data(&rt, (const char*) data, n_data, &read);
+      http_need_more = (bool) http_data(&rt, (const char *) data, n_data, &read);
       n_data -= read;
       data += read;
     }

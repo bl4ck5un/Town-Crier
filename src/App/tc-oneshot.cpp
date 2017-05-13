@@ -76,7 +76,7 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-extern ethRPCClient *rpc_client;
+extern ethRPCClient *geth_connector;
 jsonrpc::HttpClient *httpclient;
 
 std::atomic<bool> quit(false);
@@ -104,7 +104,7 @@ int main(int argc, const char *argv[]) {
 
   try {
     httpclient = new jsonrpc::HttpClient(config.getGethRpcAddr());
-    rpc_client = new ethRPCClient(*httpclient);
+    geth_connector = new ethRPCClient(*httpclient);
   } catch (const std::exception &e) {
     std::cout << e.what() << std::endl;
     exit(-1);
@@ -156,7 +156,7 @@ int main(int argc, const char *argv[]) {
   }
 
   sgx_destroy_enclave(eid);
-  delete rpc_client;
+  delete geth_connector;
   delete httpclient;
   LL_INFO("all enclave closed successfully");
 }
