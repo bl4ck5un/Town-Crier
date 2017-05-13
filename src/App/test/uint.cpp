@@ -47,9 +47,9 @@
 #include "App/Enclave_u.h"
 #include "App/test/SGXTestBase.h"
 
-class UintTestSuite : public SGXTestBase {};
+class Uint: public SGXTestBase {};
 
-TEST_F(UintTestSuite, uint) {
+TEST_F(Uint, uint) {
   sgx_status_t st;
   int ret;
   st = uint_utils_test(eid, &ret);

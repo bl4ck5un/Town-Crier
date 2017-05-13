@@ -39,7 +39,7 @@
 #ifndef SRC_APP_TEST_TEST_DATA_H_
 #define SRC_APP_TEST_TEST_DATA_H_
 
-#ifdef TC_SGX_IN_HW_MODE
+#ifdef TC_SGX_IN_RELEASE_MODE
 #define SEALED_KEY                                                             \
   "BAACAAAAAAAEBP//AQEAAAAAAAAAAAAAy/////////"                                 \
   "8AAAAAAAAAAIa71A2C4RxqN1TCMWB49meKY6OUlfyuqEYkvZtj4Mhm/v///"                \

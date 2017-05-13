@@ -48,17 +48,13 @@
 #include "App/tc-exception.h"
 #include "App/utils.h"
 #include "App/test/test-data.h"
+#include "App/test/SGXTestBase.h"
 
-class TransactionSuiteTest : public ::testing::Test {
- protected:
-  sgx_enclave_id_t eid;
-  virtual void SetUp() { initialize_enclave(ENCLAVE_FILENAME, &eid); }
-  virtual void TearDown() { sgx_destroy_enclave(eid); }
-};
 
-TEST_F(TransactionSuiteTest, All) {
+class Transaction : public SGXTestBase {};
+
+TEST_F(Transaction, All) {
   int ret;
-
   try {
     provision_key(eid, SEALED_KEY, tc::keyUtils::ECDSA_KEY);
     transaction_rlp_test(eid, &ret);
