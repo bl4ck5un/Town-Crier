@@ -2,7 +2,7 @@
 RPChost = http://localhost:8200
 
 [init]
-enclave_path = enclave.signed.so
+enclave_path = enclave.debug.so
 
 [daemon]
 pid_file = tc.pid

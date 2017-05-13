@@ -139,12 +139,14 @@ int main(int argc, const char *argv[]) {
   loguru::init(argc, argv);
 
   string key_input, key_output;
+  string enclave_path;
 
   try {
     po::options_description desc("Allowed options");
     desc.add_options()("help,h", "print this message")(
-        "print", po::value(&key_input), "print")(
-        "keygen", po::value(&key_output), "keygen");
+        "enclave,e", po::value(&enclave_path)->required(), "which enclave to use?")(
+        "print,p", po::value(&key_input), "print existing keys")(
+        "keygen,g", po::value(&key_output), "generate a new key");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -175,7 +177,7 @@ int main(int argc, const char *argv[]) {
   sgx_status_t st;
   int ret;
 
-  ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
+  ret = initialize_enclave(enclave_path.c_str(), &eid);
   if (ret != 0) {
     LL_CRITICAL("Failed to initialize the enclave");
     std::exit(-1);

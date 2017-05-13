@@ -63,15 +63,18 @@ target_link_libraries(enclave "${SGX_COMMON_CFLAGS} \
     -Wl,-pie,-eenclave_entry -Wl,--export-dynamic \
     -Wl,--defsym,__ImageBase=0")
 
+set(DEBUG_ENCLAVE_NAME "enclave.debug.so")
+set(RELEASE_ENCLAVE_NAME "RELEASE_ENCLAVE_NAME")
+
 add_custom_command(TARGET enclave
         POST_BUILD
         COMMAND ${SGX_ENCLAVE_SIGNER} sign
         -key ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_private.pem
         -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
         -enclave enclave.so
-        -out enclave.signed.so
+        -out ${DEBUG_ENCLAVE_NAME}
         WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-        COMMENT "Signing the enclave. Written to ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so")
+        COMMENT "Signing the enclave. Written to ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}")
 
 add_custom_command(TARGET enclave
         POST_BUILD
@@ -85,11 +88,12 @@ add_custom_command(TARGET enclave
 add_custom_target(release-enclave
         DEPENDS enclave Enclave.config.xml release_pubkey.pem
         COMMAND ${SGX_ENCLAVE_SIGNER} catsig -enclave enclave.so
-                -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
-                -key ${CMAKE_CURRENT_SOURCE_DIR}/release_pubkey.pem
-                -out enclave.release.so
-                -sig signature.hex
-                -unsigned enclave.hex
+        -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
+        -key ${CMAKE_CURRENT_SOURCE_DIR}/release_pubkey.pem
+        -out ${RELEASE_ENCLAVE_NAME}
+        -sig signature.hex
+        -unsigned enclave.hex
         WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
-install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/enclave.signed.so DESTINATION tc)
+install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${DEBUG_ENCLAVE_NAME} DESTINATION tc)
+install(FILES ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/${RELEASE_ENCLAVE_NAME} DESTINATION tc)

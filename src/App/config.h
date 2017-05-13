@@ -60,7 +60,7 @@ class Config {
  private:
   const bool DFT_STATUS_ENABLED = false;
   const bool DFT_RUN_AS_DAEMON = false;
-  const string DFT_CONFIG_FILE = "config";
+  const string DFT_CONFIG_FILE = "config-sim-test";
   const string DFT_WORKING_DIR = "/tmp/tc";
 
  public:
