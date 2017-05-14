@@ -66,7 +66,7 @@ static double parse_response(const char* resp) {
   }
 
   temp += 1;
-  end = reinterpret_cast<char*>(temp);
+  end = const_cast<char*>(temp);
   while (*end != '"') {
     end += 1;
   }
