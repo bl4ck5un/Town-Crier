@@ -59,4 +59,11 @@ Each of these contains a handle class that returns a desired value.  We describe
 		Output:
 			32 bit integer indicating the currentn exchange rate of the package
 
+	Weather:
+		Description: Returns the current temperature of the given location
+		Input:
+			0x00 - 0x20 Query type (WOEID | City Name | Lat-Long Coordinates)
+			0x20 - 0x40 Query
+		Output:
+			32 bit integers indacating the current temperature (in Degrees F) of the current location
 
