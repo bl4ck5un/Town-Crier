@@ -80,7 +80,7 @@ err_code USPSScraper::handle(const uint8_t *req, size_t len, int *resp_data) {
 
   LL_DEBUG("Tracking Number is: %s", tracking_num.c_str());
 
-  return ups_tsuracking(tracking_num, carrier_name, resp_data);
+  return ups_tracking(tracking_num, carrier_name, resp_data);
 }
 
 err_code USPSScraper::ups_tracking(const std::string &tracking_num, const std::string &carrier_name, int *status) {

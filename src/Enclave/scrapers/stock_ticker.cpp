@@ -114,9 +114,9 @@ err_code StockTickerScraper::handle(const uint8_t *req, size_t data_len, int *re
   string str(symbol);
   LL_INFO("symbol: %s", symbol);
 
-  int month = strtol(reinterpret_cast<char *>(req + 0x20), NULL, 10);
-  int day = strtol(reinterpret_cast<char *>(req + 0x40), NULL, 10);
-  int year = strtol(reinterpret_cast<char *>(req + 0x60), NULL, 10);
+  int month = strtol(reinterpret_cast<const char *>(req + 0x20), NULL, 10);
+  int day = strtol(reinterpret_cast<const char *>(req + 0x40), NULL, 10);
+  int year = strtol(reinterpret_cast<const char *>(req + 0x60), NULL, 10);
 
   LL_INFO("month: %d", month);
   LL_INFO("day: %d", day);
