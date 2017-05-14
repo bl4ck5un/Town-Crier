@@ -107,7 +107,7 @@ err_code SteamScraper::handle(const uint8_t *req, size_t len, int *resp_data) {
   // 0xa0 .. 0xc0
   const char *items[item_len];
   for (size_t i = 0; i < item_len; i++) {
-    items[i] = reinterpret_cast<char *>(req + 0xa0 + 0x20 * i);
+    items[i] = const_cast<char *>(req + 0xa0 + 0x20 * i);
     LL_INFO("item: %s", items[i]);
   }
 
@@ -168,8 +168,8 @@ err_code SteamScraper::get_steam_transaction(const char **item_name_list,
 
 char *SteamScraper::search(const char *buf, const char *search_string) {
   int len = strlen(buf);
-  int slen = strlen(reinterpret_cast<char *>(search_string));
-  char *temp = reinterpret_cast<char *>(buf);
+  int slen = strlen(const_cast<char *>(search_string));
+  char *temp = const_cast<char *>(buf);
   if (slen > len) {
     return NULL;
   }
@@ -250,7 +250,7 @@ int SteamScraper::in_list(const char **list, int len, const char *name) {
 
 int SteamScraper::parse_response(const char *resp, const char *other, const char **listB, int lenB, const char *key) {
   int ret, counter, flag;
-  char *index = reinterpret_cast<char *>(resp);
+  char *index = const_cast<char *>(resp);
   char *name;
   char *temp;
   char *end, *end2;

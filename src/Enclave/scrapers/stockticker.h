@@ -60,7 +60,7 @@ class StockQuery{
   int year;
   std::string symbol;
  public:
-  StockQuery(){};
+  StockQuery(){}
   StockQuery(int day, int month, int year, std::string symbol);
   void SetDay(int day);
   void SetMonth(int month);
@@ -84,7 +84,7 @@ class StockTickerScraper : Scraper{
  private:
   StockQuery query;
  public:
-  StockTickerScraper() : query() {};
+  StockTickerScraper() : query() {}
   err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
   void CreateQuery(int date, int month, int year, std::string symbol);
   StockTickerParser QueryWebsite();

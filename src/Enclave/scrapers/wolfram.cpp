@@ -75,15 +75,13 @@ string WolframQueryResult::get_raw_data() {
 
 void WolframScraper::create_query(std::string query) {
   // TODO(Oscar): C++. string::replace?
-  char* tmp = const_cast<char*>(query.c_str());
-  for (int i = 0; i < query.size(); i++) {
-    if (tmp[i] == ' ') {
-      tmp[i] = '+';
+  for(std::string::iterator it = query.begin(); it != query.end(); ++it){
+    if(*it == ' '){
+      *it = '+';
     }
   }
-  string newQ(tmp);
 
-  this->url = "/v1/result?appid=" + this->APPID + "&i=" + newQ;
+  this->url = "/v1/result?appid=" + this->APPID + "&i=" + query;
   LL_INFO("url is : %s", this->url.c_str());
 }
 
