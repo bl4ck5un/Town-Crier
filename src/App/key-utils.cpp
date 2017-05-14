@@ -97,7 +97,7 @@ string unseal_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyType
       // take special care of the first byte
       unsigned char _pubkey65b[65];
       _pubkey65b[0] = 0x04;
-      memcpy(_pubkey65b, pubkey, 64);
+      memcpy(_pubkey65b + 1, pubkey, 64);
       char _base64_pubkey[2 * sizeof pubkey];
       ret = ext::b64_ntop(_pubkey65b, 65, _base64_pubkey, sizeof _base64_pubkey);
       if (ret == -1)
