@@ -73,8 +73,8 @@ err_code CoinMarket::handle(const uint8_t *req, size_t data_len, int *resp_data)
 
   try {
     HttpResponse response = httpClient.getResponse();
-    picojson::value _json_resp;
 
+    picojson::value _json_resp;
     string err_msg = picojson::parse(_json_resp, response.getContent());
     if (!err_msg.empty()) {
       LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
@@ -86,13 +86,6 @@ err_code CoinMarket::handle(const uint8_t *req, size_t data_len, int *resp_data)
           LL_INFO("manual parsing succeeded: %d", *resp_data);
           return NO_ERROR;
       }
-
-      return INVALID_PARAMS;
-    }
-
-    if (_json_resp.contains("error")) {
-      LL_CRITICAL("coinmarket return error: %s", _json_resp.get("error").is<string>() ?
-                                                 _json_resp.get("error").get<string>().c_str() : "unknown");
       return INVALID_PARAMS;
     }
 
@@ -103,6 +96,11 @@ err_code CoinMarket::handle(const uint8_t *req, size_t data_len, int *resp_data)
       string _price = _json_resp.get<picojson::array>()[0].get("price_usd").get<string>();
       *resp_data = (int) atof(_price.c_str());
       return NO_ERROR;
+    }
+    else if (_json_resp.is<picojson::object>() && _json_resp.contains("error")) {
+      LL_CRITICAL("coinmarket return error: %s", _json_resp.get("error").is<string>() ?
+                                                 _json_resp.get("error").get<string>().c_str() : "unknown");
+      return INVALID_PARAMS;
     }
 
     return INVALID_PARAMS;
