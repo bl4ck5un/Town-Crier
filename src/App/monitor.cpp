@@ -270,3 +270,4 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
 
   LL_INFO("Done processing block %ld", blocknum);
 }
+
