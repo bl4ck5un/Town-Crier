@@ -76,8 +76,7 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-extern ethRPCClient *rpc_client;
-jsonrpc::HttpClient *httpclient;
+extern ethRPCClient *geth_connector;
 
 std::atomic<bool> quit(false);
 void exitGraceful(int) { quit.store(true); }
@@ -87,10 +86,10 @@ int main(int argc, const char *argv[]) {
   loguru::init(argc, argv);
 
   tc::Config config(argc, argv);
-  cout << config.to_string();
+  cout << config.toString();
 
   // create working dir if not existed
-  fs::create_directory(fs::path(config.get_working_dir()));
+  fs::create_directory(fs::path(config.getWorkingDir()));
 
   // logging to file
   fs::path log_path;
@@ -99,17 +98,17 @@ int main(int argc, const char *argv[]) {
   if (std::strftime(_log_tag, sizeof _log_tag, "%F-%T",
                     std::localtime(&_current_time))) {
     log_path =
-        fs::path(config.get_working_dir()) / ("tc" + string(_log_tag) + ".log");
+        fs::path(config.getWorkingDir()) / ("tc" + string(_log_tag) + ".log");
   } else {
-    log_path = fs::path(config.get_working_dir()) / ("tc.log");
+    log_path = fs::path(config.getWorkingDir()) / ("tc.log");
   }
   loguru::add_file(log_path.c_str(), loguru::Append, loguru::Verbosity_MAX);
 
-  LL_INFO("config:\n%s", config.to_string().c_str());
+  LL_INFO("config:\n%s", config.toString().c_str());
 
   try {
-    httpclient = new jsonrpc::HttpClient(config.get_geth_rpc_addr());
-    rpc_client = new ethRPCClient(*httpclient);
+    jsonrpc::HttpClient* httpclient = new jsonrpc::HttpClient(config.getGethRpcAddr());
+    geth_connector = new ethRPCClient(*httpclient);
   } catch (const std::exception &e) {
     std::cout << e.what() << std::endl;
     exit(-1);
@@ -119,12 +118,12 @@ int main(int argc, const char *argv[]) {
   sgx_enclave_id_t eid;
   sgx_status_t st;
 
-  // register Ctrl-C handler
+  // register Ctrl-C handle
   std::signal(SIGINT, exitGraceful);
   // handle systemd termination signal
   std::signal(SIGTERM, exitGraceful);
 
-  if (config.is_run_as_daemon()) {
+  if (config.isRunAsDaemon()) {
 #ifdef CONFIG_IMPL_DAEMON
     daemonize(opt_cwd, pid_filename);
 #else
@@ -132,11 +131,13 @@ int main(int argc, const char *argv[]) {
 #endif
   }
 
-  static const string db_name =
-      (fs::path(config.get_working_dir()) / "tc.db").string();
+  /*
+   * set up database
+   */
+  static const string db_name = (fs::path(config.getWorkingDir()) / "tc.db").string();
   LOG_F(INFO, "using db %s", db_name.c_str());
   bool overwrite_old_db = false;
-  if (fs::exists(db_name) && !config.is_run_as_daemon()) {
+  if (fs::exists(db_name) && !config.isRunAsDaemon()) {
     std::cout << "Do you want to clean up the database? y/[n] ";
     std::string new_db;
     std::getline(std::cin, new_db);
@@ -147,7 +148,7 @@ int main(int argc, const char *argv[]) {
   LL_INFO("using new db: %d", overwrite_old_db);
   OdbDriver driver(db_name, overwrite_old_db);
 
-  ret = initialize_enclave(config.get_enclave_path().c_str(), &eid);
+  ret = initialize_enclave(config.getEnclavePath().c_str(), &eid);
   if (ret != 0) {
     LOG_F(FATAL, "Failed to initialize the enclave");
     std::exit(-1);
@@ -155,13 +156,17 @@ int main(int argc, const char *argv[]) {
     LOG_F(INFO, "Enclave %ld created", eid);
   }
 
-  string address;
+  string wallet_address, hybrid_pubkey;
 
   try {
-    address = unseal_key(eid, config.get_sealed_sig_key());
-    LL_INFO("using address %s", address.c_str());
+    wallet_address = unseal_key(eid, config.getSealedSigKey(), tc::keyUtils::ECDSA_KEY);
+    hybrid_pubkey = unseal_key(eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
 
-    provision_key(eid, config.get_sealed_sig_key());
+    LL_INFO("using wallet address at %s", wallet_address.c_str());
+    LL_INFO("using hybrid pubkey: %s", hybrid_pubkey.c_str());
+
+    provision_key(eid, config.getSealedSigKey(), tc::keyUtils::ECDSA_KEY);
+    provision_key(eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
   } catch (const tc::EcallException &e) {
     LL_CRITICAL("%s", e.what());
     exit(-1);
@@ -170,20 +175,22 @@ int main(int argc, const char *argv[]) {
   jsonrpc::HttpServer status_server_connector(config.get_status_server_port(),
                                               "", "", 3);
   tc::StatRPCServer stat_srvr(status_server_connector, eid, driver);
-  if (config.is_status_server_enabled()) {
+  if (config.isStatusServerEnabled()) {
     stat_srvr.StartListening();
     LOG_F(INFO, "RPC server started");
   }
+
+  init(eid);
+  set_env(eid, "a", "env");
 
   Monitor monitor(&driver, eid, quit);
 //  monitor.dontSendResponse();
   monitor.loop();
 
-  if (config.is_status_server_enabled()) {
+  if (config.isStatusServerEnabled()) {
     stat_srvr.StopListening();
   }
   sgx_destroy_enclave(eid);
-  delete rpc_client;
-  delete httpclient;
+  delete geth_connector;
   LOG_F(INFO, "all enclave closed successfully");
 }

@@ -45,84 +45,74 @@
 
 #include "App/utils.h"
 #include "App/Enclave_u.h"
+#include "App/test/SGXTestBase.h"
 
-class ScraperTestSuite : public ::testing::Test {
- protected:
-  sgx_enclave_id_t eid;
- public:
-  virtual void SetUp() {
-    initialize_enclave(ENCLAVE_FILENAME, &eid);
-  }
+class Scraper: public SGXTestBase {};
 
-  virtual void TearDown() {
-    sgx_destroy_enclave(eid);
-  }
-};
-
-TEST_F(ScraperTestSuite, yahoo) {
+TEST_F(Scraper, yahoo) {
   int ocall_status, ret;
   ocall_status = yahoo_self_test(eid, &ret);
   EXPECT_EQ(0, ocall_status);
   EXPECT_EQ(0, ret);
 }
 
-TEST_F(ScraperTestSuite, coinmarket) {
+TEST_F(Scraper, coinmarket) {
   int ocall_status, ret;
   ocall_status = coin_self_test(eid, &ret);
   EXPECT_EQ(0, ocall_status);
   EXPECT_EQ(0, ret);
 }
 
-TEST_F(ScraperTestSuite, steam) {
+TEST_F(Scraper, steam) {
   int ocall_status, ret;
   ocall_status = steam_self_test(eid, &ret);
   ASSERT_EQ(0, ocall_status);
   ASSERT_EQ(0, ret);
 }
 
-TEST_F(ScraperTestSuite, google) {
+TEST_F(Scraper, google) {
   int ocall_status, ret;
   ocall_status = google_self_test(eid, &ret);
   EXPECT_EQ(0, ocall_status);
   EXPECT_EQ(0, ret);
 }
 
-TEST_F(ScraperTestSuite, bloomberg) {
+TEST_F(Scraper, bloomberg) {
   int ocall_status, ret;
   ocall_status = bloomberg_self_test(eid, &ret);
   EXPECT_EQ(0, ocall_status);
   EXPECT_EQ(0, ret);
 }
 
-TEST_F(ScraperTestSuite, flight) {
+TEST_F(Scraper, flight) {
   int ocall_status, ret;
   ocall_status = flight_self_test(eid, &ret);
   ASSERT_EQ(0, ocall_status);
   ASSERT_EQ(0, ret);
 }
 
-TEST_F(ScraperTestSuite, stock) {
+TEST_F(Scraper, stock) {
   int ocall_status, ret;
   ocall_status = stockticker_self_test(eid, &ret);
   ASSERT_EQ(0, ocall_status);
   ASSERT_EQ(0, ret);
 }
 
-TEST_F(ScraperTestSuite, weather) {
+TEST_F(Scraper, weather) {
   int ocall_status, ret;
   ocall_status = weather_self_test(eid, &ret);
   ASSERT_EQ(0, ocall_status);
   ASSERT_EQ(0, ret);
 }
 
-TEST_F(ScraperTestSuite, ups) {
+TEST_F(Scraper, ups) {
   int ocall_status, ret;
   ocall_status = ups_self_test(eid, &ret);
   ASSERT_EQ(0, ocall_status);
   ASSERT_EQ(0, ret);
 }
 
-TEST_F(ScraperTestSuite, wolfram) {
+TEST_F(Scraper, wolfram) {
   int ocall_status, ret;
   ocall_status = wolfram_self_test(eid, &ret);
   ASSERT_EQ(0, ocall_status);

@@ -94,6 +94,7 @@ ADR: 89b44e4d3c81ede05d0f5de8d1a68f754d73d997
 
 #define PREDEFINED_SECKEY \
   "cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8"
+#undef PREDEFINED_SECKEY
 static mbedtls_mpi g_secret_key;
 
 /*!
@@ -165,7 +166,7 @@ int __ecdsa_seckey_to_pubkey(const mbedtls_mpi *seckey, unsigned char *pubkey,
 int ecdsa_keygen_unseal(const sgx_sealed_data_t *secret, size_t secret_len,
                         unsigned char *pubkey, unsigned char *address) {
   // used by edge8r
-  (void)secret_len;
+  (void) secret_len;
 
   uint32_t decrypted_text_length = sgx_get_encrypt_txt_len(secret);
   uint8_t y[decrypted_text_length];
@@ -195,7 +196,7 @@ int ecdsa_keygen_unseal(const sgx_sealed_data_t *secret, size_t secret_len,
  */
 int tc_provision_ecdsa_key(const sgx_sealed_data_t *secret, size_t secret_len) {
   // used by edge8r
-  (void)secret_len;
+  (void) secret_len;
 
   uint32_t decrypted_text_length = sgx_get_encrypt_txt_len(secret);
   uint8_t y[decrypted_text_length];
@@ -270,7 +271,7 @@ int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen,
   // seal the data
   {
     uint32_t len = sgx_calc_sealed_data_size(0, sizeof(secret_buffer));
-    sgx_sealed_data_t *seal_buffer = (sgx_sealed_data_t *)malloc(len);
+    sgx_sealed_data_t *seal_buffer = (sgx_sealed_data_t *) malloc(len);
     LL_LOG("sealed secret length is %d", len);
 
     sgx_status_t st = sgx_seal_data(0, NULL, sizeof secret_buffer,
@@ -293,7 +294,7 @@ int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen,
   }
   LL_LOG("returning from keygen_seal");
 
-exit:
+  exit:
   mbedtls_mpi_free(&secret);
   mbedtls_ecp_group_free(&grp);
   return ret;
@@ -349,7 +350,7 @@ int ecdsa_sign(const uint8_t *data, size_t in_len, uint8_t *rr, uint8_t *ss,
   } else {
   }
 
-exit:
+  exit:
   if (ret != 0) {
     char error_buf[100];
     mbedtls_strerror(ret, error_buf, 100);

@@ -76,7 +76,7 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-extern ethRPCClient *rpc_client;
+extern ethRPCClient *geth_connector;
 jsonrpc::HttpClient *httpclient;
 
 std::atomic<bool> quit(false);
@@ -88,23 +88,25 @@ int main(int argc, const char *argv[]) {
 
   bool send_response;
   blocknum_t block_num;
+  string db_path;
   po::options_description desc("Additional Options");
   desc.add_options()
       ("send,s", po::bool_switch(&send_response)->default_value(false), "Send real response")
-      ("block,b", po::value(&block_num)->required(), "block number to use");
+      ("block,b", po::value(&block_num)->required(), "block number to use")
+      ("database", po::value(&db_path)->required(), "database to use");
 
   tc::Config config(desc, argc, argv);
-  cout << config.to_string();
+  cout << config.toString();
 
   // create working dir if not existed
-  fs::create_directory(fs::path(config.get_working_dir()));
+  fs::create_directory(fs::path(config.getWorkingDir()));
 
   // logging to file
-  LL_INFO("config:\n%s", config.to_string().c_str());
+  LL_INFO("config:\n%s", config.toString().c_str());
 
   try {
-    httpclient = new jsonrpc::HttpClient(config.get_geth_rpc_addr());
-    rpc_client = new ethRPCClient(*httpclient);
+    httpclient = new jsonrpc::HttpClient(config.getGethRpcAddr());
+    geth_connector = new ethRPCClient(*httpclient);
   } catch (const std::exception &e) {
     std::cout << e.what() << std::endl;
     exit(-1);
@@ -114,13 +116,12 @@ int main(int argc, const char *argv[]) {
   sgx_enclave_id_t eid;
   sgx_status_t st;
 
-  static const string db_name = (fs::path(config.get_working_dir()) / "tc.db").string();
-  LOG_F(INFO, "using db %s", db_name.c_str());
+  LOG_F(INFO, "using db %s", db_path.c_str());
 
   // always reuse database
-  OdbDriver driver(db_name, false);
+  OdbDriver driver(db_path, false);
 
-  ret = initialize_enclave(config.get_enclave_path().c_str(), &eid);
+  ret = initialize_enclave(config.getEnclavePath().c_str(), &eid);
   if (ret != 0) {
     LOG_F(FATAL, "Failed to initialize the enclave");
     std::exit(-1);
@@ -128,13 +129,17 @@ int main(int argc, const char *argv[]) {
     LOG_F(INFO, "Enclave %ld created", eid);
   }
 
-  string address;
+  string wallet_address;
+  string hybrid_pubkey;
 
   try {
-    address = unseal_key(eid, config.get_sealed_sig_key());
-    LL_INFO("using address %s", address.c_str());
+    wallet_address = unseal_key(eid, config.getSealedSigKey(), tc::keyUtils::ECDSA_KEY);
+    hybrid_pubkey = unseal_key(eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
+    LL_INFO("using wallet address at %s", wallet_address.c_str());
+    LL_INFO("using hybrid pubkey: %s", hybrid_pubkey.c_str());
 
-    provision_key(eid, config.get_sealed_sig_key());
+    provision_key(eid, config.getSealedSigKey(), tc::keyUtils::ECDSA_KEY);
+    provision_key(eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
   } catch (const tc::EcallException &e) {
     LL_CRITICAL("%s", e.what());
     exit(-1);
@@ -155,7 +160,7 @@ int main(int argc, const char *argv[]) {
   }
 
   sgx_destroy_enclave(eid);
-  delete rpc_client;
+  delete geth_connector;
   delete httpclient;
   LL_INFO("all enclave closed successfully");
 }

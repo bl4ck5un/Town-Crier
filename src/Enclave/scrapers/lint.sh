@@ -1,4 +1,5 @@
-
+#!/bin/bash -ex
+#
 # Copyright (c) 2016-2017 by Cornell University.  All Rights Reserved.
 #
 # Permission to use the "TownCrier" software ("TownCrier"), officially docketed at
@@ -35,16 +36,24 @@
 # (NSF grants CNS-1314857, CNS-1330599, CNS-1453634, CNS-1518765, CNS-1514261), a
 # Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
 # VMWare Research Award.
+#
 
-import sqlite3
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-DB_FILE = '/opt/tc/daemon/tc.db'
+pushd $DIR
+CPPLINT=../../utils/cpplint.py
 
-conn = sqlite3.connect(DB_FILE)
+OPTS=--linelength=120
 
-c = conn.cursor()
+if [[ ! -x $CPPLINT ]]
+then
+    curl https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py -o $CPPLINT
+    chmod u+x $CPPLINT
+fi
 
-# c.execute("select * from TransactionRecord where block_number = 899735")
+find * -type f | \
+    grep -v external | \
+    grep -v mbedtls-SGX | \
+    xargs $CPPLINT $OPTS
 
-c.close()
-conn.close()
+popd

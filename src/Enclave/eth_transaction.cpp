@@ -131,6 +131,7 @@ void TX::rlpEncode(bytes &out, bool withSig) {
 }
 
 #include "Constants.h"
+#include "external/inttypes.h"
 
 #define DELIVER_CALL_SIGNATURE "deliver(uint64,bytes32,uint64,bytes32)"
 
@@ -144,7 +145,8 @@ int form_transaction(int nonce,
                      uint8_t *tx_output_bf,
                      size_t *o_len,
                      bool with_sig) {
-  LL_DEBUG("foring transaction for nonce=%ld, id=%d, type=%d, date_len=%zu, err=%d",
+  LL_DEBUG("forming transaction for nonce=%d, id=%"PRIu64", "
+           "type=%d, date_len=%zu, err=%"PRIu64,
            nonce, request_id, request_type, request_data_len, resp_error);
   if (tx_output_bf == NULL || o_len == NULL) {
     LL_CRITICAL("Error: tx_output_bf or o_len gets NULL input\n");

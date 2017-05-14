@@ -32,18 +32,21 @@
 // INFRINGE ANY PATENT, TRADEMARK OR OTHER RIGHTS.
 //
 // TownCrier was developed with funding in part by the National Science Foundation
-// (NSF grants CNS-1314857, CNS-1330599, CNS-1453634, CNS-1518765, CNS-1514261), a
+// (NSF grants CNS-1314857, CNS-1330599, CNS-1453634, CNS-1518765, CNS-15142  61), a
 // Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
 // VMWare Research Award.
 //
+#ifndef SRC_ENCLAVE_SCRAPERS_CURRENT_COINMARKET_H_
+#define SRC_ENCLAVE_SCRAPERS_CURRENT_COINMARKET_H_
 
 #include "Scraper.h"
 
-class CoinMarket : Scraper{
-public:
-    err_code handler(const uint8_t *req, size_t len, int *resp_data);
-    err_code coinmarketcap_current(const char* symbol, double* r);
-private:
-    double parse_response(const char* resp);
-
+class CoinMarket : Scraper {
+ public:
+  err_code handle(const uint8_t *req, size_t len, int *resp_data);
+  err_code coinmarketcap_current(const char *symbol, double *r);
+ private:
+  double parse_response(const char *resp);
 };
+
+#endif  // SRC_ENCLAVE_SCRAPERS_CURRENT_COINMARKET_H_

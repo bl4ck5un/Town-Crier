@@ -42,6 +42,7 @@
 
 #include <sgx_tseal.h>
 #include "stdint.h"
+
 #include "commons.h"
 #include "encoding.h"
 

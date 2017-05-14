@@ -58,13 +58,13 @@ typedef odb::result<TransactionRecord> Result;
 
 #define db_name "test.db"
 
-TEST(OdbTest, basic) {
+TEST(Odb, basic) {
   OdbDriver driver(db_name, true);
   OdbDriver::record_ptr p = driver.getLogByHash("nonexistentHash");
   ASSERT_FALSE(p);
 }
 
-TEST(OdbTest, newDB) {
+TEST(Odb, newDB) {
   try {
     OdbDriver driver(db_name, true);
     TransactionRecord r1(1, "0xaaa1", "0xbbb", time(0));

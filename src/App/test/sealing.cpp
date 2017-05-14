@@ -45,12 +45,13 @@
 
 #include "App/utils.h"
 #include "App/Enclave_u.h"
+#include "App/test/SGXTestBase.h"
 
-TEST(SealData, All) {
-  sgx_enclave_id_t eid;
-  int ret = initialize_enclave(ENCLAVE_FILENAME, &eid);
-  ASSERT_EQ(0, ret);
+
+class Sealing: public SGXTestBase {};
+
+TEST_F(Sealing, All) {
+  int ret;
   seal_data_test(eid, &ret);
   ASSERT_EQ(0, ret);
-  sgx_destroy_enclave(eid);
 }

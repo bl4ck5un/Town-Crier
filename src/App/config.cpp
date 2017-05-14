@@ -57,6 +57,8 @@ using std::cout;
 using std::endl;
 using std::stringstream;
 
+const tc::Config* g_config;
+
 inline const char *homedir() {
   const char *home_dir;
   if ((home_dir = getenv("HOME")) == NULL) {
@@ -112,6 +114,7 @@ void tc::Config::parseConfigFile() {
     cfg_pid_fn = pt.get<string>("daemon.pid_file");
     cfg_status_port = pt.get<int>("status.port");
     cfg_sealed_sig_key = pt.get<string>("sealed.sig_key");
+    cfg_sealed_hybrid_key = pt.get<string>("sealed.hybrid_key");
     cfg_enclave_path = pt.get<string>("init.enclave_path");
   } catch (const std::exception &e) {
     std::cout << e.what() << std::endl;
@@ -154,7 +157,7 @@ tc::Config::Config(int argc, const char **argv) {
   cout << "config done." << endl;
 }
 
-string tc::Config::to_string() {
+string tc::Config::toString() {
   stringstream ss;
   ss << "status server enabled: " << opt_status_enabled << endl;
   ss << "status server port: " << cfg_status_port << endl;
@@ -168,18 +171,15 @@ string tc::Config::to_string() {
   return ss.str();
 }
 
-bool tc::Config::is_status_server_enabled() const { return opt_status_enabled; }
-bool tc::Config::is_run_as_daemon() const { return opt_run_as_daemon; }
-const string &tc::Config::get_config_file() const { return opt_config_file; }
-const string &tc::Config::get_working_dir() const { return opt_working_dir; }
-const string &tc::Config::get_geth_rpc_addr() const {
-  return cfg_geth_rpc_addr;
-}
+bool tc::Config::isStatusServerEnabled() const { return opt_status_enabled; }
+bool tc::Config::isRunAsDaemon() const { return opt_run_as_daemon; }
+const string &tc::Config::getConfigFile() const { return opt_config_file; }
+const string &tc::Config::getWorkingDir() const { return opt_working_dir; }
+const string &tc::Config::getGethRpcAddr() const { return cfg_geth_rpc_addr; }
 int tc::Config::get_status_server_port() const { return cfg_status_port; }
-const string &tc::Config::get_pid_filename() const { return cfg_pid_fn; }
-const string &tc::Config::get_sealed_sig_key() const {
-  return cfg_sealed_sig_key;
-}
-const string &tc::Config::get_enclave_path() const { return cfg_enclave_path; }
-const string &tc::Config::get_current_dir() const { return current_dir; }
-const string &tc::Config::get_home_dir() const { return home_dir; }
+const string &tc::Config::getPidFilename() const { return cfg_pid_fn; }
+const string &tc::Config::getSealedSigKey() const { return cfg_sealed_sig_key; }
+const string &tc::Config::getSealedHybridKey() const { return cfg_sealed_hybrid_key; }
+const string &tc::Config::getEnclavePath() const { return cfg_enclave_path; }
+const string &tc::Config::getCurrentDir() const { return current_dir; }
+const string &tc::Config::getHomeDir() const { return home_dir; }

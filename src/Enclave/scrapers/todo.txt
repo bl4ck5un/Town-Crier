@@ -5,6 +5,6 @@ list the ids/types/requested data- DONE
 finish the event handler- DONE
 stock ticker -gives the closing price for stock given -Done 
 tickers- Errors for google/scrapers- Done 
-Finish the handler- Done 
+Finish the handle- Done
 specify what we need to parse the data - DONE
 

@@ -136,6 +136,48 @@ function Cancel(contract, id) {
     return "Request Cancelled.";
 }
 
+function setup_log(tc, tradeContract, id) {
+if (id == 0) {
+    tc.RequestInfo(function(e,r) { 
+		if (!e) { console.log('TC RequestInfo: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
+
+	tc.DeliverInfo(function(e,r) { 
+		if (!e) { console.log('TC ResponseInfo: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
+
+	tc.Cancel(function(e,r) { 
+		if (!e) { console.log('TC Cancel: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
+    }
+
+    if (id == 1) {
+        tradeContract.Insure(function(e,r) {
+            if (!e) { console.log('App Insure: ' + JSON.stringify(r.args)); }
+            else { console.log(e)}
+        });
+    }
+
+    tradeContract.Request(function(e,r) { 
+		if (!e) { console.log('App Request: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
+	
+    tradeContract.Response(function(e,r) { 
+		if (!e) { console.log('App Response: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
+	
+    tradeContract.Cancel(function(e,r) { 
+		if (!e) { console.log('App Cancel: ' + JSON.stringify(r.args)); } 
+		else {console.log(e)}
+	});
+}
+
+
 function watch_events(contract) {
     var his = contract.allEvents({fromBlock: 0, toBlock: 'latest'});
     var events;

@@ -40,40 +40,39 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef WOLFRAM_H
-#define WOLFRAM_H
+#ifndef SRC_ENCLAVE_SCRAPERS_WOLFRAM_H_
+#define SRC_ENCLAVE_SCRAPERS_WOLFRAM_H_
 
 #include <string>
 #include "Scraper.h"
 #include "utils.h"
 
-
-class WolframQueryResult{
-private:
-	std::string xml; /* The XML response from the wolfram website */
-public:
-	WolframQueryResult(std::string xml);
-	std::string get_raw_data();
+class WolframQueryResult {
+ private:
+  std::string xml; /* The XML response from the wolfram website */
+ public:
+  WolframQueryResult(std::string xml);
+  std::string get_raw_data();
 };
 
 class WolframScraper : Scraper {
-private:
-	const std::string HOST = "api.wolframalpha.com";
-	const std::string APPID = "A8V8R2-523WY42ULW";
-	std::string url;
+ private:
+  static const std::string HOST;
+  static const std::string APPID;
+  std::string url;
 
-public:
-	enum WolframQuery{
-		SIMPLE=0, 	/* Request simple 1 line answers */
-		GENERAL		/* Request more general responses */
-	} wolframQueryType;
+ public:
+  enum WolframQuery {
+    SIMPLE = 0,    /* Request simple 1 line answers */
+    GENERAL        /* Request more general responses */
+  } wolframQueryType;
 
-	//WolframScraper(int qtype);
-	void create_query(std::string query);
-	err_code handler(const uint8_t *req, size_t data_len, int *resp_data);
+  // WolframScraper(int qtype);
+  void create_query(std::string query);
+  err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
 
-	WolframQueryResult perform_query();
-	void set_qtype(int type);
+  WolframQueryResult perform_query();
+  void set_qtype(int type);
 };
 
-#endif
+#endif  // SRC_ENCLAVE_SCRAPERS_WOLFRAM_H_

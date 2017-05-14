@@ -43,6 +43,7 @@
 
 #include <sgx_tseal.h>
 #include <unistd.h>
+#include <string.h>
 
 #include <ctime>
 #include <iostream>

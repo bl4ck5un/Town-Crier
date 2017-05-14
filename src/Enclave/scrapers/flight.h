@@ -40,8 +40,8 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef FLIGHT_H
-#define FLIGHT_H
+#ifndef SRC_ENCLAVE_SCRAPERS_FLIGHT_H_
+#define SRC_ENCLAVE_SCRAPERS_FLIGHT_H_
 
 #include <stdint.h>
 #include <stdio.h>
@@ -59,7 +59,7 @@
 
 /* Define flight scraper specific errors */
 enum flight_error {
-  INVALID=0,          /* Invalid Parameters passed to the function*/
+  INVALID = 0,          /* Invalid Parameters passed to the function*/
   DEPARTED,           /* The Flight has departed with no delays */
   DELAYED,            /* The flight is delayed */
   CANCELLED,          /* The flight has been cancelled */
@@ -71,15 +71,15 @@ enum flight_error {
 
 class FlightScraper : Scraper {
  private:
-  const static int MAX_DELAY_MIN = 30;
-  const static char* HOST;
-  const static char* AUTH_CODE;
+  static const int MAX_DELAY_MIN = 30;
+  static const char *HOST;
+  static const char *AUTH_CODE;
  public:
-  err_code handler(const uint8_t *req, size_t data_len, int *resp_data);
-  err_code handleEncryptedQuery(const uint8_t* data, size_t data_len, int* resp_data);
+  err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
+  err_code handleEncryptedQuery(const uint8_t *data, size_t data_len, int *resp_data);
   flight_error get_flight_delay(uint64_t unix_epoch_time, const char *flight, int *resp);
  private:
-  flight_error parse_response(const string& resp, int *delay, uint64_t unix_epoch_time);
+  flight_error parse_response(const string &resp, int *delay, uint64_t unix_epoch_time);
 };
 
-#endif
+#endif  // SRC_ENCLAVE_SCRAPERS_FLIGHT_H_

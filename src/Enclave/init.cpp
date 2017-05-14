@@ -37,40 +37,20 @@
 // VMWare Research Award.
 //
 
-#ifndef SRC_ENCLAVE_SCRAPERS_UPS_TRACKING_H_
-#define SRC_ENCLAVE_SCRAPERS_UPS_TRACKING_H_
+//
+// Created by fanz on 5/12/17.
+//
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <Log.h>
+#include "env.h"
+#include "init.h"
 
-#include "Scraper.h"
-#include "utils.h"
-#include "tls_client.h"
-#include "../../Common/Constants.h"
+Environment *g_environment;
 
-/* Define valid states of packages */
-enum usps_state {
-  INPUT_ERROR = 0,
-  PACKAGE_NOT_FOUND,
-  PRE_TRANSIT,
-  ORDER_PROCESSED,
-  SHIPPED,
-  IN_TRANSIT,
-  OUT_FOR_DELIVERY,
-  DELIVERED,
-};
+void init() {
+  g_environment = new Environment();
+}
 
-class USPSScraper : Scraper {
- private:
-  static const std::string APIKEY;
-  static const std::string HOST;
-
- public:
-  err_code handle(const uint8_t *req, size_t len, int *resp_data);
-  err_code ups_tracking(const std::string &tracking_num, const std::string &carrier_name, int *status);
-  std::string parse_response(const string);
-};
-
-#endif  // SRC_ENCLAVE_SCRAPERS_UPS_TRACKING_H_
+void set_env(const char* key, const char* value) {
+  if (g_environment == NULL) return;
+  g_environment->set(key, value);
+}

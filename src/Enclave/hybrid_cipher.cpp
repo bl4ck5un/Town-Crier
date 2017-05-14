@@ -1,9 +1,46 @@
+//
+// Copyright (c) 2016-2017 by Cornell University.  All Rights Reserved.
+//
+// Permission to use the "TownCrier" software ("TownCrier"), officially docketed at
+// the Center for Technology Licensing at Cornell University as D-7364, developed
+// through research conducted at Cornell University, and its associated copyrights
+// solely for educational, research and non-profit purposes without fee is hereby
+// granted, provided that the user agrees as follows:
+//
+// The permission granted herein is solely for the purpose of compiling the
+// TowCrier source code. No other rights to use TownCrier and its associated
+// copyrights for any other purpose are granted herein, whether commercial or
+// non-commercial.
+//
+// Those desiring to incorporate TownCrier software into commercial products or use
+// TownCrier and its associated copyrights for commercial purposes must contact the
+// Center for Technology Licensing at Cornell University at 395 Pine Tree Road,
+// Suite 310, Ithaca, NY 14850; email: ctl-connect@cornell.edu; Tel: 607-254-4698;
+// FAX: 607-254-5454 for a commercial license.
+//
+// IN NO EVENT SHALL CORNELL UNIVERSITY BE LIABLE TO ANY PARTY FOR DIRECT,
+// INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS,
+// ARISING OUT OF THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS, EVEN IF
+// CORNELL UNIVERSITY MAY HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+// THE WORK PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND CORNELL UNIVERSITY HAS NO
+// OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
+// MODIFICATIONS.  CORNELL UNIVERSITY MAKES NO REPRESENTATIONS AND EXTENDS NO
+// WARRANTIES OF ANY KIND, EITHER IMPLIED OR EXPRESS, INCLUDING, BUT NOT LIMITED
+// TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR
+// PURPOSE, OR THAT THE USE OF TOWNCRIER AND ITS ASSOCIATED COPYRIGHTS WILL NOT
+// INFRINGE ANY PATENT, TRADEMARK OR OTHER RIGHTS.
+//
+// TownCrier was developed with funding in part by the National Science Foundation
+// (NSF grants CNS-1314857, CNS-1330599, CNS-1453634, CNS-1518765, CNS-1514261), a
+// Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
+// VMWare Research Award.
+//
+
 #include <mbedtls-SGX/include/mbedtls/bignum.h>
 #include "hybrid_cipher.h"
 
 using namespace std;
-
-#define PREDEFINED_HYBRID_SECKEY "cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8"
 
 static mbedtls_mpi g_secret_hybrid_key;
 
@@ -38,7 +75,7 @@ int tc_get_hybrid_pubkey(ECPointBuffer pubkey) {
 const string decrypt_query(const uint8_t* data, size_t data_len) {
   HybridEncryption dec_ctx;
   ECPointBuffer tc_pubkey;
-  dec_ctx.initServer(tc_pubkey);
+  dec_ctx.queryPubkey(tc_pubkey);
 
   string cipher_b64(data, data + data_len);
   hexdump("encrypted query: ", data, data_len);
@@ -65,7 +102,7 @@ const string decrypt_query(const uint8_t* data, size_t data_len) {
 
 const AESIv HybridEncryption::iv = {0x99};
 
-void HybridEncryption::dump_pubkey(const mbedtls_ecp_group *grp, const mbedtls_ecp_point *p, ECPointBuffer buf) {
+void HybridEncryption::storePubkey(const mbedtls_ecp_group *grp, const mbedtls_ecp_point *p, ECPointBuffer buf) {
   size_t olen;
   int ret = mbedtls_ecp_point_write_binary(grp, p, MBEDTLS_ECP_PF_UNCOMPRESSED, &olen, buf, PUBLIC_KEY_SIZE);
   if (ret != 0 || olen != PUBLIC_KEY_SIZE) {
@@ -73,7 +110,7 @@ void HybridEncryption::dump_pubkey(const mbedtls_ecp_group *grp, const mbedtls_e
   }
 }
 
-void HybridEncryption::load_pubkey(const mbedtls_ecp_group *grp, mbedtls_ecp_point *p, const ECPointBuffer buf) {
+void HybridEncryption::loadPubkey(const mbedtls_ecp_group *grp, mbedtls_ecp_point *p, const uint8_t *buf) {
   int ret = mbedtls_ecp_point_read_binary(grp, p, buf, PUBLIC_KEY_SIZE);
   if (ret != 0) {
     throw runtime_error("mbedtls_ecp_point_read_binary failed");
@@ -111,13 +148,6 @@ HybridEncryption::HybridEncryption() {
   };
 
   mbedtls_debug_set_threshold(-1);
-}
-
-void HybridEncryption::print_ciphertxt(const HybridCiphertext &ciphertext) {
-  hexdump("user pubkey", ciphertext.user_pubkey, ciphertext.USER_PUBKEY_LEN);
-  hexdump("aes iv", ciphertext.aes_iv, ciphertext.AES_IV_LEN);
-  hexdump("gcm tag", ciphertext.gcm_tag, ciphertext.GCM_TAG_LEN);
-  hexdump("cipher text", &ciphertext.data[0], ciphertext.data.size());
 }
 
 string HybridEncryption::encode(const HybridCiphertext &ciphertext) {
@@ -158,30 +188,31 @@ HybridCiphertext HybridEncryption::decode(const string &cipher_b64) {
   return ciphertext;
 }
 
-void HybridEncryption::initServer(mbedtls_mpi *seckey, ECPointBuffer pubkey) {
-  mbedtls_ecdh_context ecdh_ctx_tc;
-  mbedtls_ecdh_init(&ecdh_ctx_tc);
+//void HybridEncryption::queryPubkey(mbedtls_mpi *seckey, ECPointBuffer pubkey) {
+//  mbedtls_ecdh_context ecdh_ctx_tc;
+//  mbedtls_ecdh_init(&ecdh_ctx_tc);
+//
+//  // load the group
+//  ret = mbedtls_ecp_group_load(&ecdh_ctx_tc.grp, EC_GROUP);
+//  CHECK_RET(ret);
+//
+//  // generate an ephemeral key
+//  ret = mbedtls_ecdh_gen_public(&ecdh_ctx_tc.grp, &ecdh_ctx_tc.d, &ecdh_ctx_tc.Q,
+//                                mbedtls_ctr_drbg_random, &ctr_drbg);
+//  CHECK_RET(ret);
+//
+//  // release the public key
+//  storePubkey(&ecdh_ctx_tc.grp, &ecdh_ctx_tc.Q, pubkey);
+//
+//  ret = mbedtls_mpi_copy(seckey, &ecdh_ctx_tc.d);
+//  CHECK_RET(ret);
+//}
 
-  // load the group
-  ret = mbedtls_ecp_group_load(&ecdh_ctx_tc.grp, EC_GROUP);
-  CHECK_RET(ret);
-
-  // generate an ephemeral key
-  ret = mbedtls_ecdh_gen_public(&ecdh_ctx_tc.grp, &ecdh_ctx_tc.d, &ecdh_ctx_tc.Q,
-                                mbedtls_ctr_drbg_random, &ctr_drbg);
-  CHECK_RET(ret);
-
-  // release the public key
-  dump_pubkey(&ecdh_ctx_tc.grp, &ecdh_ctx_tc.Q, pubkey);
-
-  ret = mbedtls_mpi_copy(seckey, &ecdh_ctx_tc.d);
-  CHECK_RET(ret);
-}
-
-void HybridEncryption::initServer(ECPointBuffer pubkey) {
+void HybridEncryption::queryPubkey(ECPointBuffer pubkey) {
 #ifndef PREDEFINED_HYBRID_SECKEY
   if (g_secret_hybrid_key.p == NULL) {
     LL_CRITICAL("key not provisioned yet");
+    throw std::runtime_error("key not provisioned yet");
   }
 #else
   LL_CRITICAL("*** PREDEFINED SECRET KEY IS USED ***");
@@ -191,15 +222,13 @@ void HybridEncryption::initServer(ECPointBuffer pubkey) {
     LL_CRITICAL("Error: mbedtls_mpi_read_string returned %d", ret);
     return;
   }
-  LL_DEBUG("before secretToPubkey");
-  HybridEncryption::secretToPubkey(&g_secret_hybrid_key, pubkey);
-  LL_DEBUG("after secretToPubkey");
 #endif
+  HybridEncryption::secretToPubkey(&g_secret_hybrid_key, pubkey);
 }
 
 void HybridEncryption::hybridDecrypt(const HybridCiphertext &ciphertext, vector<uint8_t> &cleartext) {
   if (g_secret_hybrid_key.p == NULL) {
-    throw runtime_error("hybrid key not provisioned yet. Run initServer() first");
+    throw runtime_error("hybrid key not provisioned yet. Run queryPubkey() first");
   }
   this->hybridDecrypt(ciphertext, &g_secret_hybrid_key, cleartext);
 }
@@ -221,7 +250,7 @@ void HybridEncryption::hybridDecrypt(const HybridCiphertext &ciphertext,
   mbedtls_mpi_copy(&ctx_tc.d, secret_key);
 
   // load user's public key
-  load_pubkey(&ctx_tc.grp, &ctx_tc.Qp, ciphertext.user_pubkey);
+  loadPubkey(&ctx_tc.grp, &ctx_tc.Qp, ciphertext.user_pubkey);
 
   // compute the shared secret
   ret = mbedtls_ecdh_compute_shared(&ctx_tc.grp, &ctx_tc.z,
@@ -268,12 +297,12 @@ void HybridEncryption::hybridEncrypt(const ECPointBuffer tc_pubkey,
                                 mbedtls_ctr_drbg_random, &ctr_drbg);
   CHECK_RET_GO(ret, cleanup);
 
-  dump_pubkey(&ctx_user.grp, &ctx_user.Q, ciphertext.user_pubkey);
+  storePubkey(&ctx_user.grp, &ctx_user.Q, ciphertext.user_pubkey);
 
   // populate with the tc public key
   ret = mbedtls_mpi_lset(&ctx_user.Qp.Z, 1);
   CHECK_RET_GO(ret, cleanup);
-  load_pubkey(&ctx_user.grp, &ctx_user.Qp, tc_pubkey);
+  loadPubkey(&ctx_user.grp, &ctx_user.Qp, tc_pubkey);
 
   // derive shared secret
   ret = mbedtls_ecdh_compute_shared(&ctx_user.grp, &ctx_user.z,
@@ -347,7 +376,7 @@ void HybridEncryption::aes_gcm_256_dec(const AESKey aesKey,
 }
 
 int HybridEncryption::secretToPubkey(const mbedtls_mpi *seckey, ECPointBuffer pubkey) {
-  if (pubkey == NULL || seckey == NULL) {
+  if (seckey == NULL) {
     return -1;
   }
 
@@ -382,4 +411,11 @@ int HybridEncryption::secretToPubkey(const mbedtls_mpi *seckey, ECPointBuffer pu
   // copy to user space
   memcpy(pubkey, __pubkey, 65);
   return 0;
+}
+
+string HybridCiphertext::toString() {
+  hexdump("user pubkey", user_pubkey, USER_PUBKEY_LEN);
+  hexdump("aes iv", aes_iv, AES_IV_LEN);
+  hexdump("gcm tag", gcm_tag, GCM_TAG_LEN);
+  hexdump("cipher text", &data[0], data.size());
 }

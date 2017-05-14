@@ -40,21 +40,14 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-//
-// Created by sgx on 2/7/17.
-//
+#ifndef SRC_ENCLAVE_SCRAPERS_UTILS_H_
+#define SRC_ENCLAVE_SCRAPERS_UTILS_H_
 
-#ifndef TOWN_CRIER_UTILS_H
-#define TOWN_CRIER_UTILS_H
-#define __STDC_FORMAT_MACROS // non needed in C, only in C++
-
-#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 
-/* #include <sstream> *>/ 
+#include "external/inttypes.h"
 
-/* allows to differentiate between User error and server-side error */
 enum err_code {
   NO_ERROR = 0,
   INVALID_PARAMS, /* user supplied invalid parameters to the function */
@@ -62,6 +55,4 @@ enum err_code {
   UNKNOWN_ERROR,
 };
 
-
-
-#endif //TOWN_CRIER_UTILS_H
+#endif  // SRC_ENCLAVE_SCRAPERS_UTILS_H_

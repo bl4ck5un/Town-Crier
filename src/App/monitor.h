@@ -48,6 +48,7 @@
 #include <atomic>
 #include <queue>
 #include <memory>
+#include <string>
 
 #include "Common/Constants.h"
 #include "App/bookkeeping/database.h"
@@ -60,6 +61,10 @@ class Monitor {
   const sgx_enclave_id_t eid;
 
   const std::atomic_bool &quit;
+
+  /* process each request transaction */
+  const string DATA_FIELD_NAME = "data";
+  const string TX_HASH_FIELD_NAME = "transactionHash";
 
   static const int maxRetry = 5;
   static const int nothingToDoSleepSec = 5;

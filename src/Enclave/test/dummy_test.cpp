@@ -43,15 +43,22 @@
 
 #include <stdio.h>
 #include "hybrid_cipher.h"
+#include "env.h"
 
 using namespace std;
 
 int dummy_test() {
+  string a = g_environment->get("a");
+  LL_CRITICAL("a => %s", a.c_str());
+  if (a != "env") {
+    return -1;
+  }
+
   HybridEncryption encrypt;
   try {
     ECPointBuffer server_pubkey;
 
-    encrypt.initServer(server_pubkey);
+    encrypt.queryPubkey(server_pubkey);
     hexdump("server public key", server_pubkey, sizeof(ECPointBuffer));
 
     string user_secret = "user_secret";

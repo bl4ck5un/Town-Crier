@@ -10,7 +10,7 @@ To add a new scraper:
 
  
 ** List of Events that town crier currently supports (Updated 4/9/2017) **
-Each of these contains a handler class that returns a desired value.  We describe the structure of the input data below:
+Each of these contains a handle class that returns a desired value.  We describe the structure of the input data below:
 	SteamTrade:
 		Input:
 			0x00 - 0x40 Enc API key
@@ -59,4 +59,11 @@ Each of these contains a handler class that returns a desired value.  We describ
 		Output:
 			32 bit integer indicating the currentn exchange rate of the package
 
+	Weather:
+		Description: Returns the current temperature of the given location
+		Input:
+			0x00 - 0x20 type  [string] (1=WOEID | 2=City Name | 3=Lat-Long Coordinates)
+			0x20 - 0x40 query [string] (corresponding to the type)
+		Output:
+			32 bit integers indacating the current temperature (in Degrees F) of the current location
 

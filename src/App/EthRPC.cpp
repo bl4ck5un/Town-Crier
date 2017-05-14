@@ -61,7 +61,7 @@
 #include "Common/Log.h"
 #include "App/Enclave_u.h"
 
-ethRPCClient *rpc_client;
+ethRPCClient *geth_connector;
 
 using std::invalid_argument;
 
@@ -74,7 +74,7 @@ using std::invalid_argument;
 string send_transaction(const std::string &rawTransaction) {
   std::string param(rawTransaction);
 
-  std::string res = rpc_client->eth_sendRawTransaction(param);
+  std::string res = geth_connector->eth_sendRawTransaction(param);
   LL_INFO("response recorded (%s)", res.c_str());
 
   return res;
@@ -91,7 +91,7 @@ string send_transaction(const std::string &rawTransaction) {
  * Postcondition: [id] is a valid id that can be used with eth_get_filter_logs
  */
 string eth_new_filter(blocknum_t from, blocknum_t to) {
-  LL_DEBUG("created new filter for blocks: %d to %d", from, to);
+  LL_DEBUG("created new filter for blocks: %d to %d for address %s", from, to, TC_ADDRESS);
   if (from < 0 || to < 0) {
     throw invalid_argument("from or to is smaller than 0");
   }
@@ -109,7 +109,7 @@ string eth_new_filter(blocknum_t from, blocknum_t to) {
   ss << "0x" << std::hex << to;
   filter_opt["toBlock"] = ss.str();
 
-  return rpc_client->eth_newFilter(filter_opt);
+  return geth_connector->eth_newFilter(filter_opt);
 }
 
 /* eth_getfilterlogs [hostname] [port] [filter_id] [result] returns the logged
@@ -122,7 +122,7 @@ void eth_getfilterlogs(const string &filter_id, Json::Value *txnContainer) {
   if (filter_id.empty()) {
     throw invalid_argument("filter_id is empty");
   }
-  *txnContainer = rpc_client->eth_getFilterLogs(filter_id);
+  *txnContainer = geth_connector->eth_getFilterLogs(filter_id);
 }
 
 /*!
@@ -130,7 +130,7 @@ void eth_getfilterlogs(const string &filter_id, Json::Value *txnContainer) {
  */
 blocknum_t eth_blockNumber() {
   blocknum_t ret;
-  std::string blk = rpc_client->eth_blockNumber();
+  std::string blk = geth_connector->eth_blockNumber();
   std::stringstream ss;
   ss << std::hex << blk;
   ss >> ret;
@@ -139,7 +139,7 @@ blocknum_t eth_blockNumber() {
 
 uint64_t eth_getTransactionCount() {
   uint64_t ret;
-  std::string txn_count = rpc_client->eth_getTransactionCount(SGX_ADDRESS, "pending");
+  std::string txn_count = geth_connector->eth_getTransactionCount(SGX_ADDRESS, "pending");
   std::stringstream ss;
   ss << std::hex << txn_count;
   ss >> ret;

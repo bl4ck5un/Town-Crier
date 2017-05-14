@@ -42,7 +42,7 @@
 //
 
 #include "commons.h"
-#include <inttypes.h>
+#include "external/inttypes.h"
 
 int uint_utils_test() {
   bool results[3] = {false};

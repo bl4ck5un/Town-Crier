@@ -44,8 +44,12 @@
 // Created by fanz on 4/12/17.
 //
 
-#ifndef TOWN_CRIER_YAHOO_YQL_STOCK_H
-#define TOWN_CRIER_YAHOO_YQL_STOCK_H
+#ifndef SRC_ENCLAVE_SCRAPERS_YAHOO_YQL_STOCK_H_
+#define SRC_ENCLAVE_SCRAPERS_YAHOO_YQL_STOCK_H_
+
+#include <string>
+#include <time.h>
+#include <ctime>
 
 #include "Scraper.h"
 #include "Log.h"
@@ -55,15 +59,9 @@
 
 #include "external/gmtime.h"
 
-#include <string>
-#include <time.h>
-
 using namespace std;
 
-#include <time.h>
-#include <ctime>
-
-void gmtime(const time_t *timer, struct tm*);
+void gmtime(const time_t *timer, struct tm *);
 
 class YahooYQLStock : public Scraper {
  public:
@@ -73,7 +71,7 @@ class YahooYQLStock : public Scraper {
  *      0x40 - 0x60 Day
  *      0x60 - 0x80 Year
  */
-  err_code handler(const uint8_t *req, size_t data_len, int *resp_data) {
+  err_code handle(const uint8_t *req, size_t data_len, int *resp_data) {
     if (data_len != 32 * 2) {
       LL_CRITICAL("req_len %zu is not 2*32", data_len);
       return INVALID_PARAMS;
@@ -83,11 +81,11 @@ class YahooYQLStock : public Scraper {
     symbol = string(symbol.c_str());
     LL_INFO("symbol: %s", symbol.c_str());
 
-    time_t unix_epoch = uint_bytes<time_t> (req + 0x20, 32);
+    time_t unix_epoch = uint_bytes<time_t>(req + 0x20, 32);
 
     // if longer than 2100-1-1
     if (unix_epoch > 0xF4865700) {
-      LL_CRITICAL("unix_epoch %d is too far to the future", unix_epoch);
+      LL_CRITICAL("unix_epoch %ld is too far to the future", unix_epoch);
       return INVALID_PARAMS;
     }
 
@@ -101,7 +99,7 @@ class YahooYQLStock : public Scraper {
     return handle_one(symbol, date.year, date.month, date.day, resp_data);
   }
 
-  err_code handle_one(string symbol, uint year, uint month, uint day, int* resp_data) {
+  err_code handle_one(string symbol, uint year, uint month, uint day, int *resp_data) {
     LL_DEBUG("handling %s %d-%d-%d", symbol.c_str(), year, month, day);
 
     if (symbol.empty() || day > 31 || year > 2017 || month > 12) {
@@ -158,13 +156,13 @@ class YahooYQLStock : public Scraper {
       if (_closing_json.is<string>()) {
         closing_price = strtod(_closing_json.get<string>().c_str(), NULL);
         LL_INFO("closing price is %f", closing_price);
-        *resp_data = (int) closing_price;
+        *resp_data = static_cast<int>(closing_price);
         err = NO_ERROR;
       } else {
         err = WEB_ERROR;
       }
     }
-    catch (exception& e) {
+    catch (exception &e) {
       LL_CRITICAL("Error happened: %s", e.what());
       err = WEB_ERROR;
     }
@@ -176,4 +174,4 @@ class YahooYQLStock : public Scraper {
   }
 };
 
-#endif //TOWN_CRIER_YAHOO_YQL_STOCK_H
+#endif  // SRC_ENCLAVE_SCRAPERS_YAHOO_YQL_STOCK_H_

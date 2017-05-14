@@ -45,13 +45,10 @@
 
 #include "App/Enclave_u.h"
 #include "App/utils.h"
+#include "App/test/SGXTestBase.h"
 
-class RlpTestSuite : public ::testing::Test {
- protected:
-  sgx_enclave_id_t eid;
-  virtual void SetUp() { initialize_enclave(ENCLAVE_FILENAME, &eid); }
-  virtual void TearDown() { sgx_destroy_enclave(eid); }
-};
+
+class RlpTestSuite : public SGXTestBase {};
 
 TEST_F(RlpTestSuite, All) {
   int ret;

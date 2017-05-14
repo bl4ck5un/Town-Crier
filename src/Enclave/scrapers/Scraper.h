@@ -40,21 +40,17 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-//
-// Created by Oscar on 2/21/17.
-// Virtual class providing an interface for the Event handler to use.
-//
+#ifndef SRC_ENCLAVE_SCRAPERS_SCRAPER_H_
+#define SRC_ENCLAVE_SCRAPERS_SCRAPER_H_
 
-#ifndef TOWN_CRIER_SCRAPER_H
-#define TOWN_CRIER_SCRAPER_H
+#include <stdint.h>
 
-#include "../../Common/Constants.h"
+#include "Constants.h"
 #include "utils.h"
 
 class Scraper {
-public:
-    virtual err_code handler(const uint8_t *req, size_t data_len, int *resp_data) = 0;
+ public:
+  virtual err_code handle(const uint8_t *req, size_t data_len, int *resp_data) = 0;
 };
 
-
-#endif //TOWN_CRIER_SCRAPER_H
+#endif  // SRC_ENCLAVE_SCRAPERS_SCRAPER_H_

@@ -45,18 +45,9 @@
 
 #include "App/utils.h"
 #include "App/Enclave_u.h"
+#include "App/test/SGXTestBase.h"
 
-class RegExTestSuite : public ::testing::Test {
- protected:
-  sgx_enclave_id_t eid;
-  virtual void SetUp() {
-    initialize_enclave(ENCLAVE_FILENAME, &eid);
-  }
-
-  virtual void TearDown() {
-    sgx_destroy_enclave(eid);
-  }
-};
+class RegExTestSuite : public SGXTestBase {};
 
 TEST_F(RegExTestSuite, regex) {
   int ret;
