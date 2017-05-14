@@ -37,8 +37,8 @@
 // VMWare Research Award.
 //
 
-#ifndef UPS_TRACKING_H
-#define UPS_TRACKING_H
+#ifndef SRC_ENCLAVE_SCRAPERS_UPS_TRACKING_H_
+#define SRC_ENCLAVE_SCRAPERS_UPS_TRACKING_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -73,4 +73,4 @@ class USPSScraper : Scraper {
   std::string parse_response(const string);
 };
 
-#endif
+#endif  // SRC_ENCLAVE_SCRAPERS_UPS_TRACKING_H_

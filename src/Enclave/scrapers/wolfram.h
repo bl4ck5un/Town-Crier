@@ -40,8 +40,8 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef WOLFRAM_H
-#define WOLFRAM_H
+#ifndef SRC_ENCLAVE_SCRAPERS_WOLFRAM_H_
+#define SRC_ENCLAVE_SCRAPERS_WOLFRAM_H_
 
 #include <string>
 #include "Scraper.h"
@@ -67,7 +67,7 @@ class WolframScraper : Scraper {
     GENERAL        /* Request more general responses */
   } wolframQueryType;
 
-  //WolframScraper(int qtype);
+  // WolframScraper(int qtype);
   void create_query(std::string query);
   err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
 
@@ -75,4 +75,4 @@ class WolframScraper : Scraper {
   void set_qtype(int type);
 };
 
-#endif
+#endif  // SRC_ENCLAVE_SCRAPERS_WOLFRAM_H_

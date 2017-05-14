@@ -50,7 +50,7 @@
 #include "scrapers/Scraper.h"
 #include "scrapers/flight.h"
 #include "scrapers/utils.h"
-#include "scrapers/stockticker.h"
+#include "scrapers/stock_ticker.h"
 #include "scrapers/UPS_Tracking.h"
 #include "scrapers/steam2.h"
 #include "scrapers/current_coinmarket.h"

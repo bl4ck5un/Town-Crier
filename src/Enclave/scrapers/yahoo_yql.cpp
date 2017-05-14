@@ -44,14 +44,13 @@
 //
 // Created by fanz on 4/12/17.
 //
+#include <map>
 
 #include "tls_client.h"
 #include "yahoo_yql.h"
 #include "Scraper.h"
 #include "scraper_utils.h"
 #include "Log.h"
-
-#include <map>
 
 err_code YahooYQL::execute(string &result) {
   string query = this->buildQuery();

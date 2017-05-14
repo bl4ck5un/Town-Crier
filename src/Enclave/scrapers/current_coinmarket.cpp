@@ -100,7 +100,7 @@ err_code CoinMarket::handle(const uint8_t *req, size_t data_len, int *resp_data)
         && _json_resp.get<picojson::array>().size() == 1
         && _json_resp.get<picojson::array>()[0].contains("price_usd")
         && _json_resp.get<picojson::array>()[0].get("price_usd").is<double>()) {
-      *resp_data = (int) _json_resp.get<picojson::array>()[0].get("price_usd").get<double>();
+      *resp_data = static_cast<int>(_json_resp.get<picojson::array>()[0].get("price_usd").get<double>());
       return NO_ERROR;
     }
 
