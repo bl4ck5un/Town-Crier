@@ -108,6 +108,7 @@ int do_handle_request(int nonce,
   int error_flag = 0;
 
   switch (type) {
+    /*
     case TYPE_LOOP_THROUGH: {
       printf_sgx("nonce: %d\n", nonce);
       printf_sgx("id: %" PRIu64 "\n", id);
@@ -121,6 +122,7 @@ int do_handle_request(int nonce,
       dump_buf("data:", data, data_len);
       return -1;
     }
+     */
     case TYPE_FLIGHT_INS: {
       FlightScraper flightHandler;
       int delay = 0;
@@ -225,12 +227,14 @@ int do_handle_request(int nonce,
       };
       break;
     }
+    /*
     case TYPE_CURRENT_VOTE: {
       double r1 = 0, r2 = 0;
       yahoo_current("GOOG", &r1);
       google_current("GOOG", &r2);
       break;
     }
+     */
     case TYPE_WOLFRAM: {
       WolframScraper wolframScraper;
       int status;
@@ -264,6 +268,7 @@ int do_handle_request(int nonce,
       };
       break;
     }
+    /*
     case TYPE_ENCRYPT_TEST: {
       HybridEncryption dec_ctx;
       ECPointBuffer tc_pubkey;
@@ -299,6 +304,7 @@ int do_handle_request(int nonce,
 
       return TC_INTERNAL_TEST;
     }
+     */
     default :
       LL_CRITICAL("Unknown request type: %"PRIu64, type);
       error_flag = TC_ERR_FLAG_INVALID_INPUT;
