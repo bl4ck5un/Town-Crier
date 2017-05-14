@@ -45,7 +45,7 @@
 #include <stdlib.h>
 #include <Debug.h>
 #include "tls_client.h"
-#include "../scrapers/stockticker.h"
+#include "scrapers/stock_ticker.h"
 #include "Log.h"
 
 #include "scrapers/yahoo_yql_stock.h"

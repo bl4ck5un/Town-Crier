@@ -46,6 +46,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <cstring>
+#include <vector>
 
 #include "flight.h"
 #include "Debug.h"
@@ -65,7 +66,6 @@ const char
     *FlightScraper::AUTH_CODE = "Authorization: Basic Y3JvbWFrNDoyYzNiODZiOGM3N2VlYTBjMjRmZjA4OGEyZjU2ZGEyYjk4ZDQwNTQ3";
 
 #include "external/picojson.h"
-#include <vector>
 using std::vector;
 
 flight_error FlightScraper::parse_response(const string &resp, int *delay, uint64_t unix_epoch_time) {
@@ -94,9 +94,8 @@ flight_error FlightScraper::parse_response(const string &resp, int *delay, uint6
   if (flight_ex_struct.is<picojson::array>()) {
     picojson::value _flight = flight_ex_struct.get<picojson::array>()[0];
     if (_flight.get("actualdeparturetime").is<double>()) {
-      actual_depart_time = (uint64_t ) _flight.get("actualdeparturetime").get<double>();
-    }
-    else {
+      actual_depart_time = (uint64_t) _flight.get("actualdeparturetime").get<double>();
+    } else {
       // actualdepartime is not double
       return HTTP_ERROR;
     }
@@ -105,29 +104,31 @@ flight_error FlightScraper::parse_response(const string &resp, int *delay, uint6
     return NOT_FOUND;
   }
 
-  LL_DEBUG("actualdeparturetime: %" PRIu64, actual_depart_time);
-  LL_DEBUG("filed_departuretime: %" PRIu64, unix_epoch_time);
-  LL_DEBUG("diff: %" PRIu64, actual_depart_time - unix_epoch_time);
+  LL_DEBUG("actualdeparturetime: %"
+               PRIu64, actual_depart_time);
+  LL_DEBUG("filed_departuretime: %"
+               PRIu64, unix_epoch_time);
+  LL_DEBUG("diff: %"
+               PRIu64, actual_depart_time - unix_epoch_time);
 
-  //Case: Flight has not yet departed
+  // Case: Flight has not yet departed
   if (actual_depart_time == 0) {
     LL_DEBUG("NOT_DEPARTED");
     return NOT_DEPARTED;
   }
-  //Case: Flight was cancelled //RETURN MAX_INT DELAY
+  // Case: Flight was cancelled //RETURN MAX_INT DELAY
   if (actual_depart_time == -1) {
-    *delay = 2147483643; //Delay is some very large number
+    *delay = 2147483643;  // Delay is some very large number
     LL_DEBUG("CANCELLED");
     return CANCELLED;
   }
-  //Case: Flight Departed but delayed
+  // Case: Flight Departed but delayed
   if (actual_depart_time - unix_epoch_time >= MAX_DELAY_MIN * 60) {
     LL_DEBUG("DELAYED");
     *delay = actual_depart_time - unix_epoch_time;
     return DELAYED;
-  }
-  else {
-    //Case: Flight was not delayed
+  } else {
+    // Case: Flight was not delayed
     *delay = 0;
     LL_DEBUG("DEPARTED");
     return DEPARTED;
@@ -140,7 +141,7 @@ flight_error FlightScraper::get_flight_delay(uint64_t unix_epoch_time, const cha
     return INVALID;
   }
 
-  //Build header for https request
+  // Build header for https request
   std::vector<string> header;
   header.push_back(AUTH_CODE);
   header.push_back(HOST);
@@ -170,7 +171,7 @@ flight_error FlightScraper::get_flight_delay(uint64_t unix_epoch_time, const cha
   try {
     ret = parse_response(api_response.c_str(), resp, unix_epoch_time);
   }
-  catch (const std::exception& e) {
+  catch (const std::exception &e) {
     LL_CRITICAL("%s", e.what());
     return INTERNAL_ERR;
   }
@@ -183,7 +184,6 @@ flight_error FlightScraper::get_flight_delay(uint64_t unix_epoch_time, const cha
  *      0x20 - 0x40 uint64 unix_epoch
  */
 err_code FlightScraper::handle(const uint8_t *req, size_t data_len, int *resp_data) {
-
   if (data_len != 2 * 32) {
     LL_CRITICAL("Data_len %zu*32 is not 2*32", data_len / 32);
     return INVALID_PARAMS;
@@ -223,14 +223,14 @@ err_code FlightScraper::handle(const uint8_t *req, size_t data_len, int *resp_da
   }
 }
 
-err_code FlightScraper::handleEncryptedQuery(const uint8_t* data, size_t data_len, int* resp_data) {
+err_code FlightScraper::handleEncryptedQuery(const uint8_t *data, size_t data_len, int *resp_data) {
   hexdump("encrypted_data", data, data_len);
   string _json_encoded_flight_info;
   try {
     _json_encoded_flight_info = decrypt_query(data, data_len);
     LL_INFO("decrypted flight info: %s", _json_encoded_flight_info.c_str());
   }
-  catch (const DecryptionException& e) {
+  catch (const DecryptionException &e) {
     LL_CRITICAL("Can't decrypt: %s", e.what());
     return INVALID_PARAMS;
   }
@@ -256,22 +256,27 @@ err_code FlightScraper::handleEncryptedQuery(const uint8_t* data, size_t data_le
 
     int delay = 0;
     switch (get_flight_delay(timestamp, flight_id.c_str(), &delay)) {
-      case INVALID:*resp_data = -1;
+      case INVALID:
+        *resp_data = -1;
         return INVALID_PARAMS;
 
-      case NOT_FOUND:*resp_data = -1;
+      case NOT_FOUND:
+        *resp_data = -1;
         return INVALID_PARAMS;
 
-      case HTTP_ERROR:*resp_data = -1;
+      case HTTP_ERROR:
+        *resp_data = -1;
         return WEB_ERROR;
 
       case DEPARTED:
       case DELAYED:
       case CANCELLED:
-      case NOT_DEPARTED:*resp_data = delay;
+      case NOT_DEPARTED:
+        *resp_data = delay;
         return NO_ERROR;
       case INTERNAL_ERR:
-      default:return UNKNOWN_ERROR;
+      default:
+        return UNKNOWN_ERROR;
     }
   }
 
