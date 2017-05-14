@@ -15,7 +15,9 @@ export DATADIR=chain0
 export KEY_STORE=wallet_privnet
 
 # testnet configuration
-export TESTNET_DATADIR=~/.ethereum
+export TESTNET_DATADIR=~/.ethereum/testnet
+
+export MAINNET_DATADIR=~/.ethereum
 
 # verbosity
 export VERBOSITY=2

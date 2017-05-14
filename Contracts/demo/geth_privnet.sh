@@ -1,6 +1,8 @@
 #!/bin/bash
 source env.sh
 
+$GETH --datadir=$DATADIR removedb
+
 $GETH --datadir=$DATADIR \
   --verbosity=$VERBOSITY \
   --keystore=$KEY_STORE \
@@ -16,7 +18,7 @@ $GETH --datadir=$DATADIR \
   --rpccorsdomain='*' \
   --verbosity=$VERBOSITY \
   --nodiscover \
-  --rpcapi="db,eth,ne,web3,personal" \
+  --rpcapi="db,eth,ne,web3,personal,crypto-js" \
   --ipcpath=$IPC_PATH \
   --keystore=$KEY_STORE \
-  $@
+  console 

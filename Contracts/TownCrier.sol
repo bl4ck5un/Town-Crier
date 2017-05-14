@@ -13,7 +13,7 @@ contract TownCrier {
     event DeliverInfo(uint64 requestId, uint fee, uint gasPrice, uint gasLeft, uint callbackGas, bytes32 paramsHash, uint64 error, bytes32 respData); // log of responses
     event Cancel(uint64 requestId, address canceller, address requester, uint fee, int flag); // log of cancellations
 
-    address constant SGX_ADDRESS = 0x89B44e4d3c81EDE05D0f5de8d1a68F754D73d997; // address of the SGX account
+    address constant SGX_ADDRESS = 0x18513702cCd928F2A3eb63d900aDf03c9cc81593; //0x89B44e4d3c81EDE05D0f5de8d1a68F754D73d997; // address of the SGX account
 
     uint public constant GAS_PRICE = 5 * 10**10;
     uint public constant MIN_FEE = 30000 * GAS_PRICE; // minimum fee required for the requester to pay such that SGX could call deliver() to send a response

@@ -100,7 +100,7 @@ function createApp(tc) {
     unlockAccounts();
     var tradeContract = App.new(
         tc, {
-            from: sellerAddr,
+            from: eth.coinbase,
             data: "0x" + compiledContract.contracts["Application"].bin,
             gas:gasCnt},
             function(e, c) {
