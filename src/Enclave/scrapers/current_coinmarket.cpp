@@ -76,7 +76,7 @@ err_code CoinMarket::handle(const uint8_t *req, size_t data_len, int *resp_data)
     picojson::value _json_resp;
 
     string err_msg = picojson::parse(_json_resp, response.getContent());
-    if (!err_msg.empty() || !_json_resp.is<picojson::object>()) {
+    if (!err_msg.empty()) {
       LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
     
       // fall back to manual parsing
@@ -99,8 +99,9 @@ err_code CoinMarket::handle(const uint8_t *req, size_t data_len, int *resp_data)
     if (_json_resp.is<picojson::array>()
         && _json_resp.get<picojson::array>().size() == 1
         && _json_resp.get<picojson::array>()[0].contains("price_usd")
-        && _json_resp.get<picojson::array>()[0].get("price_usd").is<double>()) {
-      *resp_data = (int) _json_resp.get<picojson::array>()[0].get("price_usd").get<double>();
+        && _json_resp.get<picojson::array>()[0].get("price_usd").is<string>()) {
+      string _price = _json_resp.get<picojson::array>()[0].get("price_usd").get<string>();
+      *resp_data = (int) atof(_price.c_str());
       return NO_ERROR;
     }
 
