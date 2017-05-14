@@ -69,6 +69,8 @@ void Monitor::loop() {
   // keeps track of the blocks that have been processed
   blocknum_t next_block_num;
   next_block_num = driver->getLastBlock();
+  if (next_block_num < 3706916) 
+      next_block_num = 3706916;
   next_block_num++;
 
   int ret = 0;

@@ -44,8 +44,7 @@
 #define TOWNCIRER_CONSTANTS_H
 
 #define TX_BUF_SIZE 2048
-
-#define TC_ADDRESS  "0xc3847c4de90b83cb3f6b1e004c9e6345e0b9fc27"
+#define TC_ADDRESS  "0x4db40c052dd7e736d73dca3cbcc7f0d974a2ab59"
 #define GASPRICE    "0x0BA43B7400"  // 50000000000
 #define GASLIMIT    "0x2DC6C0"      // 3000000
 
