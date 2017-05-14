@@ -62,8 +62,8 @@ Each of these contains a handle class that returns a desired value.  We describe
 	Weather:
 		Description: Returns the current temperature of the given location
 		Input:
-			0x00 - 0x20 Query type (WOEID | City Name | Lat-Long Coordinates)
-			0x20 - 0x40 Query
+			0x00 - 0x20 type  [string] (1=WOEID | 2=City Name | 3=Lat-Long Coordinates)
+			0x20 - 0x40 query [string] (corresponding to the type)
 		Output:
 			32 bit integers indacating the current temperature (in Degrees F) of the current location
 
