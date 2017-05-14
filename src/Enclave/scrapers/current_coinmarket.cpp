@@ -78,6 +78,15 @@ err_code CoinMarket::handle(const uint8_t *req, size_t data_len, int *resp_data)
     string err_msg = picojson::parse(_json_resp, response.getContent());
     if (!err_msg.empty() || !_json_resp.is<picojson::object>()) {
       LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
+    
+      // fall back to manual parsing
+      double _result = parse_response(response.getContent().c_str());
+      if (_result != 0) {
+          *resp_data = (int) _result;
+          LL_INFO("manual parsing succeeded: %d", *resp_data);
+          return NO_ERROR;
+      }
+
       return INVALID_PARAMS;
     }
 
