@@ -91,12 +91,12 @@ err_code SteamScraper::handle(const uint8_t *req, size_t len, int *resp_data) {
 
   // 0x60 .. 0x80
   // get last 4 bytes
-  cutoff_time = uint_bytes<uint32_t> (req + 0x60, 32);
+  cutoff_time = uint_bytes<uint32_t>(req + 0x60, 32);
   LL_DEBUG("cufoff time=%d", cutoff_time);
 
 
   // 0x80 .. 0xa0 - item_len
-  item_len = uint_bytes<size_t> (req + 0x80, 32);
+  item_len = uint_bytes<size_t>(req + 0x80, 32);
   LL_DEBUG("item_len=%zu", item_len);
 
   if (item_len * 32 != len - 0xa0) {

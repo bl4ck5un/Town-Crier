@@ -44,9 +44,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string>
-#include <Log.h>
 
+#include <string>
+
+#include "Log.h"
 #include "tls_client.h"
 #include "current_weather.h"
 #include "utils.h"
@@ -57,19 +58,17 @@
 
 using namespace std;
 
-/* The Data is structured as follows:
- * 0x00 - 0x20 int 
- */
 err_code WeatherScraper::handle(const uint8_t *req, size_t data_len, int *resp_data) {
-  if (data_len != 2*32) {
+  if (data_len != 2 * 32) {
     LL_CRITICAL("data_len %zu*32 is not 32", data_len / 32);
     return INVALID_PARAMS;
   }
+
   char qType[32] = {0};
   char query[32] = {0};
 
   memcpy(qType, req, 0x20);
-  memcpy(query, req + 0x20, 0x20);
+  memcpy(query, req + 0x20, 0x20 - 1);
 
   if (qType[0] == '1') {
     this->WeatherQueryType = WOEID;
@@ -87,9 +86,9 @@ err_code WeatherScraper::handle(const uint8_t *req, size_t data_len, int *resp_d
   return ret;
 }
 
-err_code WeatherScraper::weather_current(string request, double* r) {
+err_code WeatherScraper::weather_current(string request, double *r) {
   /* Null Checker */
-  if (request.size() == 0 ||r == NULL) {
+  if (request.size() == 0 || r == NULL) {
     LL_CRITICAL("Error: Passed null pointers");
     return INVALID_PARAMS;
   }
@@ -112,22 +111,22 @@ err_code WeatherScraper::weather_current(string request, double* r) {
     return INVALID_PARAMS;
   }
 
-  const picojson::value::object& obj = v.get<picojson::object>();
+  const picojson::value::object &obj = v.get<picojson::object>();
   picojson::value v1 = obj.find("query")->second;
-  const picojson::object& obj2 =  v1.get<picojson::object>();
+  const picojson::object &obj2 = v1.get<picojson::object>();
   picojson::value v2 = obj2.find("results")->second;
   if (v2.is<picojson::null>()) {
     return WEB_ERROR;
   }
-  const picojson::object& obj3 = v2.get<picojson::object>();
+  const picojson::object &obj3 = v2.get<picojson::object>();
   picojson::value v3 = obj3.find("channel")->second;
-  const picojson::object& obj4 = v3.get<picojson::object>();
+  const picojson::object &obj4 = v3.get<picojson::object>();
   picojson::value v4 = obj4.find("item")->second;
-  const picojson::object& obj5 = v4.get<picojson::object>();
+  const picojson::object &obj5 = v4.get<picojson::object>();
   picojson::value v5 = obj5.find("condition")->second;
-  const picojson::object& obj6 = v5.get<picojson::object>();
+  const picojson::object &obj6 = v5.get<picojson::object>();
   picojson::value v6 = obj6.find("temp")->second;
-  const std::string& temperature = v6.get<std::string>();
+  const std::string &temperature = v6.get<std::string>();
   int tmp_int = atoi(temperature.c_str());
 
   *r = static_cast<double>(tmp_int);
@@ -159,7 +158,8 @@ string WeatherScraper::construct_query(string request) {
       q = "select item.condition from weather.forecast where woeid = " + request;
       break;
     case CITYNAME:
-      q = "select item.condition from weather.forecast where woeid in (select woeid from geo.places(1) where text=\""+ request + "\")";
+      q = "select item.condition from weather.forecast where woeid in (select woeid from geo.places(1) where text=\""
+          + request + "\")";
       break;
     case LATLONG:
       q = "";

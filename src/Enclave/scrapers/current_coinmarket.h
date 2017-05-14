@@ -41,12 +41,12 @@
 
 #include "Scraper.h"
 
-class CoinMarket : Scraper{
+class CoinMarket : Scraper {
  public:
-    err_code handle(const uint8_t *req, size_t len, int *resp_data);
-    err_code coinmarketcap_current(const char* symbol, double* r);
+  err_code handle(const uint8_t *req, size_t len, int *resp_data);
+  err_code coinmarketcap_current(const char *symbol, double *r);
  private:
-    double parse_response(const char* resp);
+  double parse_response(const char *resp);
 };
 
 #endif  // SRC_ENCLAVE_SCRAPERS_CURRENT_COINMARKET_H_

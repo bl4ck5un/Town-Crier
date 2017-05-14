@@ -75,8 +75,8 @@ string WolframQueryResult::get_raw_data() {
 
 void WolframScraper::create_query(std::string query) {
   // TODO(Oscar): C++. string::replace?
-  for(std::string::iterator it = query.begin(); it != query.end(); ++it){
-    if(*it == ' '){
+  for (std::string::iterator it = query.begin(); it != query.end(); ++it) {
+    if (*it == ' ') {
       *it = '+';
     }
   }
@@ -86,7 +86,7 @@ void WolframScraper::create_query(std::string query) {
 }
 
 err_code WolframScraper::handle(const uint8_t *req, size_t data_len, int *resp_data) {
-  if (data_len != 2*32) {
+  if (data_len != 2 * 32) {
     LL_CRITICAL("Data len %zu*2 does not equal 2*32", data_len);
     return INVALID_PARAMS;
   }
@@ -126,7 +126,7 @@ WolframQueryResult WolframScraper::perform_query() {
     WolframQueryResult wolframQueryResult(resp.getContent());
     return wolframQueryResult;
   }
-  catch(std::runtime_error &e) {
+  catch (std::runtime_error &e) {
     LL_CRITICAL("Https error: %s", e.what());
     LL_CRITICAL("Details: %s", httpClient.getError().c_str());
     httpClient.close();

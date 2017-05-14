@@ -50,11 +50,11 @@
 
 #include "macros.h"
 
-static double parse_response(const char* resp) {
+static double parse_response(const char *resp) {
   int len;
   double ret = 0.0;
-  char * end;
-  const char* temp = resp;
+  char *end;
+  const char *temp = resp;
 
   while (strncmp(temp, "itemprop=\"price\"", 16) != 0) {
     temp += 1;
@@ -66,7 +66,7 @@ static double parse_response(const char* resp) {
   }
 
   temp += 1;
-  end = const_cast<char*>(temp);
+  end = const_cast<char *>(temp);
   while (*end != '"') {
     end += 1;
   }
@@ -75,8 +75,8 @@ static double parse_response(const char* resp) {
   return ret;
 }
 // WARNING: bloomberg is deprecated because the web page is too verbose.
-DEPRECATED(int bloomberg_current(const char* symbol, double* r));
-int bloomberg_current(const char* symbol, double* r) {
+DEPRECATED(int bloomberg_current(const char *symbol, double *r));
+int bloomberg_current(const char *symbol, double *r) {
   /*
 	//Null Checking
 	if (symbol == NULL || r == NULL){

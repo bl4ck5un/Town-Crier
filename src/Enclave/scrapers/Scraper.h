@@ -53,5 +53,4 @@ class Scraper {
   virtual err_code handle(const uint8_t *req, size_t data_len, int *resp_data) = 0;
 };
 
-
 #endif  // SRC_ENCLAVE_SCRAPERS_SCRAPER_H_

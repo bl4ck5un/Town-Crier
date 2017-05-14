@@ -59,11 +59,9 @@
 
 #include "external/gmtime.h"
 
-
 using namespace std;
 
-
-void gmtime(const time_t *timer, struct tm*);
+void gmtime(const time_t *timer, struct tm *);
 
 class YahooYQLStock : public Scraper {
  public:
@@ -83,7 +81,7 @@ class YahooYQLStock : public Scraper {
     symbol = string(symbol.c_str());
     LL_INFO("symbol: %s", symbol.c_str());
 
-    time_t unix_epoch = uint_bytes<time_t> (req + 0x20, 32);
+    time_t unix_epoch = uint_bytes<time_t>(req + 0x20, 32);
 
     // if longer than 2100-1-1
     if (unix_epoch > 0xF4865700) {
@@ -101,7 +99,7 @@ class YahooYQLStock : public Scraper {
     return handle_one(symbol, date.year, date.month, date.day, resp_data);
   }
 
-  err_code handle_one(string symbol, uint year, uint month, uint day, int* resp_data) {
+  err_code handle_one(string symbol, uint year, uint month, uint day, int *resp_data) {
     LL_DEBUG("handling %s %d-%d-%d", symbol.c_str(), year, month, day);
 
     if (symbol.empty() || day > 31 || year > 2017 || month > 12) {
@@ -164,7 +162,7 @@ class YahooYQLStock : public Scraper {
         err = WEB_ERROR;
       }
     }
-    catch (exception& e) {
+    catch (exception &e) {
       LL_CRITICAL("Error happened: %s", e.what());
       err = WEB_ERROR;
     }

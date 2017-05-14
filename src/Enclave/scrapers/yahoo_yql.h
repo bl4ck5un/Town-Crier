@@ -59,9 +59,9 @@ class YahooYQL {
   string buildQuery();
 
  public:
-  YahooYQL(string q): q(q), format(XML), env("") {}
-  YahooYQL(string q, Format f, string env): q(q), format(f), env(env) {}
-  err_code execute(string&);
+  YahooYQL(string q) : q(q), format(XML), env("") {}
+  YahooYQL(string q, Format f, string env) : q(q), format(f), env(env) {}
+  err_code execute(string &);
 };
 
 #endif  // SRC_ENCLAVE_SCRAPERS_YAHOO_YQL_H_

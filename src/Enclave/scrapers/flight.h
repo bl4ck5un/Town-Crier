@@ -72,14 +72,14 @@ enum flight_error {
 class FlightScraper : Scraper {
  private:
   static const int MAX_DELAY_MIN = 30;
-  static const char* HOST;
-  static const char* AUTH_CODE;
+  static const char *HOST;
+  static const char *AUTH_CODE;
  public:
   err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
-  err_code handleEncryptedQuery(const uint8_t* data, size_t data_len, int* resp_data);
+  err_code handleEncryptedQuery(const uint8_t *data, size_t data_len, int *resp_data);
   flight_error get_flight_delay(uint64_t unix_epoch_time, const char *flight, int *resp);
  private:
-  flight_error parse_response(const string& resp, int *delay, uint64_t unix_epoch_time);
+  flight_error parse_response(const string &resp, int *delay, uint64_t unix_epoch_time);
 };
 
 #endif  // SRC_ENCLAVE_SCRAPERS_FLIGHT_H_

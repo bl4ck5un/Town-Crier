@@ -104,9 +104,12 @@ flight_error FlightScraper::parse_response(const string &resp, int *delay, uint6
     return NOT_FOUND;
   }
 
-  LL_DEBUG("actualdeparturetime: %" PRIu64, actual_depart_time);
-  LL_DEBUG("filed_departuretime: %" PRIu64, unix_epoch_time);
-  LL_DEBUG("diff: %" PRIu64, actual_depart_time - unix_epoch_time);
+  LL_DEBUG("actualdeparturetime: %"
+               PRIu64, actual_depart_time);
+  LL_DEBUG("filed_departuretime: %"
+               PRIu64, unix_epoch_time);
+  LL_DEBUG("diff: %"
+               PRIu64, actual_depart_time - unix_epoch_time);
 
   // Case: Flight has not yet departed
   if (actual_depart_time == 0) {
@@ -168,7 +171,7 @@ flight_error FlightScraper::get_flight_delay(uint64_t unix_epoch_time, const cha
   try {
     ret = parse_response(api_response.c_str(), resp, unix_epoch_time);
   }
-  catch (const std::exception& e) {
+  catch (const std::exception &e) {
     LL_CRITICAL("%s", e.what());
     return INTERNAL_ERR;
   }
@@ -220,14 +223,14 @@ err_code FlightScraper::handle(const uint8_t *req, size_t data_len, int *resp_da
   }
 }
 
-err_code FlightScraper::handleEncryptedQuery(const uint8_t* data, size_t data_len, int* resp_data) {
+err_code FlightScraper::handleEncryptedQuery(const uint8_t *data, size_t data_len, int *resp_data) {
   hexdump("encrypted_data", data, data_len);
   string _json_encoded_flight_info;
   try {
     _json_encoded_flight_info = decrypt_query(data, data_len);
     LL_INFO("decrypted flight info: %s", _json_encoded_flight_info.c_str());
   }
-  catch (const DecryptionException& e) {
+  catch (const DecryptionException &e) {
     LL_CRITICAL("Can't decrypt: %s", e.what());
     return INVALID_PARAMS;
   }
@@ -253,22 +256,27 @@ err_code FlightScraper::handleEncryptedQuery(const uint8_t* data, size_t data_le
 
     int delay = 0;
     switch (get_flight_delay(timestamp, flight_id.c_str(), &delay)) {
-      case INVALID:*resp_data = -1;
+      case INVALID:
+        *resp_data = -1;
         return INVALID_PARAMS;
 
-      case NOT_FOUND:*resp_data = -1;
+      case NOT_FOUND:
+        *resp_data = -1;
         return INVALID_PARAMS;
 
-      case HTTP_ERROR:*resp_data = -1;
+      case HTTP_ERROR:
+        *resp_data = -1;
         return WEB_ERROR;
 
       case DEPARTED:
       case DELAYED:
       case CANCELLED:
-      case NOT_DEPARTED:*resp_data = delay;
+      case NOT_DEPARTED:
+        *resp_data = delay;
         return NO_ERROR;
       case INTERNAL_ERR:
-      default:return UNKNOWN_ERROR;
+      default:
+        return UNKNOWN_ERROR;
     }
   }
 

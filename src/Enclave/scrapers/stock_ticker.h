@@ -53,14 +53,14 @@
 #include "../external/slre.h"
 #include "tls_client.h"
 
-class StockQuery{
+class StockQuery {
  private:
   int day;
   int month;
   int year;
   std::string symbol;
  public:
-  StockQuery(){}
+  StockQuery() {}
   StockQuery(int day, int month, int year, std::string symbol);
   void SetDay(int day);
   void SetMonth(int month);
@@ -69,18 +69,18 @@ class StockQuery{
   std::string GetUrl();
 };
 
-class StockTickerParser{
+class StockTickerParser {
  private:
-  const char* rawResponse;
+  const char *rawResponse;
   err_code error;
  public:
-  StockTickerParser(const char* resp, err_code error);
-  const char* GetResponse();
+  StockTickerParser(const char *resp, err_code error);
+  const char *GetResponse();
   double GetClosingPrice();
   err_code GetErrorCode();
 };
 
-class StockTickerScraper : Scraper{
+class StockTickerScraper : Scraper {
  private:
   StockQuery query;
  public:

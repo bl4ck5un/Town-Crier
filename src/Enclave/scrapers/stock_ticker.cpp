@@ -49,7 +49,7 @@
 
 #include "external/csv_parser.hpp"
 #include "Log.h"
-#include "stockticker.h"
+#include "stock_ticker.h"
 #include "tls_client.h"
 
 using namespace std;
