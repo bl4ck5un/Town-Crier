@@ -45,14 +45,13 @@
 #include <stdlib.h>
 #include <string>
 #include <Log.h>
+#include <vector>
 
 #include "UPS_Tracking.h"
 #include "utils.h"
 #include "tls_client.h"
 #include "../../Common/Constants.h"
 #include "../external/picojson.h"
-
-//#include <iostream>
 
 using namespace std;
 /* Define USPS Scraper specific constants */
@@ -64,14 +63,14 @@ const std::string USPSScraper::HOST = "api.easypost.com";
 
 /* Method used to handle any UPSP data request
  * The Data is strcutured as follows
- * 		0x00 - 0x20 string tracking_number
+ *    0x00 - 0x20 string tracking_number
  */
 err_code USPSScraper::handle(const uint8_t *req, size_t len, int *resp_data) {
   if (len != 2 * 32) {
     LL_CRITICAL("Data_len %zu*32 is not 2*32", len / 32);
     return INVALID_PARAMS;
   }
-  //Parse the raw array to get the required params
+  // Parse the raw array to get the required params
   // char tracking_num[32] = {0};
   // char carrier_name[32] = {0};
   std::string tracking_num(req, req + 0x20);
@@ -81,11 +80,10 @@ err_code USPSScraper::handle(const uint8_t *req, size_t len, int *resp_data) {
 
   LL_DEBUG("Tracking Number is: %s", tracking_num.c_str());
 
-  return ups_tracking(tracking_num, carrier_name, resp_data);
+  return ups_tsuracking(tracking_num, carrier_name, resp_data);
 }
 
 err_code USPSScraper::ups_tracking(const std::string &tracking_num, const std::string &carrier_name, int *status) {
-
   if (tracking_num.size() == 0) {
     LL_CRITICAL("Error: Passed in NULL Pointer");
     *status = -1;
@@ -182,8 +180,8 @@ std::string USPSScraper::parse_response(const string resp) {
   // LL_INFO("req is %s", resp);
   // std::size_t pos = buf_string.find("id=\"tt_spStatus\"");
   // if (pos == std::string::npos){
-  // 	std::string no_pkg = "Package not found";
-  // 	return no_pkg;
+  //  std::string no_pkg = "Package not found";
+  //  return no_pkg;
   // }
 
   // //std::string new_tmp = tmp.substr(pos, pos + 20);
@@ -191,7 +189,7 @@ std::string USPSScraper::parse_response(const string resp) {
   // std::size_t start = pos + 41;
   // pos += 41;
   // while(tmp[pos] != '\t'){
-  // 	pos += 1;
+  //  pos += 1;
   // }
   // std::size_t end = pos - 1;
   // std::string token = buf_string.substr(start, end-start);
@@ -200,12 +198,12 @@ std::string USPSScraper::parse_response(const string resp) {
 
 /* Code used for testing
 int main(){
-	char trackID[] = "1Z1aasdfa581202007873";
-	char* tID = trackID;
-	std::string status; 
-	ups_current(trackID, &status);
-	cout << status << "\n";
-	return 0; 
+  char trackID[] = "1Z1aasdfa581202007873";
+  char* tID = trackID;
+  std::string status; 
+  ups_current(trackID, &status);
+  cout << status << "\n";
+  return 0; 
 
 }
 */ 

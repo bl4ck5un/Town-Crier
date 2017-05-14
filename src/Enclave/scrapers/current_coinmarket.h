@@ -36,14 +36,17 @@
 // Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
 // VMWare Research Award.
 //
+#ifndef SRC_ENCLAVE_SCRAPERS_CURRENT_COINMARKET_H_
+#define SRC_ENCLAVE_SCRAPERS_CURRENT_COINMARKET_H_
 
 #include "Scraper.h"
 
 class CoinMarket : Scraper{
-public:
+ public:
     err_code handle(const uint8_t *req, size_t len, int *resp_data);
     err_code coinmarketcap_current(const char* symbol, double* r);
-private:
+ private:
     double parse_response(const char* resp);
-
 };
+
+#endif  // SRC_ENCLAVE_SCRAPERS_CURRENT_COINMARKET_H_

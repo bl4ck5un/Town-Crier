@@ -61,7 +61,6 @@ enum steam_error {
 // return 0 -- Find no trade
 //        1 -- Find a trade
 err_code SteamScraper::handle(const uint8_t *req, size_t len, int *resp_data) {
-
   if (len != 6 * 32) {
     LL_CRITICAL("data_len %zu*32 is not 6*32", len / 32);
     return INVALID_PARAMS;
@@ -108,14 +107,14 @@ err_code SteamScraper::handle(const uint8_t *req, size_t len, int *resp_data) {
   // 0xa0 .. 0xc0
   const char *items[item_len];
   for (size_t i = 0; i < item_len; i++) {
-    items[i] = (char *) req + 0xa0 + 0x20 * i;
+    items[i] = reinterpret_cast<char *>(req + 0xa0 + 0x20 * i);
     LL_INFO("item: %s", items[i]);
   }
 
   return get_steam_transaction(items, item_len, buyer_id, cutoff_time, encrypted_api_key, resp_data);
 }
 
-// TODO: parse the response using a JSON / XML parser !
+// TODO(Oscar): parse the response using a JSON / XML parser !
 err_code SteamScraper::get_steam_transaction(const char **item_name_list,
                                              int item_list_len,
                                              const char *buyer_id,
@@ -153,10 +152,10 @@ err_code SteamScraper::get_steam_transaction(const char **item_name_list,
       LL_CRITICAL("Find no trade");
       *resp = 0;
     } else {
-      // TODO: add more logic here
+      // TODO(oscar): add more logic here
       *resp = 1;
     }
-//    ret = parse_response(response.getContent().c_str(), buyer_id, item_name_list, item_list_len, api_key);
+// ret = parse_response(response.getContent().c_str(), buyer_id, item_name_list, item_list_len, api_key);
   }
   catch (std::runtime_error &e) {
     LL_CRITICAL("Https error: %s", e.what());
@@ -169,8 +168,8 @@ err_code SteamScraper::get_steam_transaction(const char **item_name_list,
 
 char *SteamScraper::search(const char *buf, const char *search_string) {
   int len = strlen(buf);
-  int slen = strlen((char *) search_string);
-  char *temp = (char *) buf;
+  int slen = strlen(reinterpret_cast<char *>(search_string));
+  char *temp = reinterpret_cast<char *>(buf);
   if (slen > len) {
     return NULL;
   }
@@ -216,7 +215,6 @@ int SteamScraper::get_item_name(const char *key, char *appId, char *classId, cha
   try {
     HttpResponse response = httpClient.getResponse();
     query1 = search(response.getContent().c_str(), "\"name\": \"");
-
   }
   catch (std::runtime_error &e) {
     LL_CRITICAL("Https error: %s", e.what());
@@ -227,7 +225,7 @@ int SteamScraper::get_item_name(const char *key, char *appId, char *classId, cha
   if (query1 == NULL) {
     return -1;
   }
-  //Safe?
+  // Safe?
   query1 += 9;
   end = search(query1, "\"");
   if (end == NULL) {
@@ -235,7 +233,7 @@ int SteamScraper::get_item_name(const char *key, char *appId, char *classId, cha
   }
 
   len = end - query1;
-  *resp = (char *) malloc(len + 1);
+  *resp = reinterpret_cast<char *>(malloc(len + 1));
   memcpy(*resp, query1, len);
   (*resp)[len] = 0;
   return 0;
@@ -252,7 +250,7 @@ int SteamScraper::in_list(const char **list, int len, const char *name) {
 
 int SteamScraper::parse_response(const char *resp, const char *other, const char **listB, int lenB, const char *key) {
   int ret, counter, flag;
-  char *index = (char *) resp;
+  char *index = reinterpret_cast<char *>(resp);
   char *name;
   char *temp;
   char *end, *end2;
@@ -303,8 +301,8 @@ int SteamScraper::parse_response(const char *resp, const char *other, const char
       if (end2 == NULL) {
         return -1;
       }
-      strncpy(appId, temp, (int) (end2 - temp));
-      appId[(int) (end2 - temp)] = 0;
+      strncpy(appId, temp, static_cast<int>(end2 - temp));
+      appId[static_cast<int>(end2 - temp)] = 0;
 
       temp = search(temp, "classid\": \"");
       if (temp == NULL) {
@@ -315,8 +313,8 @@ int SteamScraper::parse_response(const char *resp, const char *other, const char
       if (end2 == NULL) {
         return -1;
       }
-      strncpy(classId, temp, (int) (end2 - temp));
-      classId[(int) (end2 - temp)] = 0;
+      strncpy(classId, temp, static_cast<int>(end2 - temp));
+      classId[static_cast<int>(end2 - temp)] = 0;
 
       /* get name by 2nd request */
       ret = get_item_name(key, appId, classId, &name);
@@ -349,7 +347,7 @@ int SteamScraper::parse_response(const char *resp, const char *other, const char
 
 //
 ///*
-//int main(int argc, char* argv[]) {
+// int main(int argc, char* argv[]) {
 //    int rc, ret;
 //    char * listB[1] = {"Portal"};
 //    char * test2[2] = {"Dark Ranger's Headdress", "Death Shadow Bow"};
@@ -361,6 +359,6 @@ int SteamScraper::parse_response(const char *resp, const char *other, const char
 //    //rc should be 0, ret should be 1
 //
 //    return 0;
-//}
+// }
 //
 //*/

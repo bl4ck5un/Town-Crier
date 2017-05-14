@@ -40,8 +40,8 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef TOWN_CRIER_UTILS_H
-#define TOWN_CRIER_UTILS_H
+#ifndef SRC_ENCLAVE_SCRAPERS_UTILS_H_
+#define SRC_ENCLAVE_SCRAPERS_UTILS_H_
 
 #include <stdio.h>
 #include <string.h>
@@ -55,6 +55,4 @@ enum err_code {
   UNKNOWN_ERROR,
 };
 
-
-
-#endif //TOWN_CRIER_UTILS_H
+#endif  // SRC_ENCLAVE_SCRAPERS_UTILS_H_

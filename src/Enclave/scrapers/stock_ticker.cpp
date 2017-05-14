@@ -45,9 +45,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <vector>
 
 #include "external/csv_parser.hpp"
-#include "stdio.h"
 #include "Log.h"
 #include "stockticker.h"
 #include "tls_client.h"
@@ -77,14 +77,13 @@ void StockQuery::SetYear(int year) {
 void StockQuery::SetSymbol(std::string symbol) {
   this->symbol = symbol;
 }
-//TODO: any reason we subtract the month by 1?
-//TODO: A nicer C++ way to turn ints into strings?
+
 std::string StockQuery::GetUrl() {
   char tmp[100];
-  snprintf(tmp, 100, \
+  snprintf(tmp, sizeof(tmp), \
        "ichart.yahoo.com/table.csv?s=%s&a=%d&b=%d&c=%d&d=%d&e=%d&f=%d&g=d&ignore=.csv", \
        this->symbol.c_str(), this->month, this->day, this->year, \
-       this->month, this->day, this->year);
+       this->month, this->day, this->year);  // Datasource required the month to be subtracted by 1
   std::string str(tmp);
   return str;
 }
@@ -115,9 +114,9 @@ err_code StockTickerScraper::handle(const uint8_t *req, size_t data_len, int *re
   string str(symbol);
   LL_INFO("symbol: %s", symbol);
 
-  int month = strtol((char *) (req + 0x20), NULL, 10);
-  int day = strtol((char *) (req + 0x40), NULL, 10);
-  int year = strtol((char *) (req + 0x60), NULL, 10);
+  int month = strtol(reinterpret_cast<char *>(req + 0x20), NULL, 10);
+  int day = strtol(reinterpret_cast<char *>(req + 0x40), NULL, 10);
+  int year = strtol(reinterpret_cast<char *>(req + 0x60), NULL, 10);
 
   LL_INFO("month: %d", month);
   LL_INFO("day: %d", day);
@@ -154,7 +153,7 @@ err_code StockTickerScraper::handle(const uint8_t *req, size_t data_len, int *re
   }
 
   double closing_price = atof(_price_chart["Close"].c_str());
-  *resp_data = (int) closing_price;
+  *resp_data = static_cast<int>(closing_price);
   return NO_ERROR;
 
 //  double closingPrice = parser.GetClosingPrice();

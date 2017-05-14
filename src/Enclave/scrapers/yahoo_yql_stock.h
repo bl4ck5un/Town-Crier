@@ -44,8 +44,12 @@
 // Created by fanz on 4/12/17.
 //
 
-#ifndef TOWN_CRIER_YAHOO_YQL_STOCK_H
-#define TOWN_CRIER_YAHOO_YQL_STOCK_H
+#ifndef SRC_ENCLAVE_SCRAPERS_YAHOO_YQL_STOCK_H_
+#define SRC_ENCLAVE_SCRAPERS_YAHOO_YQL_STOCK_H_
+
+#include <string>
+#include <time.h>
+#include <ctime>
 
 #include "Scraper.h"
 #include "Log.h"
@@ -55,13 +59,9 @@
 
 #include "external/gmtime.h"
 
-#include <string>
-#include <time.h>
 
 using namespace std;
 
-#include <time.h>
-#include <ctime>
 
 void gmtime(const time_t *timer, struct tm*);
 
@@ -158,7 +158,7 @@ class YahooYQLStock : public Scraper {
       if (_closing_json.is<string>()) {
         closing_price = strtod(_closing_json.get<string>().c_str(), NULL);
         LL_INFO("closing price is %f", closing_price);
-        *resp_data = (int) closing_price;
+        *resp_data = static_cast<int>(closing_price);
         err = NO_ERROR;
       } else {
         err = WEB_ERROR;
@@ -176,4 +176,4 @@ class YahooYQLStock : public Scraper {
   }
 };
 
-#endif //TOWN_CRIER_YAHOO_YQL_STOCK_H
+#endif  // SRC_ENCLAVE_SCRAPERS_YAHOO_YQL_STOCK_H_

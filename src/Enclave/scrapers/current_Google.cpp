@@ -58,8 +58,7 @@ static double parse_response(const char* resp) {
     std::string buf_string(resp);
     std::size_t pos = buf_string.find("itemprop=\"price\"");
 
-    if (pos == std::string::npos)
-    {
+    if (pos == std::string::npos) {
         return 0.0;
     }
 
@@ -80,7 +79,7 @@ static double parse_response(const char* resp) {
 
 int google_current(const char* symbol, double* r) {
     /* Null Checker */
-    if (symbol == NULL || r == NULL){
+    if (symbol == NULL || r == NULL) {
         LL_CRITICAL("Error: Passed null pointers");
         return -1;
     }
@@ -94,7 +93,7 @@ int google_current(const char* symbol, double* r) {
         *r = parse_response(response.getContent().c_str());
         return 0;
     }
-    catch (std::runtime_error& e){
+    catch (std::runtime_error& e) {
         LL_CRITICAL("Https error: %s", e.what());
         LL_CRITICAL("Details: %s", httpClient.getError().c_str());
         httpClient.close();

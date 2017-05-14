@@ -40,8 +40,8 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef TOWN_CRIER_SCRAPER_H
-#define TOWN_CRIER_SCRAPER_H
+#ifndef SRC_ENCLAVE_SCRAPERS_SCRAPER_H_
+#define SRC_ENCLAVE_SCRAPERS_SCRAPER_H_
 
 #include <stdint.h>
 
@@ -49,9 +49,9 @@
 #include "utils.h"
 
 class Scraper {
-public:
-    virtual err_code handle(const uint8_t *req, size_t data_len, int *resp_data) = 0;
+ public:
+  virtual err_code handle(const uint8_t *req, size_t data_len, int *resp_data) = 0;
 };
 
 
-#endif //TOWN_CRIER_SCRAPER_H
+#endif  // SRC_ENCLAVE_SCRAPERS_SCRAPER_H_

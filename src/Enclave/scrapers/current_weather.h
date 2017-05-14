@@ -36,26 +36,28 @@
 // Packard Fellowship, a Sloan Fellowship, Google Faculty Research Awards, and a
 // VMWare Research Award.
 //
-#ifndef CURRENT_WEATHER_H
-#define CURRENT_WEATHER_H
+#ifndef SRC_ENCLAVE_SCRAPERS_CURRENT_WEATHER_H_
+#define SRC_ENCLAVE_SCRAPERS_CURRENT_WEATHER_H_
 
+#include <string>
 #include "Scraper.h"
 
 class WeatherScraper : Scraper {
-public:
+ public:
   /* Define the data type the user sends */
-	enum WeatherQuery {
-    WOEID = 0, 
+  enum WeatherQuery {
+    WOEID = 0,
     CITYNAME,
     LATLONG
-	} WeatherQueryType;
+  } WeatherQueryType;
 
-	err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
-  err_code weather_current(string query, double* r);
+  err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
+  err_code weather_current(std::string query, double* r);
   void set_qtype(int type);
 
-private:
-  string construct_query( string request);
+ private:
+  std::string construct_query(std::string request);
 };
 
-#endif //CURRENT_WEATHER_H
+#endif  // SRC_ENCLAVE_SCRAPERS_CURRENT_WEATHER_H_
+

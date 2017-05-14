@@ -60,10 +60,9 @@ using namespace std;
 /* The Data is structured as follows:
  * 0x00 - 0x20 int 
  */
-err_code WeatherScraper::handle(const uint8_t *req, size_t data_len, int *resp_data){
-    
-  if (data_len != 2*32){
-    LL_CRITICAL("data_len %zu*32 is not 32",data_len / 32);
+err_code WeatherScraper::handle(const uint8_t *req, size_t data_len, int *resp_data) {
+  if (data_len != 2*32) {
+    LL_CRITICAL("data_len %zu*32 is not 32", data_len / 32);
     return INVALID_PARAMS;
   }
   char qType[32] = {0};
@@ -72,25 +71,25 @@ err_code WeatherScraper::handle(const uint8_t *req, size_t data_len, int *resp_d
   memcpy(qType, req, 0x20);
   memcpy(query, req + 0x20, 0x20);
 
-  if(qType[0] == '1'){
+  if (qType[0] == '1') {
     this->WeatherQueryType = WOEID;
   }
-  if(qType[0] == '2'){
+  if (qType[0] == '2') {
     this->WeatherQueryType = CITYNAME;
   }
-  if(qType[0] == '3'){
+  if (qType[0] == '3') {
     this->WeatherQueryType = LATLONG;
   }
 
   double tmp;
-  err_code ret = weather_current(string(query), &tmp); 
+  err_code ret = weather_current(string(query), &tmp);
   *resp_data = tmp;
   return ret;
 }
 
 err_code WeatherScraper::weather_current(string request, double* r) {
   /* Null Checker */
-  if (request.size() == 0 ||r == NULL){
+  if (request.size() == 0 ||r == NULL) {
     LL_CRITICAL("Error: Passed null pointers");
     return INVALID_PARAMS;
   }
@@ -103,12 +102,12 @@ err_code WeatherScraper::weather_current(string request, double* r) {
 
   picojson::value v;
   std::string err = picojson::parse(v, resp);
-  if (! err.empty()) {
+  if (!err.empty()) {
     LL_CRITICAL("Error in picojson");
     return INVALID_PARAMS;
   }
 
-  if(!v.is<picojson::object>()) {
+  if (!v.is<picojson::object>()) {
     LL_CRITICAL("JSON is not an object");
     return INVALID_PARAMS;
   }
@@ -117,11 +116,11 @@ err_code WeatherScraper::weather_current(string request, double* r) {
   picojson::value v1 = obj.find("query")->second;
   const picojson::object& obj2 =  v1.get<picojson::object>();
   picojson::value v2 = obj2.find("results")->second;
-  if (v2.is<picojson::null>()){
+  if (v2.is<picojson::null>()) {
     return WEB_ERROR;
   }
   const picojson::object& obj3 = v2.get<picojson::object>();
-  picojson::value v3 = obj3.find("channel")->second;   
+  picojson::value v3 = obj3.find("channel")->second;
   const picojson::object& obj4 = v3.get<picojson::object>();
   picojson::value v4 = obj4.find("item")->second;
   const picojson::object& obj5 = v4.get<picojson::object>();
@@ -131,13 +130,13 @@ err_code WeatherScraper::weather_current(string request, double* r) {
   const std::string& temperature = v6.get<std::string>();
   int tmp_int = atoi(temperature.c_str());
 
-  *r = (double)tmp_int;
+  *r = static_cast<double>(tmp_int);
   return ret;
-
 }
+
 /* For testing purposes only */
-void WeatherScraper::set_qtype(int type){
-  switch(type){
+void WeatherScraper::set_qtype(int type) {
+  switch (type) {
     case 1:
       this->WeatherQueryType = WOEID;
       break;
@@ -153,9 +152,9 @@ void WeatherScraper::set_qtype(int type){
   }
 }
 
-string WeatherScraper::construct_query(string request){
+string WeatherScraper::construct_query(string request) {
   string q;
-  switch (this->WeatherQueryType){
+  switch (this->WeatherQueryType) {
     case WOEID:
       q = "select item.condition from weather.forecast where woeid = " + request;
       break;
