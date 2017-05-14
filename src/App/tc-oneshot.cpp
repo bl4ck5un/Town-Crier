@@ -88,10 +88,12 @@ int main(int argc, const char *argv[]) {
 
   bool send_response;
   blocknum_t block_num;
+  string db_path;
   po::options_description desc("Additional Options");
   desc.add_options()
       ("send,s", po::bool_switch(&send_response)->default_value(false), "Send real response")
-      ("block,b", po::value(&block_num)->required(), "block number to use");
+      ("block,b", po::value(&block_num)->required(), "block number to use")
+      ("database", po::value(&db_path)->required(), "database to use");
 
   tc::Config config(desc, argc, argv);
   cout << config.toString();
@@ -114,11 +116,10 @@ int main(int argc, const char *argv[]) {
   sgx_enclave_id_t eid;
   sgx_status_t st;
 
-  static const string db_name = (fs::path(config.getWorkingDir()) / "tc.db").string();
-  LOG_F(INFO, "using db %s", db_name.c_str());
+  LOG_F(INFO, "using db %s", db_path.c_str());
 
   // always reuse database
-  OdbDriver driver(db_name, false);
+  OdbDriver driver(db_path, false);
 
   ret = initialize_enclave(config.getEnclavePath().c_str(), &eid);
   if (ret != 0) {

@@ -91,7 +91,7 @@ string send_transaction(const std::string &rawTransaction) {
  * Postcondition: [id] is a valid id that can be used with eth_get_filter_logs
  */
 string eth_new_filter(blocknum_t from, blocknum_t to) {
-  LL_DEBUG("created new filter for blocks: %d to %d", from, to);
+  LL_DEBUG("created new filter for blocks: %d to %d for address %s", from, to, TC_ADDRESS);
   if (from < 0 || to < 0) {
     throw invalid_argument("from or to is smaller than 0");
   }

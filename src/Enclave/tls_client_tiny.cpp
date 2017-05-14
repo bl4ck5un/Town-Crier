@@ -416,6 +416,7 @@ HttpResponse HttpsClient::getResponse() {
 
     // EOF reached
     if (n_data == 0 && rt.contentlength == -1) {
+      LL_DEBUG("eof reached");
       break;
     }
 
@@ -447,15 +448,19 @@ HttpResponse HttpsClient::getResponse() {
 
   if (http_iserror(&rt)) {
     http_free(&rt);
-    throw runtime_error("Error parsing data");
+    throw runtime_error("Error parsing HTTP data");
   }
 
+  LL_DEBUG("HTTP response len=%zu", response.body.size());
+  hexdump("HTTP response body", &response.body[0], response.body.size());
+
   string content(response.body.begin(), response.body.end());
+
   HttpResponse resp(response.code, "", content);
 
-  LL_DEBUG("Response body (len=%zu):\n%s",
+  LL_TRACE("Response body (len=%zu):\n%s",
            content.length(),
-           content.length() == 0 ? "empty" : content.substr(0, HttpsClient::responseLogLimit).c_str());
+           content.length() == 0 ? "empty" : content.c_str());
 
   http_free(&rt);
   return resp;

@@ -241,7 +241,6 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
         }
 
         log_entry->incrementNumOfRetrial();
-
         driver->updateLog(*log_entry);
       }
     }
@@ -254,9 +253,9 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
     catch (const std::exception &e) {
       LL_CRITICAL("error happen while processing ", e.what());
       LL_DEBUG("before pushing to failed_queue");
-      failed_requests.push(std::move(request));
       LL_DEBUG("after pushing to failed_queue");
       LL_CRITICAL("%s pushed to failed queue", request->toString());
+      failed_requests.push(std::move(request));
     }
     continue;
   }
