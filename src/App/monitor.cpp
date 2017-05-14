@@ -229,11 +229,11 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
         continue;
       } else {
         string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
-        LL_DEBUG("resp: %s", resp_txn.c_str());
+        LL_DEBUG("response tx: %s", resp_txn.c_str());
 
         if (send_tx) {
           string resp_txn_hash = send_transaction(resp_txn);
-          LL_INFO("resp record: %s", resp_txn_hash.c_str());
+          LL_INFO("response tx hash: %s", resp_txn_hash.c_str());
           log_entry->setResponse(resp_txn_hash);
           log_entry->setResponseTime(std::time(0));
         } else {
@@ -247,14 +247,18 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
     }
     catch (const RequestParserException &ex) {
       LL_CRITICAL("bad request");
-      continue;
+    }
+    catch (const jsonrpc::JsonRpcException& e) {
+      LL_CRITICAL("json rpc error: %s", e.what());
     }
     catch (const std::exception &e) {
       LL_CRITICAL("error happen while processing ", e.what());
+      LL_DEBUG("before pushing to failed_queue");
       failed_requests.push(std::move(request));
+      LL_DEBUG("after pushing to failed_queue");
       LL_CRITICAL("%s pushed to failed queue", request->toString());
-      continue;
     }
+    continue;
   }
 
   LL_LOG("going over the failed tx");
