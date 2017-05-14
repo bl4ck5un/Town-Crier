@@ -75,7 +75,7 @@ string WolframQueryResult::get_raw_data() {
 
 void WolframScraper::create_query(std::string query) {
   // TODO(Oscar): C++. string::replace?
-  char* tmp = reinterpret_cast<char*>(query.c_str());
+  char* tmp = const_cast<char*>(query.c_str());
   for (int i = 0; i < query.size(); i++) {
     if (tmp[i] == ' ') {
       tmp[i] = '+';
