@@ -50,7 +50,7 @@
 #include "scrapers/Scraper.h"
 #include "scrapers/flight.h"
 #include "scrapers/utils.h"
-#include "scrapers/stockticker.h"
+#include "scrapers/stock_ticker.h"
 #include "scrapers/UPS_Tracking.h"
 #include "scrapers/steam2.h"
 #include "scrapers/current_coinmarket.h"
@@ -108,6 +108,7 @@ int do_handle_request(int nonce,
   int error_flag = 0;
 
   switch (type) {
+    /*
     case TYPE_LOOP_THROUGH: {
       printf_sgx("nonce: %d\n", nonce);
       printf_sgx("id: %" PRIu64 "\n", id);
@@ -121,16 +122,20 @@ int do_handle_request(int nonce,
       dump_buf("data:", data, data_len);
       return -1;
     }
+     */
     case TYPE_FLIGHT_INS: {
       FlightScraper flightHandler;
       int delay = 0;
       switch (flightHandler.handle(data, data_len, &delay)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
+        case WEB_ERROR:
+          error_flag = TC_INTERNAL_ERROR;
           break;
-        case INVALID_PARAMS:error_flag = TC_INPUT_ERROR;
+        case INVALID_PARAMS:
+          error_flag = TC_INPUT_ERROR;
           break;
-        case NO_ERROR:append_as_uint256(resp_data, delay, sizeof(delay));
+        case NO_ERROR:
+          append_as_uint256(resp_data, delay, sizeof(delay));
           break;
       };
       break;
@@ -140,11 +145,14 @@ int do_handle_request(int nonce,
       int found;
       switch (steamHandler.handle(data, data_len, &found)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
+        case WEB_ERROR:
+          error_flag = TC_INTERNAL_ERROR;
           break;
-        case INVALID_PARAMS:error_flag = TC_INPUT_ERROR;
+        case INVALID_PARAMS:
+          error_flag = TC_INPUT_ERROR;
           break;
-        case NO_ERROR:append_as_uint256(resp_data, found, sizeof(found));
+        case NO_ERROR:
+          append_as_uint256(resp_data, found, sizeof(found));
           break;
       }
       break;
@@ -153,14 +161,18 @@ int do_handle_request(int nonce,
       YahooYQLStock yahooYQLStock;
       int closing_price = 0;
       switch (yahooYQLStock.handle(data, data_len, &closing_price)) {
-        case INVALID_PARAMS:error_flag = TC_ERR_FLAG_INVALID_INPUT;
+        case INVALID_PARAMS:
+          error_flag = TC_ERR_FLAG_INVALID_INPUT;
           break;
-        case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
+        case WEB_ERROR:
+          error_flag = TC_INTERNAL_ERROR;
           break;
-        case NO_ERROR:LL_DEBUG("closing pricing is %d", closing_price);
+        case NO_ERROR:
+          LL_DEBUG("closing pricing is %d", closing_price);
           append_as_uint256(resp_data, closing_price, sizeof(closing_price));
           break;
-        default:LL_CRITICAL("unknown state!");
+        default:
+          LL_CRITICAL("unknown state!");
           error_flag = TC_ERR_FLAG_INTERNAL_ERR;
       }
       break;
@@ -170,10 +182,13 @@ int do_handle_request(int nonce,
       int pkg_status;
       switch (uSPSScraper.handle(data, data_len, &pkg_status)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
+        case WEB_ERROR:
+          error_flag = TC_INTERNAL_ERROR;
           break;
-        case INVALID_PARAMS:error_flag = TC_INPUT_ERROR;
-        case NO_ERROR:append_as_uint256(resp_data, pkg_status, sizeof(pkg_status));
+        case INVALID_PARAMS:
+          error_flag = TC_INPUT_ERROR;
+        case NO_ERROR:
+          append_as_uint256(resp_data, pkg_status, sizeof(pkg_status));
           break;
       };
       break;
@@ -183,11 +198,14 @@ int do_handle_request(int nonce,
       int coin_value;
       switch (coinMarket.handle(data, data_len, &coin_value)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
+        case WEB_ERROR:
+          error_flag = TC_INTERNAL_ERROR;
           break;
-        case INVALID_PARAMS:error_flag = TC_INPUT_ERROR;
+        case INVALID_PARAMS:
+          error_flag = TC_INPUT_ERROR;
           break;
-        case NO_ERROR:append_as_uint256(resp_data, coin_value, sizeof(coin_value));
+        case NO_ERROR:
+          append_as_uint256(resp_data, coin_value, sizeof(coin_value));
           break;
       };
       break;
@@ -197,31 +215,39 @@ int do_handle_request(int nonce,
       int temperature;
       switch (weatherScraper.handle(data, data_len, &temperature)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
+        case WEB_ERROR:
+          error_flag = TC_INTERNAL_ERROR;
           break;
-        case INVALID_PARAMS:error_flag = TC_INPUT_ERROR;
+        case INVALID_PARAMS:
+          error_flag = TC_INPUT_ERROR;
           break;
-        case NO_ERROR:append_as_uint256(resp_data, temperature, sizeof(temperature));
+        case NO_ERROR:
+          append_as_uint256(resp_data, temperature, sizeof(temperature));
           break;
       };
       break;
     }
+    /*
     case TYPE_CURRENT_VOTE: {
       double r1 = 0, r2 = 0;
       yahoo_current("GOOG", &r1);
       google_current("GOOG", &r2);
       break;
     }
+     */
     case TYPE_WOLFRAM: {
       WolframScraper wolframScraper;
       int status;
       switch (wolframScraper.handle(data, data_len, &status)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
+        case WEB_ERROR:
+          error_flag = TC_INTERNAL_ERROR;
           break;
-        case INVALID_PARAMS:error_flag = TC_INPUT_ERROR;
+        case INVALID_PARAMS:
+          error_flag = TC_INPUT_ERROR;
           break;
-        case NO_ERROR:append_as_uint256(resp_data, status, sizeof(status));
+        case NO_ERROR:
+          append_as_uint256(resp_data, status, sizeof(status));
           break;
       }
     }
@@ -230,15 +256,19 @@ int do_handle_request(int nonce,
       int delay = 0;
       switch (flightHandler.handleEncryptedQuery(data, data_len, &delay)) {
         case UNKNOWN_ERROR:
-        case WEB_ERROR:error_flag = TC_INTERNAL_ERROR;
+        case WEB_ERROR:
+          error_flag = TC_INTERNAL_ERROR;
           break;
-        case INVALID_PARAMS:error_flag = TC_INPUT_ERROR;
+        case INVALID_PARAMS:
+          error_flag = TC_INPUT_ERROR;
           break;
-        case NO_ERROR:append_as_uint256(resp_data, delay, sizeof(delay));
+        case NO_ERROR:
+          append_as_uint256(resp_data, delay, sizeof(delay));
           break;
       };
       break;
     }
+    /*
     case TYPE_ENCRYPT_TEST: {
       HybridEncryption dec_ctx;
       ECPointBuffer tc_pubkey;
@@ -264,19 +294,20 @@ int do_handle_request(int nonce,
         }
 
         hexdump("decoded message", decrypted_data, (size_t) decrypted_data_len);
-        return -1;
       }
       catch (const std::exception &e) {
         LL_CRITICAL("decryption error: %s. See dump above.", e.what());
-        return -1;
       }
       catch (...) {
         LL_CRITICAL("unknown exception happened while decrypting. See dump above.");
-        return -1;
       }
+
+      return TC_INTERNAL_TEST;
     }
-    default :LL_CRITICAL("Unknown request type: %"PRIu64, type);
-      return -1;
+     */
+    default :
+      LL_CRITICAL("Unknown request type: %"PRIu64, type);
+      error_flag = TC_ERR_FLAG_INVALID_INPUT;
   }
 
   return form_transaction(nonce, id, type, data, data_len, error_flag, resp_data, raw_tx, raw_tx_len);

@@ -41,10 +41,6 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-//
-// Created by fanz on 4/12/17.
-//
-
 #include "scraper_utils.h"
 
 #include <ctype.h>
@@ -52,7 +48,7 @@
 #include <string.h>
 #include <string>
 
-using namespace std;
+using std::string;
 
 /* Converts a hex character to its integer value */
 static char from_hex(char ch) {
@@ -68,12 +64,12 @@ static char to_hex(char code) {
 /* Returns a url-encoded version of str */
 string url_encode(const char *str) {
   const char *pstr = str;
-  char *buf = (char*) malloc(strlen(str) * 3 + 1), *pbuf = buf;
+  char *buf = reinterpret_cast<char *>(malloc(strlen(str) * 3 + 1)), *pbuf = buf;
   while (*pstr) {
     if (isalnum(*pstr) || *pstr == '-' || *pstr == '_' || *pstr == '.' || *pstr == '~' || *pstr == '*')
       *pbuf++ = *pstr;
     else if (*pstr == ' ')
-      *pbuf++ = '%',*pbuf++ = '2', *pbuf++ = '0';
+      *pbuf++ = '%', *pbuf++ = '2', *pbuf++ = '0';
     else
       *pbuf++ = '%', *pbuf++ = to_hex(*pstr >> 4), *pbuf++ = to_hex(*pstr & 15);
     pstr++;
@@ -88,7 +84,7 @@ string url_encode(const char *str) {
 /* Returns a url-decoded version of str */
 string url_decode(const char *str) {
   const char *pstr = str;
-  char *buf = (char*) malloc(strlen(str) + 1), *pbuf = buf;
+  char *buf = reinterpret_cast<char *>(malloc(strlen(str) + 1)), *pbuf = buf;
   while (*pstr) {
     if (*pstr == '%') {
       if (pstr[1] && pstr[2]) {

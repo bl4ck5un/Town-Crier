@@ -69,6 +69,8 @@ void Monitor::loop() {
   // keeps track of the blocks that have been processed
   blocknum_t next_block_num;
   next_block_num = driver->getLastBlock();
+  if (next_block_num < 3706916)
+      next_block_num = 3706916;
   next_block_num++;
 
   int ret = 0;
@@ -229,11 +231,11 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
         continue;
       } else {
         string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
-        LL_DEBUG("resp: %s", resp_txn.c_str());
+        LL_DEBUG("response tx: %s", resp_txn.c_str());
 
         if (send_tx) {
           string resp_txn_hash = send_transaction(resp_txn);
-          LL_INFO("resp record: %s", resp_txn_hash.c_str());
+          LL_INFO("response tx hash: %s", resp_txn_hash.c_str());
           log_entry->setResponse(resp_txn_hash);
           log_entry->setResponseTime(std::time(0));
         } else {
@@ -241,20 +243,23 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
         }
 
         log_entry->incrementNumOfRetrial();
-
         driver->updateLog(*log_entry);
       }
     }
     catch (const RequestParserException &ex) {
       LL_CRITICAL("bad request");
-      continue;
+    }
+    catch (const jsonrpc::JsonRpcException& e) {
+      LL_CRITICAL("json rpc error: %s", e.what());
     }
     catch (const std::exception &e) {
       LL_CRITICAL("error happen while processing ", e.what());
-      failed_requests.push(std::move(request));
+      LL_DEBUG("before pushing to failed_queue");
+      LL_DEBUG("after pushing to failed_queue");
       LL_CRITICAL("%s pushed to failed queue", request->toString());
-      continue;
+      failed_requests.push(std::move(request));
     }
+    continue;
   }
 
   LL_LOG("going over the failed tx");
@@ -265,3 +270,4 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
 
   LL_INFO("Done processing block %ld", blocknum);
 }
+
