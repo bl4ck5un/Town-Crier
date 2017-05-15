@@ -172,3 +172,8 @@ Status Server
 ```
 curl -d '{"id": 123, "jsonrpc": "2.0", "method": "attest"}' server.town-crier.org:8123
 ```
+
+# LICENSE
+
+The permission granted herein is solely for the purpose of compiling the TownCrier source code.
+See the LICENSE file for details.
