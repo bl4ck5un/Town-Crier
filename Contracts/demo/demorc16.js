@@ -96,6 +96,17 @@ function createTC(tci) {
     return tc;
 }
 
+function upgrade(contract, newAddr) {
+    unlockAccounts();
+    contract.upgrade.sendTransaction(newAddr, {
+        from: minerAddr,
+        gas: gasCnt
+    });
+    mineBlocks(1);
+    return "TC upgraded!";
+}
+
+
 function reset(contract, price, minGas, cancellationGas) {
     unlockAccounts();
     contract.reset.sendTransaction(price, minGas, cancellationGas, {
@@ -178,6 +189,16 @@ function cancel(contract, id) {
 
 function setup_log(tc, tradeContract, id) {
 if (id == 0) {
+    tc.Upgrade(function(e,r) {
+        if (!e) {console.log('TC Upgrade: ' + JSON.stringify(r.args)); }
+        else {console.log(e)}
+    });
+
+    tc.Reset(function(e,r) {
+        if (!e) {console.log('TC Reset: ' + JSON.stringify(r.args));}
+        else {console.log(e)}
+    });
+
     tc.RequestInfo(function(e,r) { 
 		if (!e) { console.log('TC RequestInfo: ' + JSON.stringify(r.args)); } 
 		else {console.log(e)}

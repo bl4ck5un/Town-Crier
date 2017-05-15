@@ -28,6 +28,8 @@ contract TownCrier {
 
     bool public killswitch;
 
+    bool public externalCallFlag;
+
     uint64 public requestCnt;
     uint64 public unrespondedCnt;
     Request[2**64] public requests;
@@ -49,6 +51,7 @@ contract TownCrier {
         requests[0].requester = msg.sender;
         killswitch = false;
         unrespondedCnt = 0;
+        externalCallFlag = false;
     }
 
     function upgrade(address newAddr) {
@@ -89,19 +92,27 @@ contract TownCrier {
     }
 
     function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, uint timestamp, bytes32[] requestData) public payable returns (int) {
-        if (killswitch == true) {
+        if (externalCallFlag) {
+            throw;
+        }
+
+        if (killswitch) {
+            externalCallFlag = true;
             if (!msg.sender.call.value(msg.value)()) {
                 throw;
             }
+            externalCallFlag = false;
             return newVersion;
         }
 
         if (msg.value < MIN_FEE) {
+            externalCallFlag = true;
             // If the amount of ether sent by the requester is too little or 
             // too much, refund the requester and discard the request.
             if (!msg.sender.call.value(msg.value)()) {
                 throw;
             }
+            externalCallFlag = false;
             return FAIL_FLAG;
         } else {
             // Record the request.
@@ -141,8 +152,9 @@ contract TownCrier {
             // If the request is cancelled by the requester, cancellation 
             // fee goes to the SGX account and set the request as having
             // been responded to.
-            SGX_ADDRESS.call.value(CANCELLATION_FEE)();
+            SGX_ADDRESS.send(CANCELLATION_FEE);
             requests[requestId].fee = DELIVERED_FEE_FLAG;
+            unrespondedCnt--;
             return;
         }
 
@@ -152,10 +164,12 @@ contract TownCrier {
         if (error < 2) {
             // Either no error occurs, or the requester sent an invalid query.
             // Send the fee to the SGX account for its delivering.
-            SGX_ADDRESS.call.value(fee)();         
+            SGX_ADDRESS.send(fee);         
         } else {
             // Error in TC, refund the requester.
-            requests[requestId].requester.call.value(fee)(); 
+            externalCallFlag = true;
+            requests[requestId].requester.call.gas(2300).value(fee)();
+            externalCallFlag = false;
         }
 
         uint callbackGas = (fee - MIN_FEE) / tx.gasprice; // gas left for the callback function
@@ -163,12 +177,18 @@ contract TownCrier {
         if (callbackGas > msg.gas - 5000) {
             callbackGas = msg.gas - 5000;
         }
-
+        
+        externalCallFlag = true;
         requests[requestId].callbackAddr.call.gas(callbackGas)(requests[requestId].callbackFID, requestId, error, respData); // call the callback function in the application contract
+        externalCallFlag = false;
     }
 
     function cancel(uint64 requestId) public returns (int) {
-        if (killswitch == true) {
+        if (externalCallFlag) {
+            throw;
+        }
+
+        if (killswitch) {
             return 0;
         }
 
@@ -177,9 +197,11 @@ contract TownCrier {
             // If the request was sent by this user and has money left on it,
             // then cancel it.
             requests[requestId].fee = CANCELLED_FEE_FLAG;
+            externalCallFlag = true;
             if (!msg.sender.call.value(fee - CANCELLATION_FEE)()) {
                 throw;
             }
+            externalCallFlag = false;
             Cancel(requestId, msg.sender, requests[requestId].requester, requests[requestId].fee, 1);
             return SUCCESS_FLAG;
         } else {
