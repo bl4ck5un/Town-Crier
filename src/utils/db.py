@@ -8,7 +8,7 @@
 # granted, provided that the user agrees as follows:
 #
 # The permission granted herein is solely for the purpose of compiling the
-# TowCrier source code. No other rights to use TownCrier and its associated
+# TownCrier source code. No other rights to use TownCrier and its associated
 # copyrights for any other purpose are granted herein, whether commercial or
 # non-commercial.
 #
