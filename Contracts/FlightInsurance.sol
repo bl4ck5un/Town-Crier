@@ -43,7 +43,7 @@ contract FlightInsurance {
                 || block.timestamp + DAY_EPOCH > uint(flightInfo[1])) {
             // A buyer could only buy a policy at least 24 hours 
             // ahead the scheduled departure time of his flight.
-            if (!msg.sender.send(msg.value)) {
+            if (!msg.sender.call.value(msg.value)()) {
                 throw;
             }
             Insure(-1, msg.sender, flightInfo.length, flightInfo, payment, uint(flightInfo[1]));
@@ -78,8 +78,7 @@ contract FlightInsurance {
             // Request fails.
             // Refund the policy owner the premium and delivery fee he paid.
             policies[policyId].fee = 0;
-            if (!msg.sender.send(policies[policyId].premium + policies[policyId].fee)) {
-                Request(policyId, msg.sender, -2);
+            if (!msg.sender.call.value(policies[policyId].premium + policies[policyId].fee)()) {
                 throw;
             }
             Request(policyId, msg.sender, 0);
@@ -112,20 +111,20 @@ contract FlightInsurance {
             if (delay >= PAYOUT_DELAY) {
                 // Flight delayed or cancelled.
                 // Pay the policy owner 5 times as much as the premium.
-                requester.send(premium * PAYOUT_RATE);
+                requester.call.value(premium * PAYOUT_RATE);
             } else {
                 // Flight not delayed.
                 // Premium goes to the creator of this contract.
-                owner.send(premium);
+                owner.call.value(premium);
             }
         } else if (error == 1) {
             // Flight not found.
             // Refund the policy owner the premium he paid.
-            requester.send(premium);
+            requester.call.value(premium);
         } else {
             // Error occurs in TC.
             // Refund the policy owner the premium and query fee he paid.
-            requester.send(premium + policies[policyId].fee);
+            requester.call.value(premium + policies[policyId].fee);
         }
         Response(int64(policyId), msg.sender, requestId, error, delay); // log the response
     }
@@ -145,8 +144,7 @@ contract FlightInsurance {
         
         // Since the policy has not been requested to TC,
         // the policy owner can be fully refunded.
-        if (!msg.sender.send(policies[policyId].fee + policies[policyId].premium)) {
-            Cancel(policyId, msg.sender, false, 0);
+        if (!msg.sender.call.value(policies[policyId].fee + policies[policyId].premium)()) {
             throw;
         }
 

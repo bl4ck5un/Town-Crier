@@ -26,7 +26,7 @@ contract Application {
         if (msg.value < TC_FEE) {
             // The requester paid less fee than required.
             // Reject the request and refund the requester.
-            if (!msg.sender.send(msg.value)) {
+            if (!msg.sender.call.value(msg.value)()) {
                 throw;
             }
             Request(-1, msg.sender, requestData.length, requestData);
@@ -37,7 +37,7 @@ contract Application {
         if (requestId == 0) {
             // The request fails.
             // Refund the requester.
-            if (!msg.sender.send(msg.value)) { 
+            if (!msg.sender.call.value(msg.value)()) { 
                 throw;
             }
             Request(-2, msg.sender, requestData.length, requestData);
@@ -65,7 +65,7 @@ contract Application {
         if (error < 2) {
             Response(int64(requestId), requester, error, uint(respData));
         } else {
-            requester.send(fee[requestId]); // refund the requester if error exists in TC
+            requester.call.value(fee[requestId]); // refund the requester if error exists in TC
             Response(int64(requestId), msg.sender, error, 0);
         }
     }
@@ -83,8 +83,7 @@ contract Application {
             // Successfully cancels the request in the TownCrier Contract,
             // then refund the requester with (fee - cancellation fee).
             requesters[requestId] = 0;
-            if (!msg.sender.send(fee[requestId] - CANCELLATION_FEE)) {
-                Cancel(requestId, msg.sender, false);
+            if (!msg.sender.call.value(fee[requestId] - CANCELLATION_FEE)()) {
                 throw;
             }
             Cancel(requestId, msg.sender, true);
@@ -94,5 +93,3 @@ contract Application {
         }
     }
 }
-
-

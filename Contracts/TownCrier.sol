@@ -15,14 +15,17 @@ contract TownCrier {
 
     address constant SGX_ADDRESS = 0x18513702cCd928F2A3eb63d900aDf03c9cc81593; //0x89B44e4d3c81EDE05D0f5de8d1a68F754D73d997; // address of the SGX account
 
-    uint public constant GAS_PRICE = 5 * 10**10;
-    uint public constant MIN_FEE = 30000 * GAS_PRICE; // minimum fee required for the requester to pay such that SGX could call deliver() to send a response
-    uint public constant CANCELLATION_FEE = 25000 * GAS_PRICE; // charged when the requester cancels a request that is not responded
+    uint public GAS_PRICE = 5 * 10**10;
+    uint public MIN_FEE = 30000 * GAS_PRICE; // minimum fee required for the requester to pay such that SGX could call deliver() to send a response
+    uint public CANCELLATION_FEE = 25000 * GAS_PRICE; // charged when the requester cancels a request that is not responded
 
     uint constant CANCELLED_FEE_FLAG = 1;
     uint constant DELIVERED_FEE_FLAG = 0;
 
+    bool killswitch;
+
     uint64 requestCnt;
+    uint64 unrespondedCnt;
     Request[2**64] requests;
 
     // Contracts that receive Ether but do not define a fallback function throw
@@ -38,13 +41,39 @@ contract TownCrier {
         //      so this means the first request isn't randomly more expensive.
         requestCnt = 1;
         requests[0].requester = msg.sender;
+        killswitch = false;
+        unrespondedCnt = 0;
+    }
+
+    function reset(uint price, uint minGas, uint cancellationGas) public {
+        if (msg.sender == requests[0].requester && unrespondedCnt == 0) {
+            GAS_PRICE = price;
+            MIN_FEE = price * minGas;
+            CANCELLATION_FEE = price * cancellationGas;
+        }
+    }
+
+    function kill() public {
+        if (msg.sender == requests[0].requester) {
+            killswitch = true;
+        }
+    }
+
+    function restart() public {
+        if (msg.sender == requests[0].requester) {
+            killswitch = false;
+        }
     }
 
     function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, uint timestamp, bytes32[] requestData) public payable returns (uint64) {
+        if (killswitch == true) {
+            return 0;
+        }
+
         if (msg.value < MIN_FEE) {
             // If the amount of ether sent by the requester is too little or 
             // too much, refund the requester and discard the request.
-            if (!msg.sender.send(msg.value)) {
+            if (!msg.sender.call.value(msg.value)()) {
                 throw;
             }
             return 0;
@@ -52,6 +81,7 @@ contract TownCrier {
             // Record the request.
             uint64 requestId = requestCnt;
             requestCnt++;
+            unrespondedCnt++;
 
             bytes32 paramsHash = sha3(requestType, requestData);
             requests[requestId].requester = msg.sender;
@@ -75,7 +105,7 @@ contract TownCrier {
             // request has already been responded to, discard the response.
             return;
         }
-        
+
         uint fee = requests[requestId].fee;
         if (requests[requestId].paramsHash != paramsHash) {
             // If the hash of request parameters in the response is not 
@@ -85,20 +115,21 @@ contract TownCrier {
             // If the request is cancelled by the requester, cancellation 
             // fee goes to the SGX account and set the request as having
             // been responded to.
-            SGX_ADDRESS.send(CANCELLATION_FEE);
+            SGX_ADDRESS.call.value(CANCELLATION_FEE);
             requests[requestId].fee = DELIVERED_FEE_FLAG;
             return;
         }
 
         requests[requestId].fee = DELIVERED_FEE_FLAG;
-        
+        unrespondedCnt--;
+
         if (error < 2) {
             // Either no error occurs, or the requester sent an invalid query.
             // Send the fee to the SGX account for its delivering.
-            SGX_ADDRESS.send(fee);         
+            SGX_ADDRESS.call.value(fee);         
         } else {
             // Error in TC, refund the requester.
-            requests[requestId].requester.send(fee); 
+            requests[requestId].requester.call.value(fee); 
         }
 
         uint callbackGas = (fee - MIN_FEE) / tx.gasprice; // gas left for the callback function
@@ -106,18 +137,21 @@ contract TownCrier {
         if (callbackGas > msg.gas - 5000) {
             callbackGas = msg.gas - 5000;
         }
-        
+
         requests[requestId].callbackAddr.call.gas(callbackGas)(requests[requestId].callbackFID, requestId, error, respData); // call the callback function in the application contract
     }
 
     function cancel(uint64 requestId) public returns (bool) {
+        if (killswitch == true) {
+            return false;
+        }
+
         uint fee = requests[requestId].fee;
         if (requests[requestId].requester == msg.sender && fee >= CANCELLATION_FEE) {
             // If the request was sent by this user and has money left on it,
             // then cancel it.
             requests[requestId].fee = CANCELLED_FEE_FLAG;
-            if (!msg.sender.send(fee - CANCELLATION_FEE)) {
-                Cancel(requestId, msg.sender, requests[requestId].requester, fee - CANCELLATION_FEE, -2);
+            if (!msg.sender.call.value(fee - CANCELLATION_FEE)()) {
                 throw;
             }
             Cancel(requestId, msg.sender, requests[requestId].requester, requests[requestId].fee, 1);
@@ -128,4 +162,3 @@ contract TownCrier {
         }
     }
 }
-
