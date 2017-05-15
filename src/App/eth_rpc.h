@@ -40,8 +40,8 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef SRC_APP_ETHRPC_H_
-#define SRC_APP_ETHRPC_H_
+#ifndef SRC_APP_ETH_RPC_H_
+#define SRC_APP_ETH_RPC_H_
 
 #include <jsonrpccpp/client/connectors/httpclient.h>
 #include <string>
@@ -56,4 +56,4 @@ void eth_getfilterlogs(const string &filter_id, Json::Value *tx);
 blocknum_t eth_blockNumber();
 uint64_t eth_getTransactionCount();
 string eth_new_filter(blocknum_t from, blocknum_t to);
-#endif  // SRC_APP_ETHRPC_H_
+#endif  // SRC_APP_ETH_RPC_H_

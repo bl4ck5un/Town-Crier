@@ -40,8 +40,9 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef SRC_APP_STATRPCSERVER_H_
-#define SRC_APP_STATRPCSERVER_H_
+#ifndef SRC_APP_STATUS_RPC_SERVER_H_
+#define SRC_APP_STATUS_RPC_SERVER_H_
+
 
 #include <jsonrpccpp/server/connectors/httpserver.h>
 #include <sgx_eid.h>
@@ -70,4 +71,4 @@ class status_rpc_server : public AbstractStatusServer {
 };
 }  // namespace tc
 
-#endif  // SRC_APP_STATRPCSERVER_H_
+#endif  // SRC_APP_STATUS_RPC_SERVER_H_

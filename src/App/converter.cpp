@@ -41,7 +41,7 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include "App/convert.h"
+#include "App/converter.h"
 
 #include <boost/algorithm/hex.hpp>
 

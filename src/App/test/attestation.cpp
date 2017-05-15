@@ -44,7 +44,7 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-#include "App/convert.h"
+#include "App/converter.h"
 #include "App/Enclave_u.h"
 #include "App/attestation.h"
 #include "App/utils.h"

@@ -55,7 +55,7 @@
 #include <memory>
 #include <utility>
 
-#include "App/convert.h"
+#include "App/converter.h"
 #include "App/Enclave_u.h"
 #include "App/eth_rpc.h"
 #include "App/request_parser.h"

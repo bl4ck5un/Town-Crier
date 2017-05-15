@@ -7,7 +7,7 @@ set(TC_SRC_FILES monitor.cpp attestation.cpp request_parser.cpp
         bookkeeping/database.cpp
         bookkeeping/transaction-record.hxx
         bookkeeping/transaction-record-odb.cxx
-        convert.cpp utils.cpp types.cpp
+        converter.cpp utils.cpp types.cpp
         eth_rpc.cpp status_rpc_server.cpp
         ../Common/external/base64.cpp
         key_utils.cpp
@@ -50,7 +50,7 @@ add_executable(tc-oneshot tc-oneshot.cpp ${TC_SRC_FILES})
 add_executable(tc-keygen
         tc-keygen.cpp
         ../Common/external/base64.cpp
-        utils.cpp convert.cpp
+        utils.cpp converter.cpp
         Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 
 # Source files for tests
@@ -68,7 +68,7 @@ add_executable(TestMain EXCLUDE_FROM_ALL
         bookkeeping/transaction-record.hxx
         bookkeeping/transaction-record-odb.cxx
         mbedtls_sgx_net.c
-        convert.cpp
+        converter.cpp
         ../Common/external/base64.cpp
         types.cpp request_parser.cpp
         key_utils.cpp test/test-data.h)

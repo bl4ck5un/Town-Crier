@@ -50,14 +50,13 @@
 #include <iostream>
 #include <string>
 
+#include "App/tc_exception.h"
+#include "App/converter.h"
+#include "App/Enclave_u.h"
 #include "App/utils.h"
 #include "Common/macros.h"
 #include "Common/Log.h"
 #include "Common/external/base64.hxx"
-
-#include "App/tc_exception.h"
-#include "convert.h"
-#include "Enclave_u.h"
 
 using std::string;
 using std::cout;

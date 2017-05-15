@@ -47,7 +47,7 @@
 #include <string>
 #include <vector>
 
-#include "App/convert.h"
+#include "App/converter.h"
 #include "App/attestation.h"
 #include "App/tc_exception.h"
 #include "Common/external/base64.hxx"

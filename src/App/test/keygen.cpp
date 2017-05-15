@@ -44,7 +44,7 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "App/convert.h"
+#include "App/converter.h"
 #include "App/Enclave_u.h"
 #include "App/test/SGXTestBase.h"
 #include "App/utils.h"
