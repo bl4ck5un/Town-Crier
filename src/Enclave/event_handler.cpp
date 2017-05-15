@@ -51,7 +51,7 @@
 #include "scrapers/flight.h"
 #include "scrapers/utils.h"
 #include "scrapers/stock_ticker.h"
-#include "scrapers/UPS_Tracking.h"
+#include "scrapers/ups_tracking.h"
 #include "scrapers/steam2.h"
 #include "scrapers/current_coinmarket.h"
 #include "scrapers/current_weather.h"
@@ -227,17 +227,17 @@ int do_handle_request(int nonce,
       };
       break;
     }
-    /*
-    case TYPE_CURRENT_VOTE: {
-      double r1 = 0, r2 = 0;
-      yahoo_current("GOOG", &r1);
-      google_current("GOOG", &r2);
-      break;
-    }
-     */
+      /*
+      case TYPE_CURRENT_VOTE: {
+        double r1 = 0, r2 = 0;
+        yahoo_current("GOOG", &r1);
+        google_current("GOOG", &r2);
+        break;
+      }
+       */
     case TYPE_WOLFRAM: {
       WolframScraper wolframScraper;
-      int status;
+      string status;
       switch (wolframScraper.handle(data, data_len, &status)) {
         case UNKNOWN_ERROR:
         case WEB_ERROR:
@@ -247,9 +247,14 @@ int do_handle_request(int nonce,
           error_flag = TC_INPUT_ERROR;
           break;
         case NO_ERROR:
-          append_as_uint256(resp_data, status, sizeof(status));
+          LL_INFO("wolfram returned: %s", status.c_str());
+          resp_data.insert(resp_data.end(), status.begin(), status.end());
+          break;
+        default:
+          error_flag = TC_ERR_FLAG_INVALID_INPUT;
           break;
       }
+      break;
     }
     case TYPE_FLIGHT_INS_ENC: {
       FlightScraper flightHandler;
@@ -268,43 +273,43 @@ int do_handle_request(int nonce,
       };
       break;
     }
-    /*
-    case TYPE_ENCRYPT_TEST: {
-      HybridEncryption dec_ctx;
-      ECPointBuffer tc_pubkey;
-      dec_ctx.queryPubkey(tc_pubkey);
+      /*
+      case TYPE_ENCRYPT_TEST: {
+        HybridEncryption dec_ctx;
+        ECPointBuffer tc_pubkey;
+        dec_ctx.queryPubkey(tc_pubkey);
 
-      string cipher_b64(data, data + data_len);
-      hexdump("encrypted query: ", data, data_len);
+        string cipher_b64(data, data + data_len);
+        hexdump("encrypted query: ", data, data_len);
 
-      try {
-        HybridCiphertext cipher = dec_ctx.decode(cipher_b64);
-        vector<uint8_t> cleartext;
-        dec_ctx.hybridDecrypt(cipher, cleartext);
-        hexdump("decrypted message", &cleartext[0], cleartext.size());
+        try {
+          HybridCiphertext cipher = dec_ctx.decode(cipher_b64);
+          vector<uint8_t> cleartext;
+          dec_ctx.hybridDecrypt(cipher, cleartext);
+          hexdump("decrypted message", &cleartext[0], cleartext.size());
 
-        // decrypted message is the base64 encoded data
-        string encoded_message(cleartext.begin(), cleartext.end());
-        uint8_t decrypted_data[cleartext.size()];
-        int decrypted_data_len = ext::b64_pton(encoded_message.c_str(),
-                                               decrypted_data, sizeof decrypted_data);
+          // decrypted message is the base64 encoded data
+          string encoded_message(cleartext.begin(), cleartext.end());
+          uint8_t decrypted_data[cleartext.size()];
+          int decrypted_data_len = ext::b64_pton(encoded_message.c_str(),
+                                                 decrypted_data, sizeof decrypted_data);
 
-        if (decrypted_data_len == -1) {
-          throw runtime_error("can't decode user message");
+          if (decrypted_data_len == -1) {
+            throw runtime_error("can't decode user message");
+          }
+
+          hexdump("decoded message", decrypted_data, (size_t) decrypted_data_len);
+        }
+        catch (const std::exception &e) {
+          LL_CRITICAL("decryption error: %s. See dump above.", e.what());
+        }
+        catch (...) {
+          LL_CRITICAL("unknown exception happened while decrypting. See dump above.");
         }
 
-        hexdump("decoded message", decrypted_data, (size_t) decrypted_data_len);
+        return TC_INTERNAL_TEST;
       }
-      catch (const std::exception &e) {
-        LL_CRITICAL("decryption error: %s. See dump above.", e.what());
-      }
-      catch (...) {
-        LL_CRITICAL("unknown exception happened while decrypting. See dump above.");
-      }
-
-      return TC_INTERNAL_TEST;
-    }
-     */
+       */
     default :
       LL_CRITICAL("Unknown request type: %"PRIu64, type);
       error_flag = TC_ERR_FLAG_INVALID_INPUT;

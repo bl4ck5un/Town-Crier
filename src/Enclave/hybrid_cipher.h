@@ -58,7 +58,7 @@
 
 #include "external/base64.hxx"
 #include "Log.h"
-#include "Debug.h"
+#include "debug.h"
 #include "macros.h"
 
 using namespace std;

@@ -45,7 +45,7 @@
 #include <vector>
 
 #include "eth_transaction.h"
-#include "Debug.h"
+#include "debug.h"
 #include "encoding.h"
 #include "Constants.h"
 

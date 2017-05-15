@@ -46,7 +46,7 @@
 #include <string>
 
 #include "commons.h"
-#include "Debug.h"
+#include "debug.h"
 
 using std::vector;
 using std::string;

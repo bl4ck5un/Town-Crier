@@ -41,4 +41,51 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include "App/tc-exception.h"
+#include "App/status_rpc_server.h"
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+#include "App/convert.h"
+#include "App/attestation.h"
+#include "App/tc_exception.h"
+#include "Common/external/base64.hxx"
+#include "Common/version.h"
+
+using tc::status_rpc_server;
+
+status_rpc_server::status_rpc_server(AbstractServerConnector &connector,
+                             sgx_enclave_id_t eid, const OdbDriver &db)
+    : AbstractStatusServer(connector), eid(eid), stat_db(db) {}
+
+std::string status_rpc_server::attest() {
+  try {
+    std::vector<uint8_t> attestation;
+    get_attestation(this->eid, &attestation);
+    char b64_buf[4096] = {0};
+    int buf_used = ext::b64_ntop(attestation.data(), attestation.size(),
+                                 b64_buf, sizeof b64_buf);
+    if (buf_used < 0) {
+      return "";
+    } else {
+      return string(b64_buf);
+    }
+  } catch (tc::EcallException &e) {
+    return e.what();
+  } catch (std::exception &e) {
+    return e.what();
+  } catch (...) {
+    return "unknown exception";
+  }
+}
+
+
+Json::Value status_rpc_server::status() {
+  Json::Value status;
+  status["version"] = GIT_COMMIT_HASH;
+  status["numberOfScannedBlocks"] = static_cast<Json::Value::UInt64>(stat_db.getLastBlock());
+  status["numberOfResponse"] = static_cast<Json::Value::UInt64>(stat_db.getNumOfResponse());
+
+  return status;
+}

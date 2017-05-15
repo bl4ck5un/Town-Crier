@@ -45,7 +45,7 @@
 #include <stdlib.h>
 #include <string>
 
-#include "Debug.h"
+#include "debug.h"
 #include "tls_client.h"
 #include "../scrapers/steam2.h"
 #include "Log.h"

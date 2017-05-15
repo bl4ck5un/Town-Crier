@@ -1,17 +1,17 @@
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wno-attributes")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
 
-set(TC_SRC_FILES monitor.cpp attestation.cpp request-parser.cpp
+set(TC_SRC_FILES monitor.cpp attestation.cpp request_parser.cpp
         mbedtls_sgx_net.c Enclave_u.c ocalls.cpp
         debug.cpp
         bookkeeping/database.cpp
         bookkeeping/transaction-record.hxx
         bookkeeping/transaction-record-odb.cxx
-        Converter.cpp utils.cpp types.cpp
-        EthRPC.cpp StatRPCServer.cpp
+        convert.cpp utils.cpp types.cpp
+        eth_rpc.cpp status_rpc_server.cpp
         ../Common/external/base64.cpp
-        key-utils.cpp
-        tc-exception.cpp config.cpp config.h)
+        key_utils.cpp
+        tc_exception.cpp config.cpp config.h)
 
 set_directory_properties(PROPERTIES
         ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
@@ -24,12 +24,33 @@ add_custom_command(
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
+# Get the current working branch
+execute_process(
+        COMMAND git rev-parse --abbrev-ref HEAD
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_BRANCH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+# Get the latest abbreviated commit hash of the working branch
+execute_process(
+        COMMAND git log -1 --format=%h
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_COMMIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+configure_file(
+        ${CMAKE_SOURCE_DIR}/Common/version.h.in
+        ${CMAKE_SOURCE_DIR}/Common/version.h
+)
+
 add_executable(tc tc.cpp ${TC_SRC_FILES})
 add_executable(tc-oneshot tc-oneshot.cpp ${TC_SRC_FILES})
 add_executable(tc-keygen
         tc-keygen.cpp
         ../Common/external/base64.cpp
-        utils.cpp Converter.cpp
+        utils.cpp convert.cpp
         Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 
 # Source files for tests
@@ -42,15 +63,15 @@ add_executable(TestMain EXCLUDE_FROM_ALL
         debug.cpp
         Enclave_u.c
         ocalls.cpp
-        EthRPC.cpp
+        eth_rpc.cpp
         bookkeeping/database.cpp
         bookkeeping/transaction-record.hxx
         bookkeeping/transaction-record-odb.cxx
         mbedtls_sgx_net.c
-        Converter.cpp
+        convert.cpp
         ../Common/external/base64.cpp
-        types.cpp request-parser.cpp
-        key-utils.cpp test/test-data.h)
+        types.cpp request_parser.cpp
+        key_utils.cpp test/test-data.h)
 
 find_package(CURL REQUIRED)
 find_package(Boost QUIET REQUIRED COMPONENTS program_options filesystem system)

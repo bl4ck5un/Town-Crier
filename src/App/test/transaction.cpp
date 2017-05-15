@@ -44,8 +44,8 @@
 #include <gtest/gtest.h>
 
 #include "App/Enclave_u.h"
-#include "App/key-utils.h"
-#include "App/tc-exception.h"
+#include "App/key_utils.h"
+#include "App/tc_exception.h"
 #include "App/utils.h"
 #include "App/test/test-data.h"
 #include "App/test/SGXTestBase.h"

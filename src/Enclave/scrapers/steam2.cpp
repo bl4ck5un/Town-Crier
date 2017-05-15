@@ -50,7 +50,7 @@
 #include "steam2.h"
 #include "commons.h"
 #include "external/picojson.h"
-#include "Debug.h"
+#include "debug.h"
 #include "hybrid_cipher.h"
 
 using std::string;

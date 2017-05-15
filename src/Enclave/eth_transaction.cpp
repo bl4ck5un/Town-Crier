@@ -54,7 +54,7 @@
 
 #include "eth_abi.h"
 #include "commons.h"
-#include "Debug.h"
+#include "debug.h"
 
 #include "eth_transaction.h"
 
@@ -145,8 +145,8 @@ int form_transaction(int nonce,
                      uint8_t *tx_output_bf,
                      size_t *o_len,
                      bool with_sig) {
-  LL_DEBUG("forming transaction for nonce=%d, id=%"PRIu64", "
-           "type=%d, date_len=%zu, err=%"PRIu64,
+  LL_INFO("forming transaction for nonce=%d, id=%"PRIu64", "
+      "type=%d, date_len=%zu, err=%"PRIu64,
            nonce, request_id, request_type, request_data_len, resp_error);
   if (tx_output_bf == NULL || o_len == NULL) {
     LL_CRITICAL("Error: tx_output_bf or o_len gets NULL input\n");
@@ -239,7 +239,7 @@ int form_transaction(int nonce,
     return TC_INTERNAL_ERROR;
   }
 
-  catch (const std::exception& e) {
+  catch (const std::exception &e) {
     LL_CRITICAL("%s", e.what());
     return TC_INTERNAL_ERROR;
   }
@@ -275,7 +275,7 @@ int form_transaction(int nonce,
   // RLP encode the final output with signature
   out.clear();
   tx.rlpEncode(out, true);
-  
+
   out.toString("final tx");
 
   if (out.size() > TX_BUF_SIZE) {
@@ -285,5 +285,9 @@ int form_transaction(int nonce,
 
   memcpy(tx_output_bf, &out[0], out.size());
   *o_len = out.size();
+
+  LL_INFO("finished transaction for nonce=%d, id=%"PRIu64", "
+      "type=%d, date_len=%zu, err=%"PRIu64 ", total size=%zuB",
+          nonce, request_id, request_type, request_data_len, resp_error, *o_len);
   return TC_SUCCESS;
 }

@@ -46,8 +46,8 @@
 #include <string>
 #include <vector>
 
-#include "App/Converter.h"
-#include "App/request-parser.h"
+#include "App/convert.h"
+#include "App/request_parser.h"
 #include "App/utils.h"
 
 TEST(RequestHandling, hex_and_unhex) {

@@ -45,7 +45,7 @@
 #include "eth_abi.h"
 #include "commons.h"
 #include "external/keccak.h"
-#include "Debug.h"
+#include "debug.h"
 #include <cassert>
 
 extern "C" int ABI_self_test();

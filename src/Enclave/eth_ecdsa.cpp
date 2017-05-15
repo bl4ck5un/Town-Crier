@@ -49,7 +49,7 @@
 
 using std::runtime_error;
 
-#include "Debug.h"
+#include "debug.h"
 #include "Log.h"
 #include "eth_ecdsa.h"
 #include "external/keccak.h"

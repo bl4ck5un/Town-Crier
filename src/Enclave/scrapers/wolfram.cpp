@@ -67,14 +67,7 @@ string WolframQueryResult::get_raw_data() {
   return this->xml;
 }
 
-/*** Implement the WolfRamScraper class ***/
-
-// WolframScraper::WolframScraper(int qtype){
-//   this->wolframQueryType = qType;
-// }
-
 void WolframScraper::create_query(std::string query) {
-  // TODO(Oscar): C++. string::replace?
   for (std::string::iterator it = query.begin(); it != query.end(); ++it) {
     if (*it == ' ') {
       *it = '+';
@@ -82,37 +75,31 @@ void WolframScraper::create_query(std::string query) {
   }
 
   this->url = "/v1/result?appid=" + this->APPID + "&i=" + query;
-  LL_INFO("url is : %s", this->url.c_str());
+}
+
+err_code WolframScraper::handle(const uint8_t *req, size_t data_len, string *output) {
+  if (data_len != 32) {
+    LL_CRITICAL("incorrect length: %zu (wants 32)", data_len);
+    return INVALID_PARAMS;
+  }
+
+  string query(string(req, req + 0x20).c_str());
+  LL_DEBUG("got query %s (len=%zu)", query.c_str(), query.length());
+
+  std::replace(query.begin(), query.end(), ' ', '+');
+  this->url = "/v1/result?appid=" + this->APPID + "&i=" + query;
+
+  LL_DEBUG("wolfram url => %s", this->url.c_str());
+
+  WolframQueryResult results = perform_query();
+
+  output->clear();
+  *output = results.get_raw_data();
+  return NO_ERROR;
 }
 
 err_code WolframScraper::handle(const uint8_t *req, size_t data_len, int *resp_data) {
-  if (data_len != 2 * 32) {
-    LL_CRITICAL("Data len %zu*2 does not equal 2*32", data_len);
-    return INVALID_PARAMS;
-  }
-  // Parse the request type followed by the query
-  char qType[32] = {0};
-  char query[32] = {0};
-
-  memcpy(qType, req, 0x20);
-  memcpy(query, req + 0x20, 0x20);
-
-  if (qType[0] == '1') {
-    this->wolframQueryType = SIMPLE;
-  } else {
-    LL_CRITICAL("More complicated queries not supported yet!");
-    return INVALID_PARAMS;
-  }
-
-  /* Construct the query */
-  string tmp(query);
-  create_query(tmp);
-  WolframQueryResult results = perform_query();
-  if (this->wolframQueryType == SIMPLE) {
-    // *resp_data = (int)(results.get_raw_data().c_str());
-    *resp_data = -1;
-  }
-  return INVALID_PARAMS;
+  return NO_ERROR;
 }
 
 /* Function that performs the HTTPS request and return the xml file */

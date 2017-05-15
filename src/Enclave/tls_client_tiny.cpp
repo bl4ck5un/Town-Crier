@@ -44,7 +44,7 @@
 #include "tls_client.h"
 #include "Log.h"
 #include "Enclave_t.h"
-#include "Debug.h"
+#include "debug.h"
 #include "Constants.h"
 #include "ca_bundle.h"
 
@@ -452,7 +452,6 @@ HttpResponse HttpsClient::getResponse() {
   }
 
   LL_DEBUG("HTTP response len=%zu", response.body.size());
-  hexdump("HTTP response body", &response.body[0], response.body.size());
 
   string content(response.body.begin(), response.body.end());
 

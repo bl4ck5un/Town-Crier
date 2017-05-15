@@ -10,7 +10,7 @@ set(EXTERNAL_SRC_FILES
 set(TC_SOURCE_FILES
         env.cpp env.h
         init.cpp
-        Debug.c Enclave_t.c enclave_exception_hdlr.c
+        debug.c Enclave_t.c enclave_exception_hdlr.c
         create_report.cpp event_handler.cpp
         commons.cpp encoding.cpp tls_client_tiny.cpp hybrid_cipher.cpp
         eth_ecdsa.cpp eth_transaction.cpp eth_abi.cpp

@@ -41,7 +41,7 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include "App/key-utils.h"
+#include "App/key_utils.h"
 
 #include <sgx.h>
 #include <sgx_eid.h>
@@ -55,8 +55,8 @@
 #include "Common/Log.h"
 #include "Common/external/base64.hxx"
 
-#include "App/tc-exception.h"
-#include "Converter.h"
+#include "App/tc_exception.h"
+#include "convert.h"
 #include "Enclave_u.h"
 
 using std::string;
