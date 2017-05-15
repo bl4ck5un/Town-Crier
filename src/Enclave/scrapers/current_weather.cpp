@@ -78,10 +78,16 @@ err_code WeatherScraper::weather_current(const string &request, int *r) {
     return INVALID_PARAMS;
   }
   string query = this->construct_query(request);
+  LL_INFO("query sent: %s", query.c_str());
 
   YahooYQL yahooYQL(query, YahooYQL::JSON, "store://datatables.org/alltableswithkeys");
   string resp;
   err_code ret = yahooYQL.execute(resp);
+  if (ret == WEB_ERROR) {
+    LL_CRITICAL("failed to get response");
+    return WEB_ERROR;
+  }
+
   LL_INFO("response: %s", resp.c_str());
 
   picojson::value v;
