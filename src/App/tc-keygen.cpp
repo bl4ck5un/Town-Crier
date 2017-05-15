@@ -50,7 +50,7 @@
 #include <iostream>
 #include <string>
 
-#include "App/Converter.h"
+#include "App/converter.h"
 #include "App/Enclave_u.h"
 #include "Common/external/base64.hxx"
 #include "Common/macros.h"

@@ -43,7 +43,7 @@
 
 #include <mbedtls/bignum.h>
 #include "Log.h"
-#include "Debug.h"
+#include "debug.h"
 #include "eth_ecdsa.h"
 
 #define SECKEY_TEST "cd244b3015703ddf545595da06ada5516628c5feadbf49dc66049c4b370cc5d8"

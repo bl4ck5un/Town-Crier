@@ -56,7 +56,7 @@
 #include <string>
 
 #include "App/types.h"
-#include "App/EthRPC.h"
+#include "App/eth_rpc.h"
 #include "Common/Constants.h"
 #include "Common/Log.h"
 #include "App/Enclave_u.h"

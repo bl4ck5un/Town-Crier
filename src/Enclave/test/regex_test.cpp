@@ -44,7 +44,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <Debug.h>
+#include <debug.h>
 #include "scrapers.h"
 #include "Log.h"
 #include "external/slre.h"

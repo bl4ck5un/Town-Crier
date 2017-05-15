@@ -50,7 +50,7 @@
 #include <cstring>
 
 #include "Scraper.h"
-#include "Debug.h"
+#include "debug.h"
 #include "Log.h"
 #include "utils.h"
 #include "Constants.h"

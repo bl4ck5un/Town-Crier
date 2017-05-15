@@ -55,10 +55,10 @@
 #include <memory>
 #include <utility>
 
-#include "App/Converter.h"
+#include "App/converter.h"
 #include "App/Enclave_u.h"
-#include "App/EthRPC.h"
-#include "App/request-parser.h"
+#include "App/eth_rpc.h"
+#include "App/request_parser.h"
 #include "Common/Log.h"
 
 // TX_BUF_SIZE is defined in Constants.h

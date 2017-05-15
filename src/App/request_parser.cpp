@@ -41,14 +41,14 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include "App/request-parser.h"
+#include "App/request_parser.h"
 
 #include <stdint.h>
 
 #include <iostream>
 #include <sstream>
 
-#include "App/Converter.h"
+#include "App/converter.h"
 #include "App/utils.h"
 #include "Common/Constants.h"
 #include "Common/Log.h"

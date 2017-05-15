@@ -44,7 +44,7 @@
 #include "tls_client.h"
 #include "Log.h"
 #include "Enclave_t.h"
-#include "Debug.h"
+#include "debug.h"
 #include "external/http_parser.h"
 #include "Constants.h"
 #include "ca_bundle.h"

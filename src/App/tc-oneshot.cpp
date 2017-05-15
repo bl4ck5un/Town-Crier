@@ -59,14 +59,14 @@
 
 #include "Common/Constants.h"
 #include "App/Enclave_u.h"
-#include "App/EthRPC.h"
-#include "App/StatRPCServer.h"
+#include "App/eth_rpc.h"
+#include "App/status_rpc_server.h"
 #include "App/attestation.h"
 #include "App/bookkeeping/database.h"
-#include "App/key-utils.h"
+#include "App/key_utils.h"
 #include "App/monitor.h"
-#include "App/request-parser.h"
-#include "App/tc-exception.h"
+#include "App/request_parser.h"
+#include "App/tc_exception.h"
 #include "App/utils.h"
 
 #define LOGURU_IMPLEMENTATION 1

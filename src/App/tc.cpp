@@ -59,14 +59,14 @@
 
 #include "Common/Constants.h"
 #include "App/Enclave_u.h"
-#include "App/EthRPC.h"
-#include "App/StatRPCServer.h"
+#include "App/eth_rpc.h"
+#include "App/status_rpc_server.h"
 #include "App/attestation.h"
 #include "App/bookkeeping/database.h"
-#include "App/key-utils.h"
+#include "App/key_utils.h"
 #include "App/monitor.h"
-#include "App/request-parser.h"
-#include "App/tc-exception.h"
+#include "App/request_parser.h"
+#include "App/tc_exception.h"
 #include "App/utils.h"
 
 #define LOGURU_IMPLEMENTATION 1
@@ -174,7 +174,7 @@ int main(int argc, const char *argv[]) {
 
   jsonrpc::HttpServer status_server_connector(config.get_status_server_port(),
                                               "", "", 3);
-  tc::StatRPCServer stat_srvr(status_server_connector, eid, driver);
+  tc::status_rpc_server stat_srvr(status_server_connector, eid, driver);
   if (config.isStatusServerEnabled()) {
     stat_srvr.StartListening();
     LOG_F(INFO, "RPC server started");

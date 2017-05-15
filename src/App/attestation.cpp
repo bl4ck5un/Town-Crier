@@ -49,7 +49,7 @@
 
 #include "App/Enclave_u.h"
 #include "App/attestation.h"
-#include "App/tc-exception.h"
+#include "App/tc_exception.h"
 #include "App/utils.h"
 #include "Common/Constants.h"
 #include "Common/Log.h"

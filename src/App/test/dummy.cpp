@@ -45,7 +45,7 @@
 #include "gtest/gtest.h"
 
 #include "App/Enclave_u.h"
-#include "App/key-utils.h"
+#include "App/key_utils.h"
 #include "App/test/SGXTestBase.h"
 #include "App/test/test-data.h"
 #include "App/debug.h"

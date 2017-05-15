@@ -82,7 +82,7 @@ err_code WeatherScraper::weather_current(const string &request, int *r) {
   YahooYQL yahooYQL(query, YahooYQL::JSON, "store://datatables.org/alltableswithkeys");
   string resp;
   err_code ret = yahooYQL.execute(resp);
-  LL_INFO("resp: %s", resp.c_str());
+  LL_INFO("response: %s", resp.c_str());
 
   picojson::value v;
   std::string err = picojson::parse(v, resp);

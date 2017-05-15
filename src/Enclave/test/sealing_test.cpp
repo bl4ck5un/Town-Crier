@@ -44,7 +44,7 @@
 #include <sgx_tseal.h>
 #include "../Enclave_t.h"
 #include "commons.h"
-#include "Debug.h"
+#include "debug.h"
 #include "mbedtls/ecdsa.h"
 
 extern "C" int seal_data_test();

@@ -46,7 +46,7 @@
 #include <string.h>
 
 #include "Scraper.h"
-#include "Debug.h"
+#include "debug.h"
 #include "Log.h"
 #include "utils.h"
 #include "../../Common/Constants.h"

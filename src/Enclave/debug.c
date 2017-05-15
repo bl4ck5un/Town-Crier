@@ -40,7 +40,7 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#include "Debug.h"
+#include "debug.h"
 #include "string.h"
 #include "glue.h"
 

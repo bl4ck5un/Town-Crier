@@ -45,6 +45,8 @@
 #define SRC_APP_TEST_SGXTESTBASE_H_
 
 #include "App/utils.h"
+#include "App/key_utils.h"
+#include "App/test/test-data.h"
 
 class SGXTestBase : public ::testing::Test {
  protected:
@@ -55,6 +57,7 @@ class SGXTestBase : public ::testing::Test {
 #else
     initialize_enclave("enclave.debug.so", &eid);
 #endif
+    provision_key(eid, SEALED_KEY, tc::keyUtils::HYBRID_ENCRYPTION_KEY);
   }
 
   virtual void TearDown() {

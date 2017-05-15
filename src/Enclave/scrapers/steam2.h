@@ -57,19 +57,19 @@
 class SteamScraper : Scraper {
  private:
   std::vector<string> headers;
- public:
   char *search(const char *buf, const char *search_string);
   char *get_next_trade_with_other(char *index, const char *other);
   int get_item_name(const char *key, char *appId, char *classId, char **resp);
   int in_list(const char **list, int len, const char *name);
   int parse_response(const char *resp, const char *other, const char **listB, int lenB, const char *key);
-
-  err_code handle(const uint8_t *req, size_t len, int *resp_data);
   err_code get_steam_transaction(const string &api_key,
                                  const string &buyer_id,
                                  const string &cutoff_time,
                                  const vector<picojson::value> &items,
                                  int *resp);
+
+ public:
+  err_code handle(const uint8_t *req, size_t len, int *resp_data);
 };
 
 #endif  // SRC_ENCLAVE_SCRAPERS_STEAM2_H_

@@ -44,11 +44,13 @@
 #include <iostream>
 #include "gtest/gtest.h"
 
-#include "App/Converter.h"
+#include "App/converter.h"
 #include "App/Enclave_u.h"
 #include "App/test/SGXTestBase.h"
 #include "App/utils.h"
+#include "App/debug.h"
 #include "Common/macros.h"
+
 
 class Keygen : public SGXTestBase {};
 
@@ -125,9 +127,6 @@ TEST_F(Keygen, HybridKey) {
   pubkey_ref[0] = 0x04;
 
   unsigned char pubkey_result[65];
-  tc_get_hybrid_pubkey(eid, &ret, pubkey_result);
-  ASSERT_EQ(ret, TC_KEY_NOT_PROVISIONED);
-
   ecall_status = tc_provision_hybrid_key(eid,
                 &ret,
                 reinterpret_cast<sgx_sealed_data_t*>(secret_sealed),

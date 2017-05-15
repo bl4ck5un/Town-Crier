@@ -43,7 +43,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <Debug.h>
+#include <debug.h>
 #include "tls_client.h"
 #include "scrapers/stock_ticker.h"
 #include "Log.h"

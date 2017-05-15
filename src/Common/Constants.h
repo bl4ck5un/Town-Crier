@@ -46,7 +46,7 @@
 #define TX_BUF_SIZE 2048
 
 #ifdef TC_SGX_IN_RELEASE_MODE
-#define TC_ADDRESS  "0x4db40c052dd7e736d73dca3cbcc7f0d974a2ab59"
+#define TC_ADDRESS  "0x89c1b3807d4c67df034fffb62f3509561218d30b"
 #else
 #define TC_ADDRESS  "0x18322346bfb90378ceaf16c72cee4496723636b9"
 #endif
