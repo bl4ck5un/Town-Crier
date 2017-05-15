@@ -235,7 +235,6 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
 
         if (send_tx) {
           string resp_txn_hash = send_transaction(resp_txn);
-          LL_INFO("response tx hash: %s", resp_txn_hash.c_str());
           log_entry->setResponse(resp_txn_hash);
           log_entry->setResponseTime(std::time(0));
         } else {

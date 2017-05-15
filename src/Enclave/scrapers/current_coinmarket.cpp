@@ -73,35 +73,34 @@ err_code CoinMarket::handle(const uint8_t *req, size_t data_len, int *resp_data)
 
   try {
     HttpResponse response = httpClient.getResponse();
-    picojson::value _json_resp;
 
+    picojson::value _json_resp;
     string err_msg = picojson::parse(_json_resp, response.getContent());
-    if (!err_msg.empty() || !_json_resp.is<picojson::object>()) {
+    if (!err_msg.empty()) {
       LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
-    
+
       // fall back to manual parsing
       double _result = parse_response(response.getContent().c_str());
       if (_result != 0) {
-          *resp_data = (int) _result;
-          LL_INFO("manual parsing succeeded: %d", *resp_data);
-          return NO_ERROR;
+        *resp_data = (int) _result;
+        LL_INFO("manual parsing succeeded: %d", *resp_data);
+        return NO_ERROR;
       }
-
-      return INVALID_PARAMS;
-    }
-
-    if (_json_resp.contains("error")) {
-      LL_CRITICAL("coinmarket return error: %s", _json_resp.get("error").is<string>() ?
-                                                 _json_resp.get("error").get<string>().c_str() : "unknown");
       return INVALID_PARAMS;
     }
 
     if (_json_resp.is<picojson::array>()
         && _json_resp.get<picojson::array>().size() == 1
         && _json_resp.get<picojson::array>()[0].contains("price_usd")
-        && _json_resp.get<picojson::array>()[0].get("price_usd").is<double>()) {
-      *resp_data = static_cast<int>(_json_resp.get<picojson::array>()[0].get("price_usd").get<double>());
+        && _json_resp.get<picojson::array>()[0].get("price_usd").is<string>()) {
+      string _price = _json_resp.get<picojson::array>()[0].get("price_usd").get<string>();
+      *resp_data = (int) atof(_price.c_str());
+      LL_DEBUG("got price %s => %d", _price.c_str(), *resp_data);
       return NO_ERROR;
+    } else if (_json_resp.is<picojson::object>() && _json_resp.contains("error")) {
+      LL_CRITICAL("coinmarket return error: %s", _json_resp.get("error").is<string>() ?
+                                                 _json_resp.get("error").get<string>().c_str() : "unknown");
+      return INVALID_PARAMS;
     }
 
     return INVALID_PARAMS;

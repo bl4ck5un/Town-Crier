@@ -91,7 +91,7 @@ const string decrypt_query(const uint8_t* data, size_t data_len) {
     return encoded_message;
   }
   catch (const std::exception &e) {
-    LL_CRITICAL("decryption error: %s. See dump above.", e.what());
+    LL_CRITICAL("decryption error: %s.", e.what());
     throw DecryptionException(e.what());
   }
   catch (...) {

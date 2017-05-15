@@ -151,7 +151,6 @@ RequestParser::~RequestParser() {}
 const string &RequestParser::getRawRequest() const { return raw_request; }
 
 const string RequestParser::toString() const {
-  LL_INFO("in toString");
   stringstream ss;
   ss << "request id=" << this->id << " type=" << this->type << " with date "
      << this->data_len << "B";
