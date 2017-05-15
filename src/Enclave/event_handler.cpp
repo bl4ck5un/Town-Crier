@@ -178,6 +178,9 @@ int do_handle_request(int nonce,
       break;
     }
     case TYPE_UPS_TRACKING: {
+      LL_CRITICAL("not supported yet");
+      error_flag = TC_ERR_FLAG_INTERNAL_ERR;
+      break;
       USPSScraper uSPSScraper;
       int pkg_status;
       switch (uSPSScraper.handle(data, data_len, &pkg_status)) {

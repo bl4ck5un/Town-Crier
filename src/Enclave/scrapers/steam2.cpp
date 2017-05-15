@@ -80,7 +80,7 @@ err_code SteamScraper::handle(const uint8_t *req, size_t len, int *resp_data) {
   picojson::value _steam_info_obj;
   string err_msg = picojson::parse(_steam_info_obj, _json_encoded_steam_info);
   if (!err_msg.empty() || !_steam_info_obj.is<picojson::object>()) {
-    LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
+    LL_CRITICAL("can't parse JSON input: %s", err_msg.c_str());
     return INVALID_PARAMS;
   }
 
@@ -100,7 +100,6 @@ err_code SteamScraper::handle(const uint8_t *req, size_t len, int *resp_data) {
   string buyer_id = _steam_info_obj.get("buyer_id").get<string>();
   string cutoff_time = _steam_info_obj.get("cutoff_time").get<string>();
   picojson::array items = _steam_info_obj.get("items").get<picojson::array>();
-  size_t item_len = items.size();
 
   return get_steam_transaction(api_key, buyer_id, cutoff_time, items, resp_data);
 }
@@ -125,8 +124,8 @@ err_code SteamScraper::get_steam_transaction(const string &api_key,
     picojson::value _root_obj;
     string err_msg = picojson::parse(_root_obj, response.getContent());
     if (!err_msg.empty() || !_root_obj.is<picojson::object>()) {
-      LL_CRITICAL("can't parse: %s", err_msg.c_str());
-      return WEB_ERROR;
+      LL_CRITICAL("returned nonsense: %s", err_msg.c_str());
+      return INVALID_PARAMS;
     }
 
     picojson::value _response_obj = _root_obj.get("response");
@@ -137,14 +136,22 @@ err_code SteamScraper::get_steam_transaction(const string &api_key,
       // TODO(oscar): add more logic here
       *resp = 1;
     }
+    return NO_ERROR;
   }
-  catch (std::runtime_error &e) {
+  catch (const std::runtime_error &e) {
     LL_CRITICAL("Https error: %s", e.what());
     LL_CRITICAL("Details: %s", httpClient.getError().c_str());
     httpClient.close();
     return WEB_ERROR;
   }
-  return NO_ERROR;
+  catch (const std::exception &e) {
+    LL_CRITICAL("error happened while scraping steam: %s", e.what());
+    return WEB_ERROR;
+  }
+  catch (...) {
+    LL_CRITICAL("unknown error happened while scraping steam");
+    return WEB_ERROR;
+  }
 }
 
 char *SteamScraper::search(const char *buf, const char *search_string) {

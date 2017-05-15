@@ -47,7 +47,7 @@
 #include "App/Enclave_u.h"
 #include "App/test/SGXTestBase.h"
 
-class Scraper: public SGXTestBase {};
+class Scraper : public SGXTestBase {};
 
 TEST_F(Scraper, yahoo) {
   int ocall_status, ret;
@@ -118,4 +118,3 @@ TEST_F(Scraper, wolfram) {
   ASSERT_EQ(0, ocall_status);
   ASSERT_EQ(0, ret);
 }
-

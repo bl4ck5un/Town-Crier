@@ -56,9 +56,8 @@ class SGXTestBase : public ::testing::Test {
     initialize_enclave("enclave.release.so", &eid);
 #else
     initialize_enclave("enclave.debug.so", &eid);
-    int ret;
-    provision_key(eid, SEALED_KEY, tc::keyUtils::HYBRID_ENCRYPTION_KEY);
 #endif
+    provision_key(eid, SEALED_KEY, tc::keyUtils::HYBRID_ENCRYPTION_KEY);
   }
 
   virtual void TearDown() {
