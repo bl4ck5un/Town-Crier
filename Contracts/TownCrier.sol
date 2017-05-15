@@ -8,22 +8,33 @@ contract TownCrier {
         bytes4 callbackFID; // the specification of the callback function
         bytes32 paramsHash; // the hash of the request parameters
     }
-
+   
+    event Upgrade(address newAddr);
+    event Reset(uint gas_price, uint min_fee, uint cancellation_fee); 
     event RequestInfo(uint64 id, uint8 requestType, address requester, uint fee, address callbackAddr, bytes32 paramsHash, uint timestamp, bytes32[] requestData); // log of requests, the Town Crier server watches this event and processes requests
     event DeliverInfo(uint64 requestId, uint fee, uint gasPrice, uint gasLeft, uint callbackGas, bytes32 paramsHash, uint64 error, bytes32 respData); // log of responses
     event Cancel(uint64 requestId, address canceller, address requester, uint fee, int flag); // log of cancellations
 
-    address constant SGX_ADDRESS = 0x18513702cCd928F2A3eb63d900aDf03c9cc81593; //0x89B44e4d3c81EDE05D0f5de8d1a68F754D73d997; // address of the SGX account
+    address public constant SGX_ADDRESS = 0x18513702cCd928F2A3eb63d900aDf03c9cc81593;// address of the SGX account
 
-    uint public constant GAS_PRICE = 5 * 10**10;
-    uint public constant MIN_FEE = 30000 * GAS_PRICE; // minimum fee required for the requester to pay such that SGX could call deliver() to send a response
-    uint public constant CANCELLATION_FEE = 25000 * GAS_PRICE; // charged when the requester cancels a request that is not responded
+    uint public GAS_PRICE = 5 * 10**10;
+    uint public MIN_FEE = 30000 * GAS_PRICE; // minimum fee required for the requester to pay such that SGX could call deliver() to send a response
+    uint public CANCELLATION_FEE = 25000 * GAS_PRICE; // charged when the requester cancels a request that is not responded
 
-    uint constant CANCELLED_FEE_FLAG = 1;
-    uint constant DELIVERED_FEE_FLAG = 0;
+    uint public constant CANCELLED_FEE_FLAG = 1;
+    uint public constant DELIVERED_FEE_FLAG = 0;
+    int public constant FAIL_FLAG = -2 ** 250;
+    int public constant SUCCESS_FLAG = 1;
 
-    uint64 requestCnt;
-    Request[2**64] requests;
+    bool public killswitch;
+
+    bool public externalCallFlag;
+
+    uint64 public requestCnt;
+    uint64 public unrespondedCnt;
+    Request[2**64] public requests;
+
+    int public newVersion = 0;
 
     // Contracts that receive Ether but do not define a fallback function throw
     // an exception, sending back the Ether (this was different before Solidity
@@ -38,20 +49,76 @@ contract TownCrier {
         //      so this means the first request isn't randomly more expensive.
         requestCnt = 1;
         requests[0].requester = msg.sender;
+        killswitch = false;
+        unrespondedCnt = 0;
+        externalCallFlag = false;
     }
 
-    function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, uint timestamp, bytes32[] requestData) public payable returns (uint64) {
-        if (msg.value < MIN_FEE) {
-            // If the amount of ether sent by the requester is too little or 
-            // too much, refund the requester and discard the request.
-            if (!msg.sender.send(msg.value)) {
+    function upgrade(address newAddr) {
+        if (msg.sender == requests[0].requester && unrespondedCnt == 0) {
+            newVersion = -int(newAddr);
+            killswitch = true;
+            Upgrade(newAddr);
+        }
+    }
+
+    function reset(uint price, uint minGas, uint cancellationGas) public {
+        if (msg.sender == requests[0].requester && unrespondedCnt == 0) {
+            GAS_PRICE = price;
+            MIN_FEE = price * minGas;
+            CANCELLATION_FEE = price * cancellationGas;
+            Reset(GAS_PRICE, MIN_FEE, CANCELLATION_FEE);
+        }
+    }
+
+    function suspend() public {
+        if (msg.sender == requests[0].requester) {
+            killswitch = true;
+        }
+    }
+
+    function restart() public {
+        if (msg.sender == requests[0].requester && newVersion == 0) {
+            killswitch = false;
+        }
+    }
+
+    function withdraw() public {
+        if (msg.sender == requests[0].requester && unrespondedCnt == 0) {
+            if (!requests[0].requester.call.value(this.balance)()) {
                 throw;
             }
-            return 0;
+        }
+    }
+
+    function request(uint8 requestType, address callbackAddr, bytes4 callbackFID, uint timestamp, bytes32[] requestData) public payable returns (int) {
+        if (externalCallFlag) {
+            throw;
+        }
+
+        if (killswitch) {
+            externalCallFlag = true;
+            if (!msg.sender.call.value(msg.value)()) {
+                throw;
+            }
+            externalCallFlag = false;
+            return newVersion;
+        }
+
+        if (msg.value < MIN_FEE) {
+            externalCallFlag = true;
+            // If the amount of ether sent by the requester is too little or 
+            // too much, refund the requester and discard the request.
+            if (!msg.sender.call.value(msg.value)()) {
+                throw;
+            }
+            externalCallFlag = false;
+            return FAIL_FLAG;
         } else {
             // Record the request.
             uint64 requestId = requestCnt;
             requestCnt++;
+            unrespondedCnt++;
 
             bytes32 paramsHash = sha3(requestType, requestData);
             requests[requestId].requester = msg.sender;
@@ -75,7 +142,7 @@ contract TownCrier {
             // request has already been responded to, discard the response.
             return;
         }
-        
+
         uint fee = requests[requestId].fee;
         if (requests[requestId].paramsHash != paramsHash) {
             // If the hash of request parameters in the response is not 
@@ -87,18 +154,22 @@ contract TownCrier {
             // been responded to.
             SGX_ADDRESS.send(CANCELLATION_FEE);
             requests[requestId].fee = DELIVERED_FEE_FLAG;
+            unrespondedCnt--;
             return;
         }
 
         requests[requestId].fee = DELIVERED_FEE_FLAG;
-        
+        unrespondedCnt--;
+
         if (error < 2) {
             // Either no error occurs, or the requester sent an invalid query.
             // Send the fee to the SGX account for its delivering.
             SGX_ADDRESS.send(fee);         
         } else {
             // Error in TC, refund the requester.
-            requests[requestId].requester.send(fee); 
+            externalCallFlag = true;
+            requests[requestId].requester.call.gas(2300).value(fee)();
+            externalCallFlag = false;
         }
 
         uint callbackGas = (fee - MIN_FEE) / tx.gasprice; // gas left for the callback function
@@ -107,24 +178,35 @@ contract TownCrier {
             callbackGas = msg.gas - 5000;
         }
         
+        externalCallFlag = true;
         requests[requestId].callbackAddr.call.gas(callbackGas)(requests[requestId].callbackFID, requestId, error, respData); // call the callback function in the application contract
+        externalCallFlag = false;
     }
 
-    function cancel(uint64 requestId) public returns (bool) {
+    function cancel(uint64 requestId) public returns (int) {
+        if (externalCallFlag) {
+            throw;
+        }
+
+        if (killswitch) {
+            return 0;
+        }
+
         uint fee = requests[requestId].fee;
         if (requests[requestId].requester == msg.sender && fee >= CANCELLATION_FEE) {
             // If the request was sent by this user and has money left on it,
             // then cancel it.
             requests[requestId].fee = CANCELLED_FEE_FLAG;
-            if (!msg.sender.send(fee - CANCELLATION_FEE)) {
-                Cancel(requestId, msg.sender, requests[requestId].requester, fee - CANCELLATION_FEE, -2);
+            externalCallFlag = true;
+            if (!msg.sender.call.value(fee - CANCELLATION_FEE)()) {
                 throw;
             }
+            externalCallFlag = false;
             Cancel(requestId, msg.sender, requests[requestId].requester, requests[requestId].fee, 1);
-            return true;
+            return SUCCESS_FLAG;
         } else {
             Cancel(requestId, msg.sender, requests[requestId].requester, fee, -1);
-            return false;
+            return FAIL_FLAG;
         }
     }
 }

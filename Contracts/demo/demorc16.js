@@ -79,7 +79,7 @@ if (id == 0) {
 	});
 }
 
-function setupTC() {
+function createTC(tci) {
     unlockAccounts();
     var tc = TownCrier.new({
         from: minerAddr, 
@@ -96,11 +96,62 @@ function setupTC() {
     return tc;
 }
 
+function upgrade(contract, newAddr) {
+    unlockAccounts();
+    contract.upgrade.sendTransaction(newAddr, {
+        from: minerAddr,
+        gas: gasCnt
+    });
+    mineBlocks(1);
+    return "TC upgraded!";
+}
+
+
+function reset(contract, price, minGas, cancellationGas) {
+    unlockAccounts();
+    contract.reset.sendTransaction(price, minGas, cancellationGas, {
+        from: minerAddr,
+        gas: gasCnt
+    });
+    mineBlocks(1);
+    return "TC reset!";
+}
+
+function suspend(contract) {
+    unlockAccounts();
+    contract.suspend.sendTransaction({
+        from: minerAddr,
+        gas: gasCnt
+    });
+    mineBlocks(1);
+    return "TC suspended!";
+}
+
+function restart(contract) {
+    unlockAccounts();
+    contract.restart.sendTransaction({
+        from: minerAddr,
+        gas: gasCnt
+    });
+    mineBlocks(1);
+    return "TC restarted!";
+}
+
+function withdraw(contract) {
+    unlockAccounts();
+    contract.withdraw.sendTransaction({
+        from: minerAddr,
+        gas: gasCnt
+    });
+    mineBlocks(1);
+    return "TC ether withdrew!";
+}
+
 function createApp(tc) {
     unlockAccounts();
     var tradeContract = App.new(
         tc, {
-            from: eth.coinbase,
+            from: sellerAddr,
             data: "0x" + compiledContract.contracts["Application"].bin,
             gas:gasCnt},
             function(e, c) {
@@ -115,7 +166,7 @@ function createApp(tc) {
     return tradeContract;
 }
 
-function Request(contract, type, requestData) {
+function request(contract, type, requestData) {
     unlockAccounts();
     contract.request.sendTransaction(type, requestData, {
         from: buyerAddr,
@@ -126,7 +177,7 @@ function Request(contract, type, requestData) {
     return "Request sent!";
 }
 
-function Cancel(contract, id) {
+function cancel(contract, id) {
     unlockAccounts();
     contract.cancel.sendTransaction(id, {
         from: buyerAddr,
@@ -138,6 +189,16 @@ function Cancel(contract, id) {
 
 function setup_log(tc, tradeContract, id) {
 if (id == 0) {
+    tc.Upgrade(function(e,r) {
+        if (!e) {console.log('TC Upgrade: ' + JSON.stringify(r.args)); }
+        else {console.log(e)}
+    });
+
+    tc.Reset(function(e,r) {
+        if (!e) {console.log('TC Reset: ' + JSON.stringify(r.args));}
+        else {console.log(e)}
+    });
+
     tc.RequestInfo(function(e,r) { 
 		if (!e) { console.log('TC RequestInfo: ' + JSON.stringify(r.args)); } 
 		else {console.log(e)}
