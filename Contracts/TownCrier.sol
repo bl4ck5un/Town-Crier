@@ -13,10 +13,10 @@ contract TownCrier {
     event DeliverInfo(uint64 requestId, uint fee, uint gasPrice, uint gasLeft, uint callbackGas, bytes32 paramsHash, uint64 error, bytes32 respData); // log of responses
     event Cancel(uint64 requestId, address canceller, address requester, uint fee, int flag); // log of cancellations
 
-    address constant SGX_ADDRESS = 0x89B44e4d3c81EDE05D0f5de8d1a68F754D73d997; // address of the SGX account
+    address constant SGX_ADDRESS = 0x18513702cCd928F2A3eb63d900aDf03c9cc81593; //0x89B44e4d3c81EDE05D0f5de8d1a68F754D73d997; // address of the SGX account
 
     uint public constant GAS_PRICE = 5 * 10**10;
-    uint public constant MIN_FEE = 30000 * GAS_PRICE; // least fee required for the requester to pay such that SGX could call deliver() to send a response
+    uint public constant MIN_FEE = 30000 * GAS_PRICE; // minimum fee required for the requester to pay such that SGX could call deliver() to send a response
     uint public constant CANCELLATION_FEE = 25000 * GAS_PRICE; // charged when the requester cancels a request that is not responded
 
     uint constant CANCELLED_FEE_FLAG = 1;
@@ -93,9 +93,12 @@ contract TownCrier {
         requests[requestId].fee = DELIVERED_FEE_FLAG;
         
         if (error < 2) {
-            SGX_ADDRESS.send(fee); // send the fee to the SGX account for its delivering
+            // Either no error occurs, or the requester sent an invalid query.
+            // Send the fee to the SGX account for its delivering.
+            SGX_ADDRESS.send(fee);         
         } else {
-            requests[requestId].requester.send(fee);
+            // Error in TC, refund the requester.
+            requests[requestId].requester.send(fee); 
         }
 
         uint callbackGas = (fee - MIN_FEE) / tx.gasprice; // gas left for the callback function
