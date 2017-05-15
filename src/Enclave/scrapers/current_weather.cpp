@@ -59,34 +59,19 @@
 using namespace std;
 
 err_code WeatherScraper::handle(const uint8_t *req, size_t data_len, int *resp_data) {
-  if (data_len != 2 * 32) {
+  if (data_len != 1 * 32) {
     LL_CRITICAL("data_len %zu*32 is not 32", data_len / 32);
     return INVALID_PARAMS;
   }
 
-  char qType[32] = {0};
-  char query[32] = {0};
-
-  memcpy(qType, req, 0x20);
-  memcpy(query, req + 0x20, 0x20 - 1);
-
-  if (qType[0] == '1') {
-    this->WeatherQueryType = WOEID;
-  }
-  if (qType[0] == '2') {
-    this->WeatherQueryType = CITYNAME;
-  }
-  if (qType[0] == '3') {
-    this->WeatherQueryType = LATLONG;
-  }
-
-  double tmp;
-  err_code ret = weather_current(string(query), &tmp);
-  *resp_data = tmp;
+  string query(string(req, req + 0x20).c_str());
+  this->WeatherQueryType = CITYNAME;
+  LL_INFO("query: %s", query.c_str());
+  err_code ret = weather_current(query, resp_data);
   return ret;
 }
 
-err_code WeatherScraper::weather_current(string request, double *r) {
+err_code WeatherScraper::weather_current(const string &request, int *r) {
   /* Null Checker */
   if (request.size() == 0 || r == NULL) {
     LL_CRITICAL("Error: Passed null pointers");
@@ -116,6 +101,7 @@ err_code WeatherScraper::weather_current(string request, double *r) {
   const picojson::object &obj2 = v1.get<picojson::object>();
   picojson::value v2 = obj2.find("results")->second;
   if (v2.is<picojson::null>()) {
+    LL_CRITICAL("result is null");
     return WEB_ERROR;
   }
   const picojson::object &obj3 = v2.get<picojson::object>();
@@ -127,9 +113,9 @@ err_code WeatherScraper::weather_current(string request, double *r) {
   const picojson::object &obj6 = v5.get<picojson::object>();
   picojson::value v6 = obj6.find("temp")->second;
   const std::string &temperature = v6.get<std::string>();
-  int tmp_int = atoi(temperature.c_str());
 
-  *r = static_cast<double>(tmp_int);
+  LL_INFO("temp: %s", temperature.c_str());
+  *r = atoi(temperature.c_str());
   return ret;
 }
 

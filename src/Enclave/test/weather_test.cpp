@@ -50,21 +50,20 @@
 #include "scrapers/current_weather.h"
 #include "Log.h"
 
-int weather_self_test(){
-	WeatherScraper weatherScraper;
-	/* Check with WOEID */
-	weatherScraper.set_qtype(1);
+int weather_self_test() {
+  WeatherScraper weatherScraper;
+  /* Check with WOEID */
+  weatherScraper.set_qtype(1);
 
-	//Null Checker
-	double r = 0.0;
+  int r;
 
-	if (weatherScraper.weather_current("2487889",&r) == INVALID_PARAMS ){
-		return -1;
-	}
+  if (weatherScraper.weather_current("2487889", &r) == INVALID_PARAMS) {
+    return -1;
+  }
 
-	weatherScraper.set_qtype(2);
-	if (weatherScraper.weather_current("Chicago,IL", &r) == INVALID_PARAMS){
-		return -1;
-	}
-	return 0;
+  weatherScraper.set_qtype(2);
+  if (weatherScraper.weather_current("Chicago,IL", &r) == INVALID_PARAMS) {
+    return -1;
+  }
+  return 0;
 }

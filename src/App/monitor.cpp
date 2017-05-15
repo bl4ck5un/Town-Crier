@@ -69,8 +69,10 @@ void Monitor::loop() {
   // keeps track of the blocks that have been processed
   blocknum_t next_block_num;
   next_block_num = driver->getLastBlock();
+#ifdef TC_SGX_IN_RELEASE_MODE
   if (next_block_num < 3706916)
       next_block_num = 3706916;
+#endif
   next_block_num++;
 
   int ret = 0;
