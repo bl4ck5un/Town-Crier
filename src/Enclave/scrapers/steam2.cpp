@@ -92,7 +92,7 @@ err_code SteamScraper::handle(const uint8_t *req, size_t len, int *resp_data) {
       && _steam_info_obj.get("buyer_id").is<string>()
       && _steam_info_obj.get("cutoff_time").is<string>()
       && _steam_info_obj.get("items").is<picojson::array>())) {
-    LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
+    LL_CRITICAL("in correct jSON result: %s", err_msg.c_str());
     return INVALID_PARAMS;
   }
 
