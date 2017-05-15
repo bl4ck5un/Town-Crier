@@ -1,7 +1,7 @@
 contract FlightInsurance {
     struct Policy{
         address requester;
-        uint64 tc_id; // the requestId in the TownCrier Contract
+        int tc_id; // the requestId in the TownCrier Contract
         bytes32[] data; // query data
         uint fee; // amount of wei a requester pays for TC to deliver the response
         uint premium; // amount of wei a requester pays for a policy
@@ -74,7 +74,7 @@ contract FlightInsurance {
         }
 
         policies[policyId].tc_id = TC_CONTRACT.request.value(policies[policyId].fee)(1, this, TC_CALLBACK_FID, 0, policies[policyId].data); //calling request() in the TownCrier Contract
-        if (policies[policyId].tc_id == 0) {
+        if (policies[policyId].tc_id <= 0) {
             // Request fails.
             // Refund the policy owner the premium and delivery fee he paid.
             policies[policyId].fee = 0;
@@ -85,7 +85,7 @@ contract FlightInsurance {
         } else {
             // Successfully sent a request to TC.
             // Record the mapping between the policyId and the requestId.
-            id_map[policies[policyId].tc_id] = policyId;
+            id_map[uint(policies[policyId].tc_id)] = policyId;
             Request(policyId, msg.sender, int64(policies[policyId].tc_id));
         }
     }
@@ -111,20 +111,20 @@ contract FlightInsurance {
             if (delay >= PAYOUT_DELAY) {
                 // Flight delayed or cancelled.
                 // Pay the policy owner 5 times as much as the premium.
-                requester.call.value(premium * PAYOUT_RATE);
+                requester.call.value(premium * PAYOUT_RATE)();
             } else {
                 // Flight not delayed.
                 // Premium goes to the creator of this contract.
-                owner.call.value(premium);
+                owner.call.value(premium)();
             }
         } else if (error == 1) {
             // Flight not found.
             // Refund the policy owner the premium he paid.
-            requester.call.value(premium);
+            requester.call.value(premium)();
         } else {
             // Error occurs in TC.
             // Refund the policy owner the premium and query fee he paid.
-            requester.call.value(premium + policies[policyId].fee);
+            requester.call.value(premium + policies[policyId].fee)();
         }
         Response(int64(policyId), msg.sender, requestId, error, delay); // log the response
     }
