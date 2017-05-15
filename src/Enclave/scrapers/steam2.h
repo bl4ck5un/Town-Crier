@@ -52,6 +52,7 @@
 #include "tls_client.h"
 #include "utils.h"
 #include "Log.h"
+#include "external/picojson.h"
 
 class SteamScraper : Scraper {
  private:
@@ -64,11 +65,10 @@ class SteamScraper : Scraper {
   int parse_response(const char *resp, const char *other, const char **listB, int lenB, const char *key);
 
   err_code handle(const uint8_t *req, size_t len, int *resp_data);
-  err_code get_steam_transaction(const char **item_name_list,
-                                 int item_list_len,
-                                 const char *buyer_id,
-                                 unsigned int time_cutoff,
-                                 const char *api_key,
+  err_code get_steam_transaction(const string &api_key,
+                                 const string &buyer_id,
+                                 const string &cutoff_time,
+                                 const vector<picojson::value> &items,
                                  int *resp);
 };
 

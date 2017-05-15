@@ -239,8 +239,6 @@ err_code FlightScraper::handleEncryptedQuery(const uint8_t *data, size_t data_le
     return INVALID_PARAMS;
   }
 
-  // test against block 899735
-  // test against block 899795
   picojson::value _flight_info_obj;
   string err_msg = picojson::parse(_flight_info_obj, _json_encoded_flight_info);
   if (!err_msg.empty() || !_flight_info_obj.is<picojson::object>()) {
@@ -248,7 +246,10 @@ err_code FlightScraper::handleEncryptedQuery(const uint8_t *data, size_t data_le
     return INVALID_PARAMS;
   }
 
-  if (_flight_info_obj.get("flight").is<string>() && _flight_info_obj.get("time").is<double>()) {
+  if (_flight_info_obj.contains("flight")
+      && _flight_info_obj.get("flight").is<string>()
+      && _flight_info_obj.contains("time")
+      && _flight_info_obj.get("time").is<double>()) {
     string flight_id = _flight_info_obj.get("flight").get<string>();
     long timestamp = static_cast<long>(_flight_info_obj.get("time").get<double>());
 

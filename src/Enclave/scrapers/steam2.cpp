@@ -43,15 +43,17 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string>
-using std::string;
 
+#include <string>
 #include <vector>
 
 #include "steam2.h"
 #include "commons.h"
-
 #include "external/picojson.h"
+#include "Debug.h"
+#include "hybrid_cipher.h"
+
+using std::string;
 
 enum steam_error {
   INVALID = 0,
@@ -61,77 +63,57 @@ enum steam_error {
 // return 0 -- Find no trade
 //        1 -- Find a trade
 err_code SteamScraper::handle(const uint8_t *req, size_t len, int *resp_data) {
-  if (len != 6 * 32) {
-    LL_CRITICAL("data_len %zu*32 is not 6*32", len / 32);
+  string _json_encoded_steam_info;
+  try {
+    _json_encoded_steam_info = decrypt_query(req, len);
+    LL_INFO("decrypted steam info: %s", _json_encoded_steam_info.c_str());
+  }
+  catch (const DecryptionException &e) {
+    LL_CRITICAL("Can't decrypt: %s", e.what());
     return INVALID_PARAMS;
   }
-  /*
-  format[0] = encAPI[0];
-  format[1] = encAPI[1];
-  format[2] = ID_B;
-  format[3] = T_B;
-  format[4] = bytes32(LIST_I.length);
-  format[5] = LIST_I[0];
-  */
-
-  uint32_t cutoff_time;
-  size_t item_len;
-  char _str_buf[100];
-
-  // 0x00 .. 0x40
-  // - encAPI:
-  char encrypted_api_key[65] = {0};
-  memcpy(encrypted_api_key, req, 0x40);
-  LL_DEBUG("API key=%s", encrypted_api_key);
-
-  // 0x40 .. 0x60 buyer_id
-  char buyer_id[33] = {0};
-  memcpy(buyer_id, req + 0x40, 0x20);
-  LL_DEBUG("buyer id=%s", buyer_id);
-
-  // 0x60 .. 0x80
-  // get last 4 bytes
-  cutoff_time = uint_bytes<uint32_t>(req + 0x60, 32);
-  LL_DEBUG("cufoff time=%d", cutoff_time);
-
-
-  // 0x80 .. 0xa0 - item_len
-  item_len = uint_bytes<size_t>(req + 0x80, 32);
-  LL_DEBUG("item_len=%zu", item_len);
-
-  if (item_len * 32 != len - 0xa0) {
-    LL_CRITICAL("item_len=%zu but rest data is %zu", item_len, len - 0xa0);
+  catch (...) {
+    LL_CRITICAL("unknown error");
     return INVALID_PARAMS;
   }
 
-  // 0xa0 .. 0xc0
-  const char *items[item_len];
-  for (size_t i = 0; i < item_len; i++) {
-    items[i] = reinterpret_cast<const char *>(req + 0xa0 + 0x20 * i);
-    LL_INFO("item: %s", items[i]);
+  picojson::value _steam_info_obj;
+  string err_msg = picojson::parse(_steam_info_obj, _json_encoded_steam_info);
+  if (!err_msg.empty() || !_steam_info_obj.is<picojson::object>()) {
+    LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
+    return INVALID_PARAMS;
   }
 
-  return get_steam_transaction(items, item_len, buyer_id, cutoff_time, encrypted_api_key, resp_data);
+  if (!(_steam_info_obj.contains("api_key")
+      && _steam_info_obj.contains("buyer_id")
+      && _steam_info_obj.contains("cutoff_time")
+      && _steam_info_obj.contains("items")
+      && _steam_info_obj.get("api_key").is<string>()
+      && _steam_info_obj.get("buyer_id").is<string>()
+      && _steam_info_obj.get("cutoff_time").is<string>()
+      && _steam_info_obj.get("items").is<picojson::array>())) {
+    LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
+    return INVALID_PARAMS;
+  }
+
+  string api_key = _steam_info_obj.get("api_key").get<string>();
+  string buyer_id = _steam_info_obj.get("buyer_id").get<string>();
+  string cutoff_time = _steam_info_obj.get("cutoff_time").get<string>();
+  picojson::array items = _steam_info_obj.get("items").get<picojson::array>();
+  size_t item_len = items.size();
+
+  return get_steam_transaction(api_key, buyer_id, cutoff_time, items, resp_data);
 }
 
 // TODO(Oscar): parse the response using a JSON / XML parser !
-err_code SteamScraper::get_steam_transaction(const char **item_name_list,
-                                             int item_list_len,
-                                             const char *buyer_id,
-                                             unsigned int time_cutoff,
-                                             const char *api_key,
+err_code SteamScraper::get_steam_transaction(const string &api_key,
+                                             const string &buyer_id,
+                                             const string &cutoff_time,
+                                             const picojson::array &items,
                                              int *resp) {
-  if (item_name_list == NULL || buyer_id == NULL || api_key == NULL || resp == NULL) {
-    return INVALID_PARAMS;
-  }
-  char tmp_req_time[12];
-  snprintf(tmp_req_time, sizeof(tmp_req_time), "%u", time_cutoff);
-
-  // reference query
-  // https://api.steampowered.com/IEconService/GetTradeOffers/v0001/?get_sent_offers=1&get_received_offers=0&get_descriptions=0&active_only=1&historical_only=1&key=7978F8EDEF9695B57E72EC468E5781AD&time_historical_cutoff=1355220300
-  string query =
-      "/IEconService/GetTradeOffers/v0001/?get_sent_offers=0&get_received_offers=1&get_descriptions=0&active_only=1&historical_only=1&key="
-          + string(api_key) + "&time_historical_cutoff=" + string(tmp_req_time);
+  string query = "/IEconService/GetTradeOffers/v0001/?"
+      "get_sent_offers=0&get_received_offers=1&get_descriptions=0&active_only=1&historical_only=1&"
+      "key=" + api_key + "&time_historical_cutoff=" + cutoff_time;
 
   HttpRequest httpRequest("api.steampowered.com", query, true);
   HttpsClient httpClient(httpRequest);
@@ -155,7 +137,6 @@ err_code SteamScraper::get_steam_transaction(const char **item_name_list,
       // TODO(oscar): add more logic here
       *resp = 1;
     }
-// ret = parse_response(response.getContent().c_str(), buyer_id, item_name_list, item_list_len, api_key);
   }
   catch (std::runtime_error &e) {
     LL_CRITICAL("Https error: %s", e.what());

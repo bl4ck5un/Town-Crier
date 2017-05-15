@@ -44,7 +44,12 @@
 #define TOWNCIRER_CONSTANTS_H
 
 #define TX_BUF_SIZE 2048
+
+#ifdef TC_SGX_IN_RELEASE_MODE
 #define TC_ADDRESS  "0x4db40c052dd7e736d73dca3cbcc7f0d974a2ab59"
+#else
+#define TC_ADDRESS  "0x18322346bfb90378ceaf16c72cee4496723636b9"
+#endif
 #define GASPRICE    "0x0BA43B7400"  // 50000000000
 #define GASLIMIT    "0x2DC6C0"      // 3000000
 
@@ -53,7 +58,6 @@
 /* Define any events that Town Crier Supports here */
 #define TYPE_LOOP_THROUGH   0x0
 #define TYPE_FLIGHT_INS     0x1
-#define TYPE_STEAM_EX       0x2
 #define TYPE_FINANCE_INFO   0x3
 #define TYPE_UPS_TRACKING   0x4
 #define TYPE_COINMARKET     0x5
@@ -61,7 +65,9 @@
 #define TYPE_CURRENT_VOTE   0x7
 #define TYPE_ENCRYPT_TEST   0x8
 #define TYPE_WOLFRAM		0x9
+
 #define TYPE_FLIGHT_INS_ENC	0x10
+#define TYPE_STEAM_EX       0x11
 
 /* Possible return values to be used in Enclave-Relay Connections */
 #define TC_SUCCESS          0x0

@@ -41,10 +41,6 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-//
-// Created by fanz on 4/4/17.
-//
-
 #include "App/key-utils.h"
 
 #include <sgx.h>

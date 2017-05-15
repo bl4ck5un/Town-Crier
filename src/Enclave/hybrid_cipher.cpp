@@ -77,7 +77,7 @@ const string decrypt_query(const uint8_t* data, size_t data_len) {
   ECPointBuffer tc_pubkey;
   dec_ctx.queryPubkey(tc_pubkey);
 
-  string cipher_b64(data, data + data_len);
+  string cipher_b64(string(data, data + data_len).c_str());
   hexdump("encrypted query: ", data, data_len);
 
   try {

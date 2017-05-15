@@ -52,7 +52,7 @@ class WeatherScraper : Scraper {
   } WeatherQueryType;
 
   err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
-  err_code weather_current(std::string query, double *r);
+  err_code weather_current(const string &query, int *r);
   void set_qtype(int type);
 
  private:
