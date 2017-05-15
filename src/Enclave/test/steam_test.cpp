@@ -55,28 +55,16 @@ int steam_self_test() {
   int ret;
   SteamScraper testScraper;
 
-  // api_key [string] (padded with \0)
-  string api_key = "7978F8EDEF9695B57E72EC468E5781AD";
-  api_key.append(64 - api_key.length(), 0x00);
+  string cipher = "BBU9YluSTNhw62HmvA+mbivWtcBH5ZLV"
+          "TXUt/CzDCSbJWzQaPLLOVKBwXSm2byW6"
+          "Z6LKdpaZ1xZ5KQRwHMMSZbGZAAAAAAAA"
+          "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+          "AIl0QdzC5y6TOwz05PYKJGl3yc9kAm8Z"
+          "8x+ewMKtJ9YqxesyTQmngqsfMxA0W5ml"
+          "e7TyWbEVC6gC94BCdA==";
 
-  // buyer_id [string] (padded with \0)
-  string buyer_id = "32884794";
-  buyer_id.append(32 - buyer_id.length(), 0x00);
 
-  // cutoff time [long] (big endian, pre-padded with 0)
-  string cutoff_time = "\x56\xCE\x99\x69";
-  cutoff_time.insert(cutoff_time.begin(), 32 - cutoff_time.length(), '\0');
-
-  // same as cutoff
-  string item_len = "\x01";
-  item_len.insert(item_len.begin(), 32 - item_len.length(), '\0');
-
-  string items = "Portal";
-  items.append(32 - items.length(), 0x00);
-
-  string request_data = api_key + buyer_id + cutoff_time + item_len + items;
-  dump_buf("Request", (unsigned char *) request_data.c_str(), request_data.length());
-  err = testScraper.handle((uint8_t *) request_data.c_str(), request_data.length(), &ret);
+  err = testScraper.handle(reinterpret_cast<const uint8_t *>(cipher.c_str()), cipher.length(), &ret);
   return (err == NO_ERROR && ret == 1) ? 0 : 1;
 }
 
