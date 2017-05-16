@@ -1,0 +1,18 @@
+FROM ubuntu:16.04
+MAINTAINER Fan Zhang <fanz@linux.com>
+
+RUN apt-get -qq update
+RUN apt-get -qq install -y build-essential automake autoconf libtool 
+RUN apt-get -qq install -y cmake libjsoncpp-dev libjsonrpccpp-dev libjsonrpccpp-tools libsqlite3-0 libsqlite3-dev libboost-all-dev libmicrohttpd-dev libcurl4-openssl-dev odb
+RUN apt-get -qq install -y wget
+
+RUN useradd -ms /bin/bash tc
+RUN chown -R tc:tc /opt/
+
+USER tc
+WORKDIR /home/tc
+RUN mkdir sgx
+RUN wget -O sgx/sgx_linux_ubuntu16.04.1_x64_sdk_1.8.100.37689.bin https://download.01.org/intel-sgx/linux-1.8/sgx_linux_ubuntu16.04.1_x64_sdk_1.8.100.37689.bin
+RUN chmod a+x sgx/sgx_linux_ubuntu16.04.1_x64_sdk_1.8.100.37689.bin
+RUN echo -e 'no\n/opt/intel' | $PWD/sgx/sgx_linux_ubuntu16.04.1_x64_sdk_1.8.100.37689.bin
+RUN echo 'source /opt/intel/sgxsdk/environment' >> $PWD/.bashrc
