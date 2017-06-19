@@ -89,7 +89,15 @@ void get_attestation(sgx_enclave_id_t eid, vector<uint8_t> *out) {
                              "ecall_create_report returned " + to_string(ret));
   }
 
-  memset(spid.id, 0x88, sizeof spid.id);
+  uint8_t spid_tc[16] = {
+      0x03, 0xD4, 0x81, 0x28,
+      0x36, 0x6F, 0x1C, 0xD7,
+      0x4F, 0xCA, 0x49, 0x0D,
+      0x9B, 0x85, 0xB6, 0xAB,
+  };
+
+  memcpy(spid.id, spid_tc, sizeof spid_tc);
+
   uint32_t quote_size;
   sgx_get_quote_size(NULL, &quote_size);
   sgx_quote_t *quote = reinterpret_cast<sgx_quote_t *>(malloc(quote_size));
