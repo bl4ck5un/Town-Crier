@@ -43,7 +43,7 @@
 
 #include "event_handler.h"
 #include <string>
-#include <external/inttypes.h>
+#include <inttypes.h>
 
 #include "scrapers.h"
 #include "scrapers/yahoo_yql_stock.h"
@@ -314,7 +314,7 @@ int do_handle_request(int nonce,
       }
        */
     default :
-      LL_CRITICAL("Unknown request type: %"PRIu64, type);
+      LL_CRITICAL("Unknown request type: %" PRIu64, type);
       error_flag = TC_ERR_FLAG_INVALID_INPUT;
   }
 

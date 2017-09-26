@@ -95,7 +95,6 @@ extern "C" {
 #include <string>
 #include <exception>
 #include <vector>
-#include <stlport/type_traits>
 
 using namespace std;
 

@@ -41,22 +41,24 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include <assert.h>
-#include "stdlib.h"
-#include "stdint.h"
-#include "Enclave_t.h"
-#include "vector"
-#include "external/keccak.h"
+#include "eth_transaction.h"
+
+#include <cassert>
+#include <cstdlib>
+#include <cstdint>
+#include <vector>
+#include <cinttypes>
+
 #include "mbedtls/bignum.h"
 
 #include "eth_ecdsa.h"
-#include "Log.h"
-
 #include "eth_abi.h"
+#include "external/keccak.h"
+#include "Enclave_t.h"
+#include "Constants.h"
+#include "Log.h"
 #include "commons.h"
 #include "debug.h"
-
-#include "eth_transaction.h"
 
 void rlp_item(const uint8_t *input, const int len, bytes &out) {
   int i;
@@ -130,8 +132,6 @@ void TX::rlpEncode(bytes &out, bool withSig) {
   }
 }
 
-#include "Constants.h"
-#include "external/inttypes.h"
 
 #define DELIVER_CALL_SIGNATURE "deliver(uint64,bytes32,uint64,bytes32)"
 

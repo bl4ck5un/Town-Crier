@@ -45,8 +45,7 @@
 
 #include <stdio.h>
 #include <string.h>
-
-#include "external/inttypes.h"
+#include <inttypes.h>
 
 enum err_code {
   NO_ERROR = 0,

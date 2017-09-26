@@ -8,12 +8,20 @@ set(EXTERNAL_SRC_FILES
         external/http_parser.c)
 
 set(TC_SOURCE_FILES
-        env.cpp env.h
+        env.cpp
         init.cpp
-        debug.c Enclave_t.c enclave_exception_hdlr.c
-        create_report.cpp event_handler.cpp
-        commons.cpp encoding.cpp tls_client_tiny.cpp hybrid_cipher.cpp
-        eth_ecdsa.cpp eth_transaction.cpp eth_abi.cpp
+        debug.c
+        Enclave_t.c
+        enclave_exception_hdlr.c
+        create_report.cpp
+        event_handler.cpp
+        commons.cpp
+        encoding.cpp
+        tls_client_tiny.cpp
+        hybrid_cipher.cpp
+        eth_ecdsa.cpp
+        eth_transaction.cpp
+        eth_abi.cpp
         ${LIB_MBEDTLS_PATH}
         ../Common/external/base64.cpp)
 
@@ -43,10 +51,10 @@ include_directories(
         mbedtls-SGX/include
         ${SGX_SDK}/include
         ${SGX_SDK}/include/tlibc
-        ${SGX_SDK}/include/stlport)
+        ${SGX_SDK}/include/libcxx)
 
-set(CMAKE_C_FLAGS "${SGX_COMMON_CFLAGS} ${CMAKE_C_FLAGS} -nostdinc -fvisibility=hidden -fpie -fstack-protector")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++03 -nostdinc++")
+set(CMAKE_C_FLAGS "${SGX_COMMON_CFLAGS} ${CMAKE_C_FLAGS} -Wall -nostdinc -fvisibility=hidden -fpie -fstack-protector")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11 -nostdinc++")
 
 add_custom_command(
         OUTPUT ${LIB_MBEDTLS_PATH}
@@ -58,7 +66,7 @@ set_target_properties(enclave PROPERTIES PREFIX "")
 target_link_libraries(enclave "${SGX_COMMON_CFLAGS} \
     -Wl,--no-undefined -nostdlib -nodefaultlibs -nostartfiles -L${SGX_LIBRARY_PATH} \
     -Wl,--whole-archive -l${SGX_TRTS_LIB} -Wl,--no-whole-archive \
-    -Wl,--start-group ${LIB_MBEDTLS_PATH} -lsgx_tstdc -lsgx_tstdcxx -lsgx_tcrypto -l${SGX_TSVC_LIB} -Wl,--end-group \
+    -Wl,--start-group ${LIB_MBEDTLS_PATH} -lsgx_tstdc -lsgx_tcxx -lsgx_tcrypto -l${SGX_TSVC_LIB} -Wl,--end-group \
     -Wl,-Bstatic -Wl,-Bsymbolic -Wl,--no-undefined \
     -Wl,-pie,-eenclave_entry -Wl,--export-dynamic \
     -Wl,--defsym,__ImageBase=0")

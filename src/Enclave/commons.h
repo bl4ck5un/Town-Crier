@@ -47,6 +47,7 @@
 
 #include <vector>
 #include <cassert>
+#include <string>
 
 #include "Log.h"
 #include "encoding.h"

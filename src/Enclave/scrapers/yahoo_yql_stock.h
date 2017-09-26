@@ -99,7 +99,7 @@ class YahooYQLStock : public Scraper {
     return handle_one(symbol, date.year, date.month, date.day, resp_data);
   }
 
-  err_code handle_one(string symbol, uint year, uint month, uint day, int *resp_data) {
+  err_code handle_one(string symbol, int year, int month, int day, int *resp_data) {
     LL_DEBUG("handling %s %d-%d-%d", symbol.c_str(), year, month, day);
 
     if (symbol.empty() || day > 31 || year > 2017 || month > 12) {

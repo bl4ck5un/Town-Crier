@@ -58,6 +58,12 @@
 #define ENC_LOG_H
 
 #ifdef    __cplusplus
+#define _FALSE false
+#else
+#define _FALSE 0
+#endif
+
+#ifdef    __cplusplus
 extern "C" {
 #endif
 
@@ -75,7 +81,7 @@ do { \
 #define LOG(level,fmt,arg... ) \
 do { \
   LOG_F(level,fmt,##arg ); \
-} while(0)
+} while(_FALSE)
 #endif
 
 #define LOG_LEVEL_TRACE 3

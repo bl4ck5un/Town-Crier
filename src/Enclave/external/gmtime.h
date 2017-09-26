@@ -53,6 +53,8 @@ struct date {
   int year;
   int month;
   int day;
+
+  date(): year(0), month(0), day(0) {}
 };
 }
 }
