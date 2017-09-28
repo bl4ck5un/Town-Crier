@@ -6,8 +6,8 @@ before_install:
     - docker run -v $(pwd):/home/tc/TownCrier bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "TownCrier/src/lint.sh"
     - docker run --user $(id -u) -v $(pwd):/home/tc/TownCrier -w "/home/tc/TownCrier/src/utils" bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "./build_gtest.sh"
 script:
-    - docker run --user $(id -u) -v $(pwd):/home/tc/TownCrier -w "/home/tc/TownCrier/src" bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "mkdir -p build; cd build; cmake ..; make; make TestMain"
-    - docker run --user $(id -u) -v $(pwd):/home/tc/TownCrier -w "/home/tc/TownCrier/src/build" bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "./TestMain"
+    - docker run --user $(id -u) -v $(pwd):/home/tc/TownCrier -w "/home/tc/TownCrier/src" bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "mkdir -p build; cd build; cmake ..; make; make tests"
+    - docker run --user $(id -u) -v $(pwd):/home/tc/TownCrier -w "/home/tc/TownCrier/src/build" bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "./tests"
 notifications:
   slack:
     secure: jsc58HqOjk0uJtipWAgHsjaL6Ee4N1YZ99wqtemZ7alk06dWsYyGdcGIGBS7F4m4YkrTg8QpoAIiJSFKCYM6W0C5nYSKn8SqF3MbulLfY428jVX4NgvdnydoXMJUw7JgvRckMNUcyE2EIIp7qvPF1q4ZZAyL5h1o7NGmZa83WRdU0InFM55wAqkGy5LPNWIjN1Uz6UOa/eKy/eVmUebkp9nMHvcJcJGWaZx6are282rgNs7Xbt6c+TdU082s6pcIWAs3ONrAg+CMGxFCi6bbx5KtBqHe/MZ/FCENgQC0dbivgghw4yLmY0CxSrK7/Zf7QYQe66P4joXNrGwmGiA7i//nkcRcDTtDHbzPPDBkIvWL8PNg6DskxMVc4S0poD4EYbAvtj7btGkAg5FWwT+QdQkuqnf+FkpORL1Eq9E86Y42PFmFONFMSrXzD0smc9b6zqErOd1kmfSApRjPoMvhZSxRE0CLCtMyHoMr3ZhWE1E0wyJrFerjPtKqNH4yDDJ04Omdr7FyatYeU59c0HWWlaa1ZE2A9vURZeRvZGaoNA9yOUpzbl0tYAoO2QUswz1s4R/3Wu3f7d199SJtUzQtnL1DxDaiG8b+K5xI4Ww6+9GEM2CyftbUTiWeCfKg7D/5KgUYBibzMAALPygnStoYedZd2jQ4N4/JIQKRlMJBcNo=
