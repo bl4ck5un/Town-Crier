@@ -55,7 +55,7 @@ add_executable(tc-keygen
 
 # Source files for tests
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
-add_executable(TestMain EXCLUDE_FROM_ALL
+add_executable(tests EXCLUDE_FROM_ALL
         ${TEST_SRC_FILES}
         test/SGXTestBase.h
         attestation.cpp
@@ -114,7 +114,7 @@ target_link_libraries(tc-keygen
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
 set(TEST_PROGRAM_LDFLAGS " ${LIBGTEST}/libgtest_main.a")
 
-target_link_libraries(TestMain
+target_link_libraries(tests
         ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
         ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
         ${LIBODB_LIBRARIES} ${MHD_LIBRARIES} ${SQLITE_LIBRARIES} ${Boost_LIBRARIES}
@@ -129,7 +129,7 @@ add_custom_command(TARGET tc
 
 
 add_dependencies(tc enclave)
-add_dependencies(TestMain enclave)
+add_dependencies(tests enclave)
 add_dependencies(tc-keygen enclave)
 
 install(TARGETS tc DESTINATION tc)

@@ -413,7 +413,7 @@ int HybridEncryption::secretToPubkey(const mbedtls_mpi *seckey, ECPointBuffer pu
   return 0;
 }
 
-string HybridCiphertext::toString() {
+void HybridCiphertext::toString() {
   hexdump("user pubkey", user_pubkey, USER_PUBKEY_LEN);
   hexdump("aes iv", aes_iv, AES_IV_LEN);
   hexdump("gcm tag", gcm_tag, GCM_TAG_LEN);

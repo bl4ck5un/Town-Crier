@@ -209,7 +209,7 @@ Website: www.ilikebigbits.com
 #endif
 
 #ifndef LOGURU_UNSAFE_SIGNAL_HANDLER
-	#define LOGURU_UNSAFE_SIGNAL_HANDLER 1
+	#define LOGURU_UNSAFE_SIGNAL_HANDLER 0
 #endif
 
 #if LOGURU_IMPLEMENTATION
@@ -2704,14 +2704,17 @@ namespace loguru
 		write_to_stderr(data, strlen(data));
 	}
 
+
 	void call_default_signal_handler(int signal_number)
 	{
+#if 0
 		struct sigaction sig_action;
 		memset(&sig_action, 0, sizeof(sig_action));
 		sigemptyset(&sig_action.sa_mask);
 		sig_action.sa_handler = SIG_DFL;
 		sigaction(signal_number, &sig_action, NULL);
 		kill(getpid(), signal_number);
+#endif
 	}
 
 	void signal_handler(int signal_number, siginfo_t*, void*)
@@ -2774,6 +2777,7 @@ namespace loguru
 
 	void install_signal_handlers()
 	{
+#if 0
 		struct sigaction sig_action;
 		memset(&sig_action, 0, sizeof(sig_action));
 		sigemptyset(&sig_action.sa_mask);
@@ -2783,6 +2787,7 @@ namespace loguru
 			CHECK_F(sigaction(s.number, &sig_action, NULL) != -1,
 				"Failed to install handler for %s", s.name);
 		}
+#endif
 	}
 } // namespace loguru
 

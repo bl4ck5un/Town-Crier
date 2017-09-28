@@ -43,9 +43,66 @@
 
 #include "eth_transaction.h"
 
+#include "macros.h"
+#include "Constants.h"
+
 extern "C" int RLP_self_test();
-int RLP_self_test()
-{
-    TX tx(TX::MessageCall);
-    return 0;
+
+typedef struct {
+  uint64_t nonce;
+  uint64_t gasprice;
+  uint64_t gaslimit;
+  const char *to;
+  uint64_t value;
+  const char *data_hex;
+
+  const char *expected_output;
+} test_case_t;
+
+test_case_t cases[]{
+#include "rlp_test_cases"
+};
+
+int RLP_self_test() {
+
+  NO_THROW_RET(
+
+      int n_error = 0;
+      int n_passed = 0;
+
+      for (auto test : cases) {
+        bytes b;
+        b.from_hex(test.data_hex);
+        Transaction t(Transaction::Type::MessageCall,
+                      test.nonce,
+                      test.gasprice,
+                      test.gaslimit,
+                      test.to,
+                      test.value,
+                      b);
+
+        bytes out;
+        t.rlpEncode(out, false);
+
+        if (string(test.expected_output) != to_hex(out.data(), out.size())) {
+          LL_DEBUG("wanted %s", test.expected_output);
+          LL_DEBUG("got %s", to_hex(out.data(), out.size()).c_str());
+
+          n_error += 1;
+        }
+        else {
+          n_passed += 1;
+        }
+      }
+
+      if (n_error > 0) {
+        LL_CRITICAL("%d tests failed", n_error);
+        return -1;
+      }
+      else {
+        LL_INFO("%d tests passed", n_passed);
+      }
+
+      return 0;
+  )
 }

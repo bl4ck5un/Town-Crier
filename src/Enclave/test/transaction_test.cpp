@@ -50,21 +50,29 @@
 #include "Constants.h"
 
 extern "C" int transaction_rlp_test();
-int transaction_rlp_test() {
+
+static int rlp() {
   bytes v, t;
+
   t.push_back('d');
   t.push_back('o');
   t.push_back('g');
-  rlp_item(&t[0], 3, v);
+
+  rlp_item(t.data(), 3, v);
   if (v.size() != 4 || v[0] != 0x83) return -1;
   if (v[1] != 'd' || v[2] != 'o' || v[3] != 'g') return -1;
+
   t.clear();
   v.clear();
-  rlp_item(&t[0], 0, v);
+
+  rlp_item(t.data(), 0, v);
   if (v.size() != 1 || v[0] != 0x80) return v[0];
 
+  return 0;
+}
+
+static int transaction_form() {
   int nonce = 0;
-  int nonce_len = 32;
   uint64_t request_id = 1;
   uint8_t request_type = 2;
   size_t req_len = 192;
@@ -85,29 +93,27 @@ int transaction_rlp_test() {
 
   uint64_t error_code = 0xee;
 
+  LL_DEBUG("before form");
+
   int ret = form_transaction(nonce,
                              request_id,
                              request_type,
                              req_data,
                              req_len,
                              error_code,
-                             std::vector<uint8_t>(resp_data, resp_data + 32),
+                             bytes(std::vector<uint8_t>(resp_data, resp_data + 32)),
                              transaction,
                              &o_len,
                              true);
+
+  LL_DEBUG("after form");
 
   const char* ans_hex =
       "f8ea80850ba43b7400832dc6c094c3847c4de90b83cb3f6b1e004c9e6345e0b9fc2780b884487a6e32000000000000000000000000000000000000000000000000000000000000000112782fc26e16afcc619e7b7ce654ae7059990a5082316d8ffb2987e1e66940ca00000000000000000000000000000000000000000000000000000000000000ee0000000000000000000000000000000000000000000000000000000000000000";
 
 
   char ans[strlen(ans_hex) / 2];
-  from_hex(ans_hex, ans);
-
-  if (ret) return ret;
-  if (o_len != sizeof ans + 32 * 2 + 1 + 2) {
-    LL_CRITICAL("encoded with wrong length");
-    return -1;
-  }
+  tc::enclave::from_hex(ans_hex, ans);
 
   bytes tcAddress;
   tcAddress.from_hex(TC_ADDRESS);
@@ -116,12 +122,41 @@ int transaction_rlp_test() {
     ans[i] = tcAddress.at(i - 14);
   }
 
-  if (memcmp(transaction, ans, sizeof ans)) {
+  hexdump("wanted: ", ans, sizeof ans);
+  hexdump("get: ", transaction, o_len);
+
+  if (ret) return ret;
+  size_t want = sizeof ans + 32 * 2 + 1 + 2;
+  if (o_len != want) {
+    LL_CRITICAL("encoded with wrong length: got %d, want=%d", o_len, want);
+    return -1;
+  }
+
+  if (0 != memcmp(transaction, ans, sizeof ans)) {
     LL_CRITICAL("memcmp failed");
     printf_sgx("correct: %s\n", ans);
     print_str_dbg("Ours: ", transaction, sizeof ans);
     return 1;
   }
+
+  return 0;
+}
+
+#include "macros.h"
+
+int transaction_rlp_test() {
+  int ret;
+  NO_THROW_RET(
+      if (0 != (ret = rlp()))
+      {
+        return ret;
+      }
+
+      if (0 != (ret = transaction_form()))
+      {
+        return ret;
+      }
+  )
 
   return 0;
 }

@@ -99,7 +99,7 @@ class HybridCiphertext {
   vector <uint8_t> data;
 
   HybridCiphertext() {};
-  string toString();
+  void toString();
 };
 
 class HybridEncryption {

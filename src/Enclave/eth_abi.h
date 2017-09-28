@@ -112,11 +112,11 @@ class ABI_Bytes32: public ABI_serializable
 protected:
     bytes32* _data;
 public:
-    ABI_Bytes32(bytes32* data): _data(data) {};
-    int encode(bytes& out) ;
-    int encode_len()  {return 32;}
-    bool dynamic()  {return false; }
-    ~ABI_Bytes32() {};
+    explicit ABI_Bytes32(bytes32* data): _data(data) {};
+    int encode(bytes& out) override;
+    int encode_len() override {return 32;}
+    bool dynamic() override {return false; }
+    ~ABI_Bytes32() override = default;
 };
 
 class ABI_Bytes: public ABI_serializable

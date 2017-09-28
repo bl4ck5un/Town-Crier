@@ -40,14 +40,13 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef TOWN_CRIER_COMMONS_H
-#define TOWN_CRIER_COMMONS_H
-
-#include <stdint.h>
+#ifndef TOWN_CRIER_ENCLAVE_COMMONS_H
+#define TOWN_CRIER_ENCLAVE_COMMONS_H
 
 #include <vector>
 #include <cassert>
 #include <string>
+#include <cstdint>
 
 #include "Log.h"
 #include "encoding.h"
@@ -57,38 +56,16 @@
 const uint8_t HEX_BASE =16;
 const uint8_t DEC_BASE =10;
 
-static uint8_t hex2int(char input) {
-  if (input >= '0' && input <= '9')
-    return static_cast<uint8_t>(input - '0');
-  if (input >= 'A' && input <= 'F')
-    return static_cast<uint8_t>(input - 'A' + 10);
-  if (input >= 'a' && input <= 'f')
-    return static_cast<uint8_t>(input - 'a' + 10);
-  throw std::invalid_argument("Invalid input string");
+namespace tc {
+namespace enclave {
+
+std::vector<uint8_t> from_hex(const char* src);
+void from_hex(const char* src, char* target);
+
+}
 }
 
-static char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
-                        '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-
-// This function assumes src to be a zero terminated sanitized string with
-// an even number of [0-9a-f] characters, and target to be sufficiently large
-inline void from_hex(const char* src, char* target)
-{
-  while(*src && src[1])
-  {
-    *(target++) = hex2int(*src)*HEX_BASE + hex2int(src[1]);
-    src += 2;
-  }
-}
-
-inline std::string to_hex(const unsigned char *data, size_t len) {
-  std::string s(len * 2, ' ');
-  for (int i = 0; i < len; ++i) {
-    s[2 * i] = hexmap[(data[i] & 0xF0) >> 4];
-    s[2 * i + 1] = hexmap[data[i] & 0x0F];
-  }
-  return s;
-}
+std::string to_hex(const unsigned char *data, size_t len);
 
 
 template<typename T>

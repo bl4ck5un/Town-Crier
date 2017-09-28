@@ -1,3 +1,6 @@
+add_definitions(-DENCLAVE_STD_ALT)
+add_definitions(-DIN_ENCLAVE)
+
 set(LIB_MBEDTLS_PATH "${CMAKE_CURRENT_SOURCE_DIR}/mbedtls-SGX/lib/libmbedtls_sgx_t.a")
 
 set(EXTERNAL_SRC_FILES
@@ -25,7 +28,6 @@ set(TC_SOURCE_FILES
         ${LIB_MBEDTLS_PATH}
         ../Common/external/base64.cpp)
 
-add_definitions(-DENCLAVE_STD_ALT)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
 FILE(GLOB SCRAPERS_SRC_FILES scrapers/*.cpp)
@@ -53,7 +55,7 @@ include_directories(
         ${SGX_SDK}/include/tlibc
         ${SGX_SDK}/include/libcxx)
 
-set(CMAKE_C_FLAGS "${SGX_COMMON_CFLAGS} ${CMAKE_C_FLAGS} -Wall -nostdinc -fvisibility=hidden -fpie -fstack-protector")
+set(CMAKE_C_FLAGS "${SGX_COMMON_CFLAGS} ${CMAKE_C_FLAGS} -Wall -Werror=return-type -nostdinc -fvisibility=hidden -fpie -fstack-protector")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11 -nostdinc++")
 
 add_custom_command(

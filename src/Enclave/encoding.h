@@ -40,56 +40,108 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-//
-// Created by fanz on 10/14/16.
-//
-
 #ifndef TOWN_CRIER_ENCODING_H
 #define TOWN_CRIER_ENCODING_H
 
-#include <vector>
+#include "commons.h"
 #include "Log.h"
 
+#include <vector>
+#include <array>
+
+
+using std::vector;
+using std::invalid_argument;
+using std::string;
+using std::array;
 typedef std::vector<uint8_t> BYTE;
 
-class bytes : public std::vector<uint8_t> {
- protected:
-  void rlp(bytes &out, size_t len);
- public:
-  bytes() {}
-  bytes(bytes a, bytes b);
-  bytes(size_t len) : std::vector<uint8_t>(len, static_cast<uint8_t>(0)) {}
-  bytes(std::vector<uint8_t> data) : std::vector<uint8_t>(data) {}
-  void replace(const bytes &);
-  virtual void from_hex(const char *src);
-  virtual void to_rlp(bytes &out);
-  void toString(const std::string &title);
-  void toString();
-};
-
-class bytes32 : public bytes {
- private:
- public:
-  bytes32() {}
-  bytes32(const uint8_t *data, size_t len) {
-    std::vector<uint8_t>::insert(std::vector<uint8_t>::begin(),
-                                 data,
-                                 data + len);
-  }
-  // build bytes32 from uint64_t, pre padding with 0
-  bytes32(uint64_t);
-  // build bytes32 from string, rear padding with 0
-  bytes32(std::string);
-  void replace(const bytes32 &in) { bytes::replace(in); }
-  void replace(const BYTE &in);
-};
-
-uint8_t get_n_th_byte(uint64_t in, int n);
-int append_as_uint256(bytes &out, uint64_t in, int len);
-uint8_t bytesRequired(uint64_t _i);
 
 //! split an integer @code{num} to an byte array
 //! prepend 0 until reaching @code{width}
 std::vector<uint8_t> itob(uint64_t num, size_t width = 0);
 
+class RLPSerializable {
+ public:
+  virtual void to_rlp(std::vector<uint8_t>& out) = 0;
+};
+
+template <typename Iter>
+void rlp_string(Iter begin, Iter end, std::vector<uint8_t>& out);
+
+class bytes : public std::vector<uint8_t> {
+ public:
+  bytes() = default;
+  bytes(const bytes& a, const bytes& b) {
+    std::vector<uint8_t>::insert(std::vector<uint8_t>::end(), a.begin(), a.end());
+    std::vector<uint8_t>::insert(std::vector<uint8_t>::end(), b.begin(), b.end());
+  }
+  explicit bytes(size_t len) : std::vector<uint8_t>(len, static_cast<uint8_t>(0)) {}
+  explicit bytes(const std::vector<uint8_t>& data) : std::vector<uint8_t>(data) {}
+  void replace(const bytes &);
+  virtual void from_hex(const char *src);
+  virtual void parseUInt64(uint64_t i){
+    this->clear();
+    vector<uint8_t> b = itob(i);
+    this->insert(this->begin(), b.begin(), b.end());
+  }
+  virtual void to_rlp(bytes &out);
+  void dump(const std::string &title);
+  void toString();
+};
+
+#include "debug.h"
+
+class bytes20: public RLPSerializable {
+ private:
+  static const size_t SIZE=20;
+  array<uint8_t, SIZE> _b;
+
+ public:
+  bytes20() = default;
+  explicit bytes20(const char* hex);
+  void to_rlp(std::vector<uint8_t>& out) override {
+    rlp_string(_b.begin(), _b.end(), out);
+  }
+  void dump(const char* title) {
+#ifdef DEBUG
+    int debugging;
+    ocall_is_debug(&debugging);
+    if (debugging) {
+      LL_DEBUG("in tostring");
+      hexdump(title, _b.data(), _b.size());
+    }
+#endif
+  }
+};
+
+class bytes32 : public bytes {
+ private:
+  const size_t SIZE=32;
+ public:
+  bytes32() {
+    vector<uint8_t>::resize(SIZE);
+    memset(vector<uint8_t>::data(), 0, SIZE);
+  };
+
+  bytes32(const uint8_t *data, size_t len) {
+    if (len != SIZE) {
+      throw invalid_argument("len has to be 32");
+    }
+    vector<uint8_t>::insert(vector<uint8_t>::begin(), data, data + len);
+  }
+  // build bytes32 from uint64_t, pre padding with 0
+  explicit bytes32(uint64_t);
+  // build bytes32 from string, rear padding with 0
+  bytes32(std::string);
+  void replace(const bytes32 &in) { bytes::replace(in); }
+  void replace(const BYTE &in);
+
+
+  void reset(){}
+};
+
+uint8_t get_n_th_byte(uint64_t in, int n);
+int append_as_uint256(bytes &out, uint64_t in, int len);
+uint8_t bytesRequired(uint64_t _i);
 #endif //TOWN_CRIER_ENCODING_H

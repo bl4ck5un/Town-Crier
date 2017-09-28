@@ -42,9 +42,7 @@
 //
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string>
-#include <Log.h>
 #include <vector>
 
 #include "ups_tracking.h"
@@ -52,6 +50,7 @@
 #include "tls_client.h"
 #include "../../Common/Constants.h"
 #include "../external/picojson.h"
+#include "Log.h"
 
 using namespace std;
 /* Define USPS Scraper specific constants */
@@ -155,45 +154,34 @@ std::string USPSScraper::parse_response(const string resp) {
   std::string err = picojson::parse(v, resp);
   if (!err.empty()) {
     LL_CRITICAL("Error in picojson");
-    return "INVALID_PARAMS";
+    throw CannotParseResponse(resp);
   }
   if (!v.is<picojson::object>()) {
     LL_CRITICAL("JSON is not an object");
-    return "INVALID_PARAMS";
+    throw CannotParseResponse(resp);
   }
-  const picojson::value::object &obj = v.get<picojson::object>();
-  picojson::value v1 = obj.find("trackers")->second;
-  const picojson::value::array &tr_list = v1.get<picojson::array>();
-  const picojson::value::object &obj2 = tr_list[0].get<picojson::object>();
 
-  picojson::value v2 = obj2.find("tracking_details")->second;
-  const picojson::value::array &tracking_history = v2.get<picojson::array>();
+  try {
+    const picojson::value::object &obj = v.get<picojson::object>();
 
-  const picojson::value::object &obj3 = tracking_history[tracking_history.size() - 1].get<picojson::object>();
-  picojson::value v3 = obj3.find("status")->second;
-  const std::string &pkg_status = v3.get<std::string>();
-  LL_INFO("status of package: %s", pkg_status.c_str());
+    picojson::value v1 = obj.find("trackers")->second;
+    const picojson::value::array &tr_list = v1.get<picojson::array>();
+    const picojson::value::object &obj2 = tr_list.at(0).get<picojson::object>();
 
-  // char* tmp = (char*)resp;
-  // std::string buf_string(resp);
-  // //cout << buf_string << "\n";
-  // LL_INFO("req is %s", resp);
-  // std::size_t pos = buf_string.find("id=\"tt_spStatus\"");
-  // if (pos == std::string::npos){
-  //  std::string no_pkg = "Package not found";
-  //  return no_pkg;
-  // }
+    picojson::value v2 = obj2.find("tracking_details")->second;
+    const picojson::value::array &tracking_history = v2.get<picojson::array>();
 
-  // //std::string new_tmp = tmp.substr(pos, pos + 20);
-  // //printf("test\n");
-  // std::size_t start = pos + 41;
-  // pos += 41;
-  // while(tmp[pos] != '\t'){
-  //  pos += 1;
-  // }
-  // std::size_t end = pos - 1;
-  // std::string token = buf_string.substr(start, end-start);
-  return pkg_status;
+    const picojson::value::object &obj3 = tracking_history.at(tracking_history.size() - 1).get<picojson::object>();
+    picojson::value v3 = obj3.find("status")->second;
+    const std::string &pkg_status = v3.get<std::string>();
+    LL_INFO("status of package: %s", pkg_status.c_str());
+
+    return pkg_status;
+  }
+  catch (const exception& e) {
+    LL_CRITICAL("exception: %s", e.what());
+    throw CannotParseResponse(resp);
+  }
 }
 
 /* Code used for testing

@@ -49,34 +49,47 @@
 #ifndef TX_H
 #define TX_H
 
+class Transaction {
+ public:
+  enum Type {
+    NullTransaction,
+    ContractCreation,
+    MessageCall
+  };
 
-class TX {
-public:
-    enum Type {
-        NullTransaction,
-        ContractCreation,
-        MessageCall
-    };
-    Type    m_type;
-    bytes32 m_nonce;
-    bytes32 m_value;
-    bytes32 m_receiveAddress;
-    bytes32 m_gasPrice;
-    bytes32 m_gas;
-    bytes   m_data;
-    bytes32 r;
-    bytes32 s;
-    uint8_t v;
-    TX(Type p);
-    void rlpEncode(bytes &out, bool withSig = true);
+  Type m_type;
+  bytes32 m_nonce;
+  bytes32 m_gasPrice;
+  bytes32 m_gas;
+  bytes20 m_to;
+  bytes32 m_value;
+  bytes m_data;
+  bytes32 r;
+  bytes32 s;
+  uint8_t v;
+  Transaction(Type p,
+              uint64_t nonce,
+              uint64_t gasprice,
+              uint64_t gaslimit,
+              string to,
+              uint64_t value,
+              const bytes& data)
+      : m_type(p), m_to(to.c_str()) {
+    m_nonce.parseUInt64(nonce);
+    m_gasPrice.parseUInt64(gasprice);
+    m_gas.parseUInt64(gaslimit);
+    m_value.parseUInt64(value);
+
+    m_data = data;
+  }
+  void rlpEncode(bytes &out, bool withSig = true);
 };
-
 
 #if defined(__cplusplus)
 extern "C" {
 #endif
 
-void rlp_item(const uint8_t*, const int, bytes&);
+void rlp_item(const uint8_t *, int, bytes &) __attribute__ ((deprecated));
 int form_transaction(int nonce,
                      uint64_t request_id,
                      uint8_t request_type,

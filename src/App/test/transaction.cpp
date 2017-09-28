@@ -41,6 +41,8 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
+#include <iostream>
+
 #include <gtest/gtest.h>
 
 #include "App/Enclave_u.h"
@@ -57,6 +59,7 @@ TEST_F(Transaction, All) {
   int ret;
   try {
     provision_key(eid, SEALED_KEY, tc::keyUtils::ECDSA_KEY);
+
     transaction_rlp_test(eid, &ret);
     EXPECT_EQ(0, ret);
   } catch (tc::EcallException &e) {

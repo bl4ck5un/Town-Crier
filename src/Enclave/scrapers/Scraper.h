@@ -43,7 +43,8 @@
 #ifndef SRC_ENCLAVE_SCRAPERS_SCRAPER_H_
 #define SRC_ENCLAVE_SCRAPERS_SCRAPER_H_
 
-#include <stdint.h>
+#include <cstdint>
+#include <string>
 
 #include "Constants.h"
 #include "utils.h"
@@ -51,6 +52,17 @@
 class Scraper {
  public:
   virtual err_code handle(const uint8_t *req, size_t data_len, int *resp_data) = 0;
+};
+
+class CannotParseResponse : public std::exception {
+ private:
+  std::string response;
+
+ public:
+  explicit CannotParseResponse(const std::string& response): response(response) {};
+  const char* what() const throw() override {
+    return std::string("cannot parse response: " + response).c_str();
+  }
 };
 
 #endif  // SRC_ENCLAVE_SCRAPERS_SCRAPER_H_

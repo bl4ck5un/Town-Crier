@@ -50,8 +50,8 @@
 #else
 #define TC_ADDRESS  "0x18322346bfb90378ceaf16c72cee4496723636b9"
 #endif
-#define GASPRICE    "0x0BA43B7400"  // 50000000000
-#define GASLIMIT    "0x2DC6C0"      // 3000000
+#define GASPRICE    0x0BA43B7400  // 50000000000
+#define GASLIMIT    0x2DC6C0      // 3000000
 
 #define TC_REQUEST_PAYLOAD_LIMIT 20480 // 2k payload limit
 

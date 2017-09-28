@@ -81,14 +81,8 @@ void Monitor::loop() {
   unsigned monitor_retry_counter = 0;
   unsigned int sleep_time_sec = 1;
 
-  while (true) {
-    // handle interrupt nicely
-    if (quit.load()) {
-      LL_INFO("Ctrl-C pressed, cleaning up...");
-      ret = 1;
-      break;
-    }
-
+  // handle interrupt nicely
+  while (!quit.load()) {
     if (monitor_retry_counter > 0) {
       // doubling the sleeping time
       sleep_time_sec *= 2;
@@ -260,7 +254,6 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
       LL_CRITICAL("%s pushed to failed queue", request->toString());
       failed_requests.push(std::move(request));
     }
-    continue;
   }
 
   LL_LOG("going over the failed tx");

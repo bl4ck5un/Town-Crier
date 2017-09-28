@@ -76,7 +76,7 @@ do { \
   char __log_buf[BUFSIZ] = {'\0'};\
   snprintf(__log_buf, BUFSIZ, "[%s:%d] " fmt, __FILENAME__, __LINE__, ##arg);\
   ocall_log_##level(__log_buf);\
-} while(0)
+} while(_FALSE)
 #else
 #define LOG(level,fmt,arg... ) \
 do { \

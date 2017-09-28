@@ -105,7 +105,7 @@ string unseal_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyType
 
 void provision_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyType type) {
   unsigned char _sealed_key_buf[SECRETKEY_SEALED_LEN];
-  size_t buffer_used = (size_t)ext::b64_pton(sealed_key.c_str(), _sealed_key_buf, sizeof _sealed_key_buf);
+  auto buffer_used = (size_t)ext::b64_pton(sealed_key.c_str(), _sealed_key_buf, sizeof _sealed_key_buf);
 
   int ret = 0;
   sgx_status_t ecall_ret;

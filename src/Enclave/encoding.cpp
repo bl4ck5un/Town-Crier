@@ -88,63 +88,78 @@ static uint8_t byte_length(T _i) {
 
 uint8_t bytesRequired(uint64_t _i) { return byte_length<uint64_t>(_i); }
 
-bytes::bytes(bytes a, bytes b) {
-  std::vector<uint8_t>::insert(std::vector<uint8_t>::end(), a.begin(), a.end());
-  std::vector<uint8_t>::insert(std::vector<uint8_t>::end(), b.begin(), b.end());
-}
-
 void bytes::replace(const bytes &in) {
   vector<uint8_t>::clear();
   vector<uint8_t>::insert(vector<uint8_t>::end(), in.begin(), in.end());
 }
 
 void bytes::from_hex(const char *src) {
-  if (strlen(src) % 2 != 0) { LL_CRITICAL("Error: input is not of even len\n"); }
-  if (strncmp(src, "0x", 2) == 0) src += 2;
-  while (*src && src[1]) {
-    std::vector<uint8_t>::push_back(hex2int(*src) * 16 + hex2int(src[1]));
-    src += 2;
-  }
+  this->clear();
+  auto b = tc::enclave::from_hex(src);
+  this->insert(this->begin(), b.begin(), b.end());
 }
 
-void bytes::rlp(bytes &out, size_t len) {
+#include <iterator>
+
+template <typename Iter>
+void rlp_string(Iter begin, Iter end, std::vector<uint8_t>& out) {
+  static_assert(std::is_same<typename std::iterator_traits<Iter>::value_type, uint8_t>::value, "Iter must point to uint8_t");
+
+  long len = std::distance(begin, end);
+  if (len < 0)
+    throw std::invalid_argument("String too long to be encoded.");
+
   int32_t i;
   int32_t len_len;
-  if (len == 1 && (std::vector<uint8_t>::operator[](0)) < 0x80) {
-    out.push_back(std::vector<uint8_t>::operator[](0));
+  if (len == 1 && (*begin) < 0x80) {
+    out.push_back(*begin);
     return;
   }
+
   // longer than 1
   if (len < 56) {
     out.push_back(0x80 + static_cast<uint8_t>(len));
-    for (i = 0; i < len; i++) out.push_back(std::vector<uint8_t>::operator[](i));
+    out.insert(out.end(), begin, end);
   } else {
     len_len = byte_length<size_t>(len);
-    if (len_len > 8) { throw std::invalid_argument("Error: len_len > 8"); }
+    if (len_len > 8) {
+      throw std::invalid_argument("String too long to be encoded.");
+    }
+
     out.push_back(0xb7 + static_cast<uint8_t>(len_len));
 
-    vector<uint8_t> b_len = itob(len);
+    std::vector<uint8_t> b_len = itob(len);
     out.insert(out.end(), b_len.begin(), b_len.end());
-    out.insert(out.end(), vector<uint8_t>::begin(), vector<uint8_t>::begin() + len);
+    out.insert(out.end(), begin, end);
   }
 }
 
 void bytes::to_rlp(bytes &out) {
-  return rlp(out, std::vector<uint8_t>::size());
+  rlp_string(this->begin(), this->end(), out);
 }
 
-void bytes::toString(const string &title) {
+void bytes::dump(const string &title) {
 #ifdef DEBUG
   int debugging;
   ocall_is_debug(&debugging);
   if (debugging) {
-    hexdump(title.c_str(), &std::vector<uint8_t>::operator[](0),
-            std::vector<uint8_t>::size());
+    LL_DEBUG("in tostring");
+    hexdump(title.c_str(), std::vector<uint8_t>::data(), std::vector<uint8_t>::size());
   }
 #endif
 }
 
-void bytes::toString() { toString("bytes"); }
+void bytes::toString() { dump("bytes"); }
+
+
+bytes20::bytes20(const char *hex) {
+  auto b = tc::enclave::from_hex(hex);
+  if (b.size() != SIZE)
+    throw invalid_argument("wrong size");
+
+  std::copy(b.begin(), b.end(), _b.begin());
+}
+
 
 bytes32::bytes32(uint64_t in) {
   // push big-endian int (i.e. prepend 0 until 32 bytes)
@@ -168,11 +183,16 @@ void bytes32::replace(const BYTE &in) {
   }
 
   vector<uint8_t>::clear();
-  vector<uint8_t>::insert(vector<uint8_t>::end(), in.begin(), in.end());
+  this->insert(this->begin(), in.begin(), in.end());
 }
 
 std::vector<uint8_t> itob(uint64_t num, size_t width) {
   std::vector<uint8_t> out;
+
+  if (num == 0 && width == 0) {
+    return out;
+  }
+
   size_t len_len = byte_length<size_t>(num);
   for (long i = len_len - 1; i >= 0; i--) {
     out.push_back(static_cast<uint8_t>((num >> (8 * i)) & 0xFF));
