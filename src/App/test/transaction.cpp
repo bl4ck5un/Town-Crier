@@ -41,9 +41,9 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include <iostream>
 
 #include <gtest/gtest.h>
+#include <iostream>
 
 #include "App/Enclave_u.h"
 #include "App/key_utils.h"
