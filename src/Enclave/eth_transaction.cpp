@@ -226,17 +226,15 @@ int form_transaction(int nonce,
   // construct a TX
 
   // 1) encode the nonce
-  Transaction tx(Transaction::MessageCall, nonce, GASPRICE, GASLIMIT, TC_ADDRESS, 0, encoded_delivery_call);
-//  BYTE b_nonce = itob(nonce);
-//  tx.m_nonce.replace(b_nonce);
-//  tx.m_gasPrice.from_hex(GASPRICE);
-//  tx.m_gas.from_hex(GASLIMIT);
-//  tx.m_to.from_hex(TC_ADDRESS);
-//  tx.m_value.clear();
+  Transaction tx(Transaction::MessageCall,
+                 nonce,
+                 GASPRICE,
+                 GASLIMIT,
+                 TC_ADDRESS,
+                 0,
+                 encoded_delivery_call);
 
   tx.m_data = encoded_delivery_call;
-
-  LL_CRITICAL("data: %s", to_hex(encoded_delivery_call.data(), encoded_delivery_call.size()).c_str());
 
   try {
     LL_DEBUG("before rlpEncode");
@@ -247,7 +245,6 @@ int form_transaction(int nonce,
     LL_CRITICAL("%s", e.what());
     return TC_INTERNAL_ERROR;
   }
-
   catch (const std::exception &e) {
     LL_CRITICAL("%s", e.what());
     return TC_INTERNAL_ERROR;

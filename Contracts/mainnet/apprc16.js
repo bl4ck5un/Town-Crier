@@ -31,13 +31,13 @@ function Cancel(contract, id) {
 }
 
 function watchEvents(tradeContract) {
-    tradeContract.Request(function(e,r) { 
-		if (!e) { console.log('App Request: ' + JSON.stringify(r.args)); } 
+    tradeContract.Request(function(e,r) {
+		if (!e) { console.log('App Request: ' + JSON.stringify(r.args)); }
 		else {console.log(e)}
 	});
-	
-    tradeContract.Response(function(e,r) { 
-		if (!e) { console.log('App Response: ' + JSON.stringify(r.args)); } 
+
+    tradeContract.Response(function(e,r) {
+		if (!e) { console.log('App Response: ' + JSON.stringify(r.args)); }
 		else {console.log(e)}
 	});
 }
