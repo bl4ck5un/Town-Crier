@@ -49,7 +49,8 @@
 // this macro is set by cmake
 #define TC_ADDRESS  "0x89c1b3807d4c67df034fffb62f3509561218d30b"
 #else
-#define TC_ADDRESS  "0xe1a71a2f4b974b23feb613a9951a01bf004729b9"
+// testing address
+#define TC_ADDRESS  "0x18322346bfb90378ceaf16c72cee4496723636b9"
 #endif
 #define GASPRICE    0x0BA43B7400  // 50000000000
 #define GASLIMIT    0x2DC6C0      // 3000000

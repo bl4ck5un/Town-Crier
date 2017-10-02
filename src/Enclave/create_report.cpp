@@ -51,12 +51,16 @@
 #include "Enclave_t.h"
 #include "Constants.h"
 
+#include "debug.h"
+
 int ecall_create_report (sgx_target_info_t* quote_enc_info, sgx_report_t* report)
 {
     sgx_report_data_t data; // user defined data
     int ret = 0;
     memset( &data.d, 0x90, sizeof data.d); // put in some data
     ret = sgx_create_report (quote_enc_info, &data, report);
+
+    hexdump("measurement: ", report->body.mr_enclave.m, SGX_HASH_SIZE);
     return ret;
 }
 

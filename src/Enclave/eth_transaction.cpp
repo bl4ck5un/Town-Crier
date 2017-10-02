@@ -173,7 +173,6 @@ int form_transaction(int nonce,
   free(__hash_input);
 
   bytes32 param_hash(__hash_out, sizeof __hash_out);
-  hexdump("hash", param_hash.data(), param_hash.size());
 
   bytes32 resp_b32(0);
   if (resp_error) {
@@ -218,7 +217,6 @@ int form_transaction(int nonce,
   func_selector.dump("func selector");
 
   // insert the function selector to the begining of the encoded abi
-  // for (int i = 0; i < 4; i++) { encoded_delivery_call.insert(encoded_delivery_call.begin(), func_selector[3 - i]); }
   encoded_delivery_call.insert(encoded_delivery_call.begin(), func_selector.begin(), func_selector.begin() + 4);
 
   encoded_delivery_call.dump("encoded data");
