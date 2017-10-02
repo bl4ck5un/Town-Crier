@@ -252,8 +252,6 @@ int form_transaction(int nonce,
     return TC_INTERNAL_ERROR;
   }
 
-  LL_DEBUG("here");
-
   out.dump("tx w/o sig");
 
   // prepare for signing

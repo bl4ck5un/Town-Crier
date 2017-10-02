@@ -53,32 +53,42 @@
 
 #include "debug.h"
 
-int ecall_create_report (sgx_target_info_t* quote_enc_info, sgx_report_t* report)
-{
-    sgx_report_data_t data; // user defined data
-    int ret = 0;
-    memset( &data.d, 0x90, sizeof data.d); // put in some data
-    ret = sgx_create_report (quote_enc_info, &data, report);
+int ecall_create_report(sgx_target_info_t *quote_enc_info, sgx_report_t *report) {
+  sgx_report_data_t data; // user defined data
+  int ret = 0;
+  memset(&data.d, 0x90, sizeof data.d); // put in some data
+  ret = sgx_create_report(quote_enc_info, &data, report);
 
-    hexdump("measurement: ", report->body.mr_enclave.m, SGX_HASH_SIZE);
-    return ret;
+  hexdump("measurement: ", report->body.mr_enclave.m, SGX_HASH_SIZE);
+  return ret;
 }
 
-int ecall_time_calibrate (time_t wall_clock, uint8_t wtc_rsv[65])
-{
-    int ret = 0;
-    uint8_t wtc_hash[32];
-    ret = keccak((uint8_t*)&wall_clock, sizeof wall_clock, wtc_hash, 32);
-    if (ret != 0)
-    {
-        LL_CRITICAL("keccak returned %d", ret);
-        return ret;
-    }
-    ret = ecdsa_sign(wtc_hash, sizeof wtc_hash, wtc_rsv, wtc_rsv + 32, wtc_rsv + 64);
-    if (ret != 0)
-    {
-        LL_CRITICAL("ecdsa_sign() returned %d", ret);
-        return ret;
-    }
+int ecall_get_mr_enclave(unsigned char mr_enclave[32]) {
+  sgx_report_t report;
+
+  sgx_status_t ret = sgx_create_report(nullptr, nullptr, &report);
+  if (ret != SGX_SUCCESS) {
+    LL_CRITICAL("failed to get mr_enclave");
+    return -1;
+  }
+
+  memcpy(mr_enclave, report.body.mr_enclave.m, SGX_HASH_SIZE);
+
+  return 0;
+}
+
+int ecall_time_calibrate(time_t wall_clock, uint8_t wtc_rsv[65]) {
+  int ret = 0;
+  uint8_t wtc_hash[32];
+  ret = keccak((uint8_t *) &wall_clock, sizeof wall_clock, wtc_hash, 32);
+  if (ret != 0) {
+    LL_CRITICAL("keccak returned %d", ret);
     return ret;
+  }
+  ret = ecdsa_sign(wtc_hash, sizeof wtc_hash, wtc_rsv, wtc_rsv + 32, wtc_rsv + 64);
+  if (ret != 0) {
+    LL_CRITICAL("ecdsa_sign() returned %d", ret);
+    return ret;
+  }
+  return ret;
 }

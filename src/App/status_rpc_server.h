@@ -66,7 +66,7 @@ class status_rpc_server : public AbstractStatusServer {
       AbstractServerConnector& connector,  // NOLINT(runtime/references)
       sgx_enclave_id_t eid, const OdbDriver& db);
   // curl -d '{"id": 1, "jsonrpc": "2.0", "method": "status"}'  localhost:8123
-  std::string attest() override;
+  Json::Value attest() override;
   Json::Value status() override;
 };
 }  // namespace tc

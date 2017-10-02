@@ -99,15 +99,18 @@ void get_attestation(sgx_enclave_id_t eid, vector<uint8_t> *out) {
   memcpy(spid.id, spid_tc, sizeof spid_tc);
 
   uint32_t quote_size;
-  sgx_get_quote_size(NULL, &quote_size);
-  sgx_quote_t *quote = reinterpret_cast<sgx_quote_t *>(malloc(quote_size));
-  ecall_ret = sgx_get_quote(&report, SGX_LINKABLE_SIGNATURE, &spid, NULL, NULL,
-                            0, NULL, quote, quote_size);
+  sgx_calc_quote_size(nullptr, 0, &quote_size);
+  auto *quote = reinterpret_cast<sgx_quote_t *>(malloc(quote_size));
+
+  ecall_ret = sgx_get_quote(&report,
+                            SGX_LINKABLE_SIGNATURE,
+                            &spid, nullptr, nullptr,
+                            0, nullptr, quote, quote_size);
   if (ecall_ret != SGX_SUCCESS) {
     print_error_message((sgx_status_t)ret);
     throw tc::EcallException(ecall_ret, "sgx_get_quote failed");
   }
-  LL_DEBUG("quote size=%zu", quote_size);
+
   out->insert(out->begin(), reinterpret_cast<uint8_t *>(quote),
               reinterpret_cast<uint8_t *>(quote) + quote_size);
   free(quote);

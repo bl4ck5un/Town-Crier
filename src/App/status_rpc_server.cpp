@@ -59,27 +59,41 @@ status_rpc_server::status_rpc_server(AbstractServerConnector &connector,
                              sgx_enclave_id_t eid, const OdbDriver &db)
     : AbstractStatusServer(connector), eid(eid), stat_db(db) {}
 
-std::string status_rpc_server::attest() {
+Json::Value status_rpc_server::attest() {
+  Json::Value result;
   try {
+
     std::vector<uint8_t> attestation;
     get_attestation(this->eid, &attestation);
+
+    const auto* mr_enclave_p = ((sgx_quote_t*) attestation.data())->report_body.mr_enclave.m;
+
     char b64_buf[4096] = {0};
     int buf_used = ext::b64_ntop(attestation.data(), attestation.size(),
                                  b64_buf, sizeof b64_buf);
     if (buf_used < 0) {
-      return "";
+      result["quote"] = "";
     } else {
-      return string(b64_buf);
+      result["quote"] = string(b64_buf);
+    }
+
+    buf_used = ext::b64_ntop(mr_enclave_p, SGX_HASH_SIZE,
+                                 b64_buf, sizeof b64_buf);
+    if (buf_used < 0) {
+      result["mr_enclave"] = "";
+    } else {
+      result["mr_enclave"] = string(b64_buf);
     }
   } catch (tc::EcallException &e) {
-    return e.what();
+    result["error"] = e.what();
   } catch (std::exception &e) {
-    return e.what();
+    result["error"] = e.what();
   } catch (...) {
-    return "unknown exception";
+    result["error"] = "unknown exception";
   }
-}
 
+  return result;
+}
 
 Json::Value status_rpc_server::status() {
   Json::Value status;

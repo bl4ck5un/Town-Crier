@@ -16,7 +16,7 @@ set(TC_SOURCE_FILES
         debug.c
         Enclave_t.c
         enclave_exception_hdlr.c
-        create_report.cpp
+        ecall_attestation.cpp
         event_handler.cpp
         commons.cpp
         encoding.cpp

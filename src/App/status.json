@@ -1,7 +1,7 @@
 [
   {
     "method": "attest",
-    "returns": "0xaabb"
+    "returns": {}
   },
   {
     "method": "status",
