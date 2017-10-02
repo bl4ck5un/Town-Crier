@@ -62,11 +62,10 @@ status_rpc_server::status_rpc_server(AbstractServerConnector &connector,
 Json::Value status_rpc_server::attest() {
   Json::Value result;
   try {
-
     std::vector<uint8_t> attestation;
     get_attestation(this->eid, &attestation);
 
-    const auto* mr_enclave_p = ((sgx_quote_t*) attestation.data())->report_body.mr_enclave.m;
+    const auto* mr_enclave_p = (reinterpret_cast<sgx_quote_t*>(attestation.data()))->report_body.mr_enclave.m;
 
     char b64_buf[4096] = {0};
     int buf_used = ext::b64_ntop(attestation.data(), attestation.size(),
