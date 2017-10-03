@@ -49,6 +49,7 @@
 
 #include "App/Enclave_u.h"
 #include "App/attestation.h"
+#include "App/converter.h"
 #include "App/tc_exception.h"
 #include "App/utils.h"
 #include "Common/Constants.h"
@@ -114,4 +115,15 @@ void get_attestation(sgx_enclave_id_t eid, vector<uint8_t> *out) {
   out->insert(out->begin(), reinterpret_cast<uint8_t *>(quote),
               reinterpret_cast<uint8_t *>(quote) + quote_size);
   free(quote);
+}
+
+string get_mr_enclave(sgx_enclave_id_t eid) {
+  int ret;
+  unsigned char mr_enclave[SGX_HASH_SIZE];
+  sgx_status_t ecall_ret = ecall_get_mr_enclave(eid, &ret, mr_enclave);
+  if (ecall_ret != SGX_SUCCESS) {
+    print_error_message((sgx_status_t)ret);
+    throw tc::EcallException(ecall_ret, "get_mr_enclave failed");
+  }
+  return bufferToHex(mr_enclave, SGX_HASH_SIZE);
 }

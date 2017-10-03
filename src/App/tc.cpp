@@ -86,7 +86,6 @@ int main(int argc, const char *argv[]) {
   loguru::init(argc, argv);
 
   tc::Config config(argc, argv);
-  cout << config.toString();
 
   // create working dir if not existed
   fs::create_directory(fs::path(config.getWorkingDir()));
@@ -107,7 +106,7 @@ int main(int argc, const char *argv[]) {
   LL_INFO("config:\n%s", config.toString().c_str());
 
   try {
-    jsonrpc::HttpClient* httpclient = new jsonrpc::HttpClient(config.getGethRpcAddr());
+    auto httpclient = new jsonrpc::HttpClient(config.getGethRpcAddr());
     geth_connector = new ethRPCClient(*httpclient);
   } catch (const std::exception &e) {
     std::cout << e.what() << std::endl;
@@ -117,6 +116,21 @@ int main(int argc, const char *argv[]) {
   int ret;
   sgx_enclave_id_t eid;
   sgx_status_t st;
+
+  // init enclave first
+  ret = initialize_enclave(config.getEnclavePath().c_str(), &eid);
+  if (ret != 0) {
+    LOG_F(FATAL, "Failed to initialize the enclave");
+    std::exit(-1);
+  } else {
+    LOG_F(INFO, "Enclave %ld created", eid);
+  }
+
+  // print MR and exit if requested
+  if (config.printMR()) {
+    cout << get_mr_enclave(eid);
+    std::exit(0);
+  }
 
   // register Ctrl-C handle
   std::signal(SIGINT, exitGraceful);
@@ -147,14 +161,6 @@ int main(int argc, const char *argv[]) {
   }
   LL_INFO("using new db: %d", overwrite_old_db);
   OdbDriver driver(db_name, overwrite_old_db);
-
-  ret = initialize_enclave(config.getEnclavePath().c_str(), &eid);
-  if (ret != 0) {
-    LOG_F(FATAL, "Failed to initialize the enclave");
-    std::exit(-1);
-  } else {
-    LOG_F(INFO, "Enclave %ld created", eid);
-  }
 
   string wallet_address, hybrid_pubkey;
 

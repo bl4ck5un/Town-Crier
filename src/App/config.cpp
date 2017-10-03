@@ -128,13 +128,18 @@ tc::Config::Config(int argc, const char **argv) {
 
   try {
     po::options_description desc("Allowed options");
-    desc.add_options()("help,h", "print this message")(
-        "rpc", po::bool_switch(&opt_status_enabled)->default_value(DFT_STATUS_ENABLED), "Launch RPC server")(
-        "daemon,d", po::bool_switch(&opt_run_as_daemon)->default_value(DFT_RUN_AS_DAEMON), "Run TC as a daemon")(
-        "config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE), "Path to a config file")(
-        "cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR), "Working dir (where log and db are stored");
+    desc.add_options()("help,h", "print this message");
+    desc.add_options()("measurement", po::bool_switch(&opt_mrenclave)->default_value(false),
+                       "print the measurement (MR_ENCLAVE) and exit.");
+    desc.add_options()("rpc", po::bool_switch(&opt_status_enabled)->default_value(DFT_STATUS_ENABLED),
+                       "Launch RPC server");
+    desc.add_options()("daemon,d", po::bool_switch(&opt_run_as_daemon)->default_value(DFT_RUN_AS_DAEMON),
+                       "Run TC as a daemon");
+    desc.add_options()("config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE),
+                       "Path to a config file");
+    desc.add_options()("cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR),
+                       "Working dir (where log and db are stored");
 
-    po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
 
     if (vm.count("help")) {
@@ -154,7 +159,6 @@ tc::Config::Config(int argc, const char **argv) {
   }
 
   parseConfigFile();
-  cout << "config done." << endl;
 }
 
 string tc::Config::toString() {
@@ -166,7 +170,7 @@ string tc::Config::toString() {
   ss << "working dir set to: " << opt_working_dir << endl;
   ss << "geth rpc addr: " << cfg_geth_rpc_addr << endl;
   ss << "pid filename: " << cfg_pid_fn << endl;
-  ss << "enclave image used: " << cfg_enclave_path << endl;
+  ss << "enclave image used: " << cfg_enclave_path;
 
   return ss.str();
 }
@@ -183,3 +187,5 @@ const string &tc::Config::getSealedHybridKey() const { return cfg_sealed_hybrid_
 const string &tc::Config::getEnclavePath() const { return cfg_enclave_path; }
 const string &tc::Config::getCurrentDir() const { return current_dir; }
 const string &tc::Config::getHomeDir() const { return home_dir; }
+bool tc::Config::printMR() const {return opt_mrenclave; }
+const po::variables_map& tc::Config::getOpts() const { return vm; }

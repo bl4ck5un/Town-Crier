@@ -45,10 +45,11 @@
 
 #include <sgx_eid.h>
 #include <vector>
-#include <stdexcept>
 #include <cstdint>
+#include <string>
 
 void get_attestation(sgx_enclave_id_t eid, std::vector<uint8_t> *);
 int time_calibrate(sgx_enclave_id_t eid);
+std::string get_mr_enclave(sgx_enclave_id_t eid);
 
 #endif  // SRC_APP_ATTESTATION_H_

@@ -62,6 +62,7 @@ class Config {
   const bool DFT_RUN_AS_DAEMON = false;
   const string DFT_CONFIG_FILE = "config-sim-test";
   const string DFT_WORKING_DIR = "/tmp/tc";
+  po::variables_map vm;
 
  public:
   bool isStatusServerEnabled() const;
@@ -76,8 +77,11 @@ class Config {
   const string &getEnclavePath() const;
   const string &getHomeDir() const;
   const string &getCurrentDir() const;
+  bool printMR() const;
+  const po::variables_map& getOpts() const;
 
  private:
+  bool opt_mrenclave;
   bool opt_status_enabled;
   bool opt_run_as_daemon;
   string opt_config_file;
