@@ -2,13 +2,13 @@ sudo: required
 services:
     - docker
 before_install:
-    - docker pull bl4ck5un/intel-sgx-sdk-ubuntu-16.04
-    - docker run -v $(pwd):/home/tc/TownCrier bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "TownCrier/src/lint.sh"
-    - docker run --user $(id -u) -v $(pwd):/home/tc/TownCrier -w "/home/tc/TownCrier/src/utils" bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "./build_gtest.sh"
+    - docker pull bl4ck5un/towncrier:latest
+    - docker run -v $(pwd):/tc -w /tc bl4ck5un/towncrier sh -c "scripts/lint.sh"
+    - docker run -v $(pwd):/tc -w /tc bl4ck5un/towncrier sh -c "scripts/build_gtest.sh"
 script:
-    - docker run --user $(id -u) -v $(pwd):/home/tc/TownCrier -w "/home/tc/TownCrier/src" bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "mkdir -p build; cd build; cmake ..; make; make tests"
-    - docker run --user $(id -u) -v $(pwd):/home/tc/TownCrier -w "/home/tc/TownCrier/src/build" bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "./tc --measurement"
-    - docker run --user $(id -u) -v $(pwd):/home/tc/TownCrier -w "/home/tc/TownCrier/src/build" bl4ck5un/intel-sgx-sdk-ubuntu-16.04 /bin/sh -c "./tests"
+    - docker run -v $(pwd):/tc -w /tc/src bl4ck5un/towncrier sh -c "mkdir -p build; cd build; cmake ..; make; make tests"
+    - docker run -v $(pwd):/tc -w /tc/src/build bl4ck5un/towncrier sh -c "./tc --measurement"
+    - docker run -v $(pwd):/tc -w /tc/src/build bl4ck5un/towncrier sh -c "./tests"
 
 notifications:
   slack:
