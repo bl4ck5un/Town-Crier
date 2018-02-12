@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Copyright (c) 2016-2017 by Cornell University.  All Rights Reserved.
 #
@@ -43,10 +43,12 @@
 #
 set -ex
 
-cd ../vendor/gtest
+pushd src/vendor/gtest
+
 autoreconf -i
 ./configure
 
 which -s gmake && gmake || make
 
+popd
 
