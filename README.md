@@ -10,6 +10,8 @@ queries and manage user credentials.
 Please read on for installation instructions. If you want to learn how Town Crier works,
 you can read our [CCS'16 paper](https://www.cs.cornell.edu/~fanz/files/pubs/tc-ccs16-final.pdf).
 
+[![Build Status](https://travis-ci.org/bl4ck5un/Town-Crier.svg?branch=master)](https://travis-ci.org/bl4ck5un/Town-Crier)
+
 # Get Started
 
 ## Using Docker (recommended)
