@@ -1,0 +1,13 @@
+version: "2"
+services:
+    tc:
+        image: "bl4ck5un/towncrier"
+        volumes:
+            - .:/tc
+    geth:
+        image: "ethereum/client-go"
+        volumes:
+            - "~/data/geth-tc/:/root/.ethereum"
+        ports:
+            - "30303:30303"
+        command: geth console
