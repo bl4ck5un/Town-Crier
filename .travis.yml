@@ -7,7 +7,7 @@ before_install:
 - docker run -v $(pwd):/tc -w /tc bl4ck5un/towncrier sh -c "scripts/build_gtest.sh"
 script:
 - docker run -v $(pwd):/tc -w /tc/src bl4ck5un/towncrier sh -c "mkdir -p build; cd build; cmake ..; make -j; make tests"
-- docker run -v $(pwd):/tc -w /tc/src/build bl4ck5un/towncrier sh -c "./tc --measurement"
+- docker run -v $(pwd):/tc -w /tc/src/build bl4ck5un/towncrier sh -c "ls && ./tc --measurement"
 #- docker run -v $(pwd):/tc -w /tc/src/build bl4ck5un/towncrier sh -c "./tests"
 notifications:
   slack:
