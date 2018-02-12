@@ -12,9 +12,8 @@ you can read our [CCS'16 paper](https://www.cs.cornell.edu/~fanz/files/pubs/tc-c
 
 [![Build Status](https://travis-ci.org/bl4ck5un/Town-Crier.svg?branch=master)](https://travis-ci.org/bl4ck5un/Town-Crier)
 
-# Get Started
-
-## Using Docker (recommended)
+Get Started
+-----------
 
     docker pull bl4ck5un/towncrier:latest
     git clone https://github.com/bl4ck5un/Town-Crier
@@ -31,6 +30,7 @@ docker run -v $(pwd):/tc -w /tc/src bl4ck5un/towncrier sh -c "mkdir -p build; cd
 
 # run tests
 docker run -v $(pwd):/tc -w /tc/src/build bl4ck5un/towncrier sh -c "./tests"
+```
 
 See `.travis.yml` for an example of how Docker is used to build and test Town
 Crier.
