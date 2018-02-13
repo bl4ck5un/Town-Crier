@@ -76,7 +76,6 @@ tc::Config::Config(const po::options_description &additional_opts, int argc, con
     po::options_description desc("Allowed options");
     desc.add_options()("help,h", "print this message")(
         "rpc", po::bool_switch(&opt_status_enabled)->default_value(DFT_STATUS_ENABLED), "Launch RPC server")(
-        "daemon,d", po::bool_switch(&opt_run_as_daemon)->default_value(DFT_RUN_AS_DAEMON), "Run TC as a daemon")(
         "config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE), "Path to a config file")(
         "cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR), "Working dir (where log and db are stored");
 
@@ -133,8 +132,6 @@ tc::Config::Config(int argc, const char **argv) {
                        "print the measurement (MR_ENCLAVE) and exit.");
     desc.add_options()("rpc", po::bool_switch(&opt_status_enabled)->default_value(DFT_STATUS_ENABLED),
                        "Launch RPC server");
-    desc.add_options()("daemon,d", po::bool_switch(&opt_run_as_daemon)->default_value(DFT_RUN_AS_DAEMON),
-                       "Run TC as a daemon");
     desc.add_options()("config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE),
                        "Path to a config file");
     desc.add_options()("cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR),
@@ -165,7 +162,6 @@ string tc::Config::toString() {
   stringstream ss;
   ss << "status server enabled: " << opt_status_enabled << endl;
   ss << "status server port: " << cfg_status_port << endl;
-  ss << "run as daemon: " << opt_run_as_daemon << endl;
   ss << "using config file: " << opt_config_file << endl;
   ss << "working dir set to: " << opt_working_dir << endl;
   ss << "geth rpc addr: " << cfg_geth_rpc_addr << endl;
@@ -176,7 +172,6 @@ string tc::Config::toString() {
 }
 
 bool tc::Config::isStatusServerEnabled() const { return opt_status_enabled; }
-bool tc::Config::isRunAsDaemon() const { return opt_run_as_daemon; }
 const string &tc::Config::getConfigFile() const { return opt_config_file; }
 const string &tc::Config::getWorkingDir() const { return opt_working_dir; }
 const string &tc::Config::getGethRpcAddr() const { return cfg_geth_rpc_addr; }

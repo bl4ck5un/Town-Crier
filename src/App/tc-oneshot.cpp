@@ -118,8 +118,7 @@ int main(int argc, const char *argv[]) {
 
   LOG_F(INFO, "using db %s", db_path.c_str());
 
-  // always reuse database
-  OdbDriver driver(db_path, false);
+  OdbDriver driver(db_path);
 
   ret = initialize_enclave(config.getEnclavePath().c_str(), &eid);
   if (ret != 0) {

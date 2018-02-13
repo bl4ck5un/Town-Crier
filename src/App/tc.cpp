@@ -47,7 +47,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ini_parser.hpp>
-#include <stdint.h>
 
 // SGX headers
 #include <sgx_uae_service.h>
@@ -57,7 +56,6 @@
 #include <iostream>
 #include <string>
 
-#include "Common/Constants.h"
 #include "App/Enclave_u.h"
 #include "App/eth_rpc.h"
 #include "App/status_rpc_server.h"
@@ -71,6 +69,7 @@
 
 #define LOGURU_IMPLEMENTATION 1
 #include "Common/Log.h"
+#include "Common/Constants.h"
 #include "App/config.h"
 
 namespace po = boost::program_options;
@@ -93,7 +92,7 @@ int main(int argc, const char *argv[]) {
   // logging to file
   fs::path log_path;
   char _log_tag[100] = {0};
-  std::time_t _current_time = std::time(NULL);
+  std::time_t _current_time = std::time(nullptr);
   if (std::strftime(_log_tag, sizeof _log_tag, "%F-%T",
                     std::localtime(&_current_time))) {
     log_path =
@@ -137,21 +136,14 @@ int main(int argc, const char *argv[]) {
   // handle systemd termination signal
   std::signal(SIGTERM, exitGraceful);
 
-  if (config.isRunAsDaemon()) {
-#ifdef CONFIG_IMPL_DAEMON
-    daemonize(opt_cwd, pid_filename);
-#else
-    LL_CRITICAL("*** daemonize() is not implemented ***");
-#endif
-  }
-
   /*
    * set up database
    */
   static const string db_name = (fs::path(config.getWorkingDir()) / "tc.db").string();
   LOG_F(INFO, "using db %s", db_name.c_str());
-  bool overwrite_old_db = false;
-  if (fs::exists(db_name) && !config.isRunAsDaemon()) {
+
+  /*
+  if (fs::exists(db_name)) {
     std::cout << "Do you want to clean up the database? y/[n] ";
     std::string new_db;
     std::getline(std::cin, new_db);
@@ -160,6 +152,14 @@ int main(int argc, const char *argv[]) {
     overwrite_old_db = true;
   }
   LL_INFO("using new db: %d", overwrite_old_db);
+  */
+
+  // create if not exist
+  bool overwrite_old_db = true;
+  if (fs::exists(db_name)) {
+    overwrite_old_db = false;
+  }
+
   OdbDriver driver(db_name, overwrite_old_db);
 
   string wallet_address, hybrid_pubkey;
@@ -176,6 +176,9 @@ int main(int argc, const char *argv[]) {
   } catch (const tc::EcallException &e) {
     LL_CRITICAL("%s", e.what());
     exit(-1);
+  } catch (const std::exception& e) {
+    LL_CRITICAL("%s", e.what());
+    exit(-1);
   }
 
   jsonrpc::HttpServer status_server_connector(config.get_status_server_port(),
@@ -183,14 +186,14 @@ int main(int argc, const char *argv[]) {
   tc::status_rpc_server stat_srvr(status_server_connector, eid, driver);
   if (config.isStatusServerEnabled()) {
     stat_srvr.StartListening();
-    LOG_F(INFO, "RPC server started");
+    LOG_F(INFO, "RPC server started at %d", config.get_status_server_port());
   }
 
   init(eid);
   set_env(eid, "a", "env");
 
   Monitor monitor(&driver, eid, quit);
-//  monitor.dontSendResponse();
+  /* monitor.dontSendResponse(); */
   monitor.loop();
 
   if (config.isStatusServerEnabled()) {

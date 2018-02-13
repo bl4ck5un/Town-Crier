@@ -55,10 +55,9 @@
 #include <vector>
 
 #include "App/types.h"
-#include "Common/Log.h"
 #include "App/bookkeeping/transaction-record-odb.hxx"
 #include "App/bookkeeping/transaction-record.hxx"
-
+#include "Common/Log.h"
 
 using odb::core::connection_ptr;
 using odb::core::transaction;

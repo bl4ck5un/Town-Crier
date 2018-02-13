@@ -60,13 +60,12 @@ class Config {
  private:
   const bool DFT_STATUS_ENABLED = false;
   const bool DFT_RUN_AS_DAEMON = false;
-  const string DFT_CONFIG_FILE = "config-sim-test";
-  const string DFT_WORKING_DIR = "/tmp/tc";
+  const string DFT_CONFIG_FILE = "/tc/conf/config-sim-test";
+  const string DFT_WORKING_DIR = "/tc";
   po::variables_map vm;
 
  public:
   bool isStatusServerEnabled() const;
-  bool isRunAsDaemon() const;
   const string &getConfigFile() const;
   const string &getWorkingDir() const;
   const string &getGethRpcAddr() const;
@@ -83,7 +82,6 @@ class Config {
  private:
   bool opt_mrenclave;
   bool opt_status_enabled;
-  bool opt_run_as_daemon;
   string opt_config_file;
   string opt_working_dir;
 
