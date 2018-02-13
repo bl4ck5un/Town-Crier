@@ -1,0 +1,8 @@
+FROM bl4ck5un/tc-sgx-sdk
+MAINTAINER Fan Zhang <bl4ck5unxx@gmail.com>
+
+ENV PATH="/tc/bin:${PATH}"
+
+ADD . /tc
+
+ENTRYPOINT ["tc"]
