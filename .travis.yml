@@ -3,11 +3,9 @@ services:
 - docker
 before_install:
 - docker pull bl4ck5un/tc-sgx-sdk:latest
-#- docker run -v $(pwd):/tc -w /tc bl4ck5un/towncrier sh -c "scripts/lint.sh"
-- docker run -v $(pwd):/tc -w /tc bl4ck5un/towncrier sh -c "scripts/build_gtest.sh"
+- docker run -v $(pwd):/tc -w /tc bl4ck5un/tc-sgx-sdk sh -c "scripts/build_gtest.sh"
 script:
-- docker run -v $(pwd):/tc -w /tc/src bl4ck5un/towncrier sh -c "mkdir -p build; cd build; cmake ..; make -j; make tests"
-#- docker run -v $(pwd):/tc -w /tc/src/build bl4ck5un/towncrier sh -c "./tests"
+- docker run -v $(pwd):/tc -w /tc/src bl4ck5un/tc-sgx-sdk sh -c "mkdir -p build; cd build; cmake ..; make -j; make tests"
 notifications:
   slack:
     secure: gtscAP0J7Y9WCGSpfSNosFn1bVxt3x1Rno71vGxCYmmkaji1LKmlwlU94ECpbe6UPVz+QgTn2jXupNa6EkQptJUNEVQd4bU3sPKT/OccF4opcmYEM0BROBg2LOIJnsCQX4lgM+C2cPtQLV7Z06ryDrLM0aykhHwS5tmWh+8w4eeDpZOVAoIkJJnrmEyPf95nY94KQHHtoHNG1YpPQA5hKv7nVdRi5WrFY4lS7b16Z1jYpPzlX49DMVzESxvEMKesc7o0MZmIjmXFYzckFMl+1YVDfIM4htw/aQtlg3ZDNPCcNVQYy5EsfxqZixxTBXRSaNlLOWaxuOhHluIZWNlM5i0Ku2PaLgvVFsGi1gNKs/FjZbLGkILxPNBGuXesp8ibSQchDdEYPsAnVSYPh5Gn3vV7NFvevJVvHFBSl6cbBqAfOYJE48yqxG5ZiRFutpWeYL1CB7CD4RL0IlKpN9pt2L5XzYs7KiMfEK0Vngk1GNmPmZkcTE/k3/zJ/sb7IecpjEWKdmzE05oxVddLFdNMee8eGjK6vohXxoQg1H1/behPE8b3pMuuP6nyED5IBFwYB/pe6ZkDygNqhMPqrZwBd5AnAnHMCJpEz13WiXCWF6RPSEXQ/4ThVWvAGgVcF7RjhmOYapykGcr/BBdvHGaVbU+T+LybgHMbupew1Tdp/mI=
