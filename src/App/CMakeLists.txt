@@ -5,17 +5,25 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
 #### list source code files
 ###############################
 
-set(TC_SRC_FILES monitor.cpp attestation.cpp request_parser.cpp
-    mbedtls_sgx_net.c Enclave_u.c ocalls.cpp
+set(TC_SRC_FILES
+    monitor.cpp
+    attestation.cpp
+    request_parser.cpp
+    mbedtls_sgx_net.c
+    Enclave_u.c
+    ocalls.cpp
     debug.cpp
     bookkeeping/database.cpp
     bookkeeping/transaction-record.hxx
     bookkeeping/transaction-record-odb.cxx
     converter.cpp utils.cpp types.cpp
-    eth_rpc.cpp status_rpc_server.cpp
+    eth_rpc.cpp
+    status_rpc_server.cpp
     ../Common/external/base64.cpp
     key_utils.cpp
-    tc_exception.cpp config.cpp config.h)
+    logging.cpp
+    tc_exception.cpp
+    config.cpp config.h)
 
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
 
@@ -59,6 +67,7 @@ add_executable(tc tc.cpp ${TC_SRC_FILES})
 add_executable(tc-oneshot tc-oneshot.cpp ${TC_SRC_FILES})
 add_executable(tc-keygen
     tc-keygen.cpp
+    logging.cpp
     ../Common/external/base64.cpp
     utils.cpp converter.cpp
     Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
@@ -92,6 +101,7 @@ find_package(LibODB REQUIRED)
 find_package(Jsoncpp REQUIRED)
 find_package(MHD REQUIRED)
 find_package(JsonCppRpc REQUIRED)
+find_package(Log4CXX REQUIRED)
 
 include_directories(
     ${CURL_INCLUDE_DIRS}
@@ -103,6 +113,7 @@ include_directories(
     ${SGXSDK_INCLUDE_DIRS}
     ${JSONRPCCPP_INCLUDE_DIRS}
     ${MBEDTLS_LIB_DIR}/include
+    ${LOG4CXX_INCLUDE_DIR}
     ../vendor/gtest/include
     ../
 )
@@ -110,17 +121,20 @@ include_directories(
 target_link_libraries(tc
     ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
     ${LIBODB_LIBRARIES} ${MHD_LIBRARIES} ${SQLITE_LIBRARIES} ${Boost_LIBRARIES}
+    ${LOG4CXX_LIBRARY}
     ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY}
     -lpthread -ldl)
 
 target_link_libraries(tc-oneshot
     ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
     ${LIBODB_LIBRARIES} ${MHD_LIBRARIES} ${SQLITE_LIBRARIES} ${Boost_LIBRARIES}
+    ${LOG4CXX_LIBRARY}
     ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY}
     -lpthread -ldl)
 
 target_link_libraries(tc-keygen
     ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
+    ${LOG4CXX_LIBRARY}
     -lpthread -ldl)
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
@@ -143,6 +157,9 @@ add_dependencies(tc-keygen enclave)
 ###############################
 
 install(TARGETS tc tc-oneshot tc-keygen DESTINATION bin)
-install(FILES ${CMAKE_SOURCE_DIR}/config-systemd DESTINATION conf)
-install(FILES ${CMAKE_SOURCE_DIR}/config-sim-test DESTINATION conf)
-install(FILES ${CMAKE_SOURCE_DIR}/config-release DESTINATION conf)
+install(FILES
+        ${CMAKE_SOURCE_DIR}/config-systemd
+        ${CMAKE_SOURCE_DIR}/config-sim-test
+        ${CMAKE_SOURCE_DIR}/config-release
+        ${CMAKE_SOURCE_DIR}/logging.conf
+        DESTINATION conf)

@@ -48,6 +48,15 @@
 
 using std::string;
 
+
+namespace tc {
+namespace utils {
+log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("utils.cpp"));
+}
+}
+
+using tc::utils::logger;
+
 /*!
  * \brief   Initialize the enclave:
  *      Step 1: try to retrieve the launch token saved by last transaction

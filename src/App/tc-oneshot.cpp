@@ -48,6 +48,7 @@
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 #include <stdint.h>
+#include <log4cxx/propertyconfigurator.h>
 
 // SGX headers
 #include <sgx_uae_service.h>
@@ -68,9 +69,7 @@
 #include "App/request_parser.h"
 #include "App/tc_exception.h"
 #include "App/utils.h"
-
-#define LOGURU_IMPLEMENTATION 1
-#include "Common/Log.h"
+#include "App/logging.h"
 #include "App/config.h"
 
 namespace po = boost::program_options;
@@ -79,12 +78,20 @@ namespace fs = boost::filesystem;
 extern ethRPCClient *geth_connector;
 jsonrpc::HttpClient *httpclient;
 
+namespace tconeshot {
+namespace main {
+log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("tc-oneshot.cpp"));
+}
+}
+
+using tconeshot::main::logger;
+
 std::atomic<bool> quit(false);
 void exitGraceful(int) { quit.store(true); }
 
+
 int main(int argc, const char *argv[]) {
-  // init logging
-  loguru::init(argc, argv);
+  log4cxx::PropertyConfigurator::configure(LOGGING_CONF_FILE);
 
   bool send_response;
   blocknum_t block_num;
@@ -116,16 +123,16 @@ int main(int argc, const char *argv[]) {
   sgx_enclave_id_t eid;
   sgx_status_t st;
 
-  LOG_F(INFO, "using db %s", db_path.c_str());
+  LL_INFO("using db %s", db_path.c_str());
 
   OdbDriver driver(db_path);
 
   ret = initialize_enclave(config.getEnclavePath().c_str(), &eid);
   if (ret != 0) {
-    LOG_F(FATAL, "Failed to initialize the enclave");
+    LL_INFO("Failed to initialize the enclave");
     std::exit(-1);
   } else {
-    LOG_F(INFO, "Enclave %ld created", eid);
+    LL_INFO("Enclave %ld created", eid);
   }
 
   string wallet_address;

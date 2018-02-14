@@ -41,39 +41,45 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
+// SGX headers
+#include <sgx_uae_service.h>
 
 // system headers
+#include <atomic>
+#include <csignal>
+#include <iostream>
+#include <string>
+#include <log4cxx/logger.h>
+#include <log4cxx/propertyconfigurator.h>
 #include <jsonrpccpp/server/connectors/httpserver.h>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
-// SGX headers
-#include <sgx_uae_service.h>
-
-#include <atomic>
-#include <csignal>
-#include <iostream>
-#include <string>
-
+// app headers
 #include "App/Enclave_u.h"
 #include "App/eth_rpc.h"
 #include "App/status_rpc_server.h"
 #include "App/attestation.h"
 #include "App/bookkeeping/database.h"
+#include "App/config.h"
 #include "App/key_utils.h"
 #include "App/monitor.h"
 #include "App/request_parser.h"
 #include "App/tc_exception.h"
 #include "App/utils.h"
-
-#define LOGURU_IMPLEMENTATION 1
-#include "Common/Log.h"
+#include "App/logging.h"
 #include "Common/Constants.h"
-#include "App/config.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
+
+namespace tc {
+namespace main {
+log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("tc.cpp"));
+}
+}
+
 
 extern ethRPCClient *geth_connector;
 
@@ -81,11 +87,11 @@ std::atomic<bool> quit(false);
 void exitGraceful(int) { quit.store(true); }
 
 int main(int argc, const char *argv[]) {
+  using tc::main::logger;
   // parse command line arguments first
   tc::Config config(argc, argv);
 
-  // init logging
-  loguru::init(argc, argv);
+  log4cxx::PropertyConfigurator::configure(LOGGING_CONF_FILE);
 
   // create working dir if not existed
   fs::create_directory(fs::path(config.getWorkingDir()));
@@ -101,7 +107,6 @@ int main(int argc, const char *argv[]) {
   } else {
     log_path = fs::path(config.getWorkingDir()) / ("tc.log");
   }
-  loguru::add_file(log_path.c_str(), loguru::Append, loguru::Verbosity_MAX);
 
   LL_INFO("config:\n%s", config.toString().c_str());
 
@@ -120,10 +125,10 @@ int main(int argc, const char *argv[]) {
   // init enclave first
   ret = initialize_enclave(config.getEnclavePath().c_str(), &eid);
   if (ret != 0) {
-    LOG_F(FATAL, "Failed to initialize the enclave");
+    LL_CRITICAL("Failed to initialize the enclave");
     std::exit(-1);
   } else {
-    LOG_F(INFO, "Enclave %ld created", eid);
+    LL_INFO("Enclave %ld created", eid);
   }
 
   // print MR and exit if requested
@@ -141,7 +146,7 @@ int main(int argc, const char *argv[]) {
    * set up database
    */
   static const string db_name = (fs::path(config.getWorkingDir()) / "tc.db").string();
-  LOG_F(INFO, "using db %s", db_name.c_str());
+  LL_INFO("using db %s", db_name.c_str());
 
   /*
   if (fs::exists(db_name)) {
@@ -187,7 +192,7 @@ int main(int argc, const char *argv[]) {
   tc::status_rpc_server stat_srvr(status_server_connector, eid, driver);
   if (config.isStatusServerEnabled()) {
     stat_srvr.StartListening();
-    LOG_F(INFO, "RPC server started at %d", config.get_status_server_port());
+    LL_INFO("RPC server started at %d", config.get_status_server_port());
   }
 
   init(eid);
@@ -202,5 +207,5 @@ int main(int argc, const char *argv[]) {
   }
   sgx_destroy_enclave(eid);
   delete geth_connector;
-  LOG_F(INFO, "all enclave closed successfully");
+  LL_INFO("all enclave closed successfully");
 }

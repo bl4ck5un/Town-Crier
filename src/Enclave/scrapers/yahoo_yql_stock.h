@@ -52,7 +52,7 @@
 #include <ctime>
 
 #include "Scraper.h"
-#include "Log.h"
+#include "../log.h"
 #include "yahoo_yql.h"
 #include "external/picojson.h"
 #include "commons.h"

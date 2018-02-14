@@ -108,7 +108,7 @@ int ABI_Bytes::encode(bytes &out) {
 //    return len;
 //}
 
-#include "Log.h"
+#include "log.h"
 
 int ABI_Generic_Array::encode(bytes &out) {
   size_t i, j;

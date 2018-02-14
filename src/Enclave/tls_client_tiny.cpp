@@ -42,7 +42,7 @@
 //
 
 #include "tls_client.h"
-#include "Log.h"
+#include "log.h"
 #include "Enclave_t.h"
 #include "debug.h"
 #include "Constants.h"

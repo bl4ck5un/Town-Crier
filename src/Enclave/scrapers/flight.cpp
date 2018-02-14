@@ -50,7 +50,7 @@
 
 #include "flight.h"
 #include "debug.h"
-#include "Log.h"
+#include "../log.h"
 #include "utils.h"
 #include "Constants.h"
 #include "external/slre.h"

@@ -57,7 +57,7 @@
 #include "App/types.h"
 #include "App/bookkeeping/transaction-record-odb.hxx"
 #include "App/bookkeeping/transaction-record.hxx"
-#include "Common/Log.h"
+#include "App/logging.h"
 
 using odb::core::connection_ptr;
 using odb::core::transaction;
@@ -157,27 +157,7 @@ class OdbDriver {
     return ret;
   }
 
-  bool isProcessed(const string &tx_hash, int retryThreshold) const {
-    bool ret = false;
-    transaction t(db->begin());
-    record_ptr tr(
-        db->query_one<TransactionRecord>(query_record::tx_hash == tx_hash));
-    if (!tr) {
-      LL_DEBUG("tx %s is not processed", tx_hash.c_str());
-      ret = false;
-    } else {
-      ret =
-          tr->getNumOfRetrial() >= retryThreshold || !tr->getResponse().empty();
-      LL_DEBUG("tx %s has been tried %d (out of %d) times", tx_hash.c_str(),
-               tr->getNumOfRetrial(), retryThreshold);
-      LL_DEBUG(
-          "tx %s has been responded with %s", tx_hash.c_str(),
-          tr->getResponse().empty() ? "not yet" : tr->getResponse().c_str());
-    }
-    t.commit();
-
-    return ret;
-  }
+  bool isProcessed(const string &tx_hash, int retryThreshold) const;
 
   void updateLog(TransactionRecord tr) {
     transaction t(db->begin());

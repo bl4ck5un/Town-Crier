@@ -45,7 +45,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string>
-#include <Log.h>
+#include "../log.h"
 #include <vector>
 
 #include "tls_client.h"

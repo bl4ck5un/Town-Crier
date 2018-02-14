@@ -44,6 +44,8 @@
 #define TOWN_CRIER_SCRAPERS_H
 
 #include <stdint.h>
+#include "../Common/macros.h"
+
 double get_closing_price (int month, int day, int year, const char* code);
 
 int get_flight_delay(uint64_t unix_epoch_time, const char* flight, int* resp);

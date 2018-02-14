@@ -57,9 +57,11 @@
 #include <string>
 
 #include "external/base64.hxx"
-#include "Log.h"
+#include "log.h"
 #include "debug.h"
 #include "macros.h"
+#include "Enclave_t.h"
+#include "../Common/macros.h"
 
 using namespace std;
 

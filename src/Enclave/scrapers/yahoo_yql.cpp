@@ -50,7 +50,7 @@
 #include "yahoo_yql.h"
 #include "Scraper.h"
 #include "scraper_utils.h"
-#include "Log.h"
+#include "../log.h"
 
 err_code YahooYQL::execute(string &result) {
   string query = this->buildQuery();

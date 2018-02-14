@@ -45,7 +45,7 @@
 #include <string>
 #include <inttypes.h>
 
-#include "scrapers.h"
+#include "scrapers/scrapers.h"
 #include "scrapers/yahoo_yql_stock.h"
 #include "scrapers/Scraper.h"
 #include "scrapers/flight.h"
@@ -62,7 +62,7 @@
 #include "external/keccak.h"
 #include "Constants.h"
 #include "time.h"
-#include "Log.h"
+#include "log.h"
 
 #include "hybrid_cipher.h"
 

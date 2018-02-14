@@ -20,6 +20,7 @@ enclave {
         public int ecall_time_calibrate (time_t wall_clock, [out] uint8_t wtc_rsv[65]);
 
         public int register_exception_handlers();
+
         public int ecdsa_keygen_seal(
                     [user_check] unsigned char *o_sealed,
                     [in,out] size_t *olen,
@@ -52,25 +53,5 @@ enclave {
     };
 
     untrusted {
-        /* logging */
-        void ocall_log_FATAL    ([in,string] const char* str);
-        void ocall_log_ERROR    ([in,string] const char* str);
-        void ocall_log_WARNING  ([in,string] const char* str);
-        void ocall_log_INFO     ([in,string] const char* str);
-        void ocall_log_1        ([in,string] const char* str);
-        void ocall_log_2        ([in,string] const char* str);
-        void ocall_log_3        ([in,string] const char* str);
-        void ocall_log_4        ([in,string] const char* str);
-        void ocall_log_5        ([in,string] const char* str);
-        void ocall_log_6        ([in,string] const char* str);
-        void ocall_log_7        ([in,string] const char* str);
-        void ocall_log_8        ([in,string] const char* str);
-        void ocall_log_9        ([in,string] const char* str);
-
-        int ocall_log_lvl();
-        int ocall_is_debug();
-
-        void ocall_sleep(int milisec);
-        time_t ocall_time();
     };
 };

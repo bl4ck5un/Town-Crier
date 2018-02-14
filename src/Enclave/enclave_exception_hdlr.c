@@ -41,7 +41,7 @@
  */
 
 #include "sgx_trts_exception.h"
-#include "Log.h"
+#include "log.h"
 
 #ifdef ENCLAVE_EXCEPTION_HANDLING
 int UD_handler(sgx_exception_info_t *e) {

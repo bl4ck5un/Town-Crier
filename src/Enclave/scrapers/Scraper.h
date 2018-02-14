@@ -48,6 +48,7 @@
 
 #include "Constants.h"
 #include "utils.h"
+#include "../Common/macros.h"
 
 class Scraper {
  public:

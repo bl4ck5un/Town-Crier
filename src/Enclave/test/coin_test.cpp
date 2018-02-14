@@ -47,7 +47,7 @@
 
 #include "tls_client.h"
 #include "scrapers/current_coinmarket.h"
-#include "Log.h"
+#include "../log.h"
 
 
 int coin_self_test(){

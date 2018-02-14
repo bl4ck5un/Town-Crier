@@ -53,6 +53,12 @@
 #include "Common/external/base64.hxx"
 #include "Common/version.h"
 
+namespace tc {
+namespace statusRPC {
+log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("status_rpc_server.cpp"));
+}
+}
+
 using tc::status_rpc_server;
 
 status_rpc_server::status_rpc_server(AbstractServerConnector &connector,
@@ -60,6 +66,7 @@ status_rpc_server::status_rpc_server(AbstractServerConnector &connector,
     : AbstractStatusServer(connector), eid(eid), stat_db(db) {}
 
 Json::Value status_rpc_server::attest() {
+  using tc::statusRPC::logger;
   Json::Value result;
   try {
     std::vector<uint8_t> attestation;

@@ -46,7 +46,7 @@
 #include <stdlib.h>
 #include <stdexcept>
 #include <string>
-#include <Log.h>
+#include "../log.h"
 
 #include "wolfram.h"
 #include "utils.h"

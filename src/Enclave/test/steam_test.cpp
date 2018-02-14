@@ -48,7 +48,7 @@
 #include "debug.h"
 #include "tls_client.h"
 #include "../scrapers/steam2.h"
-#include "Log.h"
+#include "../log.h"
 
 int steam_self_test() {
   return 0;

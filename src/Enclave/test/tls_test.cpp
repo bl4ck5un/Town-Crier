@@ -43,7 +43,7 @@
 
 #include <debug.h>
 #include "tls_client.h"
-#include "Log.h"
+#include "../log.h"
 #include <stdexcept>
 
 const char* ref_page = \

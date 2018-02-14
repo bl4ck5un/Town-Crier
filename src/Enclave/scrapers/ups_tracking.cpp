@@ -50,7 +50,7 @@
 #include "tls_client.h"
 #include "../../Common/Constants.h"
 #include "../external/picojson.h"
-#include "Log.h"
+#include "../log.h"
 
 using namespace std;
 /* Define USPS Scraper specific constants */

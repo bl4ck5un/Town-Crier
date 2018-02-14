@@ -53,11 +53,19 @@
 #include "App/tc_exception.h"
 #include "App/utils.h"
 #include "Common/Constants.h"
-#include "Common/Log.h"
+#include "logging.h"
 
 using std::vector;
 using std::to_string;
 using std::invalid_argument;
+
+namespace tc {
+namespace attestation {
+log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("attestation.cpp"));
+}
+}
+
+using tc::attestation::logger;
 
 int time_calibrate(sgx_enclave_id_t eid) {
   time_t wtc_time = time(NULL);

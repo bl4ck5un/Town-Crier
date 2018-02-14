@@ -47,12 +47,13 @@
 #include <stdexcept>
 #include <string>
 
-using std::runtime_error;
-
 #include "debug.h"
-#include "Log.h"
+#include "log.h"
 #include "eth_ecdsa.h"
 #include "external/keccak.h"
+#include "../Common/macros.h"
+
+using std::runtime_error;
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 #include "mbedtls/config.h"

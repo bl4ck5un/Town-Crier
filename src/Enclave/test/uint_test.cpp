@@ -44,6 +44,7 @@
 #include "commons.h"
 #include <cinttypes>
 
+extern "C" int uint_utils_test();
 int uint_utils_test() {
   bool results[3] = {false};
 

@@ -45,8 +45,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <debug.h>
-#include "scrapers.h"
-#include "Log.h"
+#include "scrapers/scrapers.h"
+#include "../log.h"
 #include "external/slre.h"
 
 static int static_total_tests = 0;
@@ -278,7 +278,7 @@ int regex_self_test() {
              caps[0].len, caps[0].ptr,
              caps[1].len, caps[1].ptr);
     } else {
-      LL_ERROR("Error parsing [%s]\n", request);
+      LL_CRITICAL("Error parsing [%s]\n", request);
     }
 
     ASSERT(caps[1].len == 11);

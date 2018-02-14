@@ -42,7 +42,7 @@
 //
 
 #include <mbedtls/bignum.h>
-#include "Log.h"
+#include "../log.h"
 #include "debug.h"
 #include "eth_ecdsa.h"
 

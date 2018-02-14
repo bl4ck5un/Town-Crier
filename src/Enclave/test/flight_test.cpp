@@ -46,7 +46,7 @@
 #include <debug.h>
 #include "tls_client.h"
 #include "scrapers/flight.h"
-#include "Log.h"
+#include "../log.h"
 #include "commons.h"
 
 int flight_self_test() {
