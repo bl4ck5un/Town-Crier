@@ -74,9 +74,9 @@ TEST_F(Keygen, signingKey) {
   ecall_status = ecdsa_keygen_seal(eid, &ret, secret_sealed, &buffer_used,
                                    pubkey_ref, address_ref);
   if (ecall_status != SGX_SUCCESS || ret != 0) {
-    LL_CRITICAL("ecall failed");
+    std::cerr << "ecall failed" << std::endl;
     print_error_message(ecall_status);
-    LL_CRITICAL("ecdsa_keygen_seal returns %d", ret);
+    std::cerr << "ecdsa_keygen_seal returns " << ret << std::endl;
     FAIL();
   }
 
@@ -89,9 +89,9 @@ TEST_F(Keygen, signingKey) {
       eid, &ret, reinterpret_cast<sgx_sealed_data_t*>(secret_sealed),
       buffer_used);
   if (SGX_SUCCESS != ecall_status || ret != 0) {
-    LL_CRITICAL("ecall failed");
+    std::fprintf(stderr, "ecall failed");
     print_error_message(ecall_status);
-    LL_CRITICAL("ecdsa_keygen_seal returns %d", ret);
+    std::fprintf(stderr, "ecdsa_keygen_seal returns %d", ret);
     FAIL();
   }
 
@@ -114,9 +114,9 @@ TEST_F(Keygen, HybridKey) {
   ecall_status = ecdsa_keygen_seal(eid, &ret, secret_sealed, &buffer_used,
                                    pubkey_ref + 1, address_ref);
   if (ecall_status != SGX_SUCCESS || ret != 0) {
-    LL_CRITICAL("ecall failed");
+    std::fprintf(stderr, "ecall failed");
     print_error_message(ecall_status);
-    LL_CRITICAL("ecdsa_keygen_seal returns %d", ret);
+    std::fprintf(stderr, "ecdsa_keygen_seal returns %d", ret);
     FAIL();
   }
 
@@ -132,9 +132,9 @@ TEST_F(Keygen, HybridKey) {
                 reinterpret_cast<sgx_sealed_data_t*>(secret_sealed),
                 buffer_used);
   if (SGX_SUCCESS != ecall_status || ret != 0) {
-    LL_CRITICAL("ecall failed");
+    std::fprintf(stderr, "ecall failed");
     print_error_message(ecall_status);
-    LL_CRITICAL("ecdsa_keygen_seal returns %d", ret);
+    std::fprintf(stderr, "ecdsa_keygen_seal returns %d", ret);
     FAIL();
   }
 

@@ -72,7 +72,7 @@ add_executable(tc-keygen
     utils.cpp converter.cpp
     Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
 
-add_executable(tests EXCLUDE_FROM_ALL
+add_executable(tc-test EXCLUDE_FROM_ALL
     ${TEST_SRC_FILES}
     test/SGXTestBase.h
     attestation.cpp
@@ -81,6 +81,7 @@ add_executable(tests EXCLUDE_FROM_ALL
     Enclave_u.c
     ocalls.cpp
     eth_rpc.cpp
+    logging.cpp
     bookkeeping/database.cpp
     bookkeeping/transaction-record.hxx
     bookkeeping/transaction-record-odb.cxx
@@ -140,16 +141,17 @@ target_link_libraries(tc-keygen
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/vendor/gtest/lib/.libs")
 set(TEST_PROGRAM_LDFLAGS " ${LIBGTEST}/libgtest_main.a")
 
-target_link_libraries(tests
+target_link_libraries(tc-test
     ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
     ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
     ${LIBODB_LIBRARIES} ${MHD_LIBRARIES} ${SQLITE_LIBRARIES} ${Boost_LIBRARIES}
+    ${LOG4CXX_LIBRARY}
     -lpthread -ldl
     ${LIBGTEST}/libgtest.a
     ${LIBGTEST}/libgtest_main.a)
 
 add_dependencies(tc enclave)
-add_dependencies(tests enclave)
+add_dependencies(tc-test enclave)
 add_dependencies(tc-keygen enclave)
 
 ###############################
