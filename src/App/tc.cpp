@@ -81,10 +81,11 @@ std::atomic<bool> quit(false);
 void exitGraceful(int) { quit.store(true); }
 
 int main(int argc, const char *argv[]) {
+  // parse command line arguments first
+  tc::Config config(argc, argv);
+
   // init logging
   loguru::init(argc, argv);
-
-  tc::Config config(argc, argv);
 
   // create working dir if not existed
   fs::create_directory(fs::path(config.getWorkingDir()));
@@ -96,7 +97,7 @@ int main(int argc, const char *argv[]) {
   if (std::strftime(_log_tag, sizeof _log_tag, "%F-%T",
                     std::localtime(&_current_time))) {
     log_path =
-        fs::path(config.getWorkingDir()) / ("tc" + string(_log_tag) + ".log");
+        fs::path(config.getWorkingDir()) / (string(_log_tag) + ".log");
   } else {
     log_path = fs::path(config.getWorkingDir()) / ("tc.log");
   }
@@ -127,7 +128,7 @@ int main(int argc, const char *argv[]) {
 
   // print MR and exit if requested
   if (config.printMR()) {
-    cout << get_mr_enclave(eid);
+    cout << get_mr_enclave(eid) << endl;
     std::exit(0);
   }
 

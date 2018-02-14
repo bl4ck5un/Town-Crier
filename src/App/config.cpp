@@ -74,10 +74,10 @@ tc::Config::Config(const po::options_description &additional_opts, int argc, con
 
   try {
     po::options_description desc("Allowed options");
-    desc.add_options()("help,h", "print this message")(
-        "rpc", po::bool_switch(&opt_status_enabled)->default_value(DFT_STATUS_ENABLED), "Launch RPC server")(
-        "config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE), "Path to a config file")(
-        "cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR), "Working dir (where log and db are stored");
+    desc.add_options()
+        ("help,h", "print this message")
+        ("config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE), "Path to a config file")
+        ("cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR), "Working dir (where log and db are stored");
 
     desc.add(additional_opts);
 
@@ -111,6 +111,7 @@ void tc::Config::parseConfigFile() {
     boost::property_tree::ini_parser::read_ini(opt_config_file, pt);
     cfg_geth_rpc_addr = pt.get<string>("RPC.RPChost");
     cfg_pid_fn = pt.get<string>("daemon.pid_file");
+    cfg_status_rpc_enabled = pt.get<bool>("status.enabled");
     cfg_status_port = pt.get<int>("status.port");
     cfg_sealed_sig_key = pt.get<string>("sealed.sig_key");
     cfg_sealed_hybrid_key = pt.get<string>("sealed.hybrid_key");
@@ -128,10 +129,8 @@ tc::Config::Config(int argc, const char **argv) {
   try {
     po::options_description desc("Allowed options");
     desc.add_options()("help,h", "print this message");
-    desc.add_options()("measurement", po::bool_switch(&opt_mrenclave)->default_value(false),
+    desc.add_options()("measurement,m", po::bool_switch(&opt_mrenclave)->default_value(false),
                        "print the measurement (MR_ENCLAVE) and exit.");
-    desc.add_options()("rpc", po::bool_switch(&opt_status_enabled)->default_value(DFT_STATUS_ENABLED),
-                       "Launch RPC server");
     desc.add_options()("config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE),
                        "Path to a config file");
     desc.add_options()("cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR),
@@ -160,18 +159,18 @@ tc::Config::Config(int argc, const char **argv) {
 
 string tc::Config::toString() {
   stringstream ss;
-  ss << "status server enabled: " << opt_status_enabled << endl;
-  ss << "status server port: " << cfg_status_port << endl;
-  ss << "using config file: " << opt_config_file << endl;
-  ss << "working dir set to: " << opt_working_dir << endl;
-  ss << "geth rpc addr: " << cfg_geth_rpc_addr << endl;
-  ss << "pid filename: " << cfg_pid_fn << endl;
+  ss << "Status RPC enabled: " << cfg_status_rpc_enabled << endl;
+  ss << "Status RPC port: " << cfg_status_port << endl;
+  ss << "Using config file: " << opt_config_file << endl;
+  ss << "Working dir set to: " << opt_working_dir << endl;
+  ss << "Geth rpc addr: " << cfg_geth_rpc_addr << endl;
+  ss << "pid: " << cfg_pid_fn << endl;
   ss << "enclave image used: " << cfg_enclave_path;
 
   return ss.str();
 }
 
-bool tc::Config::isStatusServerEnabled() const { return opt_status_enabled; }
+bool tc::Config::isStatusServerEnabled() const { return cfg_status_rpc_enabled; }
 const string &tc::Config::getConfigFile() const { return opt_config_file; }
 const string &tc::Config::getWorkingDir() const { return opt_working_dir; }
 const string &tc::Config::getGethRpcAddr() const { return cfg_geth_rpc_addr; }

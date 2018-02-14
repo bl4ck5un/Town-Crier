@@ -8,6 +8,7 @@ enclave_path = /tc/enclave/enclave.debug.so
 pid_file = tc.pid
 
 [status]
+enabled = true
 port = 8123
 
 [sealed]

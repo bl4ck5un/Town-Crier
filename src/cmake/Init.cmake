@@ -4,6 +4,10 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Set a default build type if none was specified
 set(default_build_type "Debug")
 
+if(DEFINED ENV{TC_BUILD_CONFIG})
+    set(CMAKE_BUILD_TYPE $ENV{SGX_CONFIG})
+endif()
+
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
     set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE STRING "Choose the type of build." FORCE)

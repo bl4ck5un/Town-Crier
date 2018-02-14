@@ -14,9 +14,9 @@ which docker >/dev/null || {
 docker run --rm -t -i \
   --name "tc-devel" \
   -v ${ROOTDIR}/src:/code \
-  -e "SGX_MODE=HW" \
+  -e "TC_BUILD_CONFIG=Prerelease" \
   -e "SGX_SDK=/opt/intel/sgxsdk" \
-  -w /code \
+  -w /build \
   -p 8123:8123 \
   "$tc_dev_image" \
   /usr/bin/env $tc_dev_shell

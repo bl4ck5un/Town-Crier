@@ -58,8 +58,6 @@ namespace tc {
 
 class Config {
  private:
-  const bool DFT_STATUS_ENABLED = false;
-  const bool DFT_RUN_AS_DAEMON = false;
   const string DFT_CONFIG_FILE = "/tc/conf/config-sim-test";
   const string DFT_WORKING_DIR = "/tc";
   po::variables_map vm;
@@ -81,11 +79,11 @@ class Config {
 
  private:
   bool opt_mrenclave;
-  bool opt_status_enabled;
   string opt_config_file;
   string opt_working_dir;
 
   string cfg_geth_rpc_addr;
+  bool cfg_status_rpc_enabled;
   int cfg_status_port;
   string cfg_pid_fn;
   string cfg_sealed_sig_key;
