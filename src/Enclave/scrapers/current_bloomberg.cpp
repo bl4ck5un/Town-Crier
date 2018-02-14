@@ -44,8 +44,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #include "scrapers.h"
-#include "Log.h"
+#include "log.h"
 #include "tls_client.h"
 
 #include "macros.h"

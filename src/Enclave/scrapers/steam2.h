@@ -51,7 +51,7 @@
 #include "Scraper.h"
 #include "tls_client.h"
 #include "utils.h"
-#include "Log.h"
+#include "../log.h"
 #include "external/picojson.h"
 
 class SteamScraper : Scraper {

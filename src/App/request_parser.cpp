@@ -51,7 +51,7 @@
 #include "App/converter.h"
 #include "App/utils.h"
 #include "Common/Constants.h"
-#include "Common/Log.h"
+#include "App/logging.h"
 #include "App/debug.h"
 
 using tc::RequestParser;
@@ -60,6 +60,14 @@ using std::invalid_argument;
 using std::out_of_range;
 using std::strtol;
 using std::stoi;
+
+namespace tc {
+namespace requestParser {
+log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("request_parser.cpp"));
+}
+}
+
+using tc::requestParser::logger;
 
 inline static unsigned int __hextoi(const string &str) {
   return static_cast<unsigned int>(stoi(str, nullptr, 16));

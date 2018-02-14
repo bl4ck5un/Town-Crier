@@ -43,7 +43,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <Log.h>
+#include "../log.h"
 
 #include "Scraper.h"
 #include "utils.h"

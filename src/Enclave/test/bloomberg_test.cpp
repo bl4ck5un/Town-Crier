@@ -45,8 +45,8 @@
 #include <stdlib.h>
 #include <debug.h>
 #include "tls_client.h"
-#include "scrapers.h"
-#include "Log.h"
+#include "scrapers/scrapers.h"
+#include "../log.h"
 
 int bloomberg_self_test() {
   // This scraper is deprecated!

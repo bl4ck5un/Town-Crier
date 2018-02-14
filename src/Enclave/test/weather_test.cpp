@@ -44,11 +44,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <debug.h>
-#include <Log.h>
+#include "../log.h"
 
 #include "tls_client.h"
 #include "scrapers/current_weather.h"
-#include "Log.h"
+#include "../log.h"
 
 int weather_self_test() {
   WeatherScraper weatherScraper;

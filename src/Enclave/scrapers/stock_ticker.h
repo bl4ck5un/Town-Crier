@@ -47,7 +47,7 @@
 
 #include "Scraper.h"
 #include "debug.h"
-#include "Log.h"
+#include "../log.h"
 #include "utils.h"
 #include "../../Common/Constants.h"
 #include "../external/slre.h"

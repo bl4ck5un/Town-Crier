@@ -2,12 +2,13 @@
 RPChost = http://localhost:8200
 
 [init]
-enclave_path = enclave.release.so
+enclave_path = /tc/enclave/enclave.release.so
 
 [daemon]
 pid_file = tc.pid
 
 [status]
+enabled = yes
 port = 8123
 
 [sealed]

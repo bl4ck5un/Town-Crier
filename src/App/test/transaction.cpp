@@ -63,7 +63,7 @@ TEST_F(Transaction, All) {
     transaction_rlp_test(eid, &ret);
     EXPECT_EQ(0, ret);
   } catch (tc::EcallException &e) {
-    LL_CRITICAL(e.what());
+    std::cerr << "Error: " << e.what() << std::endl;
     FAIL();
   }
 }

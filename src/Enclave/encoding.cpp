@@ -139,13 +139,8 @@ void bytes::to_rlp(bytes &out) {
 }
 
 void bytes::dump(const string &title) {
-#ifdef DEBUG
-  int debugging;
-  ocall_is_debug(&debugging);
-  if (debugging) {
-    LL_DEBUG("in tostring");
+#ifndef NDEBUG
     hexdump(title.c_str(), std::vector<uint8_t>::data(), std::vector<uint8_t>::size());
-  }
 #endif
 }
 

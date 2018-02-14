@@ -59,9 +59,9 @@ TEST_F(Attestation, att) {
   try {
     vector<uint8_t> att;
     get_attestation(eid, &att);
-    LL_INFO("attestation: %s", bufferToHex(att, true).c_str());
+    std::cout << "attestation: " << bufferToHex(att, true) << std::endl;
   } catch (const exception& e) {
-    LL_CRITICAL("error: %s", e.what());
+    std::cerr << "error: " << e.what() << std::endl;
     FAIL();
   }
 }

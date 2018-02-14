@@ -47,10 +47,12 @@
 #include "App/utils.h"
 #include "App/key_utils.h"
 #include "App/test/test-data.h"
+#include "App/logging.h"
 
 class SGXTestBase : public ::testing::Test {
  protected:
   sgx_enclave_id_t eid;
+
   virtual void SetUp() {
 #ifdef TC_SGX_IN_RELEASE_MODE
     initialize_enclave("enclave.release.so", &eid);

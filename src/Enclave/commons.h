@@ -48,7 +48,7 @@
 #include <string>
 #include <cstdint>
 
-#include "Log.h"
+#include "log.h"
 #include "encoding.h"
 
 #define ROUND_TO_32(x) ((x + 31) / 32 * 32)

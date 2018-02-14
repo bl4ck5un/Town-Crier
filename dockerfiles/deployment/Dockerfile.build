@@ -1,0 +1,16 @@
+FROM bl4ck5un/tc-sgx-sdk
+MAINTAINER Fan Zhang <bl4ck5unxx@gmail.com>
+
+ADD . /code
+
+RUN mkdir /tc && cp /code/dockerfiles/deployment/Dockerfile.runtime /tc/Dockerfile
+
+RUN cd /code/src && \
+    mkdir build && \
+    cd build && cmake .. && make && make install
+
+# This is a builder container which outputs the contents of the package
+# on standard output. This enables the runtime and the builder container
+# to be different and reduces the image size considerably.
+WORKDIR /tc
+CMD tar cvzhf - .

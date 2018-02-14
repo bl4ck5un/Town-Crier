@@ -60,7 +60,7 @@
 #include <string>
 #include <vector>
 
-#include "Common/Log.h"
+#include "logging.h"
 
 #define MAX_PATH FILENAME_MAX
 

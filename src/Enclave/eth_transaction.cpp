@@ -56,7 +56,7 @@
 #include "external/keccak.h"
 #include "Enclave_t.h"
 #include "Constants.h"
-#include "Log.h"
+#include "log.h"
 #include "commons.h"
 #include "debug.h"
 

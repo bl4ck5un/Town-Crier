@@ -49,6 +49,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <log4cxx/propertyconfigurator.h>
 
 #include "App/converter.h"
 #include "App/Enclave_u.h"
@@ -56,8 +57,15 @@
 #include "Common/macros.h"
 #include "App/utils.h"
 
+namespace tckeygen {
+namespace main {
+log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("tc-keygen.cpp"));
+}
+}
+
 using std::cout;
 using std::endl;
+using tckeygen::main::logger;
 
 void print_key(sgx_enclave_id_t eid, string keyfile) {
   LL_INFO("printing key from %s", keyfile.c_str());
@@ -135,8 +143,7 @@ void keygen(sgx_enclave_id_t eid, string keyfile) {
 namespace po = boost::program_options;
 
 int main(int argc, const char *argv[]) {
-  loguru::g_stderr_verbosity = loguru::Verbosity_WARNING;
-  loguru::init(argc, argv);
+  log4cxx::PropertyConfigurator::configure(LOGGING_CONF_FILE);
 
   string key_input, key_output;
   string enclave_path;

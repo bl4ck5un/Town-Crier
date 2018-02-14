@@ -59,13 +59,20 @@
 #include "App/Enclave_u.h"
 #include "App/eth_rpc.h"
 #include "App/request_parser.h"
-#include "Common/Log.h"
+#include "App/logging.h"
+
+namespace tc {
+namespace monitor {
+log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("monitor.cpp"));
+}
+}
 
 // TX_BUF_SIZE is defined in Constants.h
 uint8_t resp_buffer[TX_BUF_SIZE] = {0};
 size_t resp_data_len = 0;
 
 void Monitor::loop() {
+  using tc::monitor::logger;
   // keeps track of the blocks that have been processed
   blocknum_t next_block_num;
   next_block_num = driver->getLastBlock();
@@ -162,6 +169,7 @@ void Monitor::loop() {
 //! best effort to process one block
 //! \param blocknum
 void Monitor::_process_one_block(blocknum_t blocknum) {
+  using tc::monitor::logger;
   int ret = 0;
   Json::Value txn_list;
   string filter_id = eth_new_filter(blocknum, blocknum);
