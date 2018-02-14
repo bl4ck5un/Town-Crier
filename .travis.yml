@@ -2,7 +2,7 @@ sudo: required
 services:
 - docker
 before_install:
-- docker pull bl4ck5un/towncrier:latest
+- docker pull bl4ck5un/tc-sgx-sdk:latest
 #- docker run -v $(pwd):/tc -w /tc bl4ck5un/towncrier sh -c "scripts/lint.sh"
 - docker run -v $(pwd):/tc -w /tc bl4ck5un/towncrier sh -c "scripts/build_gtest.sh"
 script:
