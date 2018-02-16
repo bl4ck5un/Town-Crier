@@ -13,7 +13,7 @@ please visit http://town-crier.org.
 
 [![Build Status](https://travis-ci.org/bl4ck5un/Town-Crier.svg?branch=master)](https://travis-ci.org/bl4ck5un/Town-Crier)
 
-Get Started with Docker
+Build with Docker
 -----------------------
 
     git clone https://github.com/bl4ck5un/Town-Crier
@@ -21,7 +21,14 @@ Get Started with Docker
     ./scripts/sgx-enter.sh
     cmake ../code
     make && make install
+    
+To print MRENCLAVE, 
 
+    root@08119b795b16:/build# /tc/bin/tc -m
+    # omit logging
+    E1FBB750A350798ADBECAFEE8A1BFC5B229E3BC007212E92102B55CE30EA0C01
+    
+Alternatively, MRENCLAVE can be extracted manually from the `sgx_metadata` section of the enclave binary.
 
 Launch TC
 ---------
@@ -46,6 +53,11 @@ By default TC connects to geth via RPC at `http://localhost/8200`. The RPC entry
     [sealed]
     sig_key = blahblah
     hybrid_key = blahblah
+    
+To launch TC (in the above docker where `tc` is built):
+
+    
+    
 
 Status Server
 -------------
