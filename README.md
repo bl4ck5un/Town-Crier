@@ -26,7 +26,7 @@ Get Started with Docker
 Launch TC
 ---------
 
-TC relies on [geth](https://github.com/ethereum/go-ethereum/wiki/geth) to communicate with Ethereum blockchain.
+TC relies on [geth](https://github.com/ethereum/go-ethereum) to communicate with Ethereum blockchain.
 By default TC connects to geth via RPC at `http://localhost/8200`. The RPC entrypoint can be changed in the configuration file. After `make install`, a sample configuration is installed at `/tc/conf/config-sim-test`.
 
     root@3405273772d1:/build# cat /tc/conf/config-sim-test 
