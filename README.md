@@ -7,46 +7,45 @@ strong guarantee that data comes from an existing, trustworthy source. It also
 provides confidentiality, enabling smart contracts to support confidential
 queries and manage user credentials.
 
-Please read on for installation instructions. If you want to learn how Town Crier works,
-you can read our [CCS'16 paper](https://www.cs.cornell.edu/~fanz/files/pubs/tc-ccs16-final.pdf).
+Please read on for build instructions for the TC enclave.
+If you want to learn how Town Crier works and how to use TC in smart contract systems,
+please visit http://town-crier.org.
 
 [![Build Status](https://travis-ci.org/bl4ck5un/Town-Crier.svg?branch=master)](https://travis-ci.org/bl4ck5un/Town-Crier)
 
-Get Started
------------
+Get Started with Docker
+-----------------------
 
-    docker pull bl4ck5un/towncrier:latest
     git clone https://github.com/bl4ck5un/Town-Crier
     cd Town-Crier
-
-Alternatively, you can also use `docker run` non-interactively, e.g.:
-
-```shell
-# build gtest
-docker run -v $(pwd):/tc -w /tc bl4ck5un/towncrier sh -c "scripts/build_gtest.sh"
-
-# make everything
-docker run -v $(pwd):/tc -w /tc/src bl4ck5un/towncrier sh -c "mkdir -p build; cd build; cmake ..; make -j; make tests"
-
-# run tests
-docker run -v $(pwd):/tc -w /tc/src/build bl4ck5un/towncrier sh -c "./tests"
-```
-
-See `.travis.yml` for an example of how Docker is used to build and test Town
-Crier.
+    ./scripts/sgx-enter.sh
+    cmake ../code
+    make && make install
 
 
 Launch TC
 ---------
 
-A configuration is needed to run tc. We need to specify RPChost in this configuration.
+TC relies on [geth](https://github.com/ethereum/go-ethereum/wiki/geth) to communicate with Ethereum blockchain.
+By default TC connects to geth via RPC at `http://localhost/8200`. The RPC entrypoint can be changed in the configuration file. After `make install`, a sample configuration is installed at `/tc/conf/config-sim-test`.
 
-```
-cd build
-echo "[RPC]" >> config
-echo "RPChost = http://localhost:8200" >> config
-./tc config
-```
+    root@3405273772d1:/build# cat /tc/conf/config-sim-test 
+    [RPC]
+    RPChost = http://localhost:8200
+
+    [init]
+    enclave_path = /tc/enclave/enclave.debug.so
+
+    [daemon]
+    pid_file = tc.pid
+
+    [status]
+    enabled = true
+    port = 8123
+
+    [sealed]
+    sig_key = blahblah
+    hybrid_key = blahblah
 
 Status Server
 -------------
@@ -55,7 +54,8 @@ Status Server
 curl -d '{"id": 123, "jsonrpc": "2.0", "method": "attest"}' server.town-crier.org:8123
 ```
 
-# LICENSE
+LICENSE
+-------
 
 The permission granted herein is solely for the purpose of compiling the TownCrier source code.
 See the LICENSE file for details.
