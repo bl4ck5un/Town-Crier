@@ -22,13 +22,13 @@ Build with Docker
     cmake ../code
     make && make install
     
-To print MRENCLAVE, 
+To print `MRENCLAVE`, 
 
     root@08119b795b16:/build# /tc/bin/tc -m
     # omit logging
     E1FBB750A350798ADBECAFEE8A1BFC5B229E3BC007212E92102B55CE30EA0C01
     
-Alternatively, MRENCLAVE can be extracted manually from the `sgx_metadata` section of the enclave binary.
+Alternatively, `MRENCLAVE` can be extracted manually from the `sgx_metadata` section of the enclave binary.
 
 Launch TC
 ---------
