@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+call_geth() {
+    docker run \
+        --name 'geth-private' \
+        -it \
+        --rm \
+        -v ~/data/ethereum:/root \
+        -v $PWD:/cwd \
+        -p 8545:8545 \
+        ethereum/client-go:v1.6.0 --config /cwd/config.toml \
+        $@
+}
+
+call_geth $@

@@ -1,0 +1,36 @@
+[Eth]
+NetworkId = 93819023
+SyncMode = "fast"
+LightPeers = 20
+DatabaseCache = 128
+GasPrice = 20000000000
+EthashCacheDir = "ethash"
+EthashCachesInMem = 2
+EthashCachesOnDisk = 3
+EthashDatasetDir = "/root/.ethash"
+EthashDatasetsInMem = 1
+EthashDatasetsOnDisk = 2
+EnablePreimageRecording = false
+
+[Eth.GPO]
+Blocks = 10
+Percentile = 50
+
+[Node]
+UserIdent = "00"
+DataDir = "/root/.ethereum"
+KeyStoreDir = "/cwd/wallet"
+HTTPHost = "0.0.0.0"
+HTTPPort = 8545
+HTTPModules = ["db", "eth", "ne", "web3", "personal", "crypto-js"]
+WSPort = 8546
+WSModules = ["net", "web3", "eth"]
+
+[Node.P2P]
+MaxPeers = 25
+NoDiscovery = true
+DiscoveryV5Addr = ":30001"
+BootstrapNodes = []
+StaticNodes = []
+TrustedNodes = []
+ListenAddr = ":30000"

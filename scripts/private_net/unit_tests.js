@@ -12,14 +12,6 @@ var sgxAddr = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 var gasCnt = 3e+6
 var TC_FEE = 3e+15
 
-var encryptedApiKey = [
-    '0xf68d2a32cf17b1312c6db3f236a38c94',
-    '0x4c9f92f6ec1e2a20a1413d0ac1b867a3']
-
-var buyerSteamId = String(32884794);
-
-loadScript("compiledContract_test.js")
-
 var TownCrier = web3.eth.contract(JSON.parse(compiledContract.contracts["TownCrier"].abi));
 var App = web3.eth.contract(JSON.parse(compiledContract.contracts["Application"].abi));
 
