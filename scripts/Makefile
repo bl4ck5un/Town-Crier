@@ -25,5 +25,5 @@ build:
 		--force-rm \
 		-t tc/core-builder \
 		-f dockerfiles/deployment/Dockerfile.build . && \
-	docker run --rm tc/core-builder | docker build --rm --force-rm -t tc/core - && \
+	docker run --rm tc/core-builder | docker build --rm --force-rm -t tc/core:${BUILD} - && \
 	cd ..

@@ -1,7 +1,7 @@
 version: "2"
 services:
     tc-core:
-        image: "tc/core"
+        image: "tc/core:Debug"
         network_mode: host
     tc-relay:
         depends_on:
