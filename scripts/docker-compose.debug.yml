@@ -1,0 +1,5 @@
+version: "2"
+services:
+    tc-core:
+        image: "tc/core:Debug"
+        entrypoint: tc

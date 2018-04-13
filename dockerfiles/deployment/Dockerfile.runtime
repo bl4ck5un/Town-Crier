@@ -7,7 +7,11 @@ ENV LD_LIBRARY_PATH=${SGX_SDK}/sdk_libs
 
 COPY . /tc
 
+RUN apt-get update && apt-get install --yes supervisor
+
 EXPOSE 8123
 
-COPY supervisord.conf /etc
+RUN mkdir -p /var/supervisor/child
+COPY ./supervisord.conf /etc
 
+ENTRYPOINT ["supervisord", "-n", "-c", "/etc/supervisord.conf"]

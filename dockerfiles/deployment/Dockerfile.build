@@ -6,7 +6,10 @@ ARG MAKE_FLAGS=-j
 
 COPY . /code
 
-RUN mkdir /tc && cp /code/dockerfiles/deployment/Dockerfile.runtime /tc/Dockerfile
+RUN mkdir /tc && \
+    cp /code/dockerfiles/deployment/Dockerfile.runtime /tc/Dockerfile && \
+    cp /code/dockerfiles/deployment/supervisord.conf /tc
+
 RUN cd /code && \
     mkdir -p tmp && \
     cd tmp && \

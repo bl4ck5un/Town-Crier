@@ -2,9 +2,9 @@ BASE_DIR=$(shell pwd)/..
 
 BUILD=Debug
 
-.PHONY: all
+.PHONY: all up up-debug
 
-all: relay core
+all: relay core debug-core
 
 relay:
 	cd ${BASE_DIR}/python-relay && \
@@ -27,3 +27,9 @@ build:
 		-f dockerfiles/deployment/Dockerfile.build . && \
 	docker run --rm tc/core-builder | docker build --rm --force-rm -t tc/core:${BUILD} - && \
 	cd ..
+
+up:
+	docker-compose -f docker-compose.yml up
+
+up-debug:
+	docker-compose -f docker-compose.yml -f docker-compose.debug.yml up
