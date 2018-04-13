@@ -5,8 +5,9 @@ ENV PATH="/tc/bin:${PATH}"
 ENV SGX_SDK=/opt/intel/sgxsdk
 ENV LD_LIBRARY_PATH=${SGX_SDK}/sdk_libs
 
-ADD . /tc
+COPY . /tc
 
 EXPOSE 8123
 
-ENTRYPOINT ["tc"]
+COPY supervisord.conf /etc
+
