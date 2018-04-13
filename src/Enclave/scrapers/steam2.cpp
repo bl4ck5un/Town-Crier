@@ -185,9 +185,8 @@ char *SteamScraper::get_next_trade_with_other(char *index, const char *other) {
 }
 
 int SteamScraper::get_item_name(const char *key, char *appId, char *classId, char **resp) {
-  int len, ret;
+  int len;
   char *end;
-  char buf[16385];
 
   string query = "/ISteamEconomy/GetAssetClassInfo/v0001/?class_count=1&classid0=" + \
                 string(classId) + \

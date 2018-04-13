@@ -83,7 +83,7 @@ void tc::enclave::from_hex(const char* src, char* target)
 
 std::string to_hex(const unsigned char *data, size_t len) {
   std::string s(len * 2, ' ');
-  for (int i = 0; i < len; ++i) {
+  for (unsigned i = 0; i < len; ++i) {
     s[2 * i] = hexmap[(data[i] & 0xF0) >> 4];
     s[2 * i + 1] = hexmap[data[i] & 0x0F];
   }

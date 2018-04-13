@@ -1,13 +1,15 @@
+.PHONY: compile
+
 console: compile
-	./geth init /cwd/genesis.json
-	./geth --preload /cwd/.compiledContract.js,/cwd/unit_tests.js console
+	@./geth init /cwd/genesis.json
+	@./geth --preload /cwd/.compiledContract.js,/cwd/unit_tests.js console
 
 clean:
-	./geth removedb
+	@./geth removedb
 	@rm -rf .compiledContract.js
 
 doc:
-	./geth --help
+	@./geth --help
 
 compile:
 	@./compile.sh

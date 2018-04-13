@@ -67,7 +67,7 @@ int flight_self_test() {
   string unx_epoch = "\x58\xEF\xA4\x04";
   unx_epoch.insert(unx_epoch.begin(), 32 - unx_epoch.length(), '\0');
 
-  err_code err_code = testScraper.handle((uint8_t *) (flight_num + unx_epoch).c_str(), 32 * 2, &delay);
+  testScraper.handle((uint8_t *) (flight_num + unx_epoch).c_str(), 32 * 2, &delay);
   return rc;
 }
 //1477276620,

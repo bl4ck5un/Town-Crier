@@ -1,5 +1,5 @@
 [RPC]
-RPChost = http://localhost:8200
+RPChost = http://localhost:8545
 
 [init]
 enclave_path = /tc/enclave/enclave.debug.so

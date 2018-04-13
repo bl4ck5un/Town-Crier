@@ -105,7 +105,6 @@ class bytes20: public RLPSerializable {
   }
   void dump(const char* title) {
 #ifndef NDEBUG
-    LL_DEBUG("in tostring");
     hexdump(title, _b.data(), _b.size());
 #endif
   }

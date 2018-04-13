@@ -1,0 +1,12 @@
+bitcoin==1.1.42
+ethereum==1.0.8
+ethjsonrpc==0.3.0
+pbkdf2==1.3
+pycryptodome==3.6.0
+pyethash==0.1.27
+pysha3==1.0.2
+PyYAML==3.12
+repoze.lru==0.7
+requests==2.9.1
+rlp==0.4.4
+scrypt==0.8.6

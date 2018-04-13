@@ -254,3 +254,7 @@ _Pvt_Extensions
 
 .idea
 cmake-build-debug
+
+*.bin
+env
+venv

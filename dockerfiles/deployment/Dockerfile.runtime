@@ -2,7 +2,11 @@ FROM bl4ck5un/tc-sgx-sdk
 MAINTAINER Fan Zhang <bl4ck5unxx@gmail.com>
 
 ENV PATH="/tc/bin:${PATH}"
+ENV SGX_SDK=/opt/intel/sgxsdk
+ENV LD_LIBRARY_PATH=${SGX_SDK}/sdk_libs
 
 ADD . /tc
+
+EXPOSE 8123
 
 ENTRYPOINT ["tc"]

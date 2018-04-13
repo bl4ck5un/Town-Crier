@@ -8,5 +8,17 @@
     "returns": {
       "num_of_tx": 123
     }
+  },
+  {
+    "method": "process",
+    "params": {
+      "txid": "hexstring",
+      "data": "hexstring",
+      "nonce": 1
+    },
+    "returns": {
+      "error_code": 0,
+      "response": "hexstring"
+    }
   }
 ]

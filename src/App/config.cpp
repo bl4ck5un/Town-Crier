@@ -51,11 +51,7 @@
 #include <boost/property_tree/ini_parser.hpp>
 #include <iostream>
 
-using std::string;
-using std::cerr;
-using std::cout;
-using std::endl;
-using std::stringstream;
+using namespace std;
 
 const tc::Config* g_config;
 
@@ -116,8 +112,9 @@ void tc::Config::parseConfigFile() {
     cfg_sealed_sig_key = pt.get<string>("sealed.sig_key");
     cfg_sealed_hybrid_key = pt.get<string>("sealed.hybrid_key");
     cfg_enclave_path = pt.get<string>("init.enclave_path");
-  } catch (const std::exception &e) {
-    std::cout << e.what() << std::endl;
+  } catch (const exception &e) {
+    cout << e.what() << endl;
+    cout << "please provide with a correct config file" << endl;
     exit(-1);
   }
 }
@@ -146,7 +143,7 @@ tc::Config::Config(int argc, const char **argv) {
   } catch (po::required_option &e) {
     cerr << e.what() << endl;
     exit(-1);
-  } catch (std::exception &e) {
+  } catch (exception &e) {
     cerr << e.what() << endl;
     exit(-1);
   } catch (...) {

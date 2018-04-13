@@ -52,7 +52,6 @@
 #include "macros.h"
 
 static double parse_response(const char *resp) {
-  int len;
   double ret = 0.0;
   char *end;
   const char *temp = resp;

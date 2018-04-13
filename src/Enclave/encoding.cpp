@@ -109,7 +109,6 @@ void rlp_string(Iter begin, Iter end, std::vector<uint8_t>& out) {
   if (len < 0)
     throw std::invalid_argument("String too long to be encoded.");
 
-  int32_t i;
   int32_t len_len;
   if (len == 1 && (*begin) < 0x80) {
     out.push_back(*begin);

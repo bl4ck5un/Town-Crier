@@ -83,7 +83,7 @@ int coin_self_test(){
 
 
 	//Null check
-	int ret = coinMarketTest.coinmarketcap_current("vdbsd", &r);
+	coinMarketTest.coinmarketcap_current("vdbsd", &r);
 	if (r != 0.0){
 		return -1;
 	}

@@ -86,7 +86,7 @@ int yahoo_self_test(){
 
 
 	//Null check
-	int ret = yahoo_current("vdbsd", &r);
+	yahoo_current("vdbsd", &r);
 	if (r != 0.0){
 		return -1;
 	}

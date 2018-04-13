@@ -4,10 +4,10 @@ MAINTAINER Fan Zhang <bl4ck5unxx@gmail.com>
 ADD . /code
 
 RUN mkdir /tc && cp /code/dockerfiles/deployment/Dockerfile.runtime /tc/Dockerfile
-
-RUN cd /code/src && \
-    mkdir build && \
-    cd build && cmake .. && make && make install
+RUN cd /code && \
+    mkdir -p tmp && \
+    cd tmp && cmake .. && make -j && make install && cd .. \
+    rm -rf tmp
 
 # This is a builder container which outputs the contents of the package
 # on standard output. This enables the runtime and the builder container

@@ -100,7 +100,7 @@ using namespace std;
 
 static const string printableRequest(const string &request) {
   std::string res;
-  for (int i = 0; i < request.length(); ++i) {
+  for (unsigned i = 0; i < request.length(); ++i) {
     switch (request[i]) {
       case '\r':
         res += "\\r";
@@ -265,7 +265,7 @@ void HttpsClient::sendRequest() {
   LL_DEBUG("Request: %s", printableRequest(requestMessage).c_str());
 #endif
 
-  for (int written = 0, frags = 0; written < requestMessage.size(); written += ret, frags++) {
+  for (unsigned written = 0, frags = 0; written < requestMessage.size(); written += ret, frags++) {
     while ((ret = mbedtls_ssl_write(&ssl,
                                     reinterpret_cast<const unsigned char *>(requestMessage.c_str()) + written,
                                     requestMessage.size() - written)) <= 0) {

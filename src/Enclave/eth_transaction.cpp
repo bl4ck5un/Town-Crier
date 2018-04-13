@@ -147,7 +147,7 @@ int form_transaction(int nonce,
                      size_t * o_len,
                      bool with_sig) {
 
-  LL_INFO("forming transaction for nonce=%d, id=%"PRIu64", " "type=%d, date_len=%zu, err=%"PRIu64,
+  LL_INFO("forming transaction for nonce=%d, id=%" PRIu64 ", " "type=%d, date_len=%zu, err=%" PRIu64,
           nonce, request_id, request_type, request_data_len, resp_error);
 
   if (tx_output_bf == nullptr || o_len == nullptr) {
@@ -194,8 +194,6 @@ int form_transaction(int nonce,
   args.push_back(&d);
   ABI_Generic_Array _abi_array(args);
 
-  LL_DEBUG("before ABI encoding");
-
   // encoding the function call per ABI
   bytes encoded_delivery_call;
   if (_abi_array.encode(encoded_delivery_call) != 0) {
@@ -203,7 +201,7 @@ int form_transaction(int nonce,
     return TC_INTERNAL_ERROR;
   }
 
-  LL_DEBUG("up to ABI encoding");
+  LL_DEBUG("done ABI encoding");
 
   // compute function selector as the first 4 bytes
   // of SHA3(DELIVER_CALL_SIGNATURE)
@@ -290,8 +288,8 @@ int form_transaction(int nonce,
   memcpy(tx_output_bf, &out[0], out.size());
   *o_len = out.size();
 
-  LL_INFO("finished transaction for nonce=%d, id=%"PRIu64", "
-      "type=%d, date_len=%zu, err=%"PRIu64 ", total size=%zuB",
+  LL_INFO("finished transaction for nonce=%d, id=%" PRIu64 ", "
+      "type=%d, date_len=%zu, err=%" PRIu64 ", total size=%zuB",
           nonce, request_id, request_type, request_data_len, resp_error, *o_len);
   return TC_SUCCESS;
 }

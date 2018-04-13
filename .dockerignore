@@ -1,5 +1,17 @@
-Contracts
-win
 .git
 
-src/build
+*.o
+*.so
+*.a
+
+Contracts
+win
+build
+scripts
+cmake-build-debug
+venv
+
+src/App/Enclave_u.c
+src/App/Enclave_u.h
+src/Enclave/Enclave_t.c
+src/Enclave/Enclave_t.h

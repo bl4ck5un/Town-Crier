@@ -53,8 +53,8 @@ execute_process(
 
 # generate version header
 configure_file(
-    ${CMAKE_SOURCE_DIR}/Common/version.h.in
-    ${CMAKE_SOURCE_DIR}/Common/version.h
+    ${CMAKE_SOURCE_DIR}/src/Common/version.h.in
+    ${CMAKE_SOURCE_DIR}/src/Common/version.h
 )
 
 set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; Enclave_u.h")
@@ -160,8 +160,8 @@ add_dependencies(tc-keygen enclave)
 
 install(TARGETS tc tc-oneshot tc-keygen DESTINATION bin)
 install(FILES
-        ${CMAKE_SOURCE_DIR}/config-systemd
-        ${CMAKE_SOURCE_DIR}/config-sim-test
-        ${CMAKE_SOURCE_DIR}/config-release
-        ${CMAKE_SOURCE_DIR}/logging.conf
+        ${CMAKE_SOURCE_DIR}/src/config-systemd
+        ${CMAKE_SOURCE_DIR}/src/config-sim-test
+        ${CMAKE_SOURCE_DIR}/src/config-release
+        ${CMAKE_SOURCE_DIR}/src/logging.conf
         DESTINATION conf)

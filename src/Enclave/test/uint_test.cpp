@@ -57,7 +57,7 @@ int uint_utils_test() {
   results[1] = _32swapped == 0x44332211;
 
   unsigned char buf[32] = {0};
-  for (int i = 0; i < sizeof buf; i++) {
+  for (unsigned i = 0; i < sizeof buf; i++) {
     buf[i] = (unsigned char) i;
   }
 
@@ -68,7 +68,7 @@ int uint_utils_test() {
     LL_CRITICAL("expected: %" PRIx64 ", get: %" PRIx64, _expected_from_buf, _from_buf);
   }
   bool final = true;
-  for (int i = 0; i < sizeof results; i++) {
+  for (unsigned i = 0; i < sizeof results; i++) {
     final &= results[i];
     if (!results[i]) {
       LL_CRITICAL("test %d failed", i);

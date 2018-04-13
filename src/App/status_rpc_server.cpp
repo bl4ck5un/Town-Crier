@@ -59,10 +59,11 @@ log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("status_rpc_server.cpp"));
 }
 }
 
+using tc::statusRPC::logger;
 using tc::status_rpc_server;
 
 status_rpc_server::status_rpc_server(AbstractServerConnector &connector,
-                             sgx_enclave_id_t eid, const OdbDriver &db)
+                                     sgx_enclave_id_t eid, const OdbDriver &db)
     : AbstractStatusServer(connector), eid(eid), stat_db(db) {}
 
 Json::Value status_rpc_server::attest() {
@@ -72,7 +73,7 @@ Json::Value status_rpc_server::attest() {
     std::vector<uint8_t> attestation;
     get_attestation(this->eid, &attestation);
 
-    const auto* mr_enclave_p = (reinterpret_cast<sgx_quote_t*>(attestation.data()))->report_body.mr_enclave.m;
+    const auto *mr_enclave_p = (reinterpret_cast<sgx_quote_t *>(attestation.data()))->report_body.mr_enclave.m;
 
     char b64_buf[4096] = {0};
     int buf_used = ext::b64_ntop(attestation.data(), attestation.size(),
@@ -84,7 +85,7 @@ Json::Value status_rpc_server::attest() {
     }
 
     buf_used = ext::b64_ntop(mr_enclave_p, SGX_HASH_SIZE,
-                                 b64_buf, sizeof b64_buf);
+                             b64_buf, sizeof b64_buf);
     if (buf_used < 0) {
       result["mr_enclave"] = "";
     } else {
@@ -108,4 +109,56 @@ Json::Value status_rpc_server::status() {
   status["numberOfResponse"] = static_cast<Json::Value::UInt64>(stat_db.getNumOfResponse());
 
   return status;
+}
+
+#include "request_parser.h"
+#include "../Common/Constants.h"
+#include "Enclave_u.h"
+#include "debug.h"
+
+Json::Value status_rpc_server::process(const std::string &data, int nonce, const std::string &txid) {
+// TX_BUF_SIZE is defined in Constants.h
+  uint8_t resp_buffer[TX_BUF_SIZE] = {0};
+  size_t resp_data_len = 0;
+
+  LOG4CXX_INFO(logger, "processing request " << txid);
+
+  auto request = unique_ptr<tc::RequestParser>(new tc::RequestParser());
+
+  Json::Value ret;
+
+  try {
+    request->valueOf(data, txid);
+
+    LL_INFO("parsed request: %s", request->toString().c_str());
+
+    int ecall_ret;
+
+    LL_INFO("nonce obtained %d", nonce);
+
+    // TODO(FAN): change nonce to some long type
+    auto st = handle_request(eid, &ecall_ret, nonce, request->getId(),
+                             request->getType(), request->getData(),
+                             request->getDataLen(), resp_buffer, &resp_data_len);
+
+    if (st != SGX_SUCCESS || ecall_ret != TC_SUCCESS) {
+      throw runtime_error("ecall failed");
+    } else {
+      LL_INFO("ecall succeeds");
+
+      string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
+      LL_DEBUG("response tx: %s", resp_txn.c_str());
+
+      ret["error_code"] = 0;
+      ret["response"] = resp_txn;
+
+      return ret;
+    }
+  }
+  catch (const exception &e) {
+    LL_CRITICAL("exception: %s", e.what())
+  }
+
+  ret["error_code"] = 1;
+  return ret;
 }

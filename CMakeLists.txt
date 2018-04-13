@@ -32,10 +32,9 @@ ENDIF()
 
 include(cmake/ConfigSGX.cmake)
 
-set(MBEDTLS_LIB_DIR ${TC_ROOT_DIR}/Enclave/mbedtls-SGX)
-
 set(CMAKE_INSTALL_PREFIX /tc)
 
-set(TC_ROOT_DIR ${CMAKE_SOURCE_DIR})
+set(TC_ROOT_DIR ${CMAKE_SOURCE_DIR}/src)
 set(MBEDTLS_LIB_DIR ${TC_ROOT_DIR}/Enclave/mbedtls-SGX)
 
+add_subdirectory(src)

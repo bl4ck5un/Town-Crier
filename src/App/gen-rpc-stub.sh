@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 #
 # Copyright (c) 2016-2018 by Cornell University.  All Rights Reserved.
 #

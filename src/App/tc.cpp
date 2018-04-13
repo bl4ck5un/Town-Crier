@@ -49,6 +49,8 @@
 #include <csignal>
 #include <iostream>
 #include <string>
+#include <thread>
+#include <chrono>
 #include <log4cxx/logger.h>
 #include <log4cxx/propertyconfigurator.h>
 #include <jsonrpccpp/server/connectors/httpserver.h>
@@ -80,8 +82,9 @@ log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("tc.cpp"));
 }
 }
 
+#include <utility>
 
-extern ethRPCClient *geth_connector;
+extern unique_ptr<ethRPCClient> geth_connector;
 
 std::atomic<bool> quit(false);
 void exitGraceful(int) { quit.store(true); }
@@ -110,19 +113,13 @@ int main(int argc, const char *argv[]) {
 
   LL_INFO("config:\n%s", config.toString().c_str());
 
-  try {
-    auto httpclient = new jsonrpc::HttpClient(config.getGethRpcAddr());
-    geth_connector = new ethRPCClient(*httpclient);
-  } catch (const std::exception &e) {
-    std::cout << e.what() << std::endl;
-    exit(-1);
-  }
+  jsonrpc::HttpClient http_client(config.getGethRpcAddr());
+  geth_connector = unique_ptr<ethRPCClient>(new ethRPCClient(http_client));
 
   int ret;
   sgx_enclave_id_t eid;
   sgx_status_t st;
 
-  // init enclave first
   ret = initialize_enclave(config.getEnclavePath().c_str(), &eid);
   if (ret != 0) {
     LL_CRITICAL("Failed to initialize the enclave");
@@ -137,14 +134,10 @@ int main(int argc, const char *argv[]) {
     std::exit(0);
   }
 
-  // register Ctrl-C handle
   std::signal(SIGINT, exitGraceful);
-  // handle systemd termination signal
   std::signal(SIGTERM, exitGraceful);
 
-  /*
-   * set up database
-   */
+  /* set up database */
   static const string db_name = (fs::path(config.getWorkingDir()) / "tc.db").string();
   LL_INFO("using db %s", db_name.c_str());
 
@@ -196,16 +189,17 @@ int main(int argc, const char *argv[]) {
   }
 
   init(eid);
-  set_env(eid, "a", "env");
 
-  Monitor monitor(&driver, eid, quit);
-  /* monitor.dontSendResponse(); */
-  monitor.loop();
+  // Monitor monitor(&driver, eid, quit);
+  // monitor.loop();
+
+  while (!quit.load()) {
+    this_thread::sleep_for(chrono::microseconds(500));
+  }
 
   if (config.isStatusServerEnabled()) {
     stat_srvr.StopListening();
   }
   sgx_destroy_enclave(eid);
-  delete geth_connector;
   LL_INFO("all enclave closed successfully");
 }

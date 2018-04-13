@@ -43,7 +43,7 @@
 
 #include "App/monitor.h"
 
-#include <math.h>
+#include <cmath>
 #include <unistd.h>
 #include <algorithm>
 #include <chrono>  // NOLINT
@@ -256,10 +256,8 @@ void Monitor::_process_one_block(blocknum_t blocknum) {
       LL_CRITICAL("json rpc error: %s", e.what());
     }
     catch (const std::exception &e) {
-      LL_CRITICAL("error happen while processing ", e.what());
-      LL_DEBUG("before pushing to failed_queue");
-      LL_DEBUG("after pushing to failed_queue");
-      LL_CRITICAL("%s pushed to failed queue", request->toString());
+      LL_CRITICAL("error happen while processing %s", e.what());
+      LL_CRITICAL("%s pushed to failed queue", request->toString().c_str());
       failed_requests.push(std::move(request));
     }
   }
