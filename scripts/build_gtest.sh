@@ -40,7 +40,7 @@
 # Foundation (NSF grants CNS-1314857, CNS-1330599, CNS-1453634,
 # CNS-1518765, CNS-1514261), a Packard Fellowship, a Sloan Fellowship,
 # Google Faculty Research Awards, and a VMWare Research Award.
-#
+
 set -ex
 
 pushd src/vendor/gtest

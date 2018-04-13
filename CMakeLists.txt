@@ -14,9 +14,6 @@ endif()
 
 include(cmake/Init.cmake)
 
-# check cmake configuration
-message(STATUS "Building ${CMAKE_BUILD_TYPE}")
-
 IF(CMAKE_BUILD_TYPE MATCHES Debug)
     set(SGX_MODE SIM)
     set(SGX_BUILD DEBUG)
@@ -32,9 +29,10 @@ ENDIF()
 
 include(cmake/ConfigSGX.cmake)
 
-set(CMAKE_INSTALL_PREFIX /tc)
-
 set(TC_ROOT_DIR ${CMAKE_SOURCE_DIR}/src)
 set(MBEDTLS_LIB_DIR ${TC_ROOT_DIR}/Enclave/mbedtls-SGX)
+
+# check cmake configuration
+message(STATUS "Building ${CMAKE_BUILD_TYPE} with CFLAGS ${CMAKE_C_FLAGS}")
 
 add_subdirectory(src)
