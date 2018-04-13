@@ -1,12 +1,15 @@
-
 BASE_DIR=$(shell pwd)/..
+
+BUILD=Debug
+
+.PHONY: all
+
+all: relay core
 
 relay:
 	cd ${BASE_DIR}/python-relay && \
 	docker build --rm --force-rm -t tc/relay . && \
 	cd ..
-
-BUILD=Debug
 
 core:
 	$(MAKE) BUILD=Prerelease build
