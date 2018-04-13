@@ -1,0 +1,10 @@
+version: "2"
+services:
+    tc-core:
+        image: "tc/core"
+        network_mode: host
+    tc-relay:
+        depends_on:
+          - tc-core
+        image: "tc/relay"
+        network_mode: host
