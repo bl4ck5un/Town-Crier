@@ -11,6 +11,7 @@ RUN mkdir /tc && \
     cp /code/dockerfiles/deployment/supervisord.conf /tc
 
 RUN cd /code && \
+    make -C src/Enclave/mbedtls-SGX && \
     mkdir -p tmp && \
     cd tmp && \
     cmake .. -DCMAKE_BUILD_TYPE=$BUILD -DCMAKE_INSTALL_PREFIX=/tc && \

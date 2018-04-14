@@ -30,7 +30,6 @@ set(TC_SOURCE_FILES
     eth_ecdsa.cpp
     eth_transaction.cpp
     eth_abi.cpp
-    ${LIB_MBEDTLS_PATH}
     ../Common/external/base64.cpp)
 
 FILE(GLOB TEST_SRC_FILES test/*.cpp)
@@ -47,11 +46,6 @@ add_custom_command(
     --search-path ${TC_ROOT_DIR}/Enclave
     --search-path ${SGX_SDK}/include
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-
-add_custom_command(
-    OUTPUT ${LIB_MBEDTLS_PATH}
-    COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/mbedtls-SGX
-)
 
 ###############################
 #### targets

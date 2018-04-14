@@ -1,11 +1,8 @@
 sudo: required
 services:
 - docker
-before_install:
-- docker pull bl4ck5un/tc-sgx-sdk:latest
-- docker run -v $(pwd):/tc -w /tc bl4ck5un/tc-sgx-sdk sh -c "scripts/build_gtest.sh"
 script:
-- make MAKE_FLAGS="" -C scripts
+- make -C scripts
 deploy:
   script:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
