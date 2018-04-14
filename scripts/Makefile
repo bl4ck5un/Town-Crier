@@ -2,13 +2,16 @@ BASE_DIR=$(shell pwd)/..
 
 BUILD=Debug
 
+RELAY_IMAGE=bl4ck5un/tc-relay
+CORE_IMAGE=bl4ck5un/tc-core
+
 .PHONY: all up up-debug
 
 all: relay core debug-core
 
 relay:
 	cd ${BASE_DIR}/python-relay && \
-	docker build --rm --force-rm -t tc/relay . && \
+	docker build --rm --force-rm -t ${RELAY_IMAGE} . && \
 	cd ..
 
 core:
@@ -25,7 +28,7 @@ build:
 		--force-rm \
 		-t tc/core-builder \
 		-f dockerfiles/deployment/Dockerfile.build . && \
-	docker run --rm tc/core-builder | docker build --rm --force-rm -t tc/core:${BUILD} - && \
+	docker run --rm tc/core-builder | docker build --rm --force-rm -t ${CORE_IMAGE}:${BUILD} - && \
 	cd ..
 
 up:

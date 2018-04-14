@@ -6,6 +6,20 @@ before_install:
 - docker run -v $(pwd):/tc -w /tc bl4ck5un/tc-sgx-sdk sh -c "scripts/build_gtest.sh"
 script:
 - make MAKE_FLAGS="" -C scripts
+
+deploy:
+    script:
+        - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+        - docker push bl4ck5un/tc-core:Debug
+        - docker push bl4ck5un/tc-core:Prerelease
+        - docker push bl4ck5un/tc-relay
+    on:
+        branch: master
+
 notifications:
   slack:
     secure: gtscAP0J7Y9WCGSpfSNosFn1bVxt3x1Rno71vGxCYmmkaji1LKmlwlU94ECpbe6UPVz+QgTn2jXupNa6EkQptJUNEVQd4bU3sPKT/OccF4opcmYEM0BROBg2LOIJnsCQX4lgM+C2cPtQLV7Z06ryDrLM0aykhHwS5tmWh+8w4eeDpZOVAoIkJJnrmEyPf95nY94KQHHtoHNG1YpPQA5hKv7nVdRi5WrFY4lS7b16Z1jYpPzlX49DMVzESxvEMKesc7o0MZmIjmXFYzckFMl+1YVDfIM4htw/aQtlg3ZDNPCcNVQYy5EsfxqZixxTBXRSaNlLOWaxuOhHluIZWNlM5i0Ku2PaLgvVFsGi1gNKs/FjZbLGkILxPNBGuXesp8ibSQchDdEYPsAnVSYPh5Gn3vV7NFvevJVvHFBSl6cbBqAfOYJE48yqxG5ZiRFutpWeYL1CB7CD4RL0IlKpN9pt2L5XzYs7KiMfEK0Vngk1GNmPmZkcTE/k3/zJ/sb7IecpjEWKdmzE05oxVddLFdNMee8eGjK6vohXxoQg1H1/behPE8b3pMuuP6nyED5IBFwYB/pe6ZkDygNqhMPqrZwBd5AnAnHMCJpEz13WiXCWF6RPSEXQ/4ThVWvAGgVcF7RjhmOYapykGcr/BBdvHGaVbU+T+LybgHMbupew1Tdp/mI=
+env:
+  matrix:
+  - secure: VvnJ7H6P+i08eaJ17L9Kw2LoN8Zdi1xmXTozFqKJkWxOxYkfSnmhUl8CA+fj6KvvSYvawUh671pRdctQ8s9DyigVahlNvh64wGD21tT+fagOjRwEzUNIYS4IoH6Vve6l/osKP4C01deiQv9xfOwprkWadzDOfKQAGDAJ2L/jWlwpZnFmmVcRO6Gh66PjI1OzLQ0C8F+5R3FrG9bK3DNgsEJDORk61415B9P9n6VM83AxBsRFfAIhBlf3LmfOjjI1wwhKf9pPPy9PupZAXD5Sm6mV8b4I+qkvZrRcmRQfLhjawRh7waqzfVjw52chOXOxYHC3met+ehLBC5LBt0ciPi1jZzrrfSNFPcz4TXtAHxHx4cLTT4JHZf8XHxwIp+fYxTRJihc+NI+9E/YkFh0hRG2q4C3iNuC5om9km0ScKd84OlWr6e1pfcC/3yGKpKKPZzKq7hrNGoXWaoPiXz8SUNO0M1M0eTJOC3N0D+CinzELd/BPUSvVOflELH0tKj86rww0ORJPIgf0Xb4LwFOk0Dp9iLj7IoPheued+ckn/Xa50sYneh5xAI9F87m0PgFIF8MulHIaZD2hkH2WZLh286UVldOnpeJBFkTmNI6xgHzzVjfC9knxVqHWqqA5vKY2AznahREqe03tTKoVA7sDlgNdM+kkPEWoOzUh9/JECvc=
+  - secure: MxthOQxld6cRNzcMmEE+UB/gAr6ho/SR39t/Mpz1fHgAq2P0uAxZQvzdLhJiU7yvj4XxM0OKpSvmx0M5mQvo8H9+tUtlGqmd2Jp47fCbUt9lJQbfKCgfoVP0UW4K2Y1A7uKnePpddz69T8I+UEkgybO9JTBf4xgkCUgCaD9qvGhcN+a2nlsxNl3MR/NYlAtNh0IIqRlhcWUxGYbyOLxwjTICxpsWh0Sbv5MfAtU8FVhxfMGDP8Vd8t5wi0gOOsgM/7G6KU63HZeQULoUAvektH9pX/aAZtASqEX2akQrxMNko28rxCxLMYdVy26mITagDxawY1UcF9u+9r2ccAvdyjnrS7iKPJnVA75m5ZgP9+chvZK0b4O0gDuby9QLeBwDmRqrnF4DtgybDwhL+PoaJgGJJgprk71xC1MXqSBkoR0Gk4IP3R4vTx3EY+B9483L2N/04tOsynVBUS6tl56ogfhjoS36r2TZ/3d3ZTJWk8zp2Ed1SYOWgHKXyZFZX+s7yncMsSucKnGPjQoJMLAMYujMC3KAjI7VbbVz1OzSfcPMtdx5+H9cv4JcSmnbieOWLjP0eTzaW/O2Wn78cLeepOBmvJMtyVsG1EuGq5YcQ9nc296Ept77b9eSH2NG8+XKw3i1DXMR0t6WOQlOVG/mbTra3Gs9jijwqrf0GoQWcic=
