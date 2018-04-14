@@ -4,7 +4,7 @@
 *.so
 *.a
 
-Contracts
+contracts
 win
 build
 scripts
