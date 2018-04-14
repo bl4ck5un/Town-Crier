@@ -1,5 +1,5 @@
 version: "2"
 services:
     tc-core:
-        image: "tc/core:Debug"
+        image: "bl4ck5un/tc-core:Debug"
         entrypoint: tc

@@ -1,10 +1,10 @@
 version: "2"
 services:
     tc-core:
-        image: "tc/core:Prerelease"
+        image: "bl4ck5un/tc-core:Prerelease"
         network_mode: host
     tc-relay:
         depends_on:
           - tc-core
-        image: "tc/relay"
+        image: "bl4ck5un/tc-relay"
         network_mode: host
