@@ -2,4 +2,10 @@ version: "2"
 services:
     tc-core:
         image: "bl4ck5un/tc-core:Debug"
-        entrypoint: tc
+        network_mode: host
+        entrypoint: "tc"
+    tc-relay:
+        depends_on:
+          - tc-core
+        image: "bl4ck5un/tc-relay"
+        network_mode: host

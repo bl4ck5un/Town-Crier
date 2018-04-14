@@ -3,6 +3,8 @@ services:
     tc-core:
         image: "bl4ck5un/tc-core:Prerelease"
         network_mode: host
+        devices:
+          - /dev/isgx
     tc-relay:
         depends_on:
           - tc-core

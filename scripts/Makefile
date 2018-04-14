@@ -32,7 +32,7 @@ build:
 	cd ..
 
 up:
-	docker-compose -f docker-compose.yml up
+	docker-compose -f docker-compose.rel.yml up
 
 up-debug:
-	docker-compose -f docker-compose.yml -f docker-compose.debug.yml up
+	docker-compose -f docker-compose.debug.yml up
