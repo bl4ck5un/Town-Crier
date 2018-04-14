@@ -4,6 +4,7 @@ services:
 script:
 - make -C scripts
 deploy:
+  provider: script
   script:
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker push bl4ck5un/tc-core:Debug
