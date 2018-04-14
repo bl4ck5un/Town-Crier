@@ -31,6 +31,10 @@ build:
 	docker run --rm tc/core-builder | docker build --rm --force-rm -t ${CORE_IMAGE}:${BUILD} - && \
 	cd ..
 
+update:
+	docker-compose -f docker-compose.rel.yml pull
+	docker-compose -f docker-compose.debug.yml pull
+
 up:
 	docker-compose -f docker-compose.rel.yml up
 
