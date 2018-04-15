@@ -7,7 +7,7 @@ CORE_IMAGE=bl4ck5un/tc-core
 
 .PHONY: all up up-debug
 
-all: relay core debug-core
+all: relay core core-debug
 
 relay:
 	cd ${BASE_DIR}/python-relay && \
@@ -17,7 +17,7 @@ relay:
 core:
 	$(MAKE) BUILD=Prerelease build
 
-debug-core:
+core-debug:
 	$(MAKE) BUILD=Debug build
 
 build:

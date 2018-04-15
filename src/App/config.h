@@ -58,7 +58,7 @@ namespace tc {
 
 class Config {
  private:
-  const string DFT_CONFIG_FILE = "/tc/conf/config-sim-test";
+  const string DFT_CONFIG_FILE = "/config";
   const string DFT_WORKING_DIR = "/tc";
   po::variables_map vm;
 

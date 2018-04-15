@@ -57,6 +57,11 @@ add_library(enclave SHARED ${SOURCE_FILES})
 #### Include & Libs
 ###############################
 
+add_custom_command(TARGET enclave
+    PRE_BUILD
+    COMMAND make -C ${CMAKE_CURRENT_SOURCE_DIR}/mbedtls-SGX
+)
+
 set(CMAKE_C_FLAGS "${SGX_COMMON_CFLAGS} ${CMAKE_C_FLAGS} \
     -Wall -Werror=return-type -nostdinc -fvisibility=hidden -fpie -fstack-protector")
 

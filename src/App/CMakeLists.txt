@@ -160,8 +160,5 @@ add_dependencies(tc-keygen enclave)
 
 install(TARGETS tc tc-oneshot tc-keygen DESTINATION bin)
 install(FILES
-        ${CMAKE_SOURCE_DIR}/src/config-systemd
-        ${CMAKE_SOURCE_DIR}/src/config-sim-test
-        ${CMAKE_SOURCE_DIR}/src/config-release
         ${CMAKE_SOURCE_DIR}/src/logging.conf
         DESTINATION conf)

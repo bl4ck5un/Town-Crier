@@ -4,6 +4,8 @@ services:
         image: "bl4ck5un/tc-core:Debug"
         network_mode: host
         entrypoint: "tc"
+        volumes:
+          - ../config/config-sim:/config
     tc-relay:
         depends_on:
           - tc-core
