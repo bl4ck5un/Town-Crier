@@ -36,7 +36,10 @@ update:
 	docker-compose -f docker-compose.debug.yml pull
 
 up:
-	docker-compose -f docker-compose.rel.yml up
+	docker-compose -f docker-compose.rel.yml up -d
+
+up-bash:
+	docker-compose -f ./docker-compose.rel.yml exec tc-core bash
 
 up-debug:
 	docker-compose -f docker-compose.debug.yml up
