@@ -14,5 +14,7 @@ contracts/demo/chain0/
 build
 cmake-build-debug
 
+.compiledContract.js
+
 env
 venv
