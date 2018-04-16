@@ -56,6 +56,10 @@ class TCMonitor:
         else:
             raise KeyError("{0} is unknown".format(network))
 
+        print 'pickle_file:', self.config.PICKLE_FILE
+        print 'sgx wallet addr:', self.config.SGX_WALLET_ADDR
+        print 'tc contract addr:', self.config.TC_CONTRACT_ADDR
+
         if os.path.exists(self.config.PICKLE_FILE):
             try:
                 with open(self.config.PICKLE_FILE, 'rb') as f:
@@ -169,6 +173,8 @@ if args.verbose:
 
 if args.testnet:
     network = TCMonitor.TEST_NET
+
+print network
 
 monitor = TCMonitor(network)
 monitor.loop()

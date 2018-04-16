@@ -5,4 +5,4 @@ COPY relay.py ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-CMD [ "python", "./relay.py" ]
+ENTRYPOINT [ "python", "./relay.py" ]
