@@ -18,9 +18,9 @@ contract TownCrier {
     // address of the SGX account (mainnet)
     // address public constant SGX_ADDRESS = 0x18513702cCd928F2A3eb63d900aDf03c9cc81593;
     // address of the SGX (private chain)
-    // address public constant SGX_ADDRESS = 0x89B44e4d3c81EDE05D0f5de8d1a68F754D73d997;
+    address public constant SGX_ADDRESS = 0x89B44e4d3c81EDE05D0f5de8d1a68F754D73d997;
     // address of the SGX (Rinkeby)
-    address public constant SGX_ADDRESS = 0x3a8de03f19c7C4c139B171978F87BFAC9ffe99c0;
+    // address public constant SGX_ADDRESS = 0x3a8de03f19c7C4c139B171978F87BFAC9ffe99c0;
 
     uint public GAS_PRICE = 5 * 10**10;
     uint public MIN_FEE = 30000 * GAS_PRICE; // minimum fee required for the requester to pay such that SGX could call deliver() to send a response

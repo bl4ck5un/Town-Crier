@@ -83,7 +83,7 @@ class TCMonitor:
         logging.info('connected to {0}'.format(self.eth_rpc.web3_clientVersion()))
 
     def _get_requests_in_block(self, block):
-        filter_obj = {"fromBlock": block, "toBlock": block, "address": self.config.TC_CONTRACT_ADDR,
+        filter_obj = {"fromBlock": hex(block), "toBlock": hex(block), "address": self.config.TC_CONTRACT_ADDR,
                       "topics": [self.TC_REQUEST_TOPIC]}
 
         logs = self.eth_rpc.eth_getLogs(filter_obj)
@@ -141,31 +141,36 @@ class TCMonitor:
     def loop(self):
         next_block = self.config.TC_CONTRACT_BLOCK_NUM
         while True:
-            next_block = max(next_block, self.record.last_processed_block + 1)
+            try:
+                next_block = max(next_block, self.record.last_processed_block + 1)
 
-            if next_block > self.eth_rpc.eth_blockNumber():
-                logging.debug("waiting for more blocks")
+                if next_block > self.eth_rpc.eth_blockNumber():
+                    logging.debug("waiting for more blocks")
+                    time.sleep(2)
+                    continue
+
+                logging.info("processing block {0}".format(next_block))
+
+                reqs = self._get_requests_in_block(next_block)
+                for req in reqs:
+                    if req not in self.record.processed_txn_in_next_block:
+                        retry = 0
+                        while retry < self.NUM_OF_RETRY_ON_NETWORK_ERROR:
+                            time.sleep(2 ** retry)
+                            try:
+                                self._process_request(req)
+                                break
+                            except requests.RequestException as e:
+                                logging.error('exception: {0}'.format(e.message))
+                            except Exception as e:
+                                logging.error('exception: {0}'.format(e.message))
+                            retry += 1
+
+                self._update_record_one_block()
+            # catch everything (e.g. errors in RPC call with geth) and continue
+            except Exception as e:
                 time.sleep(2)
-                continue
-
-            logging.info("processing block {0}".format(next_block))
-
-            reqs = self._get_requests_in_block(next_block)
-            for req in reqs:
-                if req not in self.record.processed_txn_in_next_block:
-                    retry = 0
-                    while retry < self.NUM_OF_RETRY_ON_NETWORK_ERROR:
-                        time.sleep(2 ** retry)
-                        try:
-                            self._process_request(req)
-                            break
-                        except requests.RequestException as e:
-                            logging.error('exception: {0}'.format(e.message))
-                        except Exception as e:
-                            logging.error('exception:', e.message)
-                        retry += 1
-
-            self._update_record_one_block()
+                logging.error('exception: {0}'.format(e.message))
 
 
 parser = argparse.ArgumentParser(description="Town Crier Ethereum relay")

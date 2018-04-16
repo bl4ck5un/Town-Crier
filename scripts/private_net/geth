@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-GETH_VERSION=v1.6.0
+GETH_VERSION=v1.8.3
 
 call_geth() {
     docker run \
@@ -10,7 +10,7 @@ call_geth() {
         -v ~/data/ethereum:/root \
         -v $PWD:/cwd \
         -p 8545:8545 \
-        ethereum/client-go:$GETH_VERSION --config /cwd/config.toml \
+        ethereum/client-go:$GETH_VERSION --config /cwd/config-$GETH_VERSION.toml \
         $@
 }
 
