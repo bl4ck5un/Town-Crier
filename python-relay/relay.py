@@ -22,6 +22,16 @@ class Request:
         self.data = data
 
 
+class ConfigSim:
+    SGX_WALLET_ADDR = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
+    TC_CONTRACT_ADDR = "0x18322346bfb90378ceaf16c72cee4496723636b9"
+
+
+class ConfigHwAzure:
+    SGX_WALLET_ADDR = "0x3A8DE03F19C7C4C139B171978F87BFAC9FFE99C0"
+    TC_CONTRACT_ADDR = "0x18322346bfb90378ceaf16c72cee4496723636b9"
+
+
 class TCMonitor:
     PICKLE_FILE = 'tc.bin'
     ETH_RPC_ADDRESS = 'localhost'
