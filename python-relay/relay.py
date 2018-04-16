@@ -29,7 +29,8 @@ class ConfigSim:
 
 class ConfigHwAzure:
     SGX_WALLET_ADDR = "0x3A8DE03F19C7C4C139B171978F87BFAC9FFE99C0"
-    TC_CONTRACT_ADDR = "0x18322346bfb90378ceaf16c72cee4496723636b9"
+    # https://rinkeby.etherscan.io/address/0x9ec1874ff1def6e178126f7069487c2e9e93d0f9
+    TC_CONTRACT_ADDR = "0x9eC1874FF1deF6E178126f7069487c2e9e93D0f9"
 
 
 class TCMonitor:
@@ -38,10 +39,9 @@ class TCMonitor:
     ETH_RPC_PORT = 8545
 
     TC_CORE_RPC_URL = "http://localhost:8123"
-
-    SGX_WALLET_ADDR = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
-    TC_CONTRACT_ADDR = "0x18322346bfb90378ceaf16c72cee4496723636b9"
     TC_REQUEST_TOPIC = "0x295780EA261767C398D062898E5648587D7B8CA371FFD203BE8B4F9A43454FFA"
+
+    config = ConfigHwAzure()
 
     NUM_OF_RETRY_ON_NETWORK_ERROR = 10
 
@@ -60,7 +60,7 @@ class TCMonitor:
         logging.info('connected to {0}'.format(self.eth_rpc.web3_clientVersion()))
 
     def _get_requests_in_block(self, block):
-        filter_obj = {"fromBlock": block, "toBlock": block, "address": self.TC_CONTRACT_ADDR,
+        filter_obj = {"fromBlock": block, "toBlock": block, "address": self.config.TC_CONTRACT_ADDR,
                       "topics": [self.TC_REQUEST_TOPIC]}
 
         logs = self.eth_rpc.eth_getLogs(filter_obj)
@@ -88,7 +88,7 @@ class TCMonitor:
     def _process_request(self, req):
         logging.info("processing request {0}".format(req.txid))
 
-        nonce = self.eth_rpc.eth_getTransactionCount(self.SGX_WALLET_ADDR)
+        nonce = self.eth_rpc.eth_getTransactionCount(self.config.SGX_WALLET_ADDR)
 
         params = dict(
             data=req.data,
@@ -142,6 +142,7 @@ class TCMonitor:
                         retry += 1
 
             self._update_record_one_block()
+
 
 logging.root.setLevel('INFO')
 monitor = TCMonitor()
