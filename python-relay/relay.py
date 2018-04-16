@@ -23,16 +23,25 @@ class Request:
         self.data = data
 
 
-class ConfigSim:
+class BaseConfig:
+    SGX_WALLET_ADDR = ""
+    TC_CONTRACT_ADDR = ""
+    TC_CONTRACT_BLOCK_NUM = 0
+    PICKLE_FILE = ""
+
+
+class ConfigSim(BaseConfig):
     SGX_WALLET_ADDR = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
     TC_CONTRACT_ADDR = "0x18322346bfb90378ceaf16c72cee4496723636b9"
+    TC_CONTRACT_BLOCK_NUM = 0
     PICKLE_FILE = 'tc.bin'
 
 
-class ConfigHwAzure:
+class ConfigHwAzure(BaseConfig):
     SGX_WALLET_ADDR = "0x3A8DE03F19C7C4C139B171978F87BFAC9FFE99C0"
     # https://rinkeby.etherscan.io/address/0x9ec1874ff1def6e178126f7069487c2e9e93d0f9
     TC_CONTRACT_ADDR = "0x9eC1874FF1deF6E178126f7069487c2e9e93D0f9"
+    TC_CONTRACT_BLOCK_NUM = 2118268
     PICKLE_FILE = '/relay/tc.bin'
 
 
@@ -130,8 +139,9 @@ class TCMonitor:
             self._update_record_one_request(req)
 
     def loop(self):
+        next_block = self.config.TC_CONTRACT_BLOCK_NUM
         while True:
-            next_block = self.record.last_processed_block + 1
+            next_block = max(next_block, self.record.last_processed_block + 1)
 
             if next_block > self.eth_rpc.eth_blockNumber():
                 logging.debug("waiting for more blocks")
