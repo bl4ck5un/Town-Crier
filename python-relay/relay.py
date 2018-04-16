@@ -7,6 +7,7 @@ import os
 import logging
 import requests
 import json
+import argparse
 
 
 class TcLog:
@@ -25,30 +26,39 @@ class Request:
 class ConfigSim:
     SGX_WALLET_ADDR = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
     TC_CONTRACT_ADDR = "0x18322346bfb90378ceaf16c72cee4496723636b9"
+    PICKLE_FILE = 'tc.bin'
 
 
 class ConfigHwAzure:
     SGX_WALLET_ADDR = "0x3A8DE03F19C7C4C139B171978F87BFAC9FFE99C0"
     # https://rinkeby.etherscan.io/address/0x9ec1874ff1def6e178126f7069487c2e9e93d0f9
     TC_CONTRACT_ADDR = "0x9eC1874FF1deF6E178126f7069487c2e9e93D0f9"
+    PICKLE_FILE = '/relay/tc.bin'
 
 
 class TCMonitor:
-    PICKLE_FILE = 'tc.bin'
     ETH_RPC_ADDRESS = 'localhost'
     ETH_RPC_PORT = 8545
 
     TC_CORE_RPC_URL = "http://localhost:8123"
     TC_REQUEST_TOPIC = "0x295780EA261767C398D062898E5648587D7B8CA371FFD203BE8B4F9A43454FFA"
 
-    config = ConfigHwAzure()
+    SIM_NET = 'sim'
+    TEST_NET = 'rinkeby'
 
     NUM_OF_RETRY_ON_NETWORK_ERROR = 10
 
-    def __init__(self):
-        if os.path.exists(TCMonitor.PICKLE_FILE):
+    def __init__(self, network):
+        if network == self.SIM_NET:
+            self.config = ConfigSim()
+        elif network == self.TEST_NET:
+            self.config = ConfigHwAzure()
+        else:
+            raise KeyError("{0} is unknown".format(network))
+
+        if os.path.exists(self.config.PICKLE_FILE):
             try:
-                with open(TCMonitor.PICKLE_FILE, 'rb') as f:
+                with open(self.config.PICKLE_FILE, 'rb') as f:
                     self.record = pickle.load(f)
             except Exception as e:
                 logging.error("cannot load log {0}".format(e))
@@ -75,14 +85,14 @@ class TCMonitor:
 
     def _update_record_one_request(self, req):
         self.record.processed_txn_in_next_block.append(req)
-        with open(TCMonitor.PICKLE_FILE, 'wb') as f:
+        with open(self.config.PICKLE_FILE, 'wb') as f:
             pickle.dump(self.record, f)
         logging.info('done update')
 
     def _update_record_one_block(self):
         self.record.last_processed_block += 1
         self.record.processed_txn_in_next_block = []
-        with open(TCMonitor.PICKLE_FILE, 'wb') as f:
+        with open(self.config.PICKLE_FILE, 'wb') as f:
             pickle.dump(self.record, f)
 
     def _process_request(self, req):
@@ -144,6 +154,21 @@ class TCMonitor:
             self._update_record_one_block()
 
 
+parser = argparse.ArgumentParser(description="Town Crier Ethereum relay")
+parser.add_argument('-v', action='store_true', dest='verbose', help='Verbose')
+parser.add_argument('-t', action='store_true', dest='testnet', help='Enable testnet')
+
+args = parser.parse_args()
+args.parser = parser
+
 logging.root.setLevel('INFO')
-monitor = TCMonitor()
+network = TCMonitor.SIM_NET
+
+if args.verbose:
+    logging.root.setLevel('DEBUG')
+
+if args.testnet:
+    network = TCMonitor.TEST_NET
+
+monitor = TCMonitor(network)
 monitor.loop()
