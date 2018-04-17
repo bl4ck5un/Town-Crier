@@ -8,7 +8,12 @@ import logging
 import requests
 import json
 import argparse
+import traceback
 
+
+logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
+    datefmt='%d-%m-%Y:%H:%M:%S',
+    level=logging.DEBUG)
 
 class TcLog:
     def __init__(self):
@@ -57,7 +62,7 @@ class TCMonitor:
 
     NUM_OF_RETRY_ON_NETWORK_ERROR = 10
 
-    def __init__(self, network):
+    def __init__(self, network, pickle_file):
         if network == self.SIM_NET:
             self.config = ConfigSim()
         elif network == self.TEST_NET:
@@ -68,6 +73,8 @@ class TCMonitor:
         print 'pickle_file:', self.config.PICKLE_FILE
         print 'sgx wallet addr:', self.config.SGX_WALLET_ADDR
         print 'tc contract addr:', self.config.TC_CONTRACT_ADDR
+
+	self.config.PICKLE_FILE = pickle_file
 
         if os.path.exists(self.config.PICKLE_FILE):
             try:
@@ -110,7 +117,7 @@ class TCMonitor:
         self.record.processed_txn_in_next_block = []
         with open(self.config.PICKLE_FILE, 'wb') as f:
             pickle.dump(self.record, f)
-        logging.info('processing block {0}'.format(self.record.last_processed_block))
+        logging.info('done processing block {0}'.format(self.record.last_processed_block))
 
     def _process_request(self, req):
         logging.info("processing request {0}".format(req.txid))
@@ -139,7 +146,8 @@ class TCMonitor:
             response_tx = resp['result']['response']
             if error_code != 0:
                 logging.error('Error in tx: {0}'.format(error_code))
-            self.eth_rpc.eth_sendRawTransaction(response_tx)
+	    logging.info('response from enclave: {0}'.format(response_tx))
+            print self.eth_rpc.eth_sendRawTransaction(response_tx)
             self._update_record_one_request(req)
 
     def loop(self):
@@ -166,21 +174,22 @@ class TCMonitor:
                                 self._process_request(req)
                                 break
                             except requests.RequestException as e:
-                                logging.error('exception: {0}'.format(e.message))
+                                logging.error('exception: {0}'.format(str(e)))
                             except Exception as e:
-                                logging.error('exception: {0}'.format(e.message))
+                                logging.error('exception: {0}'.format(str(e)))
                             retry += 1
 
                 self._update_record_one_block()
             # catch everything (e.g. errors in RPC call with geth) and continue
             except Exception as e:
+                logging.error('exception: {0}'.format(str(e)))
                 time.sleep(2)
-                logging.error('exception: {0}'.format(e.message))
 
 
 parser = argparse.ArgumentParser(description="Town Crier Ethereum relay")
 parser.add_argument('-v', action='store_true', dest='verbose', help='Verbose')
 parser.add_argument('-t', action='store_true', dest='testnet', help='Enable testnet')
+parser.add_argument('--db', action='store', dest='database', default='/relay/tc.bin', help='where to store the runtime log')
 
 args = parser.parse_args()
 args.parser = parser
@@ -196,5 +205,5 @@ if args.testnet:
 
 print network
 
-monitor = TCMonitor(network)
+monitor = TCMonitor(network, args.database)
 monitor.loop()
