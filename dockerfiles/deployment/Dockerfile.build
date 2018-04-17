@@ -14,7 +14,7 @@ RUN cd /code && \
     make -C src/Enclave/mbedtls-SGX && \
     mkdir -p tmp && \
     cd tmp && \
-    cmake .. -DCMAKE_BUILD_TYPE=$BUILD -DCMAKE_INSTALL_PREFIX=/tc && \
+    cmake -DRINKEBY=ON -DCMAKE_BUILD_TYPE=$BUILD -DCMAKE_INSTALL_PREFIX=/tc .. && \
     make $MAKE_FLAGS && \
     make install && \
     cd ..

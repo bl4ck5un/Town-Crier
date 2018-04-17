@@ -45,13 +45,21 @@
 
 #define TX_BUF_SIZE 2048
 
-#ifdef TC_SGX_IN_RELEASE_MODE
-// this macro is set by cmake
-#define TC_ADDRESS  "0x89c1b3807d4c67df034fffb62f3509561218d30b"
-#else
-// testing address
 #define TC_ADDRESS  "0x18322346bfb90378ceaf16c72cee4496723636b9"
+
+// this macro is set by cmake
+#ifdef TC_SGX_FOR_MAINNET
+#undef TC_ADDRESS
+#pragma message("building for mainnet")
+#define TC_ADDRESS  "0x89c1b3807d4c67df034fffb62f3509561218d30b"
 #endif
+
+#ifdef TC_SGX_FOR_RINKEBY
+#undef TC_ADDRESS
+#pragma message("building for Rinkeby")
+#define TC_ADDRESS  "0x9eC1874FF1deF6E178126f7069487c2e9e93D0f9"
+#endif
+
 #define GASPRICE    0x0BA43B7400  // 50000000000
 #define GASLIMIT    0x2DC6C0      // 3000000
 
@@ -63,7 +71,7 @@
 #define TYPE_FINANCE_INFO   0x3
 #define TYPE_UPS_TRACKING   0x4
 #define TYPE_COINMARKET     0x5
-#define TYPE_WEATHER        0X6
+#define TYPE_WEATHER        0x6
 #define TYPE_CURRENT_VOTE   0x7
 #define TYPE_ENCRYPT_TEST   0x8
 #define TYPE_WOLFRAM		0x9
