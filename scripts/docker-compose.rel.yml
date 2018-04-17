@@ -15,4 +15,4 @@ services:
         network_mode: host
         volumes:
           - ./relay:/relay
-        command: "-t"
+        command: "-t -v"
