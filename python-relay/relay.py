@@ -143,9 +143,10 @@ class TCMonitor:
         while True:
             try:
                 next_block = max(next_block, self.record.last_processed_block + 1)
+                geth_block = self.eth_rpc.eth_blockNumber()
 
-                if next_block > self.eth_rpc.eth_blockNumber():
-                    logging.debug("waiting for more blocks")
+                if next_block > geth_block:
+                    logging.debug("waiting for block #{0} (geth is at #{1}".format(next_block, geth_block))
                     time.sleep(2)
                     continue
 
