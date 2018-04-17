@@ -1,9 +1,0 @@
-[Unit]
-Description=Ethereum go client
-
-[Service]
-Type=simple
-ExecStart=/opt/tc/gethtc
-
-[Install]
-WantedBy=default.target
