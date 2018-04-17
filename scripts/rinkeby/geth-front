@@ -1,13 +1,15 @@
 #!/bin/bash
 
+GETH_VERSION=v1.8.3
+
 docker run \
 	--name 'geth-rink' \
 	-it \
 	--rm \
 	-v /data/ethereum/rinkeby:/root \
 	-v $PWD/rinkeby.json:/genesis.json \
-	-v $PWD/config_rinkeby.toml:/config.toml \
+	-v $PWD/config-$GETH_VERSION.toml:/config.toml \
         -p 8545:8545 \
         -p 30303:30303 \
-	ethereum/client-go:v1.6.0 $@
+	ethereum/client-go:$GETH_VERSION $@
 
