@@ -17,4 +17,5 @@ cmake-build-debug
 .compiledContract.js
 
 env
+env3
 venv
