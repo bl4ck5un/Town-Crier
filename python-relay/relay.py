@@ -79,6 +79,9 @@ class TCMonitor:
         else:
             self.record = TcLog()
 
+        # start processing with the block in which tc contract is mined
+        self.record.last_processed_block = self.config.TC_CONTRACT_BLOCK_NUM
+
         self.eth_rpc = EthJsonRpc(self.ETH_RPC_ADDRESS, self.ETH_RPC_PORT)
         logging.info('connected to {0}'.format(self.eth_rpc.web3_clientVersion()))
 
@@ -107,6 +110,7 @@ class TCMonitor:
         self.record.processed_txn_in_next_block = []
         with open(self.config.PICKLE_FILE, 'wb') as f:
             pickle.dump(self.record, f)
+        logging.info('processing block {0}'.format(self.record.last_processed_block))
 
     def _process_request(self, req):
         logging.info("processing request {0}".format(req.txid))
@@ -143,9 +147,10 @@ class TCMonitor:
         while True:
             try:
                 next_block = max(next_block, self.record.last_processed_block + 1)
+                geth_block = self.eth_rpc.eth_blockNumber()
 
-                if next_block > self.eth_rpc.eth_blockNumber():
-                    logging.debug("waiting for more blocks")
+                if next_block > geth_block:
+                    logging.debug("waiting for block #{0} (geth is at #{1})".format(next_block, geth_block))
                     time.sleep(2)
                     continue
 
