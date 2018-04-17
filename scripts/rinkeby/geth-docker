@@ -32,5 +32,6 @@ docker run \
 	-v $PWD/config-${GETH_VERSION}.toml:/config.toml \
         -p 8545:8545 \
         -p 30303:30303 \
+        -p 8080:8080 \
 	ethereum/client-go:${GETH_VERSION} $@
 
