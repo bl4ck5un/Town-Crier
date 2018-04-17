@@ -11,3 +11,6 @@ services:
           - tc-core
         image: "bl4ck5un/tc-relay"
         network_mode: host
+        volumes:
+          - ./relay:/relay
+        command: "-v --db /relay/tc.bin"

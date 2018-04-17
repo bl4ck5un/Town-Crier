@@ -12,4 +12,4 @@ doc:
 	@./geth --help
 
 compile:
-	@./compile.sh
+	@./compile.sh -n privatenet

@@ -15,4 +15,4 @@ services:
         network_mode: host
         volumes:
           - ./relay:/relay
-        command: "-t -v"
+        command: "-t -v --db /relay/tc.bin"

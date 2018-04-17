@@ -11,7 +11,7 @@ clean:
 	@rm -rf .compiledContract.js
 
 compile:
-	@./compile.sh
+	@./compile.sh -n rinkeby
 
 sync:
 	@./geth-docker -n ${DOCKER_NAME} -d -- --config /config.toml
