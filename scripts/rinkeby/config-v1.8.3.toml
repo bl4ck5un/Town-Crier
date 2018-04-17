@@ -4,12 +4,6 @@ SyncMode = "fast"
 LightPeers = 20
 DatabaseCache = 512
 GasPrice = 20000000000
-EthashCacheDir = "ethash"
-EthashCachesInMem = 2
-EthashCachesOnDisk = 3
-EthashDatasetDir = "/root/.ethash"
-EthashDatasetsInMem = 1
-EthashDatasetsOnDisk = 2
 EnablePreimageRecording = false
 
 [Eth.GPO]
