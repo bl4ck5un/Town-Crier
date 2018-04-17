@@ -4,12 +4,6 @@ SyncMode = "fast"
 LightPeers = 20
 DatabaseCache = 512
 GasPrice = 20000000000
-EthashCacheDir = "ethash"
-EthashCachesInMem = 2
-EthashCachesOnDisk = 3
-EthashDatasetDir = "/root/.ethash"
-EthashDatasetsInMem = 1
-EthashDatasetsOnDisk = 2
 EnablePreimageRecording = false
 
 [Eth.GPO]
@@ -33,3 +27,11 @@ BootstrapNodesV5 = ["enode://a24ac7c5484ef4ed0c5eb2d36620ba4e4aa13b8c84684e1b4aa
 StaticNodes = []
 TrustedNodes = []
 ListenAddr = ":30303"
+
+[Ethstats]
+URL = "TownCrier:Respect my authoritah!@stats.rinkeby.io"
+
+[Dashboard]
+Host = "0.0.0.0"
+Port = 8080
+Refresh = 5000000000

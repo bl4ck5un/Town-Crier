@@ -1,9 +1,11 @@
 #!/bin/bash
 
 GETH_VERSION=v1.8.3
+
+DOCKER_NAME="geth-rink"
 DOCKER_FLAGS="-it --rm"
 
-while getopts ":dv:" opt; do
+while getopts ":dv:n:" opt; do
     case ${opt} in
         d)
             DOCKER_FLAGS+=" -d"
@@ -11,21 +13,25 @@ while getopts ":dv:" opt; do
         v)
             GETH_VERSION=$OPTARG
             ;;
+        n)
+            DOCKER_NAME=$OPTARG
+            ;;
         \?)
             echo "Invalid Option: -$OPTARG";
             exit 1
             ;;
     esac
 done
+shift $((OPTIND -1))
 
 docker run \
-	--name 'geth-rink' \
+	--name $DOCKER_NAME \
 	${DOCKER_FLAGS} \
-	--rm \
 	-v /data/ethereum/rinkeby:/root \
 	-v $PWD/rinkeby.json:/genesis.json \
 	-v $PWD/config-${GETH_VERSION}.toml:/config.toml \
         -p 8545:8545 \
         -p 30303:30303 \
+        -p 8080:8080 \
 	ethereum/client-go:${GETH_VERSION} $@
 
