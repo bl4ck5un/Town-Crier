@@ -10,10 +10,10 @@ import json
 import argparse
 import traceback
 
-
 logging.basicConfig(format='%(asctime)s,%(msecs)d %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s',
-    datefmt='%d-%m-%Y:%H:%M:%S',
-    level=logging.DEBUG)
+                    datefmt='%d-%m-%Y:%H:%M:%S',
+                    level=logging.DEBUG)
+
 
 class TcLog:
     def __init__(self):
@@ -74,7 +74,7 @@ class TCMonitor:
         print 'sgx wallet addr:', self.config.SGX_WALLET_ADDR
         print 'tc contract addr:', self.config.TC_CONTRACT_ADDR
 
-	self.config.PICKLE_FILE = pickle_file
+        self.config.PICKLE_FILE = pickle_file
 
         if os.path.exists(self.config.PICKLE_FILE):
             try:
@@ -146,7 +146,7 @@ class TCMonitor:
             response_tx = resp['result']['response']
             if error_code != 0:
                 logging.error('Error in tx: {0}'.format(error_code))
-	    logging.info('response from enclave: {0}'.format(response_tx))
+            logging.info('response from enclave: {0}'.format(response_tx))
             print self.eth_rpc.eth_sendRawTransaction(response_tx)
             self._update_record_one_request(req)
 
@@ -189,7 +189,8 @@ class TCMonitor:
 parser = argparse.ArgumentParser(description="Town Crier Ethereum relay")
 parser.add_argument('-v', action='store_true', dest='verbose', help='Verbose')
 parser.add_argument('-t', action='store_true', dest='testnet', help='Enable testnet')
-parser.add_argument('--db', action='store', dest='database', default='/relay/tc.bin', help='where to store the runtime log')
+parser.add_argument('--db', action='store', dest='database', default='/relay/tc.bin',
+                    help='where to store the runtime log')
 
 args = parser.parse_args()
 args.parser = parser
