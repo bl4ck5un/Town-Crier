@@ -15,7 +15,7 @@ DataDir = "/root/.ethereum"
 IPCPath = "geth.ipc"
 HTTPHost = "0.0.0.0"
 HTTPPort = 8545
-HTTPModules = ["net", "web3", "eth", "admin", "personal"]
+HTTPModules = ["net", "web3", "eth", "admin", "personal", "txpool"]
 WSPort = 8546
 WSModules = ["net", "web3", "eth"]
 
