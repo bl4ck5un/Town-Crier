@@ -7,20 +7,24 @@ import logging
 import requests
 import json
 import argparse
+import sys
 
 from web3 import Web3, HTTPProvider
-
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)-4d] %(message)s',
                     datefmt='%d-%m-%Y:%H:%M:%S',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 class TcLog:
     def __init__(self):
         self.last_processed_block = 0
         self.processed_txn_in_next_block = []
         self.n_txn_in_next_block = 0
+
+    def __str__(self):
+        return "last_processed_block={0}".format(self.last_processed_block)
 
 
 class Request:
@@ -47,6 +51,7 @@ class ConfigHwAzure(BaseConfig):
     TC_CONTRACT_ADDR = Web3.toChecksumAddress("0x9eC1874FF1deF6E178126f7069487c2e9e93D0f9")
     TC_CONTRACT_BLOCK_NUM = 2118268
 
+
 class TCMonitor:
     ETH_RPC_ADDRESS = 'http://localhost:8545'
 
@@ -66,28 +71,33 @@ class TCMonitor:
         else:
             raise KeyError("{0} is unknown".format(network))
 
-        self.config.PICKLE_FILE = pickle_file
+        self.PICKLE_FILE = pickle_file
 
-        logger.info('pickle_file: {0}'.format(self.config.PICKLE_FILE))
+        logger.info('pickle_file: {0}'.format(self.PICKLE_FILE))
         logger.info('sgx wallet addr: {0}'.format(self.config.SGX_WALLET_ADDR))
         logger.info('tc contract addr: {0}'.format(self.config.TC_CONTRACT_ADDR))
 
-
-        if os.path.exists(self.config.PICKLE_FILE):
+        if os.path.exists(self.PICKLE_FILE):
             try:
-                with open(self.config.PICKLE_FILE, 'rb') as f:
+                with open(self.PICKLE_FILE, 'rb') as f:
                     self.record = pickle.load(f)
             except Exception as e:
                 logger.error("cannot load log {0}".format(e))
                 self.record = TcLog()
         else:
+            logging.debug("creating empty log")
             self.record = TcLog()
 
         # start processing with the block in which tc contract is mined
-        self.record.last_processed_block = self.config.TC_CONTRACT_BLOCK_NUM
+        self.record.last_processed_block = max(self.record.last_processed_block,
+                                               self.config.TC_CONTRACT_BLOCK_NUM)
 
-        self.w3= Web3(HTTPProvider(self.ETH_RPC_ADDRESS))
-        logger.info('connected to {0}'.format(self.w3.version.node))
+        self.w3 = Web3(HTTPProvider(self.ETH_RPC_ADDRESS))
+        if not self.w3.isConnected():
+            logger.info('cannot connect to {0}'.format(self.ETH_RPC_ADDRESS))
+            sys.exit(1)
+        else:
+            logger.info('connected to {0}'.format(self.w3.version.node))
 
     def _get_requests_in_block(self, block):
         filter_obj = {"fromBlock": block, "toBlock": block, "address": self.config.TC_CONTRACT_ADDR,
@@ -105,14 +115,14 @@ class TCMonitor:
 
     def _update_record_one_request(self, req):
         self.record.processed_txn_in_next_block.append(req)
-        with open(self.config.PICKLE_FILE, 'wb') as f:
+        with open(self.PICKLE_FILE, 'wb') as f:
             pickle.dump(self.record, f)
         logger.info('done update')
 
     def _update_record_one_block(self):
         self.record.last_processed_block += 1
         self.record.processed_txn_in_next_block = []
-        with open(self.config.PICKLE_FILE, 'wb') as f:
+        with open(self.PICKLE_FILE, 'wb') as f:
             pickle.dump(self.record, f)
         logger.info('done processing block {0}'.format(self.record.last_processed_block))
 

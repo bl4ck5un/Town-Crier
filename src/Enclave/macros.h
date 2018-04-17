@@ -39,4 +39,12 @@
   }
 #endif
 
+#define CATCH_STD_AND_ALL \
+  catch (const std::exception & e) { LL_CRITICAL("error happened: %s", e.what()); return -1; }\
+  catch (...) { LL_CRITICAL("unknown error happened"); return -1; }
+
+#define CATCH_STD_AND_ALL_NO_RET \
+  catch (const std::exception & e) { LL_CRITICAL("error happened: %s", e.what()); }\
+  catch (...) { LL_CRITICAL("unknown error happened"); }
+
 #endif //TOWN_CRIER_MACROS_H

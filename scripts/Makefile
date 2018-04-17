@@ -9,7 +9,7 @@ CORE_IMAGE=bl4ck5un/tc-core
 
 all: relay core core-debug
 
-relay:
+relay: ${BASE_DIR}/python-relay/relay.py
 	cd ${BASE_DIR}/python-relay && \
 	docker build --rm --force-rm -t ${RELAY_IMAGE} . && \
 	cd ..
