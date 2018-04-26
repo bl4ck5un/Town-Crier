@@ -40,14 +40,14 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef SRC_ENCLAVE_SCRAPERS_SCRAPER_H_
-#define SRC_ENCLAVE_SCRAPERS_SCRAPER_H_
+#ifndef TC_ENCLAVE_SCRAPERS_SCRAPER_H_
+#define TC_ENCLAVE_SCRAPERS_SCRAPER_H_
 
 #include <cstdint>
 #include <string>
 
 #include "Constants.h"
-#include "utils.h"
+#include "error_codes.h"
 #include "../Common/macros.h"
 
 class Scraper {
@@ -61,7 +61,7 @@ class CannotParseResponse : public std::exception {
 
  public:
   explicit CannotParseResponse(const std::string& response): response(response) {};
-  const char* what() const throw() override {
+  const char* what() {
     return std::string("cannot parse response: " + response).c_str();
   }
 };

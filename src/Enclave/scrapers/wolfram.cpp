@@ -49,7 +49,7 @@
 #include "../log.h"
 
 #include "wolfram.h"
-#include "utils.h"
+#include "error_codes.h"
 #include "tls_client.h"
 
 using namespace std;

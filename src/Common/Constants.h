@@ -68,6 +68,7 @@
 /* Define any events that Town Crier Supports here */
 #define TYPE_LOOP_THROUGH   0x0
 #define TYPE_FLIGHT_INS     0x1
+#define TYPE_BITCOIN_FEE    0x2
 #define TYPE_FINANCE_INFO   0x3
 #define TYPE_UPS_TRACKING   0x4
 #define TYPE_COINMARKET     0x5

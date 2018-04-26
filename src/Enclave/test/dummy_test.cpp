@@ -41,7 +41,7 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include <stdio.h>
+#include <cstdio>
 #include "hybrid_cipher.h"
 #include "env.h"
 

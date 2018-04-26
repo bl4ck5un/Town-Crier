@@ -112,6 +112,7 @@ int main(int argc, const char *argv[]) {
   }
 
   LL_INFO("config:\n%s", config.toString().c_str());
+  LL_INFO("tc address: %s", TC_ADDRESS);
 
   jsonrpc::HttpClient http_client(config.getGethRpcAddr());
   geth_connector = unique_ptr<ethRPCClient>(new ethRPCClient(http_client));

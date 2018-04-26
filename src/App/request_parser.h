@@ -65,8 +65,8 @@ class RequestParser {
   // 0x80 - 0xa0       : cb
   // 0xa0 - 0xc0       : hash
   // 0xc0 - 0xe0       : timestamp
-  // 0xe0 - 0x100       : offset of requestData
-  // 0x100 - 0x120      : reqLen (in bytes32)
+  // 0xe0 - 0x100      : offset of requestData
+  // 0x100 - 0x120     : reqLen (in bytes32)
   // 0x120 - ...       : reqData
  public:
   static const int REQUEST_MIN_LEN = 2 * 120;
@@ -89,7 +89,7 @@ class RequestParser {
   string tx_hash;
 
  public:
-  RequestParser() {}
+  RequestParser();
   explicit RequestParser(const string &input, const string &hash);
   ~RequestParser();
 

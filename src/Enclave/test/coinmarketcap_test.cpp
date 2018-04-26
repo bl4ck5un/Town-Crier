@@ -42,7 +42,8 @@
 //
 
 #include "tls_client.h"
-#include "scrapers/current_coinmarket.h"
+#include "scrapers/coinmarketcap.h"
+#include "scrapers/bitcoinfees.h"
 #include "log.h"
 #include "macros.h"
 
@@ -50,6 +51,11 @@ int coin_self_test() {
   try {
     CoinMarket coinMarketTest;
     coinMarketTest._getprice("bitcoin");
+
+    BitcoinFees bitcoinFees;
+    RecommendedFees results;
+    bitcoinFees.get_recommended_fees(&results);
+    LL_NOTICE("%d, %d, %d", results.fastestFee, results.halfHourFee, results.hourFee);
   }
   CATCH_STD_AND_ALL
 

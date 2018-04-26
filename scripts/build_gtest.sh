@@ -41,9 +41,7 @@
 # CNS-1518765, CNS-1514261), a Packard Fellowship, a Sloan Fellowship,
 # Google Faculty Research Awards, and a VMWare Research Award.
 
-set -ex
-
-pushd src/vendor/gtest
+pushd ../src/vendor/gtest
 
 autoreconf -i
 ./configure

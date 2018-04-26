@@ -441,13 +441,13 @@ HttpResponse HttpsClient::getResponse() {
       http_need_more = (bool) http_data(&rt, (const char *) data, n_data, &read);
       n_data -= read;
       data += read;
+      LL_TRACE("http_need_more=%d, n_data=%d", http_need_more, n_data);
     }
   } // while (http_need_more)
 
-
   if (http_iserror(&rt)) {
     http_free(&rt);
-    throw runtime_error("Error parsing HTTP data");
+    throw runtime_error("http roundtrip error code=" + to_string(rt.code));
   }
 
   LL_DEBUG("HTTP response len=%zu", response.body.size());

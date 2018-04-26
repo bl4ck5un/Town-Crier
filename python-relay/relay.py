@@ -154,8 +154,10 @@ class TCMonitor:
             if error_code != 0:
                 logger.error('Error in tx: {0}'.format(error_code))
             logger.info('response from enclave: {0}'.format(response_tx))
-            # print self.eth_rpc.eth_sendRawTransaction(response_tx)
+            txid = self.w3.eth.sendRawTransaction(response_tx)
             self._update_record_one_request(req)
+
+            logger.info("response sent {0}".format(Web3.toHex(txid)))
 
     def loop(self):
         next_block = self.config.TC_CONTRACT_BLOCK_NUM

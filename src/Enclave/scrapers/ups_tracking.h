@@ -46,7 +46,7 @@
 #include "../log.h"
 
 #include "Scraper.h"
-#include "utils.h"
+#include "error_codes.h"
 #include "tls_client.h"
 #include "../../Common/Constants.h"
 

@@ -45,7 +45,7 @@
 
 #include <string>
 #include "Scraper.h"
-#include "utils.h"
+#include "error_codes.h"
 
 using std::string;
 

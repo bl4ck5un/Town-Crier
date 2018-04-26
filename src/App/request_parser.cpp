@@ -125,8 +125,14 @@ void RequestParser::valueOf(const std::string &input, const std::string &hash) {
     offset += ENTRY_LEN;  // skipping offset
 
     // 0x100 - 0x120     : reqLen (in bytes32)
-    this->data_len = __hextoi(input.substr(offset, ENTRY_LEN)) * 32;
-    offset += ENTRY_LEN;
+    if (input.length() > 0x100) {
+      this->data_len = __hextoi(input.substr(offset, ENTRY_LEN)) * 32;
+      offset += ENTRY_LEN;
+      hexToBuffer(input.substr(offset), &this->data);
+    }
+    else {
+      this->data_len = 0;
+    }
   }
   catch (const std::out_of_range &e) {
     LL_CRITICAL("bad request: %s", e.what());
@@ -146,7 +152,6 @@ void RequestParser::valueOf(const std::string &input, const std::string &hash) {
     throw invalid_argument("request data is too large");
   }
 
-  hexToBuffer(input.substr(offset), &this->data);
 }
 
 RequestParser::RequestParser(const string &input, const string &hash)
@@ -154,7 +159,8 @@ RequestParser::RequestParser(const string &input, const string &hash)
   this->valueOf(input, hash);
 }
 
-RequestParser::~RequestParser() {}
+RequestParser::RequestParser() = default;
+RequestParser::~RequestParser() = default;
 
 const string &RequestParser::getRawRequest() const { return raw_request; }
 

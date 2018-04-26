@@ -52,7 +52,7 @@
 #include "Scraper.h"
 #include "debug.h"
 #include "../log.h"
-#include "utils.h"
+#include "error_codes.h"
 #include "Constants.h"
 #include "external/slre.h"
 #include "tls_client.h"

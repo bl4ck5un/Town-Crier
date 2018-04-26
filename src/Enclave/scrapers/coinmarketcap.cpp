@@ -41,12 +41,12 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include "current_coinmarket.h"
+#include "coinmarketcap.h"
 
 #include <string>
 
 #include "log.h"
-#include "utils.h"
+#include "error_codes.h"
 #include "tls_client.h"
 #include "external/picojson.h"
 

@@ -50,7 +50,7 @@
 #include "../log.h"
 #include "tls_client.h"
 #include "current_weather.h"
-#include "utils.h"
+#include "error_codes.h"
 #include "yahoo_yql.h"
 #include "../external/picojson.h"
 
