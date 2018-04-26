@@ -1,4 +1,3 @@
-# need 3.0 for multiple line strings
 cmake_minimum_required(VERSION 3.0)
 project(Town-Crier)
 
@@ -34,22 +33,5 @@ set(MBEDTLS_LIB_DIR ${TC_ROOT_DIR}/Enclave/mbedtls-SGX)
 
 # check cmake configuration
 message(STATUS "Building ${CMAKE_BUILD_TYPE} with CFLAGS ${CMAKE_C_FLAGS}")
-
-OPTION(TESTNET "Build Town Crier for a private testnet" ON)
-OPTION(RINKEBY "Build Town Crier for the Rinkeby testnet" OFF)
-OPTION(MAINNET "Build Town Crier for the main net" OFF)
-
-IF(TESTNET)
-    message(STATUS "building TC for testnet")
-ENDIF(TESTNET)
-IF(RINKEBY)
-    ADD_DEFINITIONS(-DTC_SGX_FOR_RINKEBY)
-    message(STATUS "building TC for Rinkeby")
-ENDIF(RINKEBY)
-IF(MAINNET)
-    ADD_DEFINITIONS(-DTC_SGX_FOR_MAINNET)
-    message(STATUS "building TC for mainnet")
-ENDIF(MAINNET)
-
 
 add_subdirectory(src)

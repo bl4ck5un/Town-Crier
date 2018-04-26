@@ -48,6 +48,8 @@
 #include <string>
 #include <vector>
 
+#include "converter.h"
+
 using std::string;
 using std::vector;
 
@@ -75,7 +77,7 @@ class RequestParser {
   static const int ADDRESS_LEADING_ZERO = 2 * 12;
 
  private:
-  const string raw_request;
+  const bytes raw_request;
   uint64_t id;
   uint64_t type;
   uint8_t requester[20];
@@ -89,11 +91,9 @@ class RequestParser {
   string tx_hash;
 
  public:
-  RequestParser();
-  explicit RequestParser(const string &input, const string &hash);
-  ~RequestParser();
-
-  void valueOf(const string &input, const string &hash);
+  RequestParser(const string &input, const string &hash);
+  RequestParser() = delete;
+  ~RequestParser() = default;
 
   uint64_t getId() const;
   uint64_t getType() const;
@@ -104,7 +104,7 @@ class RequestParser {
   uint64_t getTimestamp() const;
   size_t getDataLen() const;
   const uint8_t * getData() const;
-  const string &getRawRequest() const;
+  const bytes &getRawRequest() const;
   const string &getTransactionHash() const;
   const string toString() const;
   void dumpData() const;

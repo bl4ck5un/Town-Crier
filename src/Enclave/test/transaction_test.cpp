@@ -116,7 +116,7 @@ static int transaction_form() {
   tc::enclave::from_hex(ans_hex, ans);
 
   bytes tcAddress;
-  tcAddress.from_hex(TC_ADDRESS);
+  tcAddress.from_hex("0x89c1b3807d4c67df034fffb62f3509561218d30b");
 
   for (int i = 14; i < 14 + 20; i++) {
     ans[i] = tcAddress.at(i - 14);

@@ -1,7 +1,6 @@
 BASE_DIR=$(shell pwd)/..
 
 BUILD=Debug
-NETWORK=TESTNET
 
 RELAY_IMAGE=bl4ck5un/tc-relay
 CORE_IMAGE=bl4ck5un/tc-core
@@ -15,12 +14,6 @@ relay: ${BASE_DIR}/python-relay/relay.py
 	docker build --rm --force-rm -t ${RELAY_IMAGE} . && \
 	cd ..
 
-rinkeby:
-	$(MAKE) NETWORK=RINKEBY core
-
-testnet:
-	$(MAKE) NETWORK=TESTNET core-debug
-
 core:
 	$(MAKE) BUILD=Prerelease build
 
@@ -31,7 +24,6 @@ build:
 	cd ${BASE_DIR} && \
 	docker build \
 		--build-arg BUILD=${BUILD} \
-		--build-arg NETWORK=${NETWORK} \
 		--build-arg MAKE_FLAGS=-j \
 		--force-rm \
 		-t tc/core-builder \
@@ -55,3 +47,7 @@ log:
 up-bash:
 	docker-compose -f ./docker-compose.rel.yml exec tc-core bash
 
+push: relay core core-debug
+	docker push ${CORE_IMAGE}:Debug
+	docker push ${CORE_IMAGE}:Prerelease
+	docker push ${RELAY_IMAGE}

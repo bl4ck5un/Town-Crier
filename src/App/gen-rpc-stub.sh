@@ -42,7 +42,6 @@
 # Google Faculty Research Awards, and a VMWare Research Award.
 #
 jsonrpcstub status.json --cpp-server=AbstractStatusServer
-jsonrpcstub eth_api.json --cpp-client ethRPCClient
 
 
 

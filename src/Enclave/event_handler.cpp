@@ -66,6 +66,7 @@
 #include "log.h"
 
 #include "hybrid_cipher.h"
+#include "env.h"
 
 /*
  * testing data
@@ -84,6 +85,9 @@ int handle_request(int nonce,
                    uint8_t *raw_tx,
                    size_t *raw_tx_len) {
   try {
+    string tc_address = getContractAddress();
+    LL_DEBUG("serving tc address: %s", tc_address.c_str());
+
     int ret = do_handle_request(nonce, id, type, data, data_len, raw_tx, raw_tx_len);
     return ret;
   }

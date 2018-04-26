@@ -2,7 +2,6 @@ FROM bl4ck5un/tc-sgx-sdk
 MAINTAINER Fan Zhang <bl4ck5unxx@gmail.com>
 
 ARG BUILD=Debug
-ARG NETWORK=TESTNET
 ARG MAKE_FLAGS=-j
 
 COPY . /code
@@ -15,7 +14,7 @@ RUN cd /code && \
     make -C src/Enclave/mbedtls-SGX && \
     mkdir -p tmp && \
     cd tmp && \
-    cmake -D$NETWORK=ON -DCMAKE_BUILD_TYPE=$BUILD -DCMAKE_INSTALL_PREFIX=/tc .. && \
+    cmake -DCMAKE_BUILD_TYPE=$BUILD -DCMAKE_INSTALL_PREFIX=/tc .. && \
     make $MAKE_FLAGS && \
     make install && \
     cd ..

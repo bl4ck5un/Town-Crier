@@ -62,9 +62,11 @@ log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("status_rpc_server.cpp"));
 using tc::statusRPC::logger;
 using tc::status_rpc_server;
 
+using namespace std;
+
 status_rpc_server::status_rpc_server(AbstractServerConnector &connector,
-                                     sgx_enclave_id_t eid, const OdbDriver &db)
-    : AbstractStatusServer(connector), eid(eid), stat_db(db) {}
+                                     sgx_enclave_id_t eid)
+    : AbstractStatusServer(connector), eid(eid) {}
 
 Json::Value status_rpc_server::attest() {
   using tc::statusRPC::logger;
@@ -105,8 +107,8 @@ Json::Value status_rpc_server::attest() {
 Json::Value status_rpc_server::status() {
   Json::Value status;
   status["version"] = GIT_COMMIT_HASH;
-  status["numberOfScannedBlocks"] = static_cast<Json::Value::UInt64>(stat_db.getLastBlock());
-  status["numberOfResponse"] = static_cast<Json::Value::UInt64>(stat_db.getNumOfResponse());
+  status["numberOfScannedBlocks"] = 0;
+  status["numberOfResponse"] = 0;
 
   return status;
 }
@@ -121,25 +123,24 @@ Json::Value status_rpc_server::process(const std::string &data, int nonce, const
   uint8_t resp_buffer[TX_BUF_SIZE] = {0};
   size_t resp_data_len = 0;
 
-  LOG4CXX_INFO(logger, "processing request " << txid);
-
-  auto request = unique_ptr<tc::RequestParser>(new tc::RequestParser());
-
   Json::Value ret;
 
   try {
-    request->valueOf(data, txid);
+    LOG4CXX_INFO(logger, "processing request tx " << txid);
+    RequestParser request(data, txid);
 
-    LL_INFO("parsed request: %s", request->toString().c_str());
+    hexdump("request", request.getRawRequest().data(), request.getRawRequest().size());
+
+    LL_INFO("parsed request: %s", request.toString().c_str());
 
     int ecall_ret;
 
     LL_INFO("nonce obtained %d", nonce);
 
     // TODO(FAN): change nonce to some long type
-    auto st = handle_request(eid, &ecall_ret, nonce, request->getId(),
-                             request->getType(), request->getData(),
-                             request->getDataLen(), resp_buffer, &resp_data_len);
+    auto st = handle_request(eid, &ecall_ret, nonce, request.getId(),
+                             request.getType(), request.getData(),
+                             request.getDataLen(), resp_buffer, &resp_data_len);
 
     if (st != SGX_SUCCESS || ecall_ret != TC_SUCCESS) {
       throw runtime_error("ecall failed");

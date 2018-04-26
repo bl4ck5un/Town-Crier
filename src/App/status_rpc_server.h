@@ -50,7 +50,6 @@
 #include <string>
 
 #include "App/abstractstatusserver.h"
-#include "App/bookkeeping/database.h"
 
 using jsonrpc::AbstractServerConnector;
 
@@ -59,12 +58,10 @@ namespace tc {
 class status_rpc_server : public AbstractStatusServer {
  private:
   sgx_enclave_id_t eid;
-  const OdbDriver& stat_db;
 
  public:
-  status_rpc_server(
-      AbstractServerConnector& connector,  // NOLINT(runtime/references)
-      sgx_enclave_id_t eid, const OdbDriver& db);
+  status_rpc_server(AbstractServerConnector &connector,
+                      sgx_enclave_id_t eid);
   // curl -d '{"id": 1, "jsonrpc": "2.0", "method": "status"}'  localhost:8123
   Json::Value attest() override;
   Json::Value status() override;

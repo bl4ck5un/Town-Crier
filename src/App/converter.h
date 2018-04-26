@@ -50,8 +50,11 @@
 using std::string;
 using std::vector;
 
-void hexToBuffer(const string &str, unsigned char *buffer, size_t bufSize);
+using bytes = vector<unsigned char>;
+
+bytes hexToBuffer(const string &hex);
 void hexToBuffer(const string &hex, vector<uint8_t> *buffer);
+void hexToBuffer(const string &str, unsigned char *buffer, size_t bufSize);
 string bufferToHex(const unsigned char *, size_t, bool prefix = false);
 string bufferToHex(vector<unsigned char> const &buffer, bool prefix = false);
 #endif  // SRC_APP_CONVERTER_H_

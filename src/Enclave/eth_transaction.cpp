@@ -51,6 +51,7 @@
 
 #include "mbedtls/bignum.h"
 
+#include "env.h"
 #include "eth_ecdsa.h"
 #include "eth_abi.h"
 #include "external/keccak.h"
@@ -226,7 +227,7 @@ int form_transaction(int nonce,
                  nonce,
                  GASPRICE,
                  GASLIMIT,
-                 TC_ADDRESS,
+                 getContractAddress(),
                  0,
                  encoded_delivery_call);
 

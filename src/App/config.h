@@ -63,35 +63,22 @@ class Config {
   po::variables_map vm;
 
  public:
-  bool isStatusServerEnabled() const;
   const string &getConfigFile() const;
-  const string &getWorkingDir() const;
-  const string &getGethRpcAddr() const;
-  int get_status_server_port() const;
-  const string &getPidFilename() const;
+  int getRelayRPCAccessPoint() const;
   const string &getSealedSigKey() const;
   const string &getSealedHybridKey() const;
   const string &getEnclavePath() const;
-  const string &getHomeDir() const;
-  const string &getCurrentDir() const;
-  bool printMR() const;
-  const po::variables_map& getOpts() const;
+  const string &getContractAddress() const;
+  bool getIsPrintMR() const;
 
  private:
-  bool opt_mrenclave;
-  string opt_config_file;
-  string opt_working_dir;
-
-  string cfg_geth_rpc_addr;
-  bool cfg_status_rpc_enabled;
-  int cfg_status_port;
-  string cfg_pid_fn;
-  string cfg_sealed_sig_key;
-  string cfg_sealed_hybrid_key;
-  string cfg_enclave_path;
-
-  string current_dir;
-  string home_dir;
+  bool isPrintMR;
+  string configFile;
+  int relayRPCAccessPoint;
+  string contractAddress;
+  string sealedECDSAKey;
+  string sealedHybridEncryptionkey;
+  string enclavePath;
 
   void parseConfigFile();
 

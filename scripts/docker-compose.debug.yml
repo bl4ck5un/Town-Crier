@@ -5,7 +5,7 @@ services:
         network_mode: host
         entrypoint: "tc"
         volumes:
-          - ../config/config-sim:/config
+          - ../config/config-privatenet-sim:/config
     tc-relay:
         depends_on:
           - tc-core

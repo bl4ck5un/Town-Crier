@@ -62,6 +62,12 @@ void hexToBuffer(const string &str, unsigned char *buffer, size_t bufSize) {
   boost::algorithm::unhex(str.begin() + offset, str.end(), buffer);
 }
 
+bytes hexToBuffer(const string& hex) {
+  bytes r;
+  auto offset = (hex.compare(0, 2, "0x") == 0) ? 2 : 0;
+  boost::algorithm::unhex(hex.begin() + offset, hex.end(), back_inserter(r));
+}
+
 void hexToBuffer(const string &hex, vector<uint8_t> *buffer) {
   if (buffer == nullptr) {
     throw invalid_argument("null output ptr");

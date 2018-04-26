@@ -45,21 +45,6 @@
 
 #define TX_BUF_SIZE 2048
 
-#define TC_ADDRESS  "0x18322346bfb90378ceaf16c72cee4496723636b9"
-
-// this macro is set by cmake
-#ifdef TC_SGX_FOR_MAINNET
-#undef TC_ADDRESS
-#pragma message("building for mainnet")
-#define TC_ADDRESS  "0x89c1b3807d4c67df034fffb62f3509561218d30b"
-#endif
-
-#ifdef TC_SGX_FOR_RINKEBY
-#undef TC_ADDRESS
-#pragma message("building for Rinkeby")
-#define TC_ADDRESS  "0x9eC1874FF1deF6E178126f7069487c2e9e93D0f9"
-#endif
-
 #define GASPRICE    0x0BA43B7400  // 50000000000
 #define GASLIMIT    0x2DC6C0      // 3000000
 
@@ -90,19 +75,5 @@
 #define TC_ERR_FLAG_NO_ERROR      0
 #define TC_ERR_FLAG_INVALID_INPUT 1
 #define TC_ERR_FLAG_INTERNAL_ERR  2
-
-#ifdef TC_SGX_IN_RELEASE_MODE
-#define SGX_ADDRESS "0x18513702CCD928F2A3EB63D900ADF03C9CC81593"
-#else
-#define SGX_ADDRESS "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
-#endif
-
-#define ERR_ENCLAVE_SSL_CLIENT 0x1001
-
-/* flags for enclave debugging and logging */
-// #define TRACE_TLS_CLIENT
-// #define HEXDUMP_TLS_TRANSCRIPT
-
-typedef int pkgstatus_t;
 
 #endif

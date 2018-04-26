@@ -77,7 +77,7 @@ inline static uint64_t __hextol(const string &str) {
   return stoul(str, nullptr, 16);
 }
 
-void RequestParser::valueOf(const std::string &input, const std::string &hash) {
+RequestParser::RequestParser(const string &input, const string &hash) : raw_request(hexToBuffer(input)) {
   this->tx_hash = hash;
 
   LL_LOG("request parser get is %s", input.c_str());
@@ -151,18 +151,9 @@ void RequestParser::valueOf(const std::string &input, const std::string &hash) {
   if (this->data_len > TC_REQUEST_PAYLOAD_LIMIT) {
     throw invalid_argument("request data is too large");
   }
-
 }
 
-RequestParser::RequestParser(const string &input, const string &hash)
-    : raw_request(input) {
-  this->valueOf(input, hash);
-}
-
-RequestParser::RequestParser() = default;
-RequestParser::~RequestParser() = default;
-
-const string &RequestParser::getRawRequest() const { return raw_request; }
+const bytes &RequestParser::getRawRequest() const { return raw_request; }
 
 const string RequestParser::toString() const {
   stringstream ss;

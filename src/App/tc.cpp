@@ -51,6 +51,7 @@
 #include <string>
 #include <thread>
 #include <chrono>
+#include <utility>
 #include <log4cxx/logger.h>
 #include <log4cxx/propertyconfigurator.h>
 #include <jsonrpccpp/server/connectors/httpserver.h>
@@ -60,13 +61,10 @@
 
 // app headers
 #include "App/Enclave_u.h"
-#include "App/eth_rpc.h"
 #include "App/status_rpc_server.h"
 #include "App/attestation.h"
-#include "App/bookkeeping/database.h"
 #include "App/config.h"
 #include "App/key_utils.h"
-#include "App/monitor.h"
 #include "App/request_parser.h"
 #include "App/tc_exception.h"
 #include "App/utils.h"
@@ -82,40 +80,19 @@ log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("tc.cpp"));
 }
 }
 
-#include <utility>
 
-extern unique_ptr<ethRPCClient> geth_connector;
+using tc::main::logger;
+using namespace std;
 
 std::atomic<bool> quit(false);
 void exitGraceful(int) { quit.store(true); }
 
 int main(int argc, const char *argv[]) {
-  using tc::main::logger;
-  // parse command line arguments first
   tc::Config config(argc, argv);
 
   log4cxx::PropertyConfigurator::configure(LOGGING_CONF_FILE);
 
-  // create working dir if not existed
-  fs::create_directory(fs::path(config.getWorkingDir()));
-
-  // logging to file
-  fs::path log_path;
-  char _log_tag[100] = {0};
-  std::time_t _current_time = std::time(nullptr);
-  if (std::strftime(_log_tag, sizeof _log_tag, "%F-%T",
-                    std::localtime(&_current_time))) {
-    log_path =
-        fs::path(config.getWorkingDir()) / (string(_log_tag) + ".log");
-  } else {
-    log_path = fs::path(config.getWorkingDir()) / ("tc.log");
-  }
-
   LL_INFO("config:\n%s", config.toString().c_str());
-  LL_INFO("tc address: %s", TC_ADDRESS);
-
-  jsonrpc::HttpClient http_client(config.getGethRpcAddr());
-  geth_connector = unique_ptr<ethRPCClient>(new ethRPCClient(http_client));
 
   int ret;
   sgx_enclave_id_t eid;
@@ -130,37 +107,13 @@ int main(int argc, const char *argv[]) {
   }
 
   // print MR and exit if requested
-  if (config.printMR()) {
+  if (config.getIsPrintMR()) {
     cout << get_mr_enclave(eid) << endl;
     std::exit(0);
   }
 
   std::signal(SIGINT, exitGraceful);
   std::signal(SIGTERM, exitGraceful);
-
-  /* set up database */
-  static const string db_name = (fs::path(config.getWorkingDir()) / "tc.db").string();
-  LL_INFO("using db %s", db_name.c_str());
-
-  /*
-  if (fs::exists(db_name)) {
-    std::cout << "Do you want to clean up the database? y/[n] ";
-    std::string new_db;
-    std::getline(std::cin, new_db);
-    overwrite_old_db = new_db == "y";
-  } else {
-    overwrite_old_db = true;
-  }
-  LL_INFO("using new db: %d", overwrite_old_db);
-  */
-
-  // create if not exist
-  bool overwrite_old_db = true;
-  if (fs::exists(db_name)) {
-    overwrite_old_db = false;
-  }
-
-  OdbDriver driver(db_name, overwrite_old_db);
 
   string wallet_address, hybrid_pubkey;
 
@@ -181,26 +134,18 @@ int main(int argc, const char *argv[]) {
     exit(-1);
   }
 
-  jsonrpc::HttpServer status_server_connector(config.get_status_server_port(),
-                                              "", "", 3);
-  tc::status_rpc_server stat_srvr(status_server_connector, eid, driver);
-  if (config.isStatusServerEnabled()) {
-    stat_srvr.StartListening();
-    LL_INFO("RPC server started at %d", config.get_status_server_port());
-  }
+  jsonrpc::HttpServer status_server_connector(config.getRelayRPCAccessPoint(), "", "", 3);
+  tc::status_rpc_server stat_srvr(status_server_connector, eid);
+  stat_srvr.StartListening();
+  LL_INFO("RPC server started at %d", config.getRelayRPCAccessPoint());
 
-  init(eid);
-
-  // Monitor monitor(&driver, eid, quit);
-  // monitor.loop();
+  init(eid, config.getContractAddress().c_str());
 
   while (!quit.load()) {
     this_thread::sleep_for(chrono::microseconds(500));
   }
 
-  if (config.isStatusServerEnabled()) {
-    stat_srvr.StopListening();
-  }
+  stat_srvr.StopListening();
   sgx_destroy_enclave(eid);
   LL_INFO("all enclave closed successfully");
 }

@@ -53,27 +53,12 @@
 
 using namespace std;
 
-const tc::Config* g_config;
-
-inline const char *homedir() {
-  const char *home_dir;
-  if ((home_dir = getenv("HOME")) == NULL) {
-    home_dir = getpwuid(getuid())->pw_dir; // NOLINT
-  }
-
-  return home_dir;
-}
-
 tc::Config::Config(const po::options_description &additional_opts, int argc, const char **argv) {
-  this->current_dir = fs::current_path().string();
-  this->home_dir = homedir();
-
   try {
     po::options_description desc("Allowed options");
     desc.add_options()
         ("help,h", "print this message")
-        ("config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE), "Path to a config file")
-        ("cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR), "Working dir (where log and db are stored");
+        ("config,c", po::value(&configFile)->default_value(DFT_CONFIG_FILE), "Path to a config file");
 
     desc.add(additional_opts);
 
@@ -104,14 +89,12 @@ void tc::Config::parseConfigFile() {
   // parse the config files
   boost::property_tree::ptree pt;
   try {
-    boost::property_tree::ini_parser::read_ini(opt_config_file, pt);
-    cfg_geth_rpc_addr = pt.get<string>("RPC.RPChost");
-    cfg_pid_fn = pt.get<string>("daemon.pid_file");
-    cfg_status_rpc_enabled = pt.get<bool>("status.enabled");
-    cfg_status_port = pt.get<int>("status.port");
-    cfg_sealed_sig_key = pt.get<string>("sealed.sig_key");
-    cfg_sealed_hybrid_key = pt.get<string>("sealed.hybrid_key");
-    cfg_enclave_path = pt.get<string>("init.enclave_path");
+    boost::property_tree::ini_parser::read_ini(configFile, pt);
+    enclavePath = pt.get<string>("enclave_path");
+    contractAddress = pt.get<string>("tc_address");
+    relayRPCAccessPoint = pt.get<int>("RPC.port");
+    sealedECDSAKey = pt.get<string>("sealed.sig_key");
+    sealedHybridEncryptionkey = pt.get<string>("sealed.hybrid_key");
   } catch (const exception &e) {
     cout << e.what() << endl;
     cout << "please provide with a correct config file" << endl;
@@ -120,19 +103,13 @@ void tc::Config::parseConfigFile() {
 }
 
 tc::Config::Config(int argc, const char **argv) {
-  this->current_dir = fs::current_path().string();
-  this->home_dir = homedir();
-
   try {
     po::options_description desc("Allowed options");
     desc.add_options()("help,h", "print this message");
-    desc.add_options()("measurement,m", po::bool_switch(&opt_mrenclave)->default_value(false),
+    desc.add_options()("measurement,m", po::bool_switch(&isPrintMR)->default_value(false),
                        "print the measurement (MR_ENCLAVE) and exit.");
-    desc.add_options()("config,c", po::value(&opt_config_file)->default_value(DFT_CONFIG_FILE),
+    desc.add_options()("config,c", po::value(&configFile)->default_value(DFT_CONFIG_FILE),
                        "Path to a config file");
-    desc.add_options()("cwd", po::value(&opt_working_dir)->default_value(DFT_WORKING_DIR),
-                       "Working dir (where log and db are stored");
-
     po::store(po::parse_command_line(argc, argv, desc), vm);
 
     if (vm.count("help")) {
@@ -156,27 +133,17 @@ tc::Config::Config(int argc, const char **argv) {
 
 string tc::Config::toString() {
   stringstream ss;
-  ss << "Status RPC enabled: " << cfg_status_rpc_enabled << endl;
-  ss << "Status RPC port: " << cfg_status_port << endl;
-  ss << "Using config file: " << opt_config_file << endl;
-  ss << "Working dir set to: " << opt_working_dir << endl;
-  ss << "Geth rpc addr: " << cfg_geth_rpc_addr << endl;
-  ss << "pid: " << cfg_pid_fn << endl;
-  ss << "enclave image used: " << cfg_enclave_path;
-
+  ss << "Using config file: " << this->getConfigFile() << endl;
+  ss << "++ using enclave image: " << this->getEnclavePath() << endl;
+  ss << "++ listening for TC relay at port: " << this->getRelayRPCAccessPoint() << endl;
+  ss << "++ serving contract at: " << this->getContractAddress();
   return ss.str();
 }
 
-bool tc::Config::isStatusServerEnabled() const { return cfg_status_rpc_enabled; }
-const string &tc::Config::getConfigFile() const { return opt_config_file; }
-const string &tc::Config::getWorkingDir() const { return opt_working_dir; }
-const string &tc::Config::getGethRpcAddr() const { return cfg_geth_rpc_addr; }
-int tc::Config::get_status_server_port() const { return cfg_status_port; }
-const string &tc::Config::getPidFilename() const { return cfg_pid_fn; }
-const string &tc::Config::getSealedSigKey() const { return cfg_sealed_sig_key; }
-const string &tc::Config::getSealedHybridKey() const { return cfg_sealed_hybrid_key; }
-const string &tc::Config::getEnclavePath() const { return cfg_enclave_path; }
-const string &tc::Config::getCurrentDir() const { return current_dir; }
-const string &tc::Config::getHomeDir() const { return home_dir; }
-bool tc::Config::printMR() const {return opt_mrenclave; }
-const po::variables_map& tc::Config::getOpts() const { return vm; }
+const string &tc::Config::getConfigFile() const { return configFile; }
+int tc::Config::getRelayRPCAccessPoint() const { return relayRPCAccessPoint; }
+const string &tc::Config::getSealedSigKey() const { return sealedECDSAKey; }
+const string &tc::Config::getSealedHybridKey() const { return sealedHybridEncryptionkey; }
+const string &tc::Config::getEnclavePath() const { return enclavePath; }
+const string &tc::Config::getContractAddress() const { return contractAddress; }
+bool tc::Config::getIsPrintMR() const {return isPrintMR; }

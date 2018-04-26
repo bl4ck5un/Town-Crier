@@ -1,14 +1,7 @@
-[RPC]
-RPChost = http://localhost:8545
-
-[init]
 enclave_path = /tc/enclave/enclave.release.so
+tc_address = 0x89c1b3807d4c67df034fffb62f3509561218d30b
 
-[daemon]
-pid_file = tc.pid
-
-[status]
-enabled = true
+[RPC]
 port = 8123
 
 [sealed]

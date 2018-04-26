@@ -36,10 +36,6 @@
  * VMWare Research Award.
  */
 
-//
-// Created by fanz on 5/12/17.
-//
-
 #ifndef TOWN_CRIER_ENV_H
 #define TOWN_CRIER_ENV_H
 
@@ -49,18 +45,17 @@
 using std::string;
 using std::map;
 
-/*!
- * a class for
- */
 class Environment {
  private:
   map<string, string> env;
+
  public:
-  void set(string key, string value) {
+  static const string TC_ADDR_MAP_KEY;
+  void set(const string& key, const string& value) {
     env[key] = value;
   }
-  string get(string key) {
-    map<string, string>::iterator search = env.find(key);
+  string get(const string& key) {
+    auto search = env.find(key);
     if (search == env.end()) {
       return "";
     }
@@ -70,5 +65,13 @@ class Environment {
 };
 
 extern Environment *g_environment;
+
+extern "C" {
+void init(const char* contract_addr);
+void set_env(const char *key, const char *value);
+};
+
+string get_env(const string& key);
+string getContractAddress();
 
 #endif //TOWN_CRIER_ENV_H

@@ -48,7 +48,7 @@ enclave {
         public int tc_get_hybrid_pubkey(
                     [user_check] uint8_t pubkey[65]);
 
-        public void init();
+        public void init([in,string] const char* contract_address);
         public void set_env([user_check] const char* key, [user_check] const char* value);
     };
 

@@ -47,6 +47,7 @@
 #define printf_sgx printf
 
 void hexdump(const char *title, void const *data, size_t len) {
+#if(defined(DEBUG))
   unsigned int i;
   unsigned int r, c;
 
@@ -86,4 +87,5 @@ void hexdump(const char *title, void const *data, size_t len) {
       }
     printf_sgx("\n");
   }
+#endif
 }
