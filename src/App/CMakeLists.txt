@@ -1,4 +1,4 @@
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wno-attributes")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SGX_COMMON_CFLAGS} -fPIC -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_C_FLAGS} -std=c++11")
 
 ###############################
@@ -148,4 +148,5 @@ set_property(TARGET tc-test
 install(TARGETS tc tc-keygen DESTINATION bin)
 install(FILES
         ${CMAKE_SOURCE_DIR}/src/logging.conf
+        ${CMAKE_SOURCE_DIR}/config/config-privatenet-sim
         DESTINATION conf)

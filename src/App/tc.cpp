@@ -80,7 +80,6 @@ log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("tc.cpp"));
 }
 }
 
-
 using tc::main::logger;
 using namespace std;
 
@@ -88,10 +87,12 @@ std::atomic<bool> quit(false);
 void exitGraceful(int) { quit.store(true); }
 
 int main(int argc, const char *argv[]) {
-  tc::Config config(argc, argv);
+  std::signal(SIGINT, exitGraceful);
+  std::signal(SIGTERM, exitGraceful);
 
   log4cxx::PropertyConfigurator::configure(LOGGING_CONF_FILE);
 
+  tc::Config config(argc, argv);
   LL_INFO("config:\n%s", config.toString().c_str());
 
   int ret;
@@ -112,9 +113,6 @@ int main(int argc, const char *argv[]) {
     std::exit(0);
   }
 
-  std::signal(SIGINT, exitGraceful);
-  std::signal(SIGTERM, exitGraceful);
-
   string wallet_address, hybrid_pubkey;
 
   try {
@@ -129,7 +127,7 @@ int main(int argc, const char *argv[]) {
   } catch (const tc::EcallException &e) {
     LL_CRITICAL("%s", e.what());
     exit(-1);
-  } catch (const std::exception& e) {
+  } catch (const std::exception &e) {
     LL_CRITICAL("%s", e.what());
     exit(-1);
   }
@@ -139,7 +137,11 @@ int main(int argc, const char *argv[]) {
   stat_srvr.StartListening();
   LL_INFO("RPC server started at %d", config.getRelayRPCAccessPoint());
 
-  init(eid, config.getContractAddress().c_str());
+  st = init(eid, config.getContractAddress().c_str());
+  if (st != SGX_SUCCESS) {
+    LL_CRITICAL("cannot initialize enclave env");
+    exit(-1);
+  }
 
   while (!quit.load()) {
     this_thread::sleep_for(chrono::microseconds(500));

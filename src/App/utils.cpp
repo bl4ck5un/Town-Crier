@@ -48,7 +48,6 @@
 
 using std::string;
 
-
 namespace tc {
 namespace utils {
 log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("utils.cpp"));
@@ -102,7 +101,8 @@ int initialize_enclave(const char *enclave_name, sgx_enclave_id_t *eid) {
                            NULL);
   if (ret != SGX_SUCCESS) {
     print_error_message(ret);
-    if (fp != NULL) fclose(fp);
+    if (fp != NULL)
+      fclose(fp);
     return -1;
   }
 
@@ -110,19 +110,45 @@ int initialize_enclave(const char *enclave_name, sgx_enclave_id_t *eid) {
   if (updated == -1 || fp == NULL) {
     /* if the token is not updated, or file handle is invalid, do not perform
      * saving */
-    if (fp != NULL) fclose(fp);
+    if (fp != NULL)
+      fclose(fp);
     return 0;
   }
 
   /* reopen the file with write capablity */
   fp = freopen(token_path, "wb", fp);
-  if (fp == NULL) return 0;
+  if (fp == NULL)
+    return 0;
   size_t write_num = fwrite(token, 1, sizeof(sgx_launch_token_t), fp);
   if (write_num != sizeof(sgx_launch_token_t))
     printf("Warning: Failed to save launch token to \"%s\".\n", token_path);
   fclose(fp);
   return 0;
 }
+
+/* Error code returned by sgx_create_enclave */
+static sgx_errlist_t sgx_errlist[] = {
+    {SGX_ERROR_UNEXPECTED, "Unexpected error occurred.", NULL},
+    {SGX_ERROR_INVALID_PARAMETER, "Invalid parameter.", NULL},
+    {SGX_ERROR_OUT_OF_MEMORY, "Out of memory.", NULL},
+    {SGX_ERROR_ENCLAVE_LOST, "Power transition occurred.",
+     "Please refer to the sample \"PowerTransition\" for details."},
+    {SGX_ERROR_INVALID_ENCLAVE, "Invalid enclave image.", NULL},
+    {SGX_ERROR_INVALID_ENCLAVE_ID, "Invalid enclave identification.", NULL},
+    {SGX_ERROR_INVALID_SIGNATURE, "Invalid enclave signature.", NULL},
+    {SGX_ERROR_OUT_OF_EPC, "Out of EPC memory.", NULL},
+    {SGX_ERROR_NO_DEVICE, "Invalid SGX device.",
+     "Please make sure SGX module is enabled in the BIOS, "
+     "and install SGX driver afterwards."},
+    {SGX_ERROR_MEMORY_MAP_CONFLICT, "Memory map conflicted.", NULL},
+    {SGX_ERROR_INVALID_METADATA, "Invalid enclave metadata.", NULL},
+    {SGX_ERROR_DEVICE_BUSY, "SGX device was busy.", NULL},
+    {SGX_ERROR_INVALID_VERSION, "Enclave version was invalid.", NULL},
+    {SGX_ERROR_INVALID_ATTRIBUTE, "Enclave was not authorized.", NULL},
+    {SGX_ERROR_ENCLAVE_FILE_ACCESS, "Can't open enclave file.", NULL},
+    {SGX_ERROR_SERVICE_UNAVAILABLE,
+     "AE service did not respond or the requested service is not supported.",
+     NULL}};
 
 void print_error_message(sgx_status_t ret) {
   size_t idx = 0;
@@ -137,7 +163,8 @@ void print_error_message(sgx_status_t ret) {
     }
   }
 
-  if (idx == ttl) printf("Error: returned %x\n", ret);
+  if (idx == ttl)
+    printf("Error: returned %x\n", ret);
 }
 
 #include <iomanip>
@@ -151,7 +178,8 @@ const string sgx_error_message(sgx_status_t ret) {
   for (idx = 0; idx < ttl; idx++) {
     if (ret == sgx_errlist[idx].err) {
       ss << "Error: " << sgx_errlist[idx].msg;
-      if (NULL != sgx_errlist[idx].sug) ss << " " << sgx_errlist[idx].sug;
+      if (NULL != sgx_errlist[idx].sug)
+        ss << " " << sgx_errlist[idx].sug;
 
       return ss.str();
     }

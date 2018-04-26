@@ -53,38 +53,6 @@
 
 using namespace std;
 
-tc::Config::Config(const po::options_description &additional_opts, int argc, const char **argv) {
-  try {
-    po::options_description desc("Allowed options");
-    desc.add_options()
-        ("help,h", "print this message")
-        ("config,c", po::value(&configFile)->default_value(DFT_CONFIG_FILE), "Path to a config file");
-
-    desc.add(additional_opts);
-
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-
-    if (vm.count("help")) {
-      cerr << desc << endl;
-      exit(0);
-    }
-    po::notify(vm);
-  } catch (po::required_option &e) {
-    cerr << e.what() << endl;
-    exit(-1);
-  } catch (std::exception &e) {
-    cerr << e.what() << endl;
-    exit(-1);
-  } catch (...) {
-    cerr << "Unknown error!" << endl;
-    exit(-1);
-  }
-
-  parseConfigFile();
-  cout << "config done." << endl;
-}
-
 void tc::Config::parseConfigFile() {
   // parse the config files
   boost::property_tree::ptree pt;
@@ -113,7 +81,8 @@ tc::Config::Config(int argc, const char **argv) {
     po::store(po::parse_command_line(argc, argv, desc), vm);
 
     if (vm.count("help")) {
-      cerr << desc << endl;
+      cerr << desc;
+      cerr.flush();
       exit(0);
     }
     po::notify(vm);
@@ -134,9 +103,9 @@ tc::Config::Config(int argc, const char **argv) {
 string tc::Config::toString() {
   stringstream ss;
   ss << "Using config file: " << this->getConfigFile() << endl;
-  ss << "++ using enclave image: " << this->getEnclavePath() << endl;
-  ss << "++ listening for TC relay at port: " << this->getRelayRPCAccessPoint() << endl;
-  ss << "++ serving contract at: " << this->getContractAddress();
+  ss << "+ using enclave image: " << this->getEnclavePath() << endl;
+  ss << "+ listening for TC relay at port: " << this->getRelayRPCAccessPoint() << endl;
+  ss << "+ serving contract at: " << this->getContractAddress();
   return ss.str();
 }
 
@@ -146,4 +115,4 @@ const string &tc::Config::getSealedSigKey() const { return sealedECDSAKey; }
 const string &tc::Config::getSealedHybridKey() const { return sealedHybridEncryptionkey; }
 const string &tc::Config::getEnclavePath() const { return enclavePath; }
 const string &tc::Config::getContractAddress() const { return contractAddress; }
-bool tc::Config::getIsPrintMR() const {return isPrintMR; }
+bool tc::Config::getIsPrintMR() const { return isPrintMR; }

@@ -66,6 +66,8 @@ bytes hexToBuffer(const string& hex) {
   bytes r;
   auto offset = (hex.compare(0, 2, "0x") == 0) ? 2 : 0;
   boost::algorithm::unhex(hex.begin() + offset, hex.end(), back_inserter(r));
+
+  return r;
 }
 
 void hexToBuffer(const string &hex, vector<uint8_t> *buffer) {
