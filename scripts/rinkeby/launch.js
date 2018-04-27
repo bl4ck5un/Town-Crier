@@ -123,8 +123,9 @@ function watch_events(contract) {
             console.log(result.length);
             for (var i = 0; i < result.length; ++i) {
                 console.log(i + " : " + result[i].event);
+                console.log(JSON.stringify(result[i]));
             }
-            events = result;
+            events = "done";
         } else {
             console.log("error");
             events = "error";
