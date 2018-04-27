@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-CONTRACT_DIR=../../contracts
+CONTRACT_DIR=$(cd "../../contracts" && pwd)
 NETWORK=privatenet
 
 while getopts ":n:" opt; do
