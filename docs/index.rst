@@ -10,9 +10,10 @@ Welcome to Town Crier's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   how_tc_works
+   getstarted
+   example_contract
    tc-contract
-   flight-ins
-   confidential_api
 
 
 Indices and tables

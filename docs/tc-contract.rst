@@ -1,5 +1,5 @@
-Understand the Town Crier contract
-=======================================
+Technical details of the ``TownCrier.sol``
+==========================================
 
 The ``TownCrier`` contract provides a uniform interface for queries from and replies to an application contract, which we also refer as a "Requester".
 This interface consists of the following three functions.

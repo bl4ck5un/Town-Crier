@@ -19,3 +19,5 @@ cmake-build-debug
 env
 env3
 venv
+
+docs/_build
