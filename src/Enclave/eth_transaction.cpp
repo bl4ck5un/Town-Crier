@@ -234,9 +234,8 @@ int form_transaction(int nonce,
   tx.m_data = encoded_delivery_call;
 
   try {
-    LL_DEBUG("before rlpEncode");
     tx.rlpEncode(out, false);
-    LL_DEBUG("after rlpEncode");
+    LL_DEBUG("rlpEncode done");
   }
   catch (const std::invalid_argument &e) {
     LL_CRITICAL("%s", e.what());

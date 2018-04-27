@@ -44,11 +44,11 @@
 #define TOWN_CRIER_ENCODING_H
 
 #include "commons.h"
+#include "debug.h"
 #include "log.h"
 
 #include <vector>
 #include <array>
-
 
 using std::vector;
 using std::invalid_argument;
@@ -56,31 +56,68 @@ using std::string;
 using std::array;
 typedef std::vector<uint8_t> BYTE;
 
-
 //! split an integer @code{num} to an byte array
 //! prepend 0 until reaching @code{width}
 std::vector<uint8_t> itob(uint64_t num, size_t width = 0);
 
+// compute how many (non-zero) bytes there are in _i
+template<typename T>
+static uint8_t byte_length(T _i) {
+  uint8_t i = 0;
+  for (; _i != 0; ++i, _i >>= 8) {}
+  return i;
+}
+
+template<typename Iter>
+void rlp_string(Iter begin, Iter end, std::vector<uint8_t> &out) {
+  static_assert(std::is_same<typename std::iterator_traits<Iter>::value_type, uint8_t>::value,
+                "Iter must point to uint8_t");
+
+  long len = std::distance(begin, end);
+  if (len < 0)
+    throw std::invalid_argument("String too long to be encoded.");
+
+  int32_t len_len;
+  if (len == 1 && (*begin) < 0x80) {
+    out.push_back(*begin);
+    return;
+  }
+
+  // longer than 1
+  if (len < 56) {
+    out.push_back(0x80 + static_cast<uint8_t>(len));
+    out.insert(out.end(), begin, end);
+  } else {
+    len_len = byte_length<size_t>(len);
+    if (len_len > 8) {
+      throw std::invalid_argument("String too long to be encoded.");
+    }
+
+    out.push_back(0xb7 + static_cast<uint8_t>(len_len));
+
+    std::vector<uint8_t> b_len = itob(len);
+    out.insert(out.end(), b_len.begin(), b_len.end());
+    out.insert(out.end(), begin, end);
+  }
+}
+
 class RLPSerializable {
  public:
-  virtual void to_rlp(std::vector<uint8_t>& out) = 0;
+  virtual void to_rlp(std::vector<uint8_t> &out) = 0;
 };
-
-template <typename Iter>
-void rlp_string(Iter begin, Iter end, std::vector<uint8_t>& out);
 
 class bytes : public std::vector<uint8_t> {
  public:
   bytes() = default;
-  bytes(const bytes& a, const bytes& b) {
+  bytes(const bytes &a, const bytes &b) {
     std::vector<uint8_t>::insert(std::vector<uint8_t>::end(), a.begin(), a.end());
     std::vector<uint8_t>::insert(std::vector<uint8_t>::end(), b.begin(), b.end());
   }
   explicit bytes(size_t len) : std::vector<uint8_t>(len, static_cast<uint8_t>(0)) {}
-  explicit bytes(const std::vector<uint8_t>& data) : std::vector<uint8_t>(data) {}
+  explicit bytes(const std::vector<uint8_t> &data) : std::vector<uint8_t>(data) {}
   void replace(const bytes &);
   virtual void from_hex(const char *src);
-  virtual void parseUInt64(uint64_t i){
+  virtual void parseUInt64(uint64_t i) {
     this->clear();
     vector<uint8_t> b = itob(i);
     this->insert(this->begin(), b.begin(), b.end());
@@ -90,20 +127,18 @@ class bytes : public std::vector<uint8_t> {
   void toString();
 };
 
-#include "debug.h"
-
-class bytes20: public RLPSerializable {
+class bytes20 : public RLPSerializable {
  private:
-  static const size_t SIZE=20;
+  static const size_t SIZE = 20;
   array<uint8_t, SIZE> _b;
 
  public:
   bytes20() = default;
-  explicit bytes20(const char* hex);
-  void to_rlp(std::vector<uint8_t>& out) override {
+  explicit bytes20(const char *hex);
+  void to_rlp(std::vector<uint8_t> &out) override {
     rlp_string(_b.begin(), _b.end(), out);
   }
-  void dump(const char* title) {
+  void dump(const char *title) {
 #ifndef NDEBUG
     hexdump(title, _b.data(), _b.size());
 #endif
@@ -112,7 +147,7 @@ class bytes20: public RLPSerializable {
 
 class bytes32 : public bytes {
  private:
-  const size_t SIZE=32;
+  const size_t SIZE = 32;
  public:
   bytes32() {
     vector<uint8_t>::resize(SIZE);
@@ -132,8 +167,7 @@ class bytes32 : public bytes {
   void replace(const bytes32 &in) { bytes::replace(in); }
   void replace(const BYTE &in);
 
-
-  void reset(){}
+  void reset() {}
 };
 
 uint8_t get_n_th_byte(uint64_t in, int n);

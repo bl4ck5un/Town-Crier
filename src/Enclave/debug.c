@@ -92,6 +92,7 @@ void hexdump(const char *title, void const *data, size_t len) {
   }
 }
 
+#ifdef DEBUG
 static void bin_to_strhex(const unsigned char *bin, size_t binsz, char *result) {
   char hex_str[] = "0123456789abcdef";
   unsigned int i;
@@ -106,6 +107,7 @@ static void bin_to_strhex(const unsigned char *bin, size_t binsz, char *result) 
     result[i * 2 + 1] = hex_str[(bin[i]) & 0x0F];
   }
 }
+#endif
 
 void print_str_dbg(const char *title, const unsigned char *data, size_t len) {
 #ifdef DEBUG

@@ -8,8 +8,9 @@ COPY . /code
 
 RUN mkdir /tc && \
     cp /code/dockerfiles/deployment/Dockerfile.runtime /tc/Dockerfile && \
-    cp /code/dockerfiles/deployment/supervisord.conf /tc
-
+    mv /code/dockerfiles/deployment/sign_enclave.sh \
+       /code/dockerfiles/deployment/build_release_docker.sh \
+       /code/dockerfiles/deployment/supervisord.conf /tc
 RUN cd /code && \
     make -C src/Enclave/mbedtls-SGX && \
     mkdir -p tmp && \

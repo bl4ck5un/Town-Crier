@@ -107,17 +107,9 @@ add_custom_command(TARGET enclave
         -out enclave.hex
         COMMENT "Generating signing materials. Written to ${CMAKE_CURRENT_BINARY_DIR}/enclave.hex")
 
-add_custom_target(release-enclave
-        DEPENDS enclave Enclave.config.xml release_pubkey.pem
-        COMMAND ${SGX_ENCLAVE_SIGNER} catsig
-        -enclave libenclave.so
-        -config ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
-        -key ${CMAKE_CURRENT_SOURCE_DIR}/release_pubkey.pem
-        -out ${RELEASE_ENCLAVE_NAME}
-        -sig signature.hex
-        -unsigned enclave.hex
-        WORKING_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DEBUG_ENCLAVE_NAME} DESTINATION enclave
-        CONFIGURATIONS Debug Prerelease)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/enclave.hex DESTINATION enclave)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DEBUG_ENCLAVE_NAME} DESTINATION enclave)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/enclave.hex
+        ${CMAKE_CURRENT_SOURCE_DIR}/release_pubkey.pem
+        ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
+        DESTINATION signing
+        CONFIGURATIONS Release)

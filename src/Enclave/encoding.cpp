@@ -44,6 +44,7 @@
 #include "encoding.h"
 
 #include <string>
+#include <iterator>
 
 #include "commons.h"
 #include "debug.h"
@@ -78,14 +79,6 @@ int append_as_uint256(bytes &out, uint64_t in, int len) {
   return 0;
 }
 
-// compute how many (non-zero) bytes there are in _i
-template<typename T>
-static uint8_t byte_length(T _i) {
-  uint8_t i = 0;
-  for (; _i != 0; ++i, _i >>= 8) {}
-  return i;
-}
-
 uint8_t bytesRequired(uint64_t _i) { return byte_length<uint64_t>(_i); }
 
 void bytes::replace(const bytes &in) {
@@ -99,39 +92,6 @@ void bytes::from_hex(const char *src) {
   this->insert(this->begin(), b.begin(), b.end());
 }
 
-#include <iterator>
-
-template <typename Iter>
-void rlp_string(Iter begin, Iter end, std::vector<uint8_t>& out) {
-  static_assert(std::is_same<typename std::iterator_traits<Iter>::value_type, uint8_t>::value, "Iter must point to uint8_t");
-
-  long len = std::distance(begin, end);
-  if (len < 0)
-    throw std::invalid_argument("String too long to be encoded.");
-
-  int32_t len_len;
-  if (len == 1 && (*begin) < 0x80) {
-    out.push_back(*begin);
-    return;
-  }
-
-  // longer than 1
-  if (len < 56) {
-    out.push_back(0x80 + static_cast<uint8_t>(len));
-    out.insert(out.end(), begin, end);
-  } else {
-    len_len = byte_length<size_t>(len);
-    if (len_len > 8) {
-      throw std::invalid_argument("String too long to be encoded.");
-    }
-
-    out.push_back(0xb7 + static_cast<uint8_t>(len_len));
-
-    std::vector<uint8_t> b_len = itob(len);
-    out.insert(out.end(), b_len.begin(), b_len.end());
-    out.insert(out.end(), begin, end);
-  }
-}
 
 void bytes::to_rlp(bytes &out) {
   rlp_string(this->begin(), this->end(), out);

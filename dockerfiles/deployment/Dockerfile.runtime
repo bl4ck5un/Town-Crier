@@ -8,6 +8,7 @@ ENV LD_LIBRARY_PATH=${SGX_SDK}/sdk_libs
 COPY . /tc
 
 RUN apt-get update && apt-get install --yes supervisor
+RUN /tc/sign_enclave.sh
 
 EXPOSE 8123
 
