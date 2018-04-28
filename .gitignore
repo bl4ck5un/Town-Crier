@@ -12,6 +12,7 @@ contracts/demo/chain0/
 
 .idea
 build
+release
 cmake-build-debug
 
 .compiledContract.js

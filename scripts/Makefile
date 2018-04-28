@@ -21,15 +21,7 @@ core-debug:
 	$(MAKE) BUILD=Debug build
 
 release:
-	cd ${BASE_DIR} && \
-	docker build \
-		--build-arg BUILD=Release \
-		--build-arg MAKE_FLAGS=-j \
-		--force-rm \
-		-t tc/core-builder \
-		-f dockerfiles/deployment/Dockerfile.build . && \
-	rm -rf build/release && mkdir -p build/release && \
-	docker run --rm tc/core-builder | tar xvzf - -C build/release
+	@./build_release.sh
 
 build:
 	cd ${BASE_DIR} && \

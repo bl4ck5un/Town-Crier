@@ -88,7 +88,6 @@ target_link_libraries(enclave "${SGX_COMMON_CFLAGS} \
 ###############################
 
 set(DEBUG_ENCLAVE_NAME "enclave.debug.so")
-set(RELEASE_ENCLAVE_NAME "enclave.release.so")
 
 add_custom_command(TARGET enclave
         POST_BUILD
@@ -111,5 +110,6 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${DEBUG_ENCLAVE_NAME} DESTINATION encl
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/enclave.hex
         ${CMAKE_CURRENT_SOURCE_DIR}/release_pubkey.pem
         ${CMAKE_CURRENT_SOURCE_DIR}/Enclave.config.xml
+        ${CMAKE_CURRENT_BINARY_DIR}/libenclave.so
         DESTINATION signing
         CONFIGURATIONS Release)
