@@ -3,7 +3,7 @@
 import os
 import sys
 
-COMMANDS = ("up", "down", "log")
+COMMANDS = ("up", "down", "log", "attach")
 CONFIGS = ("debug", "prerelease", "release")
 
 
