@@ -59,7 +59,6 @@ namespace tc {
 class Config {
  private:
   const string DFT_CONFIG_FILE = "/config";
-  const string DFT_WORKING_DIR = "/tc";
   po::variables_map vm;
 
  public:
@@ -84,7 +83,6 @@ class Config {
 
  public:
   Config(int argc, const char *argv[]);
-  Config(const po::options_description &, int argc, const char *argv[]);
   string toString();
 };
 

@@ -1,0 +1,18 @@
+version: "2"
+services:
+    tc-core:
+        image: "bl4ck5un/tc-core:Release"
+        network_mode: host
+        devices:
+          - /dev/isgx
+        volumes:
+          - ./supervisor:/supervisor
+          - ../config/config-rinkeby-release-azure:/config
+    tc-relay:
+        depends_on:
+          - tc-core
+        image: "bl4ck5un/tc-relay"
+        network_mode: host
+        volumes:
+          - ./relay:/relay
+        command: "-t -v --db /relay/tc.bin"
