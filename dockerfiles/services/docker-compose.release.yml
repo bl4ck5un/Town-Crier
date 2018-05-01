@@ -7,7 +7,7 @@ services:
           - /dev/isgx
         volumes:
           - ./supervisor:/supervisor
-          - ../config/config-rinkeby-release-azure:/config
+          - ../config/config-rinkeby-azure:/config
     tc-relay:
         depends_on:
           - tc-core
