@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+
+import os
+import sys
+
+COMMANDS = ("up", "down", "log")
+CONFIGS = ("debug", "prerelease", "release")
+
+
+def help():
+    print ("Usage: {} COMMAND CONFIG".format(sys.argv[0]))
+    print ("COMMAND = " + " | ".join(COMMANDS))
+    print ("CONFIG = " + " | ".join(CONFIGS))
+
+    sys.exit(1)
+
+
+if len(sys.argv) != 3:
+    help()
+
+command = sys.argv[1]
+config = sys.argv[2]
+
+if command not in COMMANDS or config not in CONFIGS:
+    help()
+
+if command == "up":
+    cmd_base = "docker-compose -f docker-compose.{}.yml up".format(config)
+    if config != "debug":
+        cmd_base += " -d"
+elif command == "down":
+    cmd_base = "docker-compose -f docker-compose.{}.yml down".format(config)
+elif command == "log":
+    if config == "debug":
+        print("invalid config this command")
+    cmd_base = "docker-compose -f docker-compose.{}.yml logs -f --tail=500".format(config)
+elif command == "attach":
+    if config == "debug":
+        print("invalid config this command")
+    cmd_base = "docker-compose -f docker-compose.{}.yml exec tc-core bash".format(config)
+else:
+    print("unrecognized command")
+    help()
+
+print (cmd_base)
+
+import subprocess
+subprocess.check_call(cmd_base.split())
