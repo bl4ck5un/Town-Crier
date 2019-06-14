@@ -12,13 +12,15 @@ set(TC_SRC_FILES
         Enclave_u.c
         ocalls.cpp
         debug.cpp
-        converter.cpp utils.cpp types.cpp
+        converter.cpp
+        utils.cpp
+        types.cpp
         status_rpc_server.cpp
         ../Common/external/base64.cpp
         key_utils.cpp
         logging.cpp
         tc_exception.cpp
-        config.cpp config.h)
+        config.cpp)
 
 add_custom_command(
         OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/Enclave_u.c
@@ -61,8 +63,11 @@ add_executable(tc-keygen
         tc-keygen.cpp
         logging.cpp
         ../Common/external/base64.cpp
-        utils.cpp converter.cpp
-        Enclave_u.c ocalls.cpp mbedtls_sgx_net.c)
+        converter.cpp
+        Enclave_u.c
+        ocalls.cpp
+        utils.cpp
+        mbedtls_sgx_net.c)
 
 FILE(GLOB TEST_SRC_FILES "test/*.cpp")
 add_executable(tc-test EXCLUDE_FROM_ALL
@@ -76,10 +81,9 @@ add_executable(tc-test EXCLUDE_FROM_ALL
         mbedtls_sgx_net.c
         converter.cpp
         ../Common/external/base64.cpp
-        types.cpp request_parser.cpp
-        key_utils.cpp
-        test/SGXTestBase.h
-        test/test-data.h)
+        types.cpp
+        request_parser.cpp
+        key_utils.cpp)
 
 set(LIBGTEST "${CMAKE_SOURCE_DIR}/src/vendor/gtest/lib/.libs")
 add_custom_command(OUTPUT ${LIBGTEST}/libgtest.a
