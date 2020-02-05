@@ -15,11 +15,20 @@ please visit [town-crier.org](http://town-crier.org).
 
 ## For Contributors
 
+### Build instructions
+
+The recommended way to build Town Crier is using the docker image we provide:
+
     git clone https://github.com/bl4ck5un/Town-Crier
     cd Town-Crier
     ./scripts/sgx-enter.sh
     cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tc /code
     make -j && make install
+
+### Running tests
+
+This should be simple.
+
 
 To print `MRENCLAVE`, 
 

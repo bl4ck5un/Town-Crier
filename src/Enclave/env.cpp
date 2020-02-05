@@ -12,12 +12,14 @@ string getContractAddress() {
   return get_env(Environment::TC_ADDR_MAP_KEY);
 }
 
-void init(const char* tc_address) {
+void init_enclave_kv_store(const char* tc_address)
+{
   g_environment = new Environment();
   g_environment->set(Environment::TC_ADDR_MAP_KEY, tc_address);
 }
 
-void set_env(const char* key, const char* value) {
+void set_enclave_kv(const char* key, const char* value)
+{
   if (g_environment == nullptr) return;
   g_environment->set(key, value);
 }

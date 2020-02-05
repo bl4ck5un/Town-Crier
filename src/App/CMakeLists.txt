@@ -69,30 +69,6 @@ add_executable(tc-keygen
         utils.cpp
         mbedtls_sgx_net.c)
 
-FILE(GLOB TEST_SRC_FILES "test/*.cpp")
-add_executable(tc-test EXCLUDE_FROM_ALL
-        ${TEST_SRC_FILES}
-        attestation.cpp
-        utils.cpp
-        debug.cpp
-        Enclave_u.c
-        ocalls.cpp
-        logging.cpp
-        mbedtls_sgx_net.c
-        converter.cpp
-        ../Common/external/base64.cpp
-        types.cpp
-        request_parser.cpp
-        key_utils.cpp)
-
-set(LIBGTEST "${CMAKE_SOURCE_DIR}/src/vendor/gtest/lib/.libs")
-add_custom_command(OUTPUT ${LIBGTEST}/libgtest.a
-        COMMAND autoreconf -i
-        COMMAND ./configure
-        COMMAND which -s gmake && gmake || make
-        WORKING_DIR ${CMAKE_SOURCE_DIR}/src/vendor/gtest)
-
-
 ###############################
 #### dependencies
 ###############################
@@ -113,8 +89,7 @@ include_directories(
         ${JSONRPCCPP_INCLUDE_DIRS}
         ${MBEDTLS_LIB_DIR}/include
         ${LOG4CXX_INCLUDE_DIR}
-        ../vendor/gtest/include
-        ../
+        ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
 target_link_libraries(tc
@@ -129,28 +104,54 @@ target_link_libraries(tc-keygen
         ${LOG4CXX_LIBRARY}
         -lpthread -ldl)
 
-target_link_libraries(tc-test
-        ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
-        ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
-        ${LIBODB_LIBRARIES} ${MHD_LIBRARIES} ${SQLITE_LIBRARIES} ${Boost_LIBRARIES}
-        ${LOG4CXX_LIBRARY}
-        -lpthread -ldl
-        ${LIBGTEST}/libgtest.a
-        ${LIBGTEST}/libgtest_main.a)
-
-
 add_dependencies(tc enclave)
-add_dependencies(tc-test enclave)
 add_dependencies(tc-keygen enclave)
 
 ###############################
 #### Output & Installtation
 ###############################
-set_property(TARGET tc-test
-        PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/enclave)
-
 install(TARGETS tc tc-keygen DESTINATION bin)
 install(FILES
         ${CMAKE_SOURCE_DIR}/src/logging.conf
         ${CMAKE_SOURCE_DIR}/config/config-privatenet-sim
         DESTINATION conf)
+
+### a special target for tests
+
+if(BUILD_TESTS)
+    set(LIBGTESTDIR "${CMAKE_SOURCE_DIR}/src/vendor/gtest")
+
+    FILE(GLOB TEST_SRC_FILES "test/*.cpp")
+
+    add_executable(tc-test EXCLUDE_FROM_ALL
+            ${TEST_SRC_FILES}
+            attestation.cpp
+            utils.cpp
+            debug.cpp
+            Enclave_u.c
+            ocalls.cpp
+            logging.cpp
+            mbedtls_sgx_net.c
+            converter.cpp
+            ../Common/external/base64.cpp
+            types.cpp
+            request_parser.cpp
+            key_utils.cpp)
+
+    target_include_directories(tc-test
+            PRIVATE ${LIBGTESTDIR}/include)
+
+    target_link_libraries(tc-test
+            ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY} ${Boost_LIBRARIES}
+            ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
+            ${LIBODB_LIBRARIES} ${MHD_LIBRARIES} ${SQLITE_LIBRARIES} ${Boost_LIBRARIES}
+            ${LOG4CXX_LIBRARY}
+            -lpthread -ldl
+            gtest_main)
+
+    add_dependencies(tc-test enclave)
+
+    set_property(TARGET tc-test
+            PROPERTY RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/src/Enclave)
+
+endif(BUILD_TESTS)

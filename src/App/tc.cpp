@@ -137,7 +137,7 @@ int main(int argc, const char *argv[]) {
   stat_srvr.StartListening();
   LL_INFO("RPC server started at %d", config.getRelayRPCAccessPoint());
 
-  st = init(eid, config.getContractAddress().c_str());
+  st = init_enclave_kv_store(eid, config.getContractAddress().c_str());
   if (st != SGX_SUCCESS) {
     LL_CRITICAL("cannot initialize enclave env");
     exit(-1);

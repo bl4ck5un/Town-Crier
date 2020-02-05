@@ -45,20 +45,23 @@
 #include "gtest/gtest.h"
 
 #include "App/Enclave_u.h"
+#include "App/debug.h"
 #include "App/key_utils.h"
 #include "App/test/SGXTestBase.h"
 #include "App/test/test-data.h"
-#include "App/debug.h"
 
-class dummyTest : public SGXTestBase {};
+class dummyTest : public SGXTestBase
+{
+};
 
-TEST_F(dummyTest, hybridEncryption) {
+TEST_F(dummyTest, hybridEncryption)
+{
   sgx_status_t st;
   int ret;
 
   provision_key(eid, SEALED_KEY, tc::keyUtils::HYBRID_ENCRYPTION_KEY);
-  init(eid);
-  set_env(eid, "a", "env");
+  init_enclave_kv_store(eid, "dummy tc address");
+  set_enclave_kv(eid, "a", "env");
   st = dummy_test(eid, &ret);
 
   ASSERT_EQ(0, st);
