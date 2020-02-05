@@ -22,21 +22,34 @@ The recommended way to build Town Crier is using the docker image we provide:
     git clone https://github.com/bl4ck5un/Town-Crier
     cd Town-Crier
     ./scripts/sgx-enter.sh
-    cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/tc /code
+
+    # in docker
+    cmake -DCMAKE_INSTALL_PREFIX=/tc /code
     make -j && make install
 
 ### Running tests
 
-This should be simple.
+Continuing the above build instructions
 
+    # in docker
+    make tc-test
+    cd src/Enclave
+    ./tc-test
 
-To print `MRENCLAVE`, 
+### Start Town Crier
 
-    root@08119b795b16:/build# /tc/bin/tc -c /tc/conf/config-privatenet-sim -m
+The main executable is installed at `/tc/bin/tc`.
+You'll need a config file to start Town Crier.
+For exampel, using the dummy config we provided for testing purposes, you can do,
+
+    # in docker
+    /tc/bin/tc -c /tc/conf/config-privatenet-sim
     # omit logging
-    E1FBB750A350798ADBECAFEE8A1BFC5B229E3BC007212E92102B55CE30EA0C01
-    
-Alternatively, `MRENCLAVE` can be extracted manually from the `sgx_metadata` section of the enclave binary.
+    2020-02-05 18:12:35,256 [tc.cpp:107] INFO  - Enclave 4733053960194 created
+    2020-02-05 18:12:35,264 [tc.cpp:122] INFO  - using wallet address at 0x89B44E4D3C81EDE05D0F5DE8D1A68F754D73D997
+    2020-02-05 18:12:35,265 [tc.cpp:123] INFO  - using hybrid pubkey: BLtIrjcmxXNzRKVLNGP+xJnLEIp9EboTe6PH0EO9bX4UmU9gRio/kVUHSbsq5UEfIrf5vueZVqRjwwitUI81V98=
+    2020-02-05 18:12:35,265 [tc.cpp:138] INFO  - RPC server started at 8123
+
 
 
 LICENSE

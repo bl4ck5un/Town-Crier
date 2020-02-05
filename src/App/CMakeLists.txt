@@ -116,14 +116,14 @@ install(FILES
         ${CMAKE_SOURCE_DIR}/config/config-privatenet-sim
         DESTINATION conf)
 
-### a special target for tests
+### a conditional target for tests
 
 if(BUILD_TESTS)
     set(LIBGTESTDIR "${CMAKE_SOURCE_DIR}/src/vendor/gtest")
 
     FILE(GLOB TEST_SRC_FILES "test/*.cpp")
 
-    add_executable(tc-test EXCLUDE_FROM_ALL
+    add_executable(tc-test
             ${TEST_SRC_FILES}
             attestation.cpp
             utils.cpp

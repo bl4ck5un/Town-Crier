@@ -3,6 +3,7 @@ project(Town-Crier)
 
 # build options
 option(BUILD_TESTS "build tc-test target" on)
+option(CMAKE_BUILD_TYPE "(Debug|Prerelease|Release)" Debug)
 
 # only support x64
 set(SGX_ARCH x64)
