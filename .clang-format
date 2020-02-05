@@ -1,0 +1,12 @@
+---
+Language: Cpp
+BasedOnStyle: Google
+BreakBeforeBraces: Linux
+AllowAllParametersOfDeclarationOnNextLine: 'false'
+ExperimentalAutoDetectBinPacking: 'false'
+BinPackArguments: false
+BinPackParameters: 'false'
+---
+Language: Proto
+
+...

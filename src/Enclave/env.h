@@ -67,8 +67,12 @@ class Environment {
 extern Environment *g_environment;
 
 extern "C" {
-void init(const char* contract_addr);
-void set_env(const char *key, const char *value);
+/*!
+ * init the enclave key-value store
+ * @param contract_addr
+ */
+void init_enclave_kv_store(const char* contract_addr);
+void set_enclave_kv(const char* key, const char* value);
 };
 
 string get_env(const string& key);

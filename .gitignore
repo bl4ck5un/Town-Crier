@@ -11,6 +11,7 @@ contracts/demo/chain0/
 *.a
 
 .idea
+bin
 build
 release
 cmake-build-debug
