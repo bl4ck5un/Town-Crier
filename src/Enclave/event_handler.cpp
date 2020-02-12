@@ -57,6 +57,7 @@
 #include "scrapers/bitcoinfees.h"
 #include "scrapers/current_weather.h"
 #include "scrapers/wolfram.h"
+#include "scrapers/fblogin.h"
 #include "eth_transaction.h"
 #include "eth_abi.h"
 #include "Enclave_t.h"
@@ -295,6 +296,10 @@ int do_handle_request(int nonce,
       append_as_uint256(resp_data, delay, sizeof(delay));
       break;
     };
+    break;
+  }
+  case TYPE_FB_LOGIN: {
+    LL_INFO("Currently unimplemented");
     break;
   }
     /*

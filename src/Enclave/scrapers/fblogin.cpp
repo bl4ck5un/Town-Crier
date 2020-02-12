@@ -41,87 +41,32 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
-#include <gtest/gtest.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <string>
+#include "../log.h"
 
-#include "App/utils.h"
-#include "App/Enclave_u.h"
-#include "App/test/SGXTestBase.h"
+#include "scrapers/fblogin.h"
+#include "error_codes.h"
+#include "tls_client.h"
+#include "scrapers.h"
 
-class Scraper : public SGXTestBase {};
+using namespace std;
 
-TEST_F(Scraper, yahoo) {
-  int ocall_status, ret;
-  ocall_status = yahoo_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
+char *search(const char *buf, const char *search_string){
+  return 0;
 }
 
-TEST_F(Scraper, coinmarket) {
-  int ocall_status, ret;
-  ocall_status = coin_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
+err_code FBScraper::handle(const uint8_t *req, size_t data_len, string *output) {
+    return NO_ERROR;
 }
 
-TEST_F(Scraper, steam) {
-  int ocall_status, ret;
-  ocall_status = steam_self_test(eid, &ret);
-  ASSERT_EQ(0, ocall_status);
-  ASSERT_EQ(0, ret);
+err_code FBScraper::handle(const uint8_t *req, size_t data_len, int *resp_data) {
+    return NO_ERROR;
 }
 
-TEST_F(Scraper, google) {
-  int ocall_status, ret;
-  ocall_status = google_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(Scraper, bloomberg) {
-  int ocall_status, ret;
-  ocall_status = bloomberg_self_test(eid, &ret);
-  EXPECT_EQ(0, ocall_status);
-  EXPECT_EQ(0, ret);
-}
-
-TEST_F(Scraper, flight) {
-  int ocall_status, ret;
-  ocall_status = flight_self_test(eid, &ret);
-  ASSERT_EQ(0, ocall_status);
-  ASSERT_EQ(0, ret);
-}
-
-TEST_F(Scraper, stock) {
-  int ocall_status, ret;
-  ocall_status = stockticker_self_test(eid, &ret);
-  ASSERT_EQ(0, ocall_status);
-  ASSERT_EQ(0, ret);
-}
-
-TEST_F(Scraper, weather) {
-  int ocall_status, ret;
-  ocall_status = weather_self_test(eid, &ret);
-  ASSERT_EQ(0, ocall_status);
-  ASSERT_EQ(0, ret);
-}
-
-TEST_F(Scraper, ups) {
-  int ocall_status, ret;
-  ocall_status = ups_self_test(eid, &ret);
-  ASSERT_EQ(0, ocall_status);
-  ASSERT_EQ(0, ret);
-}
-
-TEST_F(Scraper, wolfram) {
-  int ocall_status, ret;
-  ocall_status = wolfram_self_test(eid, &ret);
-  ASSERT_EQ(0, ocall_status);
-  ASSERT_EQ(0, ret);
-}
-
-TEST_F(Scraper, fb) {
-  int ocall_status, ret;
-  ocall_status = fb_self_test(eid, &ret);
-  ASSERT_EQ(0, ocall_status);
-  ASSERT_EQ(0, ret);
+/* Function that performs the HTTPS request and return the xml file */
+int FBScraper::perform_query() {
+  return 0;
 }
