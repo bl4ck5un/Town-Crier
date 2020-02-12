@@ -49,6 +49,8 @@
 int fb_self_test() {
   FBScraper fbscraper;
   int res;
+  std::string token ("redacted");
+  fbscraper.set_oauth(token);
   res = fbscraper.perform_query();
   LL_INFO("TEST RAN");
   return 0;

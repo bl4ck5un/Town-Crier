@@ -56,12 +56,13 @@
 
 class FBScraper : Scraper {
  private:
-  char *search(const char *buf, const char *search_string);
   std::string oauth;
+  static const std::string HOST;
  public:
   err_code handle(const uint8_t *req, size_t data_len, string *output);
   err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
   int perform_query();
+  void set_oauth(std::string oauth);
 };
 
 #endif  // SRC_ENCLAVE_SCRAPERS_FB_H_

@@ -54,6 +54,8 @@
 
 using namespace std;
 
+const std::string FBScraper::HOST = "graph.facebook.com";
+
 char *search(const char *buf, const char *search_string){
   return 0;
 }
@@ -68,5 +70,24 @@ err_code FBScraper::handle(const uint8_t *req, size_t data_len, int *resp_data) 
 
 /* Function that performs the HTTPS request and return the xml file */
 int FBScraper::perform_query() {
+  std::string url ("/v6.0/me?access_token="+this->oauth);
+  HttpRequest httpRequest(this->HOST, url, true);
+  HttpsClient httpClient(httpRequest);
+
+  try {
+    HttpResponse resp = httpClient.getResponse();
+    // *status = NO_ERROR;
+    return 0;
+  }
+  catch (std::runtime_error &e) {
+    LL_CRITICAL("Https error: %s", e.what());
+    LL_CRITICAL("Details: %s", httpClient.getError().c_str());
+    httpClient.close();
+    // *status = WEB_ERROR;
+  }
   return 0;
+}
+
+void FBScraper::set_oauth(std::string oauthStr){
+    this->oauth = oauthStr;
 }
