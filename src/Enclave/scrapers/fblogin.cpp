@@ -46,6 +46,7 @@
 #include <string.h>
 #include <string>
 #include "../log.h"
+#include "../external/picojson.h"
 
 #include "scrapers/fblogin.h"
 #include "error_codes.h"
@@ -73,10 +74,11 @@ int FBScraper::perform_query() {
   std::string url ("/v6.0/me?access_token="+this->oauth);
   HttpRequest httpRequest(this->HOST, url, true);
   HttpsClient httpClient(httpRequest);
-
+  std::string response;
   try {
     HttpResponse resp = httpClient.getResponse();
     // *status = NO_ERROR;
+    response = parse_response(resp.getContent());
     return 0;
   }
   catch (std::runtime_error &e) {
@@ -90,4 +92,8 @@ int FBScraper::perform_query() {
 
 void FBScraper::set_oauth(std::string oauthStr){
     this->oauth = oauthStr;
+}
+
+std::string FBScraper::parse_response(const string resp) {
+  return "henlo";
 }

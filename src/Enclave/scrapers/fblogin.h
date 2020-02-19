@@ -63,6 +63,7 @@ class FBScraper : Scraper {
   err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
   int perform_query();
   void set_oauth(std::string oauth);
+  std::string parse_response(const string);
 };
 
 #endif  // SRC_ENCLAVE_SCRAPERS_FB_H_

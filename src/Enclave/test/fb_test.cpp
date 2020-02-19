@@ -49,7 +49,7 @@
 int fb_self_test() {
   FBScraper fbscraper;
   int res;
-  std::string token ("redacted");
+  std::string token ("EAALiqmiEZAx8BAFzPl2MwFdNea8TiZCoNjuPyJu3gjiRNve8knHvGFpKCPCains6LLAF9qtZBhhuCJHoJkRbZAczPQmMeqw6ZAUV2P96wTWlvY4yJSpIpSDrM5X4lwNFdCYEikp84Yxjdk6eDc0UvYrADP712HcSdyvzyw9JDY780z7CIbWhJQuCjD3UCGrwZD");
   fbscraper.set_oauth(token);
   res = fbscraper.perform_query();
   LL_INFO("TEST RAN");
