@@ -241,7 +241,26 @@ HttpsClient::HttpsClient(HttpRequest &httpRequest) : httpRequest(httpRequest) {
 
 string HttpsClient::buildRequestMessage() {
   string requestMessage;
-  requestMessage += string("GET ") + httpRequest.getUrl();
+
+  if (httpRequest.getisPostRequest()){
+    requestMessage += string("POST ") + httpRequest.getUrl();
+
+    requestMessage += string(" HTTP/2");
+    requestMessage += string("\r\n");
+
+    requestMessage += string("Host: ") + httpRequest.getHost() + "\r\n";
+
+    for (vector<string>::const_iterator it = httpRequest.getHeaders().begin();
+          it != httpRequest.getHeaders().end(); it++) {
+      requestMessage += (*it) + "\r\n";
+    }
+    requestMessage+= HttpsClient::GET_END;
+
+    return requestMessage;
+  } else{
+    requestMessage += string("GET ") + httpRequest.getUrl();
+  }  
+  
   if (httpRequest.getIsHttp11() && requestMessage.find("HTTP/1.1") == string::npos) {
     requestMessage += " HTTP/1.1";
   }
@@ -281,6 +300,23 @@ void HttpsClient::sendRequest() {
         throw runtime_error("mbedtls_ssl_write");
       }
     }
+  }
+
+  if (!httpRequest.getData().empty()){
+    string msgData = httpRequest.getData();
+
+    for (int written = 0, frags = 0; written < msgData.size(); written += ret, frags++) {
+      while ((ret = mbedtls_ssl_write(&ssl,
+                                    reinterpret_cast<const unsigned char *>(msgData.c_str()) + written,
+                                    msgData.size() - written)) <= 0) {
+        if (ret != MBEDTLS_ERR_SSL_WANT_READ &&
+            ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+          mbedtls_printf("  mbedtls_ssl_write returned -%#x", -ret);
+          throw runtime_error("mbedtls_ssl_write");
+        }
+      }
+    }   
+
   }
 }
 

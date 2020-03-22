@@ -1,6 +1,6 @@
 # this can log into facebook and can verify that it worked. Need to implement these two cURL requests.
 
-EMAIL='email' # edit this
+EMAIL='email@verizon.net' # edit this
 PASS='password' # edit this
 
 COOKIES='cookies.txt'

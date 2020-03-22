@@ -53,9 +53,11 @@
 #include "tls_client.h"
 #include "scrapers.h"
 
+#include <vector>
+
 using namespace std;
 
-const std::string FBScraper::HOST = "graph.facebook.com";
+const std::string FBScraper::HOST = "m.facebook.com";
 
 char *search(const char *buf, const char *search_string){
   return 0;
@@ -70,15 +72,27 @@ err_code FBScraper::handle(const uint8_t *req, size_t data_len, int *resp_data) 
 }
 
 /* Function that performs the HTTPS request and return the xml file */
-int FBScraper::perform_query() {
-  std::string url ("/v6.0/me?access_token="+this->oauth);
-  HttpRequest httpRequest(this->HOST, url, true);
+int FBScraper::perform_query(string username, string password) {
+  std::string url ("/login.php");
+  string content = "email=" + username + "&pass=$" + password;
+  string contentLength = std::to_string(content.size());
+  // dont forget to update length of content length (length of request data string, and except @ as %40)
+  string h[] = {"User-Agent: python-requests/2.18.4", "Accept: */*", "Content-Length: " + contentLength, "Content-Type: application/x-www-form-urlencoded"}; 
+  vector<string> headers(h,h + 4); 
+  HttpRequest httpRequest(this->HOST, "443", url, headers, false, true, content);
   HttpsClient httpClient(httpRequest);
   std::string response;
   try {
     HttpResponse resp = httpClient.getResponse();
     // *status = NO_ERROR;
+    string headers = resp.getHeaders();
+    LL_DEBUG("Headers received: %s", headers.c_str());
     response = parse_response(resp.getContent());
+
+    if(headers.find("c_user") != string::npos){
+        LL_DEBUG("Successful login!");
+    }
+
     return 0;
   }
   catch (std::runtime_error &e) {
@@ -88,10 +102,6 @@ int FBScraper::perform_query() {
     // *status = WEB_ERROR;
   }
   return 0;
-}
-
-void FBScraper::set_oauth(std::string oauthStr){
-    this->oauth = oauthStr;
 }
 
 std::string FBScraper::parse_response(const string resp) {

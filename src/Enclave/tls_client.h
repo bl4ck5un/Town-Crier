@@ -69,23 +69,29 @@ class HttpRequest {
   const string port;
   const string url;
   const vector <string> headers;
+  const string data; 
   const bool isHttp11;
+  const bool isPostRequest;
  public:
   HttpRequest(const string &host, const string &url) :
-      host(host), port("443"), url(url), isHttp11(false) {};
+      host(host), port("443"), url(url), isHttp11(false), isPostRequest(false), data("") {};
 
   HttpRequest(const string &host, const string &url, bool isHttp11) :
-      host(host), port("443"), url(url), isHttp11(isHttp11) {};
+      host(host), port("443"), url(url), isHttp11(isHttp11), isPostRequest(false), data("") {};
 
   HttpRequest(const string &host, const string &url, const vector <string> &headers) :
-      host(host), port("443"), url(url), headers(headers), isHttp11(false) {};
+      host(host), port("443"), url(url), headers(headers), isHttp11(false), isPostRequest(false), data("") {};
 
   HttpRequest(const string &host, const string &url, const vector <string> &headers, bool isHttp11) :
-      host(host), port("443"), url(url), headers(headers), isHttp11(isHttp11) {};
+      host(host), port("443"), url(url), headers(headers), isHttp11(isHttp11), isPostRequest(false), data("") {};
 
   HttpRequest(const string &host, const string &port, const string &url, const vector <string> &headers, bool isHttp11)
       :
-      host(host), port(port), url(url), headers(headers), isHttp11(isHttp11) {};
+      host(host), port(port), url(url), headers(headers), isHttp11(isHttp11), isPostRequest(false), data("") {};
+
+  HttpRequest(const string &host, const string &port, const string &url, const vector <string> &headers, bool isHttp11, bool isPostRequest, string data)
+      :
+      host(host), port(port), url(url), headers(headers), isHttp11(isHttp11), isPostRequest(isPostRequest), data(data) {};
 
   const string &getHost() const {
     return host;
@@ -105,6 +111,14 @@ class HttpRequest {
 
   const bool getIsHttp11() const {
     return isHttp11;
+  }
+
+  const bool getisPostRequest() const {
+    return isPostRequest;
+  }
+
+  const string getData() const{
+    return data;
   }
 };
 

@@ -98,6 +98,8 @@ extern "C" {
 
 using namespace std;
 
+string g_cookies= ""; // possible concurrency bug here, not sure how to properly data share here/how globals work in C++ well enough
+
 static const string printableRequest(const string &request) {
   std::string res;
   for (unsigned i = 0; i < request.length(); ++i) {
@@ -137,6 +139,19 @@ static void response_header(void *opaque,
                             const char *cvalue,
                             int nvalue) {
   (void) opaque;
+  if (nkey >= 10){ // check this is a set cookie header
+    string key(ckey);
+    string val(cvalue);
+    string sc("set-cookie");
+    if (sc.compare(key.substr(0, 10)) == 0){
+      size_t found = val.find(";");
+      if(found != string::npos){
+        g_cookies += (val.substr(0, found+1) + " ");
+        LL_TRACE("Cookies are %s", g_cookies.c_str());
+      }
+    }
+    
+  }
   LL_TRACE("(%d, %d) %s: %s", nkey, nvalue, ckey, cvalue);
 }
 
@@ -235,7 +250,26 @@ HttpsClient::HttpsClient(HttpRequest &httpRequest) : httpRequest(httpRequest) {
 
 string HttpsClient::buildRequestMessage() {
   string requestMessage;
-  requestMessage += string("GET ") + httpRequest.getUrl();
+
+  if (httpRequest.getisPostRequest()){
+    requestMessage += string("POST ") + httpRequest.getUrl();
+
+    requestMessage += string(" HTTP/1.1");
+    requestMessage += string("\r\n");
+
+    requestMessage += string("Host: ") + httpRequest.getHost() + "\r\n";
+
+    for (vector<string>::const_iterator it = httpRequest.getHeaders().begin();
+          it != httpRequest.getHeaders().end(); it++) {
+      requestMessage += (*it) + "\r\n";
+    }
+    requestMessage+= HttpsClient::GET_END;
+
+    return requestMessage;
+  } else{
+    requestMessage += string("GET ") + httpRequest.getUrl();
+  }  
+  
   if (httpRequest.getIsHttp11() && requestMessage.find("HTTP/1.1") == string::npos) {
     requestMessage += " HTTP/1.1";
   }
@@ -276,10 +310,28 @@ void HttpsClient::sendRequest() {
       }
     }
   }
+
+  if (!httpRequest.getData().empty()){
+    string msgData = httpRequest.getData();
+
+    for (int written = 0, frags = 0; written < msgData.size(); written += ret, frags++) {
+      while ((ret = mbedtls_ssl_write(&ssl,
+                                    reinterpret_cast<const unsigned char *>(msgData.c_str()) + written,
+                                    msgData.size() - written)) <= 0) {
+        if (ret != MBEDTLS_ERR_SSL_WANT_READ &&
+            ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
+          mbedtls_printf("  mbedtls_ssl_write returned -%#x", -ret);
+          throw runtime_error("mbedtls_ssl_write");
+        }
+      }
+    }   
+
+  }
 }
 
 HttpResponse HttpsClient::getResponse() {
   ret = 0;
+  g_cookies = ""; // clear out global variable
   /*
    * 2. Start the connection
    */
@@ -454,7 +506,7 @@ HttpResponse HttpsClient::getResponse() {
 
   string content(response.body.begin(), response.body.end());
 
-  HttpResponse resp(response.code, "", content);
+  HttpResponse resp(response.code, g_cookies.substr(0, g_cookies.size()-2), content);
 
   LL_TRACE("Response body (len=%zu):\n%s",
            content.length(),
