@@ -71,9 +71,16 @@ err_code FBScraper::handle(const uint8_t *req, size_t data_len, int *resp_data) 
     return NO_ERROR;
 }
 
-/* Function that performs the HTTPS request and return the xml file */
+/* Function that performs the HTTPS request and checks whether login cookie was returned */
 int FBScraper::perform_query(string username, string password) {
   std::string url ("/login.php");
+  if(username.find("@") != string::npos){
+    size_t index = username.find("@");
+    username.replace(index, 1, "%40");
+    LL_DEBUG("Excepted email as: %s", username.c_str());
+  }
+
+
   string content = "email=" + username + "&pass=$" + password;
   string contentLength = std::to_string(content.size());
   // dont forget to update length of content length (length of request data string, and except @ as %40)

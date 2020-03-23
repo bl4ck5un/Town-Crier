@@ -505,9 +505,14 @@ HttpResponse HttpsClient::getResponse() {
   LL_DEBUG("HTTP response len=%zu", response.body.size());
 
   string content(response.body.begin(), response.body.end());
-
-  HttpResponse resp(response.code, g_cookies.substr(0, g_cookies.size()-2), content);
-
+  string respString;
+  if(g_cookies.size() > 2){
+    respString = g_cookies.substr(0, g_cookies.size()-2);
+  } else{
+    respString = "";
+  }
+  HttpResponse resp(response.code, respString, content);
+  
   LL_TRACE("Response body (len=%zu):\n%s",
            content.length(),
            content.length() == 0 ? "empty" : content.c_str());

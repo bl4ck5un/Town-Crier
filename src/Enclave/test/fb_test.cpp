@@ -49,8 +49,7 @@
 int fb_self_test() {
   FBScraper fbscraper;
   int res;
-  res = fbscraper.perform_query("email@example.com", "password1");
-  LL_INFO("TEST RAN");
+  res = fbscraper.perform_query("example@email.com", "password1"); // sub password here
   return 0;
 }
 
