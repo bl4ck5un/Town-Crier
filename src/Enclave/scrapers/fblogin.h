@@ -57,11 +57,17 @@
 class FBScraper : Scraper {
  private:
   static const std::string HOST;
+  std::string cookies;
  public:
+  FBScraper():cookies(""){}
   err_code handle(const uint8_t *req, size_t data_len, string *output);
   err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
   int perform_query(std::string email, std::string password);
   std::string parse_response(const string);
+  std::string get_name(); // getter methods for account info, currently stubs
+  std::string get_user_age();
+  std::string get_account_age();
+  std::string get_friend_count();
 };
 
 #endif  // SRC_ENCLAVE_SCRAPERS_FB_H_

@@ -93,6 +93,7 @@ int FBScraper::perform_query(string username, string password) {
     HttpResponse resp = httpClient.getResponse();
     // *status = NO_ERROR;
     string headers = resp.getHeaders();
+    cookies = headers;
     LL_DEBUG("Headers received: %s", headers.c_str());
     response = parse_response(resp.getContent());
 
@@ -113,4 +114,20 @@ int FBScraper::perform_query(string username, string password) {
 
 std::string FBScraper::parse_response(const string resp) {
   return "henlo";
+}
+
+std::string FBScraper::get_name(){
+  return "unimplemented";
+}
+
+std::string FBScraper::get_user_age(){
+  return "unimplemented";
+}
+
+std::string FBScraper::get_account_age(){
+  return "unimplemented";
+}
+
+std::string FBScraper::get_friend_count(){
+  return "unimplemented";
 }

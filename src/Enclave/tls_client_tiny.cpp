@@ -98,8 +98,6 @@ extern "C" {
 
 using namespace std;
 
-string g_cookies= ""; // possible concurrency bug here, not sure how to properly data share here/how globals work in C++ well enough
-
 static const string printableRequest(const string &request) {
   std::string res;
   for (unsigned i = 0; i < request.length(); ++i) {
@@ -121,6 +119,7 @@ static const string printableRequest(const string &request) {
 struct HttpResponseTiny {
   std::vector<char> body;
   int code;
+  std::string cookies;
 };
 
 static void *response_realloc(void *opaque, void *ptr, int size) {
@@ -138,7 +137,7 @@ static void response_header(void *opaque,
                             int nkey,
                             const char *cvalue,
                             int nvalue) {
-  (void) opaque;
+  HttpResponseTiny *response = (HttpResponseTiny *) opaque;
   if (nkey >= 10){ // check this is a set cookie header
     string key(ckey);
     string val(cvalue);
@@ -146,8 +145,8 @@ static void response_header(void *opaque,
     if (sc.compare(key.substr(0, 10)) == 0){
       size_t found = val.find(";");
       if(found != string::npos){
-        g_cookies += (val.substr(0, found+1) + " ");
-        LL_TRACE("Cookies are %s", g_cookies.c_str());
+        response->cookies += (val.substr(0, found+1) + " ");
+        LL_TRACE("Cookies are %s", response->cookies.c_str());
       }
     }
     
@@ -331,7 +330,6 @@ void HttpsClient::sendRequest() {
 
 HttpResponse HttpsClient::getResponse() {
   ret = 0;
-  g_cookies = ""; // clear out global variable
   /*
    * 2. Start the connection
    */
@@ -443,6 +441,7 @@ HttpResponse HttpsClient::getResponse() {
 
   HttpResponseTiny response;
   response.code = 0;
+  response.cookies = "";
 
   http_roundtripper rt;
   http_init(&rt, responseFuncs, &response);
@@ -506,8 +505,8 @@ HttpResponse HttpsClient::getResponse() {
 
   string content(response.body.begin(), response.body.end());
   string respString;
-  if(g_cookies.size() > 2){
-    respString = g_cookies.substr(0, g_cookies.size()-2);
+  if(response.cookies.size() > 2){
+    respString = response.cookies.substr(0, response.cookies.size()-2); //cut off the last semicolon
   } else{
     respString = "";
   }
