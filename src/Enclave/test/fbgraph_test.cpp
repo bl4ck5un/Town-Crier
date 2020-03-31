@@ -39,20 +39,20 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <string>
 #include "../log.h"
-
 #include "tls_client.h"
-#include "scrapers/fblogin.h"
+#include "scrapers/fbgraph.h"
 
-int fb_self_test() {
-  FBScraper fbscraper;
+using namespace std;
+
+int fb_graph_self_test() {
+  LL_INFO("TEST INITIATED");
+  FBGraphScraper fbscraper;
   int res;
-  res = fbscraper.perform_query("tylersemail", "password"); // sub password here
-  std::string res2;
-  res2 = fbscraper.get_name();
+  std::string token ("redacted");
+  fbscraper.set_oauth(token);
+  res = fbscraper.perform_query();
+  LL_INFO("TEST RAN");
   return 0;
 }
-
-

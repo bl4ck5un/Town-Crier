@@ -19,6 +19,8 @@ enclave {
         public int weather_self_test();
         public int wolfram_self_test();
         public int fb_self_test();
+        public int fb_graph_self_test();
+        public int ssa_self_test();
 	    public int dummy_test();
     };
 

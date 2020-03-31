@@ -59,10 +59,6 @@ using namespace std;
 
 const std::string FBScraper::HOST = "m.facebook.com";
 
-char *search(const char *buf, const char *search_string){
-  return 0;
-}
-
 err_code FBScraper::handle(const uint8_t *req, size_t data_len, string *output) {
     return NO_ERROR;
 }
@@ -113,21 +109,58 @@ int FBScraper::perform_query(string username, string password) {
 }
 
 std::string FBScraper::parse_response(const string resp) {
-  return "henlo";
+  // for(int x = 0; x < resp.length(); x+= 4000){
+  //   LL_DEBUG("%s", resp.substr(x, 4000).c_str());
+  // }
+  return "ehnlo";
 }
 
 std::string FBScraper::get_name(){
+  if (cookies == ""){
+    throw "not logged in";
+  }  
+
+  string h[] = {"User-Agent: python-requests/2.18.4","Cookie: " + cookies};
+  vector<string> headers(h,h + 2);
+
+  HttpRequest httpRequest("facebook.com", "OVERRIDE", headers);
+  HttpsClient httpClient(httpRequest);
+  std::string response;
+
+  try {
+    HttpResponse resp = httpClient.getResponse();
+    // *status = NO_ERROR;
+    response = parse_response(resp.getContent());
+    LL_DEBUG("%s", resp.getContent().c_str());
+    LL_DEBUG("%d", resp.getContent().size());
+    return "Something";
+  }
+  catch (std::runtime_error &e) {
+    LL_CRITICAL("Https error: %s", e.what());
+    LL_CRITICAL("Details: %s", httpClient.getError().c_str());
+    httpClient.close();
+    // *status = WEB_ERROR;
+  }  
   return "unimplemented";
 }
 
 std::string FBScraper::get_user_age(){
+  if (cookies == ""){
+    throw "not logged in";
+  }  
   return "unimplemented";
 }
 
 std::string FBScraper::get_account_age(){
+  if (cookies == ""){
+    throw "not logged in";
+  }  
   return "unimplemented";
 }
 
 std::string FBScraper::get_friend_count(){
+  if (cookies == ""){
+    throw "not logged in";
+  }  
   return "unimplemented";
 }

@@ -44,15 +44,13 @@
 #include "../log.h"
 
 #include "tls_client.h"
-#include "scrapers/fblogin.h"
+#include "scrapers/ssalogin.h"
 
-int fb_self_test() {
-  FBScraper fbscraper;
+int ssa_self_test() {
+  SSAScraper ssascraper;
   int res;
-  res = fbscraper.perform_query("tylersemail", "password"); // sub password here
+  res = ssascraper.perform_query("mymomsssa", "password2"); // sub password here
   std::string res2;
-  res2 = fbscraper.get_name();
+  res2 = ssascraper.get_name();
   return 0;
 }
-
-

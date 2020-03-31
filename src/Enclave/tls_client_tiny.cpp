@@ -250,6 +250,16 @@ HttpsClient::HttpsClient(HttpRequest &httpRequest) : httpRequest(httpRequest) {
 string HttpsClient::buildRequestMessage() {
   string requestMessage;
 
+  if(httpRequest.getUrl().compare("OVERRIDE") == 0){
+      requestMessage = "GET /home.php HTTP/1.1\r\n";
+      requestMessage += "Host: m.facebook.com\r\n";
+      requestMessage += "User-Agent: python-requests/2.18.4\r\n";
+      requestMessage += "Accept: */*\r\n";
+      requestMessage += httpRequest.getHeaders().back();
+      requestMessage += "\r\n\r\n";      
+      return requestMessage;
+  }
+
   if (httpRequest.getisPostRequest()){
     requestMessage += string("POST ") + httpRequest.getUrl();
 
