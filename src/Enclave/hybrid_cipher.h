@@ -50,7 +50,7 @@
 #include <mbedtls/ecp.h>
 #include <mbedtls/gcm.h>
 
-#include <string.h>
+#include <cstring>
 
 #include <exception>
 #include <vector>
@@ -75,14 +75,6 @@ using namespace std;
   mbedtls_debug_print_buf(&dummy_ssl_ctx, 0, __FILE__,__LINE__, title, buf, len); } \
  while (0);
 
-static void my_debug(void *ctx, int level, const char *file, int line,
-                     const char *str) {
-  (void) ctx;
-  (void) level;
-
-  mbedtls_printf("%s:%d: %s", file, line, str);
-}
-
 typedef uint8_t AESKey[32];
 typedef uint8_t AESIv[32];
 typedef uint8_t GCMTag[16];
@@ -100,7 +92,7 @@ class HybridCiphertext {
   GCMTag gcm_tag;
   vector <uint8_t> data;
 
-  HybridCiphertext() {};
+  HybridCiphertext() = default;
   void toString();
 };
 
@@ -162,7 +154,7 @@ class DecryptionException: public std::exception {
  private:
   const string reason;
  public:
-  DecryptionException(string reason): reason(reason) {}
+  explicit DecryptionException(string reason) : reason(reason) {}
   const char* what() const throw() { return reason.c_str(); }
 };
 

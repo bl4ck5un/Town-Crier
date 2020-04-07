@@ -50,7 +50,43 @@ void dump_buf(const char *title, const unsigned char *buf, size_t len) {
   hexdump(title, buf, len);
 }
 
+#ifdef DEBUG
+static void bin_to_hex(const unsigned char *bin, size_t binsz, char *result)
+{
+  char hex_str[] = "0123456789abcdef";
+  unsigned int i;
+
+  result[binsz * 2] = 0;
+
+  if (!binsz) return;
+
+  for (i = 0; i < binsz; i++) {
+    result[i * 2 + 0] = hex_str[(bin[i] >> 4) & 0x0F];
+    result[i * 2 + 1] = hex_str[(bin[i]) & 0x0F];
+  }
+}
+#endif
+
+void print_str_dbg(const char *title, const unsigned char *data, size_t len)
+{
+#ifdef DEBUG
+  size_t PRINT_WIDTH = 64;
+
+  char buf[len * 2];
+  bin_to_hex(data, len, buf);
+  printf_sgx("%s\n", title);
+
+  size_t printed = 0;
+  while (printed < strlen(buf)) {
+    printf_sgx("%.64s\n", buf + printed);
+    printed += MIN(PRINT_WIDTH, strlen(buf + printed));
+  }
+#endif
+}
+
+#include "log.h"
 void hexdump(const char *title, void const *data, size_t len) {
+#if 0
   unsigned int i;
   unsigned int r, c;
 
@@ -90,37 +126,9 @@ void hexdump(const char *title, void const *data, size_t len) {
 
     printf_sgx("\n");
   }
-}
-
-#ifdef DEBUG
-static void bin_to_strhex(const unsigned char *bin, size_t binsz, char *result) {
-  char hex_str[] = "0123456789abcdef";
-  unsigned int i;
-
-  result[binsz * 2] = 0;
-
-  if (!binsz)
-    return;
-
-  for (i = 0; i < binsz; i++) {
-    result[i * 2 + 0] = hex_str[(bin[i] >> 4) & 0x0F];
-    result[i * 2 + 1] = hex_str[(bin[i]) & 0x0F];
-  }
-}
 #endif
-
-void print_str_dbg(const char *title, const unsigned char *data, size_t len) {
-#ifdef DEBUG
-  size_t PRINT_WIDTH = 64;
-
-  char buf[len * 2];
-  bin_to_strhex(data, len, buf);
-  printf_sgx("%s\n", title);
-
-  size_t printed = 0;
-  while (printed < strlen(buf)) {
-    printf_sgx("%.64s\n", buf + printed);
-    printed += MIN(PRINT_WIDTH, strlen(buf + printed));
-  }
-#endif
+  char buffer[2 * len + 1];
+  memset(buffer, 0x0, sizeof buffer);
+  bin_to_hex(data, len, buffer);
+  LL_DEBUG("%s: %s", title, buffer);
 }

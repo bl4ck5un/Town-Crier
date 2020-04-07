@@ -37,7 +37,7 @@ void BitcoinFees::get_recommended_fees(RecommendedFees* result) {
 
   HttpResponse http_response = httpClient.getResponse();
 
-  LL_LOG("response is %s", http_response.getContent().c_str());
+  LL_DEBUG("response is %s", http_response.getContent().c_str());
 
   if (http_response.getStatusCode() != 200) {
     LL_CRITICAL("error code: %d", http_response.getStatusCode());

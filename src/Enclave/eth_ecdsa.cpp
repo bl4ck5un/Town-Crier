@@ -272,12 +272,12 @@ int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen,
   {
     uint32_t len = sgx_calc_sealed_data_size(0, sizeof(secret_buffer));
     sgx_sealed_data_t *seal_buffer = (sgx_sealed_data_t *) malloc(len);
-    LL_LOG("sealed secret length is %d", len);
+    LL_DEBUG("sealed secret length is %d", len);
 
     sgx_status_t st = sgx_seal_data(0, NULL, sizeof secret_buffer,
                                     secret_buffer, len, seal_buffer);
     if (st != SGX_SUCCESS) {
-      LL_LOG("Failed to seal. Ecall returned %d", st);
+      LL_DEBUG("Failed to seal. Ecall returned %d", st);
       ret = -1;
       goto exit;
     }
@@ -292,7 +292,7 @@ int ecdsa_keygen_seal(unsigned char *o_sealed, size_t *olen,
     ret = -1;
     goto exit;
   }
-  LL_LOG("returning from keygen_seal");
+  LL_DEBUG("returning from keygen_seal");
 
   exit:
   mbedtls_mpi_free(&secret);

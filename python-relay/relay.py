@@ -8,8 +8,8 @@ Options:
   -h --help                 Show this screen.
   --version                 Show version.
   --catchup                 Catch up until the current block first.
+  --dryrun                  Process one request then exit.
 """
-
 
 from web3 import Web3
 import logging
@@ -61,11 +61,8 @@ class TCRelay:
 
         self.tc_contract = self.w3.eth.contract(address=config.TC_CONTRACT_ADDR, abi=config.TC_ABI)
 
-
-
         # self.filter = self.w3.eth.filter({"address": self.config.TC_CONTRACT_ADDR,
         #                                   "topics": [self.config.TC_REQUEST_TOPIC]})
-
 
     def handle_request_event(self, log_entry):
         nonce = self.w3.eth.getTransactionCount(self.config.SGX_WALLET_ADDR)
@@ -83,7 +80,6 @@ class TCRelay:
             'jsonrpc': '2.0',
             'id': 0,
         }
-
 
         import requests
         import json
@@ -164,6 +160,14 @@ class TCRelay:
                 self.logger.error('exception: {0}'.format(str(e)))
             time.sleep(poll_interval)
 
+    def dry_run(self):
+        # get all requests
+        filter_all_requests = self.tc_contract.events.RequestInfo.createFilter(fromBlock=0)
+        for entry in self.w3.eth.getFilterLogs(filter_all_requests.filter_id):
+            # return after processing one request
+            self.handle_request_event(entry)
+            return
+
 
 if __name__ == '__main__':
     from docopt import docopt
@@ -176,5 +180,11 @@ if __name__ == '__main__':
     if args['--catchup']:
         curr_block = relay.w3.eth.blockNumber
         relay.catchup(curr_block)
+
+    if args['--dryrun']:
+        relay.dry_run()
+        import sys
+
+        sys.exit(0)
 
     relay.wait_for_requests()

@@ -274,9 +274,11 @@ int regex_self_test() {
 
     if (slre_match("^\\s*(\\S+)\\s+(\\S+)\\s+HTTP/(\\d)\\.(\\d)",
                    request, strlen(request), caps, 4, 0) > 0) {
-      LL_LOG("Method: [%.*s], URI: [%.*s]",
-             caps[0].len, caps[0].ptr,
-             caps[1].len, caps[1].ptr);
+      LL_INFO("Method: [%.*s], URI: [%.*s]",
+              caps[0].len,
+              caps[0].ptr,
+              caps[1].len,
+              caps[1].ptr);
     } else {
       LL_CRITICAL("Error parsing [%s]\n", request);
     }
@@ -306,7 +308,7 @@ int regex_self_test() {
 
     while (j < str_len &&
            (i = slre_match(regex, str + j, str_len - j, caps, 2, SLRE_IGNORE_CASE)) > 0) {
-      LL_LOG("Found URL: [%.*s]", caps[0].len, caps[0].ptr);
+      LL_INFO("Found URL: [%.*s]", caps[0].len, caps[0].ptr);
       j += i;
     }
   }

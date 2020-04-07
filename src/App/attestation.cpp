@@ -41,43 +41,38 @@
 // Google Faculty Research Awards, and a VMWare Research Award.
 //
 
+#include "App/attestation.h"
+
 #include <sgx_report.h>
 #include <sgx_uae_service.h>
 #include <sgx_utils.h>
 #include <time.h>
+
 #include <string>
 
 #include "App/Enclave_u.h"
-#include "App/attestation.h"
 #include "App/converter.h"
 #include "App/tc_exception.h"
 #include "App/utils.h"
 #include "Common/Constants.h"
 #include "logging.h"
 
-using std::vector;
-using std::to_string;
 using std::invalid_argument;
+using std::to_string;
+using std::vector;
 
-namespace tc {
-namespace attestation {
+namespace tc
+{
+namespace attestation
+{
 log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("attestation.cpp"));
 }
-}
+}  // namespace tc
 
 using tc::attestation::logger;
 
-int time_calibrate(sgx_enclave_id_t eid) {
-  time_t wtc_time = time(NULL);
-  uint8_t time_sig[65];
-  int ret = 0;
-  sgx_status_t st;
-
-  st = ecall_time_calibrate(eid, &ret, wtc_time, time_sig);
-  return ret;
-}
-
-void get_attestation(sgx_enclave_id_t eid, vector<uint8_t> *out) {
+void get_attestation(sgx_enclave_id_t eid, vector<uint8_t> *out)
+{
   if (out == nullptr) {
     throw invalid_argument("null output ptr");
   }
@@ -99,10 +94,22 @@ void get_attestation(sgx_enclave_id_t eid, vector<uint8_t> *out) {
   }
 
   uint8_t spid_tc[16] = {
-      0x03, 0xD4, 0x81, 0x28,
-      0x36, 0x6F, 0x1C, 0xD7,
-      0x4F, 0xCA, 0x49, 0x0D,
-      0x9B, 0x85, 0xB6, 0xAB,
+      0x03,
+      0xD4,
+      0x81,
+      0x28,
+      0x36,
+      0x6F,
+      0x1C,
+      0xD7,
+      0x4F,
+      0xCA,
+      0x49,
+      0x0D,
+      0x9B,
+      0x85,
+      0xB6,
+      0xAB,
   };
 
   memcpy(spid.id, spid_tc, sizeof spid_tc);
@@ -113,19 +120,26 @@ void get_attestation(sgx_enclave_id_t eid, vector<uint8_t> *out) {
 
   ecall_ret = sgx_get_quote(&report,
                             SGX_LINKABLE_SIGNATURE,
-                            &spid, nullptr, nullptr,
-                            0, nullptr, quote, quote_size);
+                            &spid,
+                            nullptr,
+                            nullptr,
+                            0,
+                            nullptr,
+                            quote,
+                            quote_size);
   if (ecall_ret != SGX_SUCCESS) {
     print_error_message((sgx_status_t)ret);
     throw tc::EcallException(ecall_ret, "sgx_get_quote failed");
   }
 
-  out->insert(out->begin(), reinterpret_cast<uint8_t *>(quote),
+  out->insert(out->begin(),
+              reinterpret_cast<uint8_t *>(quote),
               reinterpret_cast<uint8_t *>(quote) + quote_size);
   free(quote);
 }
 
-string get_mr_enclave(sgx_enclave_id_t eid) {
+string get_mr_enclave(sgx_enclave_id_t eid)
+{
   int ret;
   unsigned char mr_enclave[SGX_HASH_SIZE];
   sgx_status_t ecall_ret = ecall_get_mr_enclave(eid, &ret, mr_enclave);

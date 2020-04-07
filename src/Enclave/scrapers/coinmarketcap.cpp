@@ -105,7 +105,7 @@ err_code CoinMarket::handle(const uint8_t *req, size_t data_len, int *resp_data)
 int CoinMarket::_getprice(const std::string &token_name) {
   string query = "/v1/ticker/" + token_name + "/";
 
-  LL_LOG("query used: %s", query.c_str());
+  LL_DEBUG("query used: %s", query.c_str());
   HttpRequest httpRequest("api.coinmarketcap.com", query, true);
   HttpsClient httpClient(httpRequest);
 

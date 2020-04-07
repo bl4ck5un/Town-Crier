@@ -44,6 +44,18 @@ using namespace std;
 
 static mbedtls_mpi g_secret_hybrid_key;
 
+static void my_debug(void *ctx,
+                     int level,
+                     const char *file,
+                     int line,
+                     const char *str)
+{
+  (void)ctx;
+  (void)level;
+
+  mbedtls_printf("%s:%d: %s", file, line, str);
+}
+
 int tc_provision_hybrid_key(const sgx_sealed_data_t *secret, size_t secret_len) {
   // used by edge8r
   (void) secret_len;

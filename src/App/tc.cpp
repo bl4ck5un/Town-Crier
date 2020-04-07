@@ -74,13 +74,6 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-namespace tc {
-namespace main {
-log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("tc.cpp"));
-}
-}
-
-using tc::main::logger;
 using namespace std;
 
 std::atomic<bool> quit(false);
@@ -91,6 +84,7 @@ int main(int argc, const char *argv[]) {
   std::signal(SIGTERM, exit_gracefully);
 
   log4cxx::PropertyConfigurator::configure(LOGGING_CONF_FILE);
+  log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("tc.cpp"));
 
   tc::Config config(argc, argv);
   LL_INFO("config:\n%s", config.toString().c_str());

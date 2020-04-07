@@ -129,7 +129,9 @@ Json::Value status_rpc_server::process(const std::string &data, int nonce, const
     LOG4CXX_INFO(logger, "processing request tx " << txid);
     RequestParser request(data, txid);
 
-    hexdump("request", request.getRawRequest().data(), request.getRawRequest().size());
+    LOG4CXX_DEBUG(logger,
+                  "request: " << bufferToHex(request.getRawRequest().data(),
+                                             request.getRawRequest().size()));
 
     LL_INFO("parsed request: %s", request.toString().c_str());
 

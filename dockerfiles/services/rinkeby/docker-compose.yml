@@ -6,6 +6,7 @@ services:
         entrypoint: "tc"
         volumes:
           - ./config-rinkeby-sim:/config
+          - ./logs:/var/log/tc/
     tc-relay:
         env_file:
           - ./infura_credentials.env
@@ -13,4 +14,4 @@ services:
           - tc-core
         image: "bl4ck5un/tc-relay"
         network_mode: host
-        command: "--catchup"
+        command: "--dryrun"

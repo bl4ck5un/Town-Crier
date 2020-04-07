@@ -53,5 +53,6 @@ enclave {
     };
 
     untrusted {
+        void ocall_logging(int level, [in,string] const char* file, int line, [in,string] const char* msg);
     };
 };
