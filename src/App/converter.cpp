@@ -44,14 +44,13 @@
 #include "App/converter.h"
 
 #include <boost/algorithm/hex.hpp>
-
 #include <string>
 #include <vector>
 
-
 using std::invalid_argument;
 
-void hexToBuffer(const string &str, unsigned char *buffer, size_t bufSize) {
+void hexToBuffer(const string &str, unsigned char *buffer, size_t bufSize)
+{
   if (buffer == nullptr) throw invalid_argument("buffer is null");
   if (str.size() == 0) return;
 
@@ -62,7 +61,8 @@ void hexToBuffer(const string &str, unsigned char *buffer, size_t bufSize) {
   boost::algorithm::unhex(str.begin() + offset, str.end(), buffer);
 }
 
-bytes hexToBuffer(const string& hex) {
+bytes hexToBuffer(const string &hex)
+{
   bytes r;
   auto offset = (hex.compare(0, 2, "0x") == 0) ? 2 : 0;
   boost::algorithm::unhex(hex.begin() + offset, hex.end(), back_inserter(r));
@@ -70,7 +70,8 @@ bytes hexToBuffer(const string& hex) {
   return r;
 }
 
-void hexToBuffer(const string &hex, vector<uint8_t> *buffer) {
+void hexToBuffer(const string &hex, vector<uint8_t> *buffer)
+{
   if (buffer == nullptr) {
     throw invalid_argument("null output ptr");
   }
@@ -80,11 +81,12 @@ void hexToBuffer(const string &hex, vector<uint8_t> *buffer) {
   }
 
   auto offset = (hex.compare(0, 2, "0x") == 0) ? 2 : 0;
-  boost::algorithm::unhex(hex.begin() + offset, hex.end(),
-                          back_inserter(*buffer));
+  boost::algorithm::unhex(
+      hex.begin() + offset, hex.end(), back_inserter(*buffer));
 }
 
-string bufferToHex(const unsigned char *buffer, size_t bufSize, bool prefix) {
+string bufferToHex(const unsigned char *buffer, size_t bufSize, bool prefix)
+{
   string hex;
   if (prefix) {
     hex += "0x";
@@ -93,7 +95,8 @@ string bufferToHex(const unsigned char *buffer, size_t bufSize, bool prefix) {
   return hex;
 }
 
-string bufferToHex(const vector<unsigned char> &buffer, bool prefix) {
+string bufferToHex(const vector<unsigned char> &buffer, bool prefix)
+{
   string hex;
   if (prefix) {
     hex += "0x";

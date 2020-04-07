@@ -42,8 +42,8 @@
 //
 
 #include <sgx_tseal.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <ctime>
 #include <iostream>
@@ -52,7 +52,8 @@
 #include "App/logging.h"
 #include "Enclave_u.h"
 
-int ocall_print_string(const char *str) {
+int ocall_print_string(const char *str)
+{
   /* Proxy/Bridge will check the length and null-terminate
    * the input string to prevent buffer overflow.
    */

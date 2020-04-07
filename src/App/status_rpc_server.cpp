@@ -47,47 +47,54 @@
 #include <string>
 #include <vector>
 
-#include "App/converter.h"
 #include "App/attestation.h"
+#include "App/converter.h"
 #include "App/tc_exception.h"
 #include "Common/external/base64.hxx"
 #include "Common/version.h"
 
-namespace tc {
-namespace statusRPC {
+namespace tc
+{
+namespace statusRPC
+{
 log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("status_rpc_server.cpp"));
 }
-}
+}  // namespace tc
 
-using tc::statusRPC::logger;
 using tc::status_rpc_server;
+using tc::statusRPC::logger;
 
 using namespace std;
 
 status_rpc_server::status_rpc_server(AbstractServerConnector &connector,
                                      sgx_enclave_id_t eid)
-    : AbstractStatusServer(connector), eid(eid) {}
+    : AbstractStatusServer(connector), eid(eid)
+{
+}
 
-Json::Value status_rpc_server::attest() {
+Json::Value status_rpc_server::attest()
+{
   using tc::statusRPC::logger;
   Json::Value result;
   try {
     std::vector<uint8_t> attestation;
     get_attestation(this->eid, &attestation);
 
-    const auto *mr_enclave_p = (reinterpret_cast<sgx_quote_t *>(attestation.data()))->report_body.mr_enclave.m;
+    const auto *mr_enclave_p =
+        (reinterpret_cast<sgx_quote_t *>(attestation.data()))
+            ->report_body.mr_enclave.m;
 
     char b64_buf[4096] = {0};
-    int buf_used = ext::b64_ntop(attestation.data(), attestation.size(),
-                                 b64_buf, sizeof b64_buf);
+    int buf_used = ext::b64_ntop(
+        attestation.data(), attestation.size(), b64_buf, sizeof b64_buf);
     if (buf_used < 0) {
       result["quote"] = "";
     } else {
       result["quote"] = string(b64_buf);
     }
 
-    buf_used = ext::b64_ntop(mr_enclave_p, SGX_HASH_SIZE,
-                             b64_buf, sizeof b64_buf);
+    buf_used =
+        ext::b64_ntop(mr_enclave_p, SGX_HASH_SIZE, b64_buf, sizeof b64_buf);
     if (buf_used < 0) {
       result["mr_enclave"] = "";
     } else {
@@ -104,7 +111,8 @@ Json::Value status_rpc_server::attest() {
   return result;
 }
 
-Json::Value status_rpc_server::status() {
+Json::Value status_rpc_server::status()
+{
   Json::Value status;
   status["version"] = GIT_COMMIT_HASH;
   status["numberOfScannedBlocks"] = 0;
@@ -113,12 +121,15 @@ Json::Value status_rpc_server::status() {
   return status;
 }
 
-#include "request_parser.h"
 #include "../Common/Constants.h"
 #include "Enclave_u.h"
 #include "debug.h"
+#include "request_parser.h"
 
-Json::Value status_rpc_server::process(const std::string &data, int nonce, const std::string &txid) {
+Json::Value status_rpc_server::process(const std::string &data,
+                                       int nonce,
+                                       const std::string &txid)
+{
   // TX_BUF_SIZE is defined in Constants.h
   uint8_t resp_buffer[TX_BUF_SIZE] = {0};
   size_t resp_data_len = 0;
@@ -140,9 +151,15 @@ Json::Value status_rpc_server::process(const std::string &data, int nonce, const
     LL_INFO("nonce obtained %d", nonce);
 
     // TODO(FAN): change nonce to some long type
-    auto st = handle_request(eid, &ecall_ret, nonce, request.getId(),
-                             request.getType(), request.getData(),
-                             request.getDataLen(), resp_buffer, &resp_data_len);
+    auto st = handle_request(eid,
+                             &ecall_ret,
+                             nonce,
+                             request.getId(),
+                             request.getType(),
+                             request.getData(),
+                             request.getDataLen(),
+                             resp_buffer,
+                             &resp_data_len);
 
     if (st != SGX_SUCCESS || ecall_ret != TC_SUCCESS) {
       throw runtime_error("ecall failed");
@@ -157,8 +174,7 @@ Json::Value status_rpc_server::process(const std::string &data, int nonce, const
 
       return ret;
     }
-  }
-  catch (const exception &e) {
+  } catch (const exception &e) {
     LL_CRITICAL("exception: %s", e.what())
   }
 

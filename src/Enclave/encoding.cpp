@@ -43,16 +43,17 @@
 
 #include "encoding.h"
 
-#include <string>
 #include <iterator>
+#include <string>
 
 #include "commons.h"
 #include "debug.h"
 
-using std::vector;
 using std::string;
+using std::vector;
 
-uint8_t get_n_th_byte(uint64_t in, int n) {
+uint8_t get_n_th_byte(uint64_t in, int n)
+{
   if (n > 8) {
     printf_sgx("n is too big\n");
     return 0xFF;
@@ -61,67 +62,75 @@ uint8_t get_n_th_byte(uint64_t in, int n) {
 }
 
 /*!
- * encode in in big-endian order. Prepend zeros to make the result of 32-byte aligned.
+ * encode in in big-endian order. Prepend zeros to make the result of 32-byte
+ * aligned.
  * @param out
  * @param in input int
  * @param len length of int in byte
  * @return
  */
-int append_as_uint256(bytes &out, uint64_t in, int len) {
+int append_as_uint256(bytes &out, uint64_t in, int len)
+{
   if (len > 32) {
     printf_sgx("Error: too big\n");
     return -1;
   }
   // padding with 0
-  for (int i = 0; i < 32 - len; i++) { out.push_back(0); }
+  for (int i = 0; i < 32 - len; i++) {
+    out.push_back(0);
+  }
   // push big-endian int
-  for (int i = len - 1; i >= 0; i--) { out.push_back(get_n_th_byte(in, i)); }
+  for (int i = len - 1; i >= 0; i--) {
+    out.push_back(get_n_th_byte(in, i));
+  }
   return 0;
 }
 
 uint8_t bytesRequired(uint64_t _i) { return byte_length<uint64_t>(_i); }
 
-void bytes::replace(const bytes &in) {
+void bytes::replace(const bytes &in)
+{
   vector<uint8_t>::clear();
   vector<uint8_t>::insert(vector<uint8_t>::end(), in.begin(), in.end());
 }
 
-void bytes::from_hex(const char *src) {
+void bytes::from_hex(const char *src)
+{
   this->clear();
   auto b = tc::enclave::from_hex(src);
   this->insert(this->begin(), b.begin(), b.end());
 }
 
+void bytes::to_rlp(bytes &out) { rlp_string(this->begin(), this->end(), out); }
 
-void bytes::to_rlp(bytes &out) {
-  rlp_string(this->begin(), this->end(), out);
-}
-
-void bytes::dump(const string &title) {
+void bytes::dump(const string &title)
+{
 #ifndef NDEBUG
-    hexdump(title.c_str(), std::vector<uint8_t>::data(), std::vector<uint8_t>::size());
+  hexdump(title.c_str(),
+          std::vector<uint8_t>::data(),
+          std::vector<uint8_t>::size());
 #endif
 }
 
 void bytes::toString() { dump("bytes"); }
 
-
-bytes20::bytes20(const char *hex) {
+bytes20::bytes20(const char *hex)
+{
   auto b = tc::enclave::from_hex(hex);
-  if (b.size() != SIZE)
-    throw invalid_argument("wrong size");
+  if (b.size() != SIZE) throw invalid_argument("wrong size");
 
   std::copy(b.begin(), b.end(), _b.begin());
 }
 
-
-bytes32::bytes32(uint64_t in) {
+bytes32::bytes32(uint64_t in)
+{
   // push big-endian int (i.e. prepend 0 until 32 bytes)
   BYTE b_in = itob(in, 32);
   vector::insert(vector::end(), b_in.begin(), b_in.end());
 }
 
-bytes32::bytes32(std::string in) {
+bytes32::bytes32(std::string in)
+{
   if (in.length() > 32) {
     throw std::invalid_argument("too big");
   }
@@ -131,7 +140,8 @@ bytes32::bytes32(std::string in) {
   vector::insert(vector::end(), 32 - in.length(), 0);
 }
 
-void bytes32::replace(const BYTE &in) {
+void bytes32::replace(const BYTE &in)
+{
   if (in.size() > 32) {
     throw std::invalid_argument("too large");
   }
@@ -140,7 +150,8 @@ void bytes32::replace(const BYTE &in) {
   this->insert(this->begin(), in.begin(), in.end());
 }
 
-std::vector<uint8_t> itob(uint64_t num, size_t width) {
+std::vector<uint8_t> itob(uint64_t num, size_t width)
+{
   std::vector<uint8_t> out;
 
   if (num == 0 && width == 0) {

@@ -45,13 +45,13 @@
 
 #include <cstdio>
 
-void hexdump(const char *title, void const *data, size_t len) {
-#if(defined(DEBUG))
+void hexdump(const char *title, void const *data, size_t len)
+{
+#if (defined(DEBUG))
   unsigned int i;
   unsigned int r, c;
 
-  if (!data)
-    return;
+  if (!data) return;
 
   std::printf("%s\n", title);
 
@@ -60,7 +60,7 @@ void hexdump(const char *title, void const *data, size_t len) {
 
     for (c = i; c < i + 8; c++) /* left half of hex dump */
       if (c < len)
-        std::printf("%02X ", ((unsigned char const *) data)[c]);
+        std::printf("%02X ", ((unsigned char const *)data)[c]);
       else
         std::printf("   "); /* pad if short line */
 
@@ -68,7 +68,7 @@ void hexdump(const char *title, void const *data, size_t len) {
 
     for (c = i + 8; c < i + 16; c++) /* right half of hex dump */
       if (c < len)
-        std::printf("%02X ", ((unsigned char const *) data)[c]);
+        std::printf("%02X ", ((unsigned char const *)data)[c]);
       else
         std::printf("   "); /* pad if short line */
 
@@ -76,9 +76,9 @@ void hexdump(const char *title, void const *data, size_t len) {
 
     for (c = i; c < i + 16; c++) /* ASCII dump */
       if (c < len) {
-        if (((unsigned char const *) data)[c] >= 32 &&
-            ((unsigned char const *) data)[c] < 127)
-          std::printf("%c", ((char const *) data)[c]);
+        if (((unsigned char const *)data)[c] >= 32 &&
+            ((unsigned char const *)data)[c] < 127)
+          std::printf("%c", ((char const *)data)[c]);
         else
           std::printf("."); /* put this for non-printables */
       } else {

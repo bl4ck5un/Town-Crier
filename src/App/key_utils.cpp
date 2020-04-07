@@ -50,23 +50,25 @@
 #include <iostream>
 #include <string>
 
-#include "App/tc_exception.h"
-#include "App/converter.h"
 #include "App/Enclave_u.h"
-#include "App/utils.h"
-#include "Common/macros.h"
+#include "App/converter.h"
 #include "App/logging.h"
+#include "App/tc_exception.h"
+#include "App/utils.h"
 #include "Common/external/base64.hxx"
+#include "Common/macros.h"
 
-using std::string;
 using std::cout;
 using std::endl;
+using std::string;
 
-namespace tc {
-namespace keyUtils {
+namespace tc
+{
+namespace keyUtils
+{
 log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("key_utils.cpp"));
 }
-}
+}  // namespace tc
 
 using tc::keyUtils::logger;
 
@@ -76,19 +78,26 @@ using tc::keyUtils::logger;
  * @param[in] sealed_key
  * @return a string of corresponding address
  */
-string unseal_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyType key_type) {
+string unseal_key(sgx_enclave_id_t eid,
+                  string sealed_key,
+                  tc::keyUtils::KeyType key_type)
+{
   unsigned char secret_sealed[SECRETKEY_SEALED_LEN];
   unsigned char pubkey[PUBKEY_LEN];
   unsigned char address[ADDRESS_LEN];
 
-  size_t buffer_used = (size_t)ext::b64_pton(sealed_key.c_str(), secret_sealed,
-                                             sizeof secret_sealed);
+  size_t buffer_used = (size_t)ext::b64_pton(
+      sealed_key.c_str(), secret_sealed, sizeof secret_sealed);
 
   int ret = 0;
   sgx_status_t ecall_ret;
-  ecall_ret = ecdsa_keygen_unseal(
-      eid, &ret, reinterpret_cast<sgx_sealed_data_t*>(secret_sealed),
-      buffer_used, pubkey, address);
+  ecall_ret =
+      ecdsa_keygen_unseal(eid,
+                          &ret,
+                          reinterpret_cast<sgx_sealed_data_t*>(secret_sealed),
+                          buffer_used,
+                          pubkey,
+                          address);
   if (ecall_ret != SGX_SUCCESS || ret != 0) {
     throw tc::EcallException(
         ecall_ret, "ecdsa_keygen_unseal failed with " + std::to_string(ret));
@@ -102,30 +111,40 @@ string unseal_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyType
       _pubkey65b[0] = 0x04;
       memcpy(_pubkey65b + 1, pubkey, 64);
       char _base64_pubkey[2 * sizeof pubkey];
-      ret = ext::b64_ntop(_pubkey65b, 65, _base64_pubkey, sizeof _base64_pubkey);
-      if (ret == -1)
-        throw std::runtime_error("unknown error");
+      ret =
+          ext::b64_ntop(_pubkey65b, 65, _base64_pubkey, sizeof _base64_pubkey);
+      if (ret == -1) throw std::runtime_error("unknown error");
       return string(_base64_pubkey);
     default:
       throw std::runtime_error("unknown key type");
   }
 }
 
-void provision_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyType type) {
+void provision_key(sgx_enclave_id_t eid,
+                   string sealed_key,
+                   tc::keyUtils::KeyType type)
+{
   unsigned char _sealed_key_buf[SECRETKEY_SEALED_LEN];
-  auto buffer_used = (size_t)ext::b64_pton(sealed_key.c_str(), _sealed_key_buf, sizeof _sealed_key_buf);
+  auto buffer_used = (size_t)ext::b64_pton(
+      sealed_key.c_str(), _sealed_key_buf, sizeof _sealed_key_buf);
 
   int ret = 0;
   sgx_status_t ecall_ret;
 
   switch (type) {
     case tc::keyUtils::ECDSA_KEY:
-      ecall_ret = tc_provision_ecdsa_key(eid, &ret,
-                                          reinterpret_cast<sgx_sealed_data_t*>(_sealed_key_buf), buffer_used);
+      ecall_ret = tc_provision_ecdsa_key(
+          eid,
+          &ret,
+          reinterpret_cast<sgx_sealed_data_t*>(_sealed_key_buf),
+          buffer_used);
       break;
     case tc::keyUtils::HYBRID_ENCRYPTION_KEY:
-      ecall_ret = tc_provision_hybrid_key(eid, &ret,
-                                          reinterpret_cast<sgx_sealed_data_t*>(_sealed_key_buf), buffer_used);
+      ecall_ret = tc_provision_hybrid_key(
+          eid,
+          &ret,
+          reinterpret_cast<sgx_sealed_data_t*>(_sealed_key_buf),
+          buffer_used);
       break;
     default:
       LL_CRITICAL("unknown key type");
@@ -134,6 +153,7 @@ void provision_key(sgx_enclave_id_t eid, string sealed_key, tc::keyUtils::KeyTyp
   }
 
   if (ecall_ret != SGX_SUCCESS || ret != 0) {
-    throw tc::EcallException(ecall_ret, "tc_provision_key returns " + std::to_string(ret));
+    throw tc::EcallException(ecall_ret,
+                             "tc_provision_key returns " + std::to_string(ret));
   }
 }

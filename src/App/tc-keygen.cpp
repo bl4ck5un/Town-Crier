@@ -43,31 +43,34 @@
 
 #define LOGURU_IMPLEMENTATION 1
 
+#include <log4cxx/propertyconfigurator.h>
 #include <sgx_error.h>
-#include <boost/program_options.hpp>
 
+#include <boost/program_options.hpp>
 #include <fstream>
 #include <iostream>
 #include <string>
-#include <log4cxx/propertyconfigurator.h>
 
-#include "App/converter.h"
 #include "App/Enclave_u.h"
+#include "App/converter.h"
+#include "App/utils.h"
 #include "Common/external/base64.hxx"
 #include "Common/macros.h"
-#include "App/utils.h"
 
-namespace tckeygen {
-namespace main {
+namespace tckeygen
+{
+namespace main
+{
 log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("tc-keygen.cpp"));
 }
-}
+}  // namespace tckeygen
 
 using std::cout;
 using std::endl;
 using tckeygen::main::logger;
 
-void print_key(sgx_enclave_id_t eid, string keyfile) {
+void print_key(sgx_enclave_id_t eid, string keyfile)
+{
   LL_INFO("printing key from %s", keyfile.c_str());
   std::ifstream in_keyfile(keyfile);
   if (!in_keyfile.is_open()) {
@@ -89,9 +92,13 @@ void print_key(sgx_enclave_id_t eid, string keyfile) {
 
   int ret = 0;
   sgx_status_t ecall_ret;
-  ecall_ret = ecdsa_keygen_unseal(
-      eid, &ret, reinterpret_cast<sgx_sealed_data_t *>(secret_sealed),
-      buffer_used, pubkey, address);
+  ecall_ret =
+      ecdsa_keygen_unseal(eid,
+                          &ret,
+                          reinterpret_cast<sgx_sealed_data_t *>(secret_sealed),
+                          buffer_used,
+                          pubkey,
+                          address);
   if (ecall_ret != SGX_SUCCESS || ret != 0) {
     LL_CRITICAL("ecall failed");
     print_error_message(ecall_ret);
@@ -103,7 +110,8 @@ void print_key(sgx_enclave_id_t eid, string keyfile) {
   cout << "Address: " << bufferToHex(address, sizeof address, true) << endl;
 }
 
-void keygen(sgx_enclave_id_t eid, string keyfile) {
+void keygen(sgx_enclave_id_t eid, string keyfile)
+{
   LL_INFO("generating key to %s", keyfile.c_str());
   unsigned char secret_sealed[SECRETKEY_SEALED_LEN];
   unsigned char pubkey[PUBKEY_LEN];
@@ -113,8 +121,8 @@ void keygen(sgx_enclave_id_t eid, string keyfile) {
   size_t buffer_used = 0;
   int ret;
   sgx_status_t ecall_status;
-  ecall_status = ecdsa_keygen_seal(eid, &ret, secret_sealed, &buffer_used,
-                                   pubkey, address);
+  ecall_status = ecdsa_keygen_seal(
+      eid, &ret, secret_sealed, &buffer_used, pubkey, address);
   if (ecall_status != SGX_SUCCESS || ret != 0) {
     LL_CRITICAL("ecall failed");
     print_error_message(ecall_status);
@@ -123,9 +131,10 @@ void keygen(sgx_enclave_id_t eid, string keyfile) {
   }
 
   char secret_sealed_b64[SECRETKEY_SEALED_LEN * 2];
-  buffer_used = static_cast<size_t>(
-      ext::b64_ntop(secret_sealed, sizeof secret_sealed, secret_sealed_b64,
-                    sizeof secret_sealed_b64));
+  buffer_used = static_cast<size_t>(ext::b64_ntop(secret_sealed,
+                                                  sizeof secret_sealed,
+                                                  secret_sealed_b64,
+                                                  sizeof secret_sealed_b64));
 
   std::ofstream of(keyfile);
   if (!of.is_open()) {
@@ -142,7 +151,8 @@ void keygen(sgx_enclave_id_t eid, string keyfile) {
 
 namespace po = boost::program_options;
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char *argv[])
+{
   log4cxx::PropertyConfigurator::configure(LOGGING_CONF_FILE);
 
   string key_input, key_output;
@@ -151,7 +161,9 @@ int main(int argc, const char *argv[]) {
   try {
     po::options_description desc("Allowed options");
     desc.add_options()("help,h", "print this message")(
-        "enclave,e", po::value(&enclave_path)->required(), "which enclave to use?")(
+        "enclave,e",
+        po::value(&enclave_path)->required(),
+        "which enclave to use?")(
         "print,p", po::value(&key_input), "print existing keys")(
         "keygen,g", po::value(&key_output), "generate a new key");
 

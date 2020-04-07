@@ -42,16 +42,17 @@
 //
 
 #include "tls_client.h"
-#include "Log.h"
-#include "Enclave_t.h"
-#include "debug.h"
-#include "external/http_parser.h"
-#include "Constants.h"
-#include "ca_bundle.h"
 
 #include <algorithm>
 
-#define MIN(x,y) (x < y ? x : y)
+#include "Constants.h"
+#include "Enclave_t.h"
+#include "Log.h"
+#include "ca_bundle.h"
+#include "debug.h"
+#include "external/http_parser.h"
+
+#define MIN(x, y) (x < y ? x : y)
 
 #if !defined(MBEDTLS_CONFIG_FILE)
 
@@ -61,36 +62,41 @@
 #include MBEDTLS_CONFIG_FILE
 #endif
 
-#include "mbedtls/platform.h"
-#include "mbedtls/net_v.h"
-#include "mbedtls/net_f.h"
-#include "mbedtls/ssl.h"
-#include "mbedtls/entropy.h"
-#include "mbedtls/ctr_drbg.h"
-#include "mbedtls/certs.h"
-#include "mbedtls/x509.h"
-#include "mbedtls/error.h"
-#include "mbedtls/debug.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <string>
+
 #include <exception>
-#include <vector>
 #include <stlport/type_traits>
+#include <string>
+#include <vector>
+
+#include "mbedtls/certs.h"
+#include "mbedtls/ctr_drbg.h"
+#include "mbedtls/debug.h"
+#include "mbedtls/entropy.h"
+#include "mbedtls/error.h"
+#include "mbedtls/net_f.h"
+#include "mbedtls/net_v.h"
+#include "mbedtls/platform.h"
+#include "mbedtls/ssl.h"
+#include "mbedtls/x509.h"
 
 using namespace std;
 
-static const string printableRequest(const string &request) {
+static const string printableRequest(const string &request)
+{
   std::string res;
   for (int i = 0; i < request.length(); ++i) {
     switch (request[i]) {
-      case '\r':res += "\\r";
+      case '\r':
+        res += "\\r";
         break;
-      case '\n':res += "\\n";
+      case '\n':
+        res += "\\n";
         break;
-      default:res += request[i];
+      default:
+        res += request[i];
     }
   }
   return res;
@@ -102,38 +108,43 @@ typedef struct {
   size_t header_length;
 } cb_data_t;
 
-int cb_on_message_complete(http_parser *parser) {
+int cb_on_message_complete(http_parser *parser)
+{
   LL_TRACE("message_complete called");
-  cb_data_t *d = (cb_data_t *) parser->data;
+  cb_data_t *d = (cb_data_t *)parser->data;
   d->eof = 1;
   return 0;
 }
 
-int cb_on_body(http_parser *parser, const char *at, size_t len) {
+int cb_on_body(http_parser *parser, const char *at, size_t len)
+{
   LL_TRACE("On body called with at=%p and len=%zu", at, len);
-  cb_data_t *p = (cb_data_t *) parser->data;
+  cb_data_t *p = (cb_data_t *)parser->data;
 
   return 0;
 }
 
-int cb_on_header_complete(http_parser *parser) {
-  cb_data_t *p = (cb_data_t *) parser->data;
+int cb_on_header_complete(http_parser *parser)
+{
+  cb_data_t *p = (cb_data_t *)parser->data;
   p->header_length = parser->nread;
   LL_TRACE("header_complete called after reading %zu", p->header_length);
 
   return 0;
 }
 
-static void my_debug(void *ctx, int level,
-                     const char *file, int line,
-                     const char *str) {
+static void my_debug(void *ctx,
+                     int level,
+                     const char *file,
+                     int line,
+                     const char *str)
+{
   const char *p, *basename;
-  (void) (ctx);
+  (void)(ctx);
 
   /* Extract basename from file */
   for (p = basename = file; *p != '\0'; p++)
-    if (*p == '/' || *p == '\\')
-      basename = p + 1;
+    if (*p == '/' || *p == '\\') basename = p + 1;
 
   mbedtls_printf("%s:%04d: |%d| %s", basename, line, level, str);
 }
@@ -142,7 +153,8 @@ static void my_debug(void *ctx, int level,
  * Test recv/send functions that make sure each try returns
  * WANT_READ/WANT_WRITE at least once before sucesseding
  */
-static int my_recv(void *ctx, unsigned char *buf, size_t len) {
+static int my_recv(void *ctx, unsigned char *buf, size_t len)
+{
   static int first_try = 1;
   int ret;
 
@@ -157,7 +169,8 @@ static int my_recv(void *ctx, unsigned char *buf, size_t len) {
   return (ret);
 }
 
-static int my_send(void *ctx, const unsigned char *buf, size_t len) {
+static int my_send(void *ctx, const unsigned char *buf, size_t len)
+{
   static int first_try = 1;
   int ret;
 
@@ -177,9 +190,13 @@ static int my_send(void *ctx, const unsigned char *buf, size_t len) {
 /*
  * Enabled if debug_level > 1 in code below
  */
-static int my_verify(void *data, mbedtls_x509_crt *crt, int depth, uint32_t *flags) {
+static int my_verify(void *data,
+                     mbedtls_x509_crt *crt,
+                     int depth,
+                     uint32_t *flags)
+{
   char buf[1024];
-  ((void) data);
+  ((void)data);
 
   LL_DEBUG("\nVerify requested for (Depth %d):", depth);
   mbedtls_x509_crt_info(buf, sizeof(buf) - 1, "", crt);
@@ -197,7 +214,8 @@ static int my_verify(void *data, mbedtls_x509_crt *crt, int depth, uint32_t *fla
 
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
 
-HttpsClient::HttpsClient(HttpRequest &httpRequest) : httpRequest(httpRequest) {
+HttpsClient::HttpsClient(HttpRequest &httpRequest) : httpRequest(httpRequest)
+{
   int ret = 0;
   mbedtls_net_init(&server_fd);
   mbedtls_ssl_init(&ssl);
@@ -219,8 +237,10 @@ HttpsClient::HttpsClient(HttpRequest &httpRequest) : httpRequest(httpRequest) {
   /*
    * 0. Initialize the RNG and the session data
    */
-  if ((ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy,
-                                   (const unsigned char *) pers,
+  if ((ret = mbedtls_ctr_drbg_seed(&ctr_drbg,
+                                   mbedtls_entropy_func,
+                                   &entropy,
+                                   (const unsigned char *)pers,
                                    strlen(pers))) != 0) {
     LL_CRITICAL(" mbedtls_ctr_drbg_seed returned -%#x", -ret);
     throw std::runtime_error("mbedtls_ctr_drbg_seed failed");
@@ -230,30 +250,35 @@ HttpsClient::HttpsClient(HttpRequest &httpRequest) : httpRequest(httpRequest) {
    * 1. Load the trusted CA
    */
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
-  ret = mbedtls_x509_crt_parse(&cacert, (const unsigned char *) mozilla_ca_bundle, sizeof(mozilla_ca_bundle));
+  ret = mbedtls_x509_crt_parse(&cacert,
+                               (const unsigned char *)mozilla_ca_bundle,
+                               sizeof(mozilla_ca_bundle));
   if (ret < 0) {
     throw std::runtime_error("mbedtls_x509_crt_parse failed");
   }
 
 #endif /* MBEDTLS_X509_CRT_PARSE_C */
-
 }
 
-string HttpsClient::buildRequestMessage() {
+string HttpsClient::buildRequestMessage()
+{
   string requestMessage;
   requestMessage += string("GET ") + httpRequest.getUrl();
-  if (httpRequest.getIsHttp11() && requestMessage.find("HTTP/1.1") == string::npos) {
+  if (httpRequest.getIsHttp11() &&
+      requestMessage.find("HTTP/1.1") == string::npos) {
     requestMessage += " HTTP/1.1";
   }
   requestMessage += string("\r\n");
 
   for (vector<string>::const_iterator it = httpRequest.getHeaders().begin();
-       it != httpRequest.getHeaders().end(); it++) {
+       it != httpRequest.getHeaders().end();
+       it++) {
     requestMessage += (*it) + "\r\n";
   }
 
   requestMessage += "Accept: text/html\r\n";
-  if (httpRequest.getIsHttp11() && requestMessage.find("Host:") == string::npos) {
+  if (httpRequest.getIsHttp11() &&
+      requestMessage.find("Host:") == string::npos) {
     requestMessage += "Host: " + httpRequest.getHost() + "\r\n";
   }
 
@@ -262,18 +287,24 @@ string HttpsClient::buildRequestMessage() {
   return requestMessage;
 }
 
-void HttpsClient::sendRequest() {
+void HttpsClient::sendRequest()
+{
   string requestMessage = buildRequestMessage();
 
 #ifdef HEXDUMP_TLS_TRANSCRIPT
-  dump_buf("Request: ", (const unsigned char *) requestMessage.c_str(), requestMessage.length());
+  dump_buf("Request: ",
+           (const unsigned char *)requestMessage.c_str(),
+           requestMessage.length());
 #else
   LL_DEBUG("Request: %s", printableRequest(requestMessage).c_str());
 #endif
 
-  for (int written = 0, frags = 0; written < requestMessage.size(); written += ret, frags++) {
+  for (int written = 0, frags = 0; written < requestMessage.size();
+       written += ret, frags++) {
     while ((ret = mbedtls_ssl_write(&ssl,
-                                    reinterpret_cast<const unsigned char *>(requestMessage.c_str()) + written,
+                                    reinterpret_cast<const unsigned char *>(
+                                        requestMessage.c_str()) +
+                                        written,
                                     requestMessage.size() - written)) <= 0) {
       if (ret != MBEDTLS_ERR_SSL_WANT_READ &&
           ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
@@ -284,13 +315,18 @@ void HttpsClient::sendRequest() {
   }
 }
 
-HttpResponse HttpsClient::getResponse() {
+HttpResponse HttpsClient::getResponse()
+{
   /*
    * 2. Start the connection
    */
-  LL_TRACE("connecting over TCP: %s:%s...", httpRequest.getHost().c_str(), httpRequest.getPort().c_str());
+  LL_TRACE("connecting over TCP: %s:%s...",
+           httpRequest.getHost().c_str(),
+           httpRequest.getPort().c_str());
 
-  if ((ret = mbedtls_net_connect(&server_fd, httpRequest.getHost().c_str(), httpRequest.getPort().c_str(),
+  if ((ret = mbedtls_net_connect(&server_fd,
+                                 httpRequest.getHost().c_str(),
+                                 httpRequest.getPort().c_str(),
                                  MBEDTLS_NET_PROTO_TCP)) != 0) {
     throw std::runtime_error("mbedtls_net_connect returned");
   }
@@ -317,7 +353,8 @@ HttpResponse HttpsClient::getResponse() {
 #endif
 
 #if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
-  if ((ret = mbedtls_ssl_conf_max_frag_len(&conf, MBEDTLS_SSL_MAX_FRAG_LEN_NONE)) != 0) {
+  if ((ret = mbedtls_ssl_conf_max_frag_len(
+           &conf, MBEDTLS_SSL_MAX_FRAG_LEN_NONE)) != 0) {
     throw runtime_error("mbedtls_ssl_conf_max_frag_len");
   }
 #endif
@@ -341,12 +378,17 @@ HttpResponse HttpsClient::getResponse() {
   }
 
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
-  if ((ret = mbedtls_ssl_set_hostname(&ssl, httpRequest.getHost().c_str())) != 0) {
+  if ((ret = mbedtls_ssl_set_hostname(&ssl, httpRequest.getHost().c_str())) !=
+      0) {
     throw runtime_error("mbedtls_ssl_set_hostname");
   }
 #endif
 
-  mbedtls_ssl_set_bio(&ssl, &server_fd, mbedtls_net_send, mbedtls_net_recv, mbedtls_net_recv_timeout);
+  mbedtls_ssl_set_bio(&ssl,
+                      &server_fd,
+                      mbedtls_net_send,
+                      mbedtls_net_recv,
+                      mbedtls_net_recv_timeout);
 
   /*
    * 4. Handshake
@@ -355,7 +397,6 @@ HttpResponse HttpsClient::getResponse() {
 
   while ((ret = mbedtls_ssl_handshake(&ssl)) != 0) {
     if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
-
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
       LL_TRACE("Verifying peer X.509 certificate...");
       if ((flags = mbedtls_ssl_get_verify_result(&ssl)) != 0) {
@@ -363,7 +404,10 @@ HttpResponse HttpsClient::getResponse() {
         char temp_buf[1024];
         if (mbedtls_ssl_get_peer_cert(&ssl) != NULL) {
           LL_CRITICAL("Peer certificate information");
-          mbedtls_x509_crt_info((char *) temp_buf, sizeof(temp_buf) - 1, "|-", mbedtls_ssl_get_peer_cert(&ssl));
+          mbedtls_x509_crt_info((char *)temp_buf,
+                                sizeof(temp_buf) - 1,
+                                "|-",
+                                mbedtls_ssl_get_peer_cert(&ssl));
           mbedtls_printf("%s\n", temp_buf);
         } else {
           LL_CRITICAL("mbedtls_ssl_get_peer_cert returns NULL");
@@ -380,7 +424,9 @@ HttpResponse HttpsClient::getResponse() {
     }
   }
 
-  LL_TRACE("Hand shake succeeds: [%s, %s]", mbedtls_ssl_get_version(&ssl), mbedtls_ssl_get_ciphersuite(&ssl));
+  LL_TRACE("Hand shake succeeds: [%s, %s]",
+           mbedtls_ssl_get_version(&ssl),
+           mbedtls_ssl_get_ciphersuite(&ssl));
 
   if ((ret = mbedtls_ssl_get_record_expansion(&ssl)) >= 0) {
     LL_TRACE("Record expansion is [%d]", ret);
@@ -389,7 +435,7 @@ HttpResponse HttpsClient::getResponse() {
 
 #if defined(MBEDTLS_SSL_MAX_FRAGMENT_LENGTH)
   LL_TRACE("Maximum fragment length is [%u]",
-           (unsigned int) mbedtls_ssl_get_max_frag_len(&ssl));
+           (unsigned int)mbedtls_ssl_get_max_frag_len(&ssl));
 #endif
 
   sendRequest();
@@ -421,17 +467,19 @@ HttpResponse HttpsClient::getResponse() {
 
     LL_TRACE("mbedtls_ssl_read returns %d", ret);
 
-    if (ret == MBEDTLS_ERR_SSL_WANT_READ ||
-        ret == MBEDTLS_ERR_SSL_WANT_WRITE)
+    if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE)
       continue;
 
     if (ret < 0) {
       switch (ret) {
-        case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:LL_CRITICAL(" connection was closed gracefully");
+        case MBEDTLS_ERR_SSL_PEER_CLOSE_NOTIFY:
+          LL_CRITICAL(" connection was closed gracefully");
           throw runtime_error("connection was closed gracefully");
-        case MBEDTLS_ERR_NET_CONN_RESET:LL_CRITICAL(" connection was reset by peer");
+        case MBEDTLS_ERR_NET_CONN_RESET:
+          LL_CRITICAL(" connection was reset by peer");
           throw runtime_error("connected reset");
-        default:LL_CRITICAL(" mbedtls_ssl_read returned -0x%x", -ret);
+        default:
+          LL_CRITICAL(" mbedtls_ssl_read returned -0x%x", -ret);
           throw runtime_error("mbedtls_ssl_read returned non-sense");
       }
     } else {
@@ -442,8 +490,10 @@ HttpResponse HttpsClient::getResponse() {
       LL_TRACE("%d bytes received.", ret);
       buf.length += ret;
 
-      n_parsed = http_parser_execute(&parser, &settings, reinterpret_cast<const char *>(buf.buf),
-                                     (size_t) ret);
+      n_parsed = http_parser_execute(&parser,
+                                     &settings,
+                                     reinterpret_cast<const char *>(buf.buf),
+                                     (size_t)ret);
       if (parser.upgrade) {
         ret = ERR_ENCLAVE_SSL_CLIENT;
         throw runtime_error("upgrade not supported");
@@ -455,17 +505,22 @@ HttpResponse HttpsClient::getResponse() {
           // this is actually okay. Pretend everything is fine and set EOF
           cb_data.eof = 1;
           // remove the trailing \r\n
-          if (_partial_buffer.compare(_partial_buffer.length() - 2, 2, "\r\n")) {
-            _partial_buffer.erase(_partial_buffer.end()-1, _partial_buffer.end());
+          if (_partial_buffer.compare(
+                  _partial_buffer.length() - 2, 2, "\r\n")) {
+            _partial_buffer.erase(_partial_buffer.end() - 1,
+                                  _partial_buffer.end());
           }
           return HttpResponse(200, "", _partial_buffer);
         }
-        LL_CRITICAL("Error: received %d bytes and parsed %zu of them", ret, n_parsed);
+        LL_CRITICAL(
+            "Error: received %d bytes and parsed %zu of them", ret, n_parsed);
         LL_CRITICAL("Error: %s", http_errno_name(HTTP_PARSER_ERRNO((&parser))));
 
         printf_sgx(_partial_buffer.c_str());
         ret = ERR_ENCLAVE_SSL_CLIENT;
-        throw runtime_error("received bytes are can not be fully parsed: " + string(http_errno_name(HTTP_PARSER_ERRNO((&parser)))));
+        throw runtime_error(
+            "received bytes are can not be fully parsed: " +
+            string(http_errno_name(HTTP_PARSER_ERRNO((&parser)))));
       }
 
       if (cb_data.eof == 1) {
@@ -477,36 +532,45 @@ HttpResponse HttpsClient::getResponse() {
         break;
       }
     }
-  } // while (true)
+  }  // while (true)
 
   if (cb_data.eof == 0 && buf.length == buf.cap) {
     LL_CRITICAL("receiving buffer (%zu bytes) is not big enough", buf.cap);
   }
 
-  string response_headers(reinterpret_cast<const char *>(buf.buf),
-                          cb_data.header_length == 0 ? buf.length : cb_data.header_length);
+  string response_headers(
+      reinterpret_cast<const char *>(buf.buf),
+      cb_data.header_length == 0 ? buf.length : cb_data.header_length);
 
-  string content((const char *) buf.buf + cb_data.header_length, buf.length - cb_data.header_length);
+  string content((const char *)buf.buf + cb_data.header_length,
+                 buf.length - cb_data.header_length);
   HttpResponse resp(parser.status_code, response_headers, content);
 
   LL_DEBUG("\nResponse header:\n%s",
            response_headers.length() == 0 ? "empty" : response_headers.c_str());
   LL_DEBUG("\nResponse body (len=%zu):\n%s",
            content.length(),
-           content.length() == 0 ? "empty" : content.substr(0, HttpsClient::responseLogLimit).c_str());
+           content.length() == 0
+               ? "empty"
+               : content.substr(0, HttpsClient::responseLogLimit).c_str());
 
   return resp;
 }
 
-void HttpsClient::close() {
-  do ret = mbedtls_ssl_close_notify(&ssl);
+void HttpsClient::close()
+{
+  do
+    ret = mbedtls_ssl_close_notify(&ssl);
   while (ret == MBEDTLS_ERR_SSL_WANT_WRITE);
   ret = 0;
 
-  LL_TRACE("closed %s:%s", httpRequest.getHost().c_str(), httpRequest.getPort().c_str());
+  LL_TRACE("closed %s:%s",
+           httpRequest.getHost().c_str(),
+           httpRequest.getPort().c_str());
 }
 
-string HttpsClient::getError() {
+string HttpsClient::getError()
+{
 #ifdef MBEDTLS_ERROR_C
   if (ret != 0) {
     char error_buf[100];
@@ -517,7 +581,8 @@ string HttpsClient::getError() {
   return "";
 }
 
-HttpsClient::~HttpsClient() {
+HttpsClient::~HttpsClient()
+{
   mbedtls_net_free(&server_fd);
 #if defined(MBEDTLS_X509_CRT_PARSE_C)
   mbedtls_x509_crt_free(&clicert);

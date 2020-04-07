@@ -53,7 +53,8 @@
 
 using namespace std;
 
-void tc::Config::parseConfigFile() {
+void tc::Config::parseConfigFile()
+{
   // parse the config files
   boost::property_tree::ptree pt;
   try {
@@ -70,13 +71,16 @@ void tc::Config::parseConfigFile() {
   }
 }
 
-tc::Config::Config(int argc, const char **argv) {
+tc::Config::Config(int argc, const char **argv)
+{
   try {
     po::options_description desc("Allowed options");
     desc.add_options()("help,h", "print this message");
-    desc.add_options()("measurement,m", po::bool_switch(&isPrintMR)->default_value(false),
+    desc.add_options()("measurement,m",
+                       po::bool_switch(&isPrintMR)->default_value(false),
                        "print the measurement (MR_ENCLAVE) and exit.");
-    desc.add_options()("config,c", po::value(&configFile)->default_value(DFT_CONFIG_FILE),
+    desc.add_options()("config,c",
+                       po::value(&configFile)->default_value(DFT_CONFIG_FILE),
                        "Path to a config file");
     po::store(po::parse_command_line(argc, argv, desc), vm);
 
@@ -100,11 +104,13 @@ tc::Config::Config(int argc, const char **argv) {
   parseConfigFile();
 }
 
-string tc::Config::toString() {
+string tc::Config::toString()
+{
   stringstream ss;
   ss << "Using config file: " << this->getConfigFile() << endl;
   ss << "+ using enclave image: " << this->getEnclavePath() << endl;
-  ss << "+ listening for TC relay at port: " << this->getRelayRPCAccessPoint() << endl;
+  ss << "+ listening for TC relay at port: " << this->getRelayRPCAccessPoint()
+     << endl;
   ss << "+ serving contract at: " << this->getTcEthereumAddress();
   return ss.str();
 }
@@ -112,7 +118,13 @@ string tc::Config::toString() {
 const string &tc::Config::getConfigFile() const { return configFile; }
 int tc::Config::getRelayRPCAccessPoint() const { return relayRPCAccessPoint; }
 const string &tc::Config::getSealedSigKey() const { return sealedECDSAKey; }
-const string &tc::Config::getSealedHybridKey() const { return sealedHybridEncryptionkey; }
+const string &tc::Config::getSealedHybridKey() const
+{
+  return sealedHybridEncryptionkey;
+}
 const string &tc::Config::getEnclavePath() const { return enclavePath; }
-const string &tc::Config::getTcEthereumAddress() const { return tcContractEthereumAddr; }
+const string &tc::Config::getTcEthereumAddress() const
+{
+  return tcContractEthereumAddr;
+}
 bool tc::Config::getIsPrintMR() const { return isPrintMR; }

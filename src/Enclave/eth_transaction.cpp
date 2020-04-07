@@ -44,24 +44,24 @@
 #include "eth_transaction.h"
 
 #include <cassert>
-#include <cstdlib>
-#include <cstdint>
-#include <vector>
 #include <cinttypes>
+#include <cstdint>
+#include <cstdlib>
+#include <vector>
 
-#include "mbedtls/bignum.h"
-
-#include "env.h"
-#include "eth_ecdsa.h"
-#include "eth_abi.h"
-#include "external/keccak.h"
-#include "Enclave_t.h"
 #include "Constants.h"
-#include "log.h"
+#include "Enclave_t.h"
 #include "commons.h"
 #include "debug.h"
+#include "env.h"
+#include "eth_abi.h"
+#include "eth_ecdsa.h"
+#include "external/keccak.h"
+#include "log.h"
+#include "mbedtls/bignum.h"
 
-void rlp_item(const uint8_t *input, const int len, bytes &out) {
+void rlp_item(const uint8_t *input, const int len, bytes &out)
+{
   int i;
   size_t len_len;
   if (!input) {
@@ -77,15 +77,19 @@ void rlp_item(const uint8_t *input, const int len, bytes &out) {
     for (i = 0; i < len; i++) out.push_back(input[i]);
   } else {
     len_len = bytesRequired(len);
-    if (len_len > 8) { throw std::invalid_argument("Error: len_len > 8"); }
+    if (len_len > 8) {
+      throw std::invalid_argument("Error: len_len > 8");
+    }
     out.push_back(0xb7 + static_cast<uint8_t>(len_len));
 
-    for (i = len_len - 1; i >= 0; i--) out.push_back(static_cast<uint8_t>((len >> (8 * i)) & 0xFF));
+    for (i = len_len - 1; i >= 0; i--)
+      out.push_back(static_cast<uint8_t>((len >> (8 * i)) & 0xFF));
     for (i = 0; i < len; i++) out.push_back(input[i]);
   }
 }
 
-void Transaction::rlpEncode(bytes &out, bool withSig) {
+void Transaction::rlpEncode(bytes &out, bool withSig)
+{
   int i;
   uint8_t len_len, b;
 
@@ -110,7 +114,7 @@ void Transaction::rlpEncode(bytes &out, bool withSig) {
   m_data.to_rlp(out);
   // v is also different
   if (withSig) {
-    rlp_item((const uint8_t *) &v, 1, out);
+    rlp_item((const uint8_t *)&v, 1, out);
     r.to_rlp(out);
     s.to_rlp(out);
   }
@@ -134,7 +138,6 @@ void Transaction::rlpEncode(bytes &out, bool withSig) {
   }
 }
 
-
 #define DELIVER_CALL_SIGNATURE "deliver(uint64,bytes32,uint64,bytes32)"
 
 int form_transaction(int nonce,
@@ -144,12 +147,18 @@ int form_transaction(int nonce,
                      size_t request_data_len,
                      uint64_t resp_error,
                      bytes resp_data,
-                     uint8_t * tx_output_bf,
-                     size_t * o_len,
-                     bool with_sig) {
-
-  LL_INFO("forming transaction for nonce=%d, id=%" PRIu64 ", " "type=%d, date_len=%zu, err=%" PRIu64,
-          nonce, request_id, request_type, request_data_len, resp_error);
+                     uint8_t *tx_output_bf,
+                     size_t *o_len,
+                     bool with_sig)
+{
+  LL_INFO("forming transaction for nonce=%d, id=%" PRIu64
+          ", "
+          "type=%d, date_len=%zu, err=%" PRIu64,
+          nonce,
+          request_id,
+          request_type,
+          request_data_len,
+          resp_error);
 
   if (tx_output_bf == nullptr || o_len == nullptr) {
     LL_CRITICAL("Error: tx_output_bf or o_len gets NULL input\n");
@@ -158,7 +167,6 @@ int form_transaction(int nonce,
 
   bytes out;
   int ret;
-
 
   // calculate a _tx_hash of input
   // note that the raw input = request_id || request_data
@@ -207,7 +215,10 @@ int form_transaction(int nonce,
   // compute function selector as the first 4 bytes
   // of SHA3(DELIVER_CALL_SIGNATURE)
   bytes32 func_selector(0);
-  ret = keccak((unsigned const char *) DELIVER_CALL_SIGNATURE, strlen(DELIVER_CALL_SIGNATURE), &func_selector[0], 32);
+  ret = keccak((unsigned const char *)DELIVER_CALL_SIGNATURE,
+               strlen(DELIVER_CALL_SIGNATURE),
+               &func_selector[0],
+               32);
   if (ret) {
     LL_CRITICAL("SHA3 returned %d\n", ret);
     return TC_INTERNAL_ERROR;
@@ -216,7 +227,9 @@ int form_transaction(int nonce,
   func_selector.dump("func selector");
 
   // insert the function selector to the begining of the encoded abi
-  encoded_delivery_call.insert(encoded_delivery_call.begin(), func_selector.begin(), func_selector.begin() + 4);
+  encoded_delivery_call.insert(encoded_delivery_call.begin(),
+                               func_selector.begin(),
+                               func_selector.begin() + 4);
 
   encoded_delivery_call.dump("encoded data");
 
@@ -236,16 +249,13 @@ int form_transaction(int nonce,
   try {
     tx.rlpEncode(out, false);
     LL_DEBUG("rlpEncode done");
-  }
-  catch (const std::invalid_argument &e) {
+  } catch (const std::invalid_argument &e) {
     LL_CRITICAL("%s", e.what());
     return TC_INTERNAL_ERROR;
-  }
-  catch (const std::exception &e) {
+  } catch (const std::exception &e) {
     LL_CRITICAL("%s", e.what());
     return TC_INTERNAL_ERROR;
-  }
-  catch (...) {
+  } catch (...) {
     LL_CRITICAL("unknown ex");
     return TC_INTERNAL_ERROR;
   }
@@ -288,8 +298,14 @@ int form_transaction(int nonce,
   memcpy(tx_output_bf, &out[0], out.size());
   *o_len = out.size();
 
-  LL_INFO("finished transaction for nonce=%d, id=%" PRIu64 ", "
-      "type=%d, date_len=%zu, err=%" PRIu64 ", total size=%zuB",
-          nonce, request_id, request_type, request_data_len, resp_error, *o_len);
+  LL_INFO("finished transaction for nonce=%d, id=%" PRIu64
+          ", "
+          "type=%d, date_len=%zu, err=%" PRIu64 ", total size=%zuB",
+          nonce,
+          request_id,
+          request_type,
+          request_data_len,
+          resp_error,
+          *o_len);
   return TC_SUCCESS;
 }

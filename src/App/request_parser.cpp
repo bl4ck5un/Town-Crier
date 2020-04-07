@@ -49,35 +49,41 @@
 #include <sstream>
 
 #include "App/converter.h"
+#include "App/debug.h"
+#include "App/logging.h"
 #include "App/utils.h"
 #include "Common/Constants.h"
-#include "App/logging.h"
-#include "App/debug.h"
 
-using tc::RequestParser;
-using std::stringstream;
 using std::invalid_argument;
 using std::out_of_range;
-using std::strtol;
 using std::stoi;
+using std::stringstream;
+using std::strtol;
+using tc::RequestParser;
 
-namespace tc {
-namespace requestParser {
+namespace tc
+{
+namespace requestParser
+{
 log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("request_parser.cpp"));
 }
-}
+}  // namespace tc
 
 using tc::requestParser::logger;
 
-inline static unsigned int __hextoi(const string &str) {
+inline static unsigned int __hextoi(const string &str)
+{
   return static_cast<unsigned int>(stoi(str, nullptr, 16));
 }
 
-inline static uint64_t __hextol(const string &str) {
+inline static uint64_t __hextol(const string &str)
+{
   return stoul(str, nullptr, 16);
 }
 
-RequestParser::RequestParser(const string &input, const string &hash) : raw_request(hexToBuffer(input)) {
+RequestParser::RequestParser(const string &input, const string &hash)
+    : raw_request(hexToBuffer(input))
+{
   this->tx_hash = hash;
 
   LL_LOG("request parser get is %s", input.c_str());
@@ -98,7 +104,8 @@ RequestParser::RequestParser(const string &input, const string &hash) : raw_requ
 
     // 0x40 - 0x60 bytes : requester
     offset += ADDRESS_LEADING_ZERO;  // skipping leading zeroes
-    hexToBuffer(input.substr(offset, ADDRESS_LEN), this->requester,
+    hexToBuffer(input.substr(offset, ADDRESS_LEN),
+                this->requester,
                 sizeof this->requester);
     offset += ADDRESS_LEN;
 
@@ -108,12 +115,14 @@ RequestParser::RequestParser(const string &input, const string &hash) : raw_requ
 
     // 0x80 - 0xa0       : cb
     offset += ADDRESS_LEADING_ZERO;  // skipping leading zeroes
-    hexToBuffer(input.substr(offset, ADDRESS_LEN), this->callback,
+    hexToBuffer(input.substr(offset, ADDRESS_LEN),
+                this->callback,
                 sizeof this->callback);
     offset += ADDRESS_LEN;
 
     // 0xa0 - 0xc0       : hash
-    hexToBuffer(input.substr(offset, ENTRY_LEN), this->param_hash,
+    hexToBuffer(input.substr(offset, ENTRY_LEN),
+                this->param_hash,
                 sizeof this->param_hash);
     offset += ENTRY_LEN;
 
@@ -129,20 +138,16 @@ RequestParser::RequestParser(const string &input, const string &hash) : raw_requ
       this->data_len = __hextoi(input.substr(offset, ENTRY_LEN)) * 32;
       offset += ENTRY_LEN;
       hexToBuffer(input.substr(offset), &this->data);
-    }
-    else {
+    } else {
       this->data_len = 0;
     }
-  }
-  catch (const std::out_of_range &e) {
+  } catch (const std::out_of_range &e) {
     LL_CRITICAL("bad request: %s", e.what());
     throw RequestParserException(e.what());
-  }
-  catch (const std::exception &e) {
+  } catch (const std::exception &e) {
     LL_CRITICAL("bad request: %s", e.what());
     throw RequestParserException(e.what());
-  }
-  catch (...) {
+  } catch (...) {
     LL_CRITICAL("bad request");
     throw RequestParserException("unknown exception thrown");
   }
@@ -155,7 +160,8 @@ RequestParser::RequestParser(const string &input, const string &hash) : raw_requ
 
 const bytes &RequestParser::getRawRequest() const { return raw_request; }
 
-const string RequestParser::toString() const {
+const string RequestParser::toString() const
+{
   stringstream ss;
   ss << "request id=" << this->id << " type=" << this->type << " with date "
      << this->data_len << "B";
@@ -169,12 +175,13 @@ const uint8_t *RequestParser::getCallback() const { return callback; }
 const uint8_t *RequestParser::getParamHash() const { return param_hash; }
 uint64_t RequestParser::getTimestamp() const { return timestamp; }
 size_t RequestParser::getDataLen() const { return data_len; }
-const uint8_t * RequestParser::getData() const { return data.data(); }
+const uint8_t *RequestParser::getData() const { return data.data(); }
 size_t RequestParser::getRequesterLen() { return sizeof requester; }
 size_t RequestParser::getCallbackLen() { return sizeof callback; }
 size_t RequestParser::getParamHashLen() { return sizeof param_hash; }
 const string &RequestParser::getTransactionHash() const { return tx_hash; }
 
-void RequestParser::dumpData() const {
+void RequestParser::dumpData() const
+{
   hexdump("data", getData(), getDataLen());
 }
