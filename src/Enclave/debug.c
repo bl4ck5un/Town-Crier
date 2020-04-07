@@ -41,16 +41,17 @@
  */
 
 #include "debug.h"
-#include "string.h"
+
 #include "glue.h"
+#include "string.h"
 
 #define MIN(x, y) (x < y ? x : y)
 
-void dump_buf(const char *title, const unsigned char *buf, size_t len) {
+void dump_buf(const char *title, const unsigned char *buf, size_t len)
+{
   hexdump(title, buf, len);
 }
 
-#ifdef DEBUG
 static void bin_to_hex(const unsigned char *bin, size_t binsz, char *result)
 {
   char hex_str[] = "0123456789abcdef";
@@ -65,7 +66,6 @@ static void bin_to_hex(const unsigned char *bin, size_t binsz, char *result)
     result[i * 2 + 1] = hex_str[(bin[i]) & 0x0F];
   }
 }
-#endif
 
 void print_str_dbg(const char *title, const unsigned char *data, size_t len)
 {
@@ -85,7 +85,8 @@ void print_str_dbg(const char *title, const unsigned char *data, size_t len)
 }
 
 #include "log.h"
-void hexdump(const char *title, void const *data, size_t len) {
+void hexdump(const char *title, void const *data, size_t len)
+{
 #if 0
   unsigned int i;
   unsigned int r, c;
