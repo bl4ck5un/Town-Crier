@@ -1,3 +1,5 @@
+.. _rinkeby-example:
+
 Play with TC on Rinkeby
 =======================
 

@@ -11,7 +11,6 @@ Welcome to Town Crier's documentation!
    getstarted
    rinkeby
    docker
-   localnode
    tc-contract
 
 

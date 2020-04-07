@@ -2,6 +2,8 @@ Get Started: Write Your First TC-powered Contract
 =================================================
 
 The TC contract has a very simple API for your contract to call.
+Below we present the generic API,
+and then we'll go through an example (:ref:`rinkeby-example`) with detailed explanation.
 
 Submit queries via ``request``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
