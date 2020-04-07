@@ -1,7 +1,3 @@
-//
-// Created by fanz on 4/25/18.
-//
-
 #ifndef TOWN_CRIER_BITCOINFEES_H
 #define TOWN_CRIER_BITCOINFEES_H
 
@@ -18,7 +14,7 @@ private:
   const std::string HOSTNAME = "bitcoinfees.earn.com";
   const std::string URL = "/api/v1/fees/recommended";
 public:
-  err_code handle(const uint8_t *req, size_t len, int *resp_data) final;
+  err_code handle(const uint8_t *request_data, size_t request_data_len, int *response_data) final;
   void get_recommended_fees(RecommendedFees*);
 private:
 };

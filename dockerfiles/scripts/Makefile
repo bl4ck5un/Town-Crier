@@ -1,13 +1,15 @@
-BASE_DIR=$(shell pwd)/..
+BASE_DIR=$(shell pwd)/../..
 
 BUILD=Debug
 
 RELAY_IMAGE=bl4ck5un/tc-relay
 CORE_IMAGE=bl4ck5un/tc-core
 
-.PHONY: all up up-debug
+.PHONY: all
 
 all: relay core core-debug
+
+rinkeby: relay core-debug
 
 relay: ${BASE_DIR}/python-relay/relay.py
 	cd ${BASE_DIR}/python-relay && \

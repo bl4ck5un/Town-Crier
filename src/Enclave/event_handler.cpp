@@ -88,8 +88,7 @@ int handle_request(int nonce,
     string tc_address = getContractAddress();
     LL_DEBUG("serving tc address: %s", tc_address.c_str());
 
-    int ret = do_handle_request(nonce, id, type, data, data_len, raw_tx, raw_tx_len);
-    return ret;
+    return do_handle_request(nonce, id, type, data, data_len, raw_tx, raw_tx_len);
   }
   catch (const std::exception &e) {
     LL_CRITICAL("exception while handling request: %s", e.what());

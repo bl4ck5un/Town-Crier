@@ -14,7 +14,7 @@ contracts/demo/chain0/
 bin
 build
 release
-cmake-build-debug
+cmake-build-debug*
 
 .compiledContract.js
 

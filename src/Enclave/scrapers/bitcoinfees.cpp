@@ -8,14 +8,14 @@
 
 using namespace std;
 
-err_code BitcoinFees::handle(const uint8_t *req, size_t len, int *resp_data) {
-  (void) req;
-  (void) len;
+err_code BitcoinFees::handle(const uint8_t *request_data, size_t request_data_len, int *response_data) {
+  (void) request_data;
+  (void) request_data_len;
 
   try {
     RecommendedFees fees;
     get_recommended_fees(&fees);
-    *resp_data = fees.fastestFee;
+    *response_data = fees.fastestFee;
 
     return NO_ERROR;
   }

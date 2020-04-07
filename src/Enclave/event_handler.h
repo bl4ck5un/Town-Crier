@@ -43,8 +43,8 @@
 #ifndef ENCLAVE_EVENTHANDLER_H
 #define ENCLAVE_EVENTHANDLER_H
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
 using std::string;
@@ -68,6 +68,7 @@ int do_handle_request(int nonce,
                       size_t data_len,
                       uint8_t *raw_tx,
                       size_t *raw_tx_len);
+
 #if defined(__cplusplus)
 }
 #endif

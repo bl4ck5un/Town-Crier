@@ -119,7 +119,7 @@ Json::Value status_rpc_server::status() {
 #include "debug.h"
 
 Json::Value status_rpc_server::process(const std::string &data, int nonce, const std::string &txid) {
-// TX_BUF_SIZE is defined in Constants.h
+  // TX_BUF_SIZE is defined in Constants.h
   uint8_t resp_buffer[TX_BUF_SIZE] = {0};
   size_t resp_data_len = 0;
 

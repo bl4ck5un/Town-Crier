@@ -8,38 +8,37 @@ var sellerAddr = eth.accounts[1]
 var buyerAddr = eth.accounts[2]
 var sgxAddr = "0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997"
 
-var gasCnt = 3e+6
-var TC_FEE = 3e+15
+var gasCnt = 3e+6;
+var TC_FEE = 3e+15;
 
-var TownCrier = web3.eth.contract(JSON.parse(compiledContract.contracts["TownCrier"].abi));
-var App = web3.eth.contract(JSON.parse(compiledContract.contracts["Application"].abi));
+var TownCrier = web3.eth.contract(JSON.parse(compiledContracts.contracts["TownCrier"].abi));
+var App = web3.eth.contract(JSON.parse(compiledContracts.contracts["Application"].abi));
 
 function checkWork() {
-    if (eth.getBlock("pending").transactions.length > 0) {
-        if (eth.mining) return;
-        console.log("== Pending transactions! Mining...");
-        miner.start(1);
-    } else {
-        if (!eth.mining) return;
-        miner.stop();
-        console.log("== No transactions! Mining stopped.");
-    }
+    // if (eth.getBlock("pending").transactions.length > 0) {
+    //     if (eth.mining) return;
+    //     console.log("== Pending transactions! Mining...");
+    //     miner.start(1);
+    // } else {
+    //     if (!eth.mining) return;
+    //     miner.stop();
+    //     console.log("== No transactions! Mining stopped.");
+    // }
 }
 
 function mineBlocks(num) {
-    miner.start(1);
-    miner.start(1);
-    admin.sleepBlocks(num);
-    miner.stop();
-
-    return "One block mined";
+    // miner.start(1);
+    // admin.sleepBlocks(num);
+    // miner.stop();
+    //
+    // return "One block mined";
 }
 
 function createTC() {
     unlockAccounts();
     var tc = TownCrier.new({
         from: minerAddr,
-        data: "0x" + compiledContract.contracts["TownCrier"].bin,
+        data: "0x" + compiledContracts.contracts["TownCrier"].bin,
         gas: gasCnt
     }, function (e, c) {
         if (!e) {
@@ -111,7 +110,7 @@ function createApp(tc) {
     var tradeContract = App.new(
         tc, {
             from: sellerAddr,
-            data: "0x" + compiledContract.contracts["Application"].bin,
+            data: "0x" + compiledContracts.contracts["Application"].bin,
             gas: gasCnt
         },
         function (e, c) {
@@ -214,9 +213,9 @@ function watch_events(contract) {
 }
 
 function unlockAccounts() {
-    for (var i = 0; i < eth.accounts.length; ++i) {
-        personal.unlockAccount(eth.accounts[i], '123123');
-    }
+    // for (var i = 0; i < eth.accounts.length; ++i) {
+    //     personal.unlockAccount(eth.accounts[i], '123123');
+    // }
 }
 
 function pad(n, width) {

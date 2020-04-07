@@ -22,9 +22,9 @@ else
     cp ${CONTRACT_DIR}/TownCrier.sol tc.sol
 fi
 
-cat <<EOF > .compiledContract.js
-var compiledContract = $(cat tc.sol ${CONTRACT_DIR}/Application.sol \
-        | docker run --rm -i ethereum/solc:stable --optimize --combined-json abi,bin,interface  \
+cat <<EOF > CompiledContracts-solc-v0.4.26.js
+var compiledContracts = $(cat tc.sol ${CONTRACT_DIR}/Application.sol \
+        | docker run --rm -i ethereum/solc:0.4.26 --optimize --combined-json abi,bin,interface  \
         | sed 's/<stdin>\://g');
 EOF
 

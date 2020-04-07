@@ -1,8 +1,10 @@
-Examples
-========
+Play with TC on Rinkeby
+=======================
 
 .. note::
-  To show how to interface with the ``Town Crier`` Contract, we present a  skeleton ``Application`` Contract that does nothing other than sending queries, logging responses and cancelling queries.
+  A version of Town Crier smart contract has been deployed on the `Rinkeby testnet <https://rinkeby.etherscan.io/address/0xc41c9c6be928f3abde1c3b327a70c5a5abb35c5f>`_.
+  To show how to use Town Crier, we present a  skeleton ``Application`` Contract that does nothing other than sending queries, logging responses and cancelling queries.
+  The Application contract has also been deployed on Rinkeby (https://rinkeby.etherscan.io/address/0x20e63d9683a75ef73e6174298354f8b016878de3).
 
 The source code of the application contract can be found `here <https://github.com/bl4ck5un/Town-Crier/blob/master/contracts/Application.sol>`_. Now we go through the contract code line by line.
 

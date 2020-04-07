@@ -1,0 +1,10 @@
+deployed_on_rinkeby.sol contains the following two deployed contracts:
+
+- TownCrier: https://rinkeby.etherscan.io/address/0xc41c9c6be928f3abde1c3b327a70c5a5abb35c5f
+- Application: https://rinkeby.etherscan.io/address/0x20e63d9683a75ef73e6174298354f8b016878de3
+
+Complied using solc 0.4.26.
+
+To sync a Rinkeby node
+
+> docker run -d --name ethereum-node --restart always -v ~/ethereum/rinkeby:/root -p 8545:8545 -p 30303:30303 ethereum/client-go --rinkeby

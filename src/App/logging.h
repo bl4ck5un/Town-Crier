@@ -51,7 +51,7 @@
 
 constexpr auto LOGGING_CONF_FILE = "/tc/conf/logging.conf";
 
-// a universal false for C++/C
+// define _FALSE as a universal false for C++/C
 #ifdef    __cplusplus
 #define _FALSE false
 #else

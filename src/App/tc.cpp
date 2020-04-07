@@ -84,11 +84,11 @@ using tc::main::logger;
 using namespace std;
 
 std::atomic<bool> quit(false);
-void exitGraceful(int) { quit.store(true); }
+void exit_gracefully(int) { quit.store(true); }
 
 int main(int argc, const char *argv[]) {
-  std::signal(SIGINT, exitGraceful);
-  std::signal(SIGTERM, exitGraceful);
+  std::signal(SIGINT, exit_gracefully);
+  std::signal(SIGTERM, exit_gracefully);
 
   log4cxx::PropertyConfigurator::configure(LOGGING_CONF_FILE);
 
@@ -116,14 +116,15 @@ int main(int argc, const char *argv[]) {
   string wallet_address, hybrid_pubkey;
 
   try {
+    // load the wallet key --- the ECDSA key used to sign transactions
     wallet_address = unseal_key(eid, config.getSealedSigKey(), tc::keyUtils::ECDSA_KEY);
-    hybrid_pubkey = unseal_key(eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
-
-    LL_INFO("using wallet address at %s", wallet_address.c_str());
-    LL_INFO("using hybrid pubkey: %s", hybrid_pubkey.c_str());
-
     provision_key(eid, config.getSealedSigKey(), tc::keyUtils::ECDSA_KEY);
+    LL_INFO("using wallet address at %s", wallet_address.c_str());
+
+    // load the encryption key --- the key under which inputs are encrypted
+    hybrid_pubkey = unseal_key(eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
     provision_key(eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
+    LL_INFO("using hybrid pubkey: %s", hybrid_pubkey.c_str());
   } catch (const tc::EcallException &e) {
     LL_CRITICAL("%s", e.what());
     exit(-1);
@@ -132,12 +133,14 @@ int main(int argc, const char *argv[]) {
     exit(-1);
   }
 
+  // starting the backend RPC server
   jsonrpc::HttpServer status_server_connector(config.getRelayRPCAccessPoint(), "", "", 3);
-  tc::status_rpc_server stat_srvr(status_server_connector, eid);
-  stat_srvr.StartListening();
+  tc::status_rpc_server status_server(status_server_connector, eid);
+  status_server.StartListening();
   LL_INFO("RPC server started at %d", config.getRelayRPCAccessPoint());
 
-  st = init_enclave_kv_store(eid, config.getContractAddress().c_str());
+  // initialize the enclave environment variables
+  st = init_enclave_kv_store(eid, config.getTcEthereumAddress().c_str());
   if (st != SGX_SUCCESS) {
     LL_CRITICAL("cannot initialize enclave env");
     exit(-1);
@@ -147,7 +150,7 @@ int main(int argc, const char *argv[]) {
     this_thread::sleep_for(chrono::microseconds(500));
   }
 
-  stat_srvr.StopListening();
+  status_server.StopListening();
   sgx_destroy_enclave(eid);
   LL_INFO("all enclave closed successfully");
 }
