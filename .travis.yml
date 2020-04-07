@@ -3,12 +3,3 @@ services:
 - docker
 script:
 - make -C dockerfiles/scripts
-deploy:
-  provider: script
-  script: bash scripts/deploy_to_docker_hub.sh
-  on:
-    branch: master
-    tags: true
-env:
-  matrix:
-    secure: ks0u6+IFtJlFHpTAlDfhfx2ApEAhsyGdGozJXRVIvqklZkBCsPYUlhM7DP6WIDH3JdtT+ooRWz+8Rd6CCHqPHcJIkFzrYI75woyj2ztG3ZbWSjXbfAj9hJqFsdTvpnNuLLYVUwMGF9IsCSx7/mJRA3ye7jsjmX6wYBpoM1YfVHBH1u8Im4Vn6kojIR/fLtF6c7ZXEOsTwMYdRNzEko4Mj11nWNeooBPbcWyZDhZCXUJqbE95vBsrNqvh3doVzpSIqUzx9uSJAdnOrP+aUwenvSIJIe3qiD2IEUF1rBVMBWzP1nn4fFVhc5Of9HEe1A9gdhDYu3MgVoqwgJKl08PR/j9ivETiPUd2KN7RT7x+LqYMoXDuYaoHTXEaRDv2v+Q/MG7//eRTt8DAI3TU/nr4bM5lH9O5MWay2BylvPQyGZBFBkJEcwpA0hAQUdgEEBGoO9vVyKT4hCDq+AQK5yXt5G9P0z9WqWHDQro4EyCvMMauIbKcZgsKBr7FKRsMdxV3YFzBcnlNmzJNe2arW7EehjLM55eHuwnpQqWu803WfZOOIg5lBz8n3eh5OJqzv4I7SIqlmYtN4fCQMfY09ZK/3o/q70erJQWPsF7rYV4Agt/9Cc7L8gly19dSvmrtWV0OcI0muHXcDLs0ivOnfElHXsWJ9AxhpvlC6TBNgJZxXBw=
