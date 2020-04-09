@@ -45,30 +45,31 @@
 #include <sgx_uae_service.h>
 
 // system headers
+#include <jsonrpccpp/server/connectors/httpserver.h>
+#include <log4cxx/logger.h>
+#include <log4cxx/propertyconfigurator.h>
+
 #include <atomic>
+#include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
+#include <boost/property_tree/ini_parser.hpp>
+#include <chrono>
 #include <csignal>
 #include <iostream>
 #include <string>
 #include <thread>
-#include <chrono>
 #include <utility>
-#include <log4cxx/logger.h>
-#include <log4cxx/propertyconfigurator.h>
-#include <jsonrpccpp/server/connectors/httpserver.h>
-#include <boost/filesystem.hpp>
-#include <boost/program_options.hpp>
-#include <boost/property_tree/ini_parser.hpp>
 
 // app headers
 #include "App/Enclave_u.h"
-#include "App/status_rpc_server.h"
 #include "App/attestation.h"
 #include "App/config.h"
 #include "App/key_utils.h"
+#include "App/logging.h"
 #include "App/request_parser.h"
+#include "App/status_rpc_server.h"
 #include "App/tc_exception.h"
 #include "App/utils.h"
-#include "App/logging.h"
 #include "Common/Constants.h"
 
 namespace po = boost::program_options;
@@ -79,7 +80,8 @@ using namespace std;
 std::atomic<bool> quit(false);
 void exit_gracefully(int) { quit.store(true); }
 
-int main(int argc, const char *argv[]) {
+int main(int argc, const char *argv[])
+{
   std::signal(SIGINT, exit_gracefully);
   std::signal(SIGTERM, exit_gracefully);
 
@@ -111,13 +113,16 @@ int main(int argc, const char *argv[]) {
 
   try {
     // load the wallet key --- the ECDSA key used to sign transactions
-    wallet_address = unseal_key(eid, config.getSealedSigKey(), tc::keyUtils::ECDSA_KEY);
+    wallet_address =
+        unseal_key(eid, config.getSealedSigKey(), tc::keyUtils::ECDSA_KEY);
     provision_key(eid, config.getSealedSigKey(), tc::keyUtils::ECDSA_KEY);
     LL_INFO("using wallet address at %s", wallet_address.c_str());
 
     // load the encryption key --- the key under which inputs are encrypted
-    hybrid_pubkey = unseal_key(eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
-    provision_key(eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
+    hybrid_pubkey = unseal_key(
+        eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
+    provision_key(
+        eid, config.getSealedHybridKey(), tc::keyUtils::HYBRID_ENCRYPTION_KEY);
     LL_INFO("using hybrid pubkey: %s", hybrid_pubkey.c_str());
   } catch (const tc::EcallException &e) {
     LL_CRITICAL("%s", e.what());
@@ -128,7 +133,8 @@ int main(int argc, const char *argv[]) {
   }
 
   // starting the backend RPC server
-  jsonrpc::HttpServer status_server_connector(config.getRelayRPCAccessPoint(), "", "", 3);
+  jsonrpc::HttpServer status_server_connector(
+      config.getRelayRPCAccessPoint(), "", "", 3);
   tc::status_rpc_server status_server(status_server_connector, eid);
   status_server.StartListening();
   LL_INFO("RPC server started at %d", config.getRelayRPCAccessPoint());
