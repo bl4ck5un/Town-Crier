@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package rpc;
+
+service towncrier {
+  rpc attest(Empty) returns (Attestation) {}
+  rpc status(Empty) returns (Status) {}
+  rpc process(Request) returns (Response) {}
+}
+
+message Attestation {
+  string quote = 1;
+  string mr_enclave = 2;
+  string error = 3;
+}
+
+//empty thus far
+message Status {
+  string version = 1;
+}
+
+message Request {
+  uint64 id = 1;
+  uint32 type = 2;
+  bytes data = 3;
+  uint64 nonce = 4;
+}
+
+message Response {
+  uint32 error_code = 1;
+  bytes response_tx = 2;
+}
+
+message Empty {}

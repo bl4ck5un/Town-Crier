@@ -45,6 +45,7 @@
 #include <sgx_uae_service.h>
 
 // system headers
+#include <grpcpp/server_builder.h>
 #include <jsonrpccpp/server/connectors/httpserver.h>
 #include <log4cxx/logger.h>
 #include <log4cxx/propertyconfigurator.h>
@@ -67,6 +68,7 @@
 #include "App/key_utils.h"
 #include "App/logging.h"
 #include "App/request_parser.h"
+#include "App/rpc.h"
 #include "App/status_rpc_server.h"
 #include "App/tc_exception.h"
 #include "App/utils.h"
@@ -132,13 +134,6 @@ int main(int argc, const char *argv[])
     exit(-1);
   }
 
-  // starting the backend RPC server
-  jsonrpc::HttpServer status_server_connector(
-      config.getRelayRPCAccessPoint(), "", "", 3);
-  tc::status_rpc_server status_server(status_server_connector, eid);
-  status_server.StartListening();
-  LL_INFO("RPC server started at %d", config.getRelayRPCAccessPoint());
-
   // initialize the enclave environment variables
   st = init_enclave_kv_store(eid, config.getTcEthereumAddress().c_str());
   if (st != SGX_SUCCESS) {
@@ -146,11 +141,18 @@ int main(int argc, const char *argv[])
     exit(-1);
   }
 
-  while (!quit.load()) {
-    this_thread::sleep_for(chrono::microseconds(500));
-  }
+  // starting the backend RPC server
+  RpcServer tc_service(eid);
+  std::string server_address("0.0.0.0:" +
+                             std::to_string(config.getRelayRPCAccessPoint()));
+  grpc::ServerBuilder builder;
+  builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
+  builder.RegisterService(&tc_service);
 
-  status_server.StopListening();
+  std::unique_ptr<grpc::Server> server(builder.BuildAndStart());
+  LOG4CXX_INFO(logger, "TC service listening on " << server_address);
+
+  server->Wait();
   sgx_destroy_enclave(eid);
   LL_INFO("all enclave closed successfully");
 }
