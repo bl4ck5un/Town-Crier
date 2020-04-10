@@ -66,7 +66,6 @@
 #include "App/config.h"
 #include "App/key_utils.h"
 #include "App/logging.h"
-#include "App/request_parser.h"
 #include "App/rpc.h"
 #include "App/tc_exception.h"
 #include "App/utils.h"

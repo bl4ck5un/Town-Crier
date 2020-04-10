@@ -72,7 +72,6 @@ set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES "Enclave_u.c; En
 add_executable(tc
         tc.cpp
         attestation.cpp
-        request_parser.cpp
         mbedtls_sgx_net.c
         Enclave_u.c
         ocalls.cpp
@@ -152,7 +151,6 @@ if(BUILD_TESTS)
             converter.cpp
             ../Common/external/base64.cpp
             types.cpp
-            request_parser.cpp
             key_utils.cpp)
 
     target_include_directories(tc-test
