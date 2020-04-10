@@ -1,0 +1,6 @@
+The easiest way to test python-relay is to run TC enclave in docker
+
+    cd dockerfiles/Town-Crier-docker-services/rinkeby
+    docker run -v $PWD/config-rinkeby-sim:/config -v $PWD/logs:/var/log/tc/  --entrypoint tc --rm -p 8123:8123 bl4ck5un/tc-core:Debug
+
+And run this python script outside docker.

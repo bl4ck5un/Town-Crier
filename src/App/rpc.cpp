@@ -82,10 +82,10 @@
       this->logger->info("ecall succeeds");
 
       string resp_txn = bufferToHex(resp_buffer, resp_data_len, true);
-      LOG4CXX_DEBUG(this->logger, "response tx: " << resp_txn);
+      LOG4CXX_INFO(this->logger, "response tx: " << resp_txn);
 
       response->set_error_code(0);
-      response->set_response_tx(resp_txn);
+      response->set_response_tx((const char*)resp_buffer, resp_data_len);
 
       return grpc::Status::OK;
     }

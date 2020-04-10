@@ -1,0 +1,3 @@
+[submodule "dockerfiles/Town-Crier-docker-sevices"]
+	path = dockerfiles/Town-Crier-docker-sevices
+	url = https://github.com/bl4ck5un/Town-Crier-docker-sevices.git

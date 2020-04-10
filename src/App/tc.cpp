@@ -46,7 +46,6 @@
 
 // system headers
 #include <grpcpp/server_builder.h>
-#include <jsonrpccpp/server/connectors/httpserver.h>
 #include <log4cxx/logger.h>
 #include <log4cxx/propertyconfigurator.h>
 
@@ -69,7 +68,6 @@
 #include "App/logging.h"
 #include "App/request_parser.h"
 #include "App/rpc.h"
-#include "App/status_rpc_server.h"
 #include "App/tc_exception.h"
 #include "App/utils.h"
 #include "Common/Constants.h"
@@ -79,14 +77,8 @@ namespace fs = boost::filesystem;
 
 using namespace std;
 
-std::atomic<bool> quit(false);
-void exit_gracefully(int) { quit.store(true); }
-
 int main(int argc, const char *argv[])
 {
-  std::signal(SIGINT, exit_gracefully);
-  std::signal(SIGTERM, exit_gracefully);
-
   log4cxx::PropertyConfigurator::configure(LOGGING_CONF_FILE);
   log4cxx::LoggerPtr logger(log4cxx::Logger::getLogger("tc.cpp"));
 

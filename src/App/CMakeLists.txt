@@ -35,11 +35,7 @@ configure_file(
 #### dependencies
 ###############################
 
-find_package(CURL REQUIRED)
 find_package(Boost QUIET REQUIRED COMPONENTS program_options filesystem system)
-find_package(Jsoncpp REQUIRED)
-find_package(MHD REQUIRED)
-find_package(JsonCppRpc REQUIRED)
 find_package(Log4CXX REQUIRED)
 
 # ###############################################################################
@@ -85,7 +81,6 @@ add_executable(tc
         utils.cpp
         types.cpp
         rpc.cpp
-        status_rpc_server.cpp
         ../Common/external/base64.cpp
         key_utils.cpp
         logging.cpp
@@ -105,24 +100,20 @@ add_executable(tc-keygen
         mbedtls_sgx_net.c)
 
 include_directories(
-        ${CURL_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
-        ${JSONCPP_INCLUDE_DIRS}/${JSONCPP_INCLUDE_PREFIX}
-        ${MHD_INCLUDE_DIRS}
         ${SGXSDK_INCLUDE_DIRS}
-        ${JSONRPCCPP_INCLUDE_DIRS}
         ${MBEDTLS_LIB_DIR}/include
         ${LOG4CXX_INCLUDE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
 target_link_libraries(tc
-        ${JSONCPP_LIBRARIES} ${CURL_LIBRARIES} ${JSONRPCCPP_LIBRARIES}
-        ${MHD_LIBRARIES} ${Boost_LIBRARIES}
+        ${Boost_LIBRARIES}
         ${LOG4CXX_LIBRARY}
         ${SGX_URTS_LIBRARY} ${SGX_USVC_LIBRARY}
         gRPC::grpc++
         protobuf::libprotobuf
+        -Wl,-rpath=/opt/grpc/lib:/opt/protobuf/lib # hardcode rpath for now.
         -lpthread -ldl)
 
 target_link_libraries(tc-keygen
