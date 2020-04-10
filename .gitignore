@@ -21,5 +21,6 @@ cmake-build-debug*
 env
 env3
 venv
+__pycache__
 
 docs/_build

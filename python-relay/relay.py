@@ -11,9 +11,12 @@ Options:
   --dryrun                  Process one request then exit.
 """
 
-from web3 import Web3
 import logging
-import pprint
+
+import grpc
+from web3 import Web3
+
+import tc_pb2_grpc
 
 logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)-4d] %(message)s',
                     datefmt='%d-%m-%Y:%H:%M:%S',
@@ -26,7 +29,7 @@ class ConfigRinkeby:
     SGX_WALLET_ADDR = Web3.toChecksumAddress("0x89b44e4d3c81ede05d0f5de8d1a68f754d73d997")
 
     # JSON RPC endpoint
-    TC_CORE_RPC_URL = "http://localhost:8123"
+    TC_CORE_RPC_URL = "localhost:8123"
 
     # https://rinkeby.etherscan.io/address/0xc41c9c6be928f3abde1c3b327a70c5a5abb35c5f
     TC_CONTRACT_ADDR = Web3.toChecksumAddress("0xc41c9c6be928f3abde1c3b327a70c5a5abb35c5f")
@@ -61,45 +64,24 @@ class TCRelay:
 
         self.tc_contract = self.w3.eth.contract(address=config.TC_CONTRACT_ADDR, abi=config.TC_ABI)
 
-        # self.filter = self.w3.eth.filter({"address": self.config.TC_CONTRACT_ADDR,
-        #                                   "topics": [self.config.TC_REQUEST_TOPIC]})
+        # create a grpc client
+        channel = grpc.insecure_channel(self.config.TC_CORE_RPC_URL)
+        self.stub = tc_pb2_grpc.towncrierStub(channel)
 
     def handle_request_event(self, log_entry):
         nonce = self.w3.eth.getTransactionCount(self.config.SGX_WALLET_ADDR)
 
-        enclave_params = {
-            # TODO: it may be a better to use requestData (can be retrieved by Eth_getFilterLogs), instead of raw data
-            'data': log_entry['data'],
-            'txid': log_entry['transactionHash'].hex(),
-            'nonce': nonce,
-        }
+        request = log_entry['args']
+        import tc_pb2
+        response = self.stub.process(tc_pb2.Request(id=request['id'],
+                                                    type=request['requestType'],
+                                                    data=b''.join(request['requestData']),  # concat an array of bytes
+                                                    nonce=nonce))
+        if response.error_code != 0:
+            self.logger.error("Enclave returned error %d", response.error_code)
 
-        payload = {
-            'method': 'process',
-            'params': enclave_params,
-            'jsonrpc': '2.0',
-            'id': 0,
-        }
-
-        import requests
-        import json
-
-        self.logger.info("sending the following to backend")
-        import pprint
-        pprint.pprint(enclave_params)
-
-        resp = requests.post(self.config.TC_CORE_RPC_URL, data=json.dumps(payload),
-                             headers={'content-type': 'application/json'}).json()
-        if 'error' in resp:
-            self.logger.error('Error: {0}'.format(resp['error']))
-        else:
-            error_code = resp['result']['error_code']
-            response_tx = resp['result']['response']
-            if error_code != 0:
-                self.logger.error('Error in tx: {0}'.format(error_code))
-
-            self.logger.info('response from enclave: {0}'.format(response_tx))
-            return response_tx
+        self.logger.info('response from enclave: %s', response.response_tx.hex())
+        return response.response_tx
 
     def catchup(self, upto_block):
         """
@@ -124,8 +106,8 @@ class TCRelay:
 
         # get all requests
         filter_all_requests = self.tc_contract.events.RequestInfo.createFilter(fromBlock=0, toBlock=upto_block)
-        for entry in self.w3.eth.getFilterLogs(filter_all_requests.filter_id):
-            id = int(entry['data'][:66], base=16)
+        for entry in filter_all_requests.get_all_entries():
+            id = entry['args']['id']
 
             # skip processed ones
             if id in processed_request_ids:
@@ -140,9 +122,7 @@ class TCRelay:
         receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
 
         self.logger.info("Transaction receipt mined")
-        self.logger.info("Was transaction successful?")
-        pprint.pprint(receipt['status'])
-        self.logger.info("Found tx at https://rinkeby.etherscan.io/tx/%s", tx_hash.hex())
+        self.logger.info("Found response tx at https://rinkeby.etherscan.io/tx/%s", tx_hash.hex())
 
     def wait_for_requests(self, poll_interval=5):
         import time
@@ -152,20 +132,26 @@ class TCRelay:
         while True:
             try:
                 self.logger.info('getting all requests in the latest block')
-                for entry in self.w3.eth.getFilterChanges(filter_all_requests.filter_id):
+                for entry in filter_all_requests.get_new_entries():
                     response = self.handle_request_event(entry)
                     self.send_response_check(response)
-
+            except grpc.RpcError as rpc_error:
+                self.logger.error('RPC failure: %s', rpc_error)
             except Exception as e:
-                self.logger.error('exception: {0}'.format(str(e)))
+                self.logger.error('exception: %s', e)
+
             time.sleep(poll_interval)
 
     def dry_run(self):
         # get all requests
+        self.logger.info('in dryrun mode')
         filter_all_requests = self.tc_contract.events.RequestInfo.createFilter(fromBlock=0)
-        for entry in self.w3.eth.getFilterLogs(filter_all_requests.filter_id):
+        for entry in filter_all_requests.get_all_entries():
+            try:
+                self.handle_request_event(entry)
+            except grpc.RpcError as rpc_error:
+                self.logger.error('RPC failure: %s', rpc_error)
             # return after processing one request
-            self.handle_request_event(entry)
             return
 
 

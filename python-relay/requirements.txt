@@ -13,6 +13,8 @@ eth-keys==0.2.4
 eth-rlp==0.1.2
 eth-typing==2.2.1
 eth-utils==1.8.4
+grpcio==1.28.1
+grpcio-tools==1.28.1
 hexbytes==0.1.0
 idna==2.6
 importlib-metadata==1.6.0

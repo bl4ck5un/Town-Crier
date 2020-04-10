@@ -7,10 +7,12 @@
 # generated files
 App/Enclave_u.c
 App/Enclave_u.h
+App/services/generated
 Common/version.h
 Enclave/Enclave_t.c
 Enclave/Enclave_t.h
 .idea/*
 vendor/gtest
+
 
 cmake-build-debug/
