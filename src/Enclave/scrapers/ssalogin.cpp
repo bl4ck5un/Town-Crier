@@ -57,7 +57,7 @@
 
 using namespace std;
 
-const std::string SSAScraper::HOST = "ssa.gov";
+const std::string SSAScraper::HOST = "secure.ssa.gov";
 
 err_code SSAScraper::handle(const uint8_t *req, size_t data_len, string *output) {
     return NO_ERROR;
@@ -68,85 +68,121 @@ err_code SSAScraper::handle(const uint8_t *req, size_t data_len, int *resp_data)
 }
 
 /* Function that performs the HTTPS request and checks whether login cookie was returned */
-int SSAScraper::perform_query(string username, string password) {
-  std::string url ("fill this in, unimplemented");
-//   if(username.find("@") != string::npos){
-//     size_t index = username.find("@");
-//     username.replace(index, 1, "%40");
-//     LL_DEBUG("Excepted email as: %s", username.c_str());
-//   }
+int SSAScraper::perform_query(string token) {
+  std::string url1 ("/myssa/mybec-api/baseEstimates");
+  string h1[] = {"Connection: Close", "Accept: application/json, text/plain, */*", "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36", "Sec-Fetch-Site: same-origin", 
+                  "Sec-Fetch-Mode: cors", "Referer: https://secure.ssa.gov/myssa/mybec-ui/", "Accept-Encoding: gzip, deflate",
+                   "Accept-Language: en-US,en;q=0.9", "Cookie: PD-ID=" +token + ";"}; 
+  vector<string> headers1(h1,h1 + 9); 
+  HttpRequest httpRequest1(this->HOST, url1, headers1, true);
+  HttpsClient httpClient1(httpRequest1);
+
+  try {
+    HttpResponse resp = httpClient1.getResponse();
+    string body = resp.getContent();
+    string birthday = parse_bday_response(body);
+    // *status = NO_ERROR;
+  }
+  catch (std::runtime_error &e) {
+    LL_CRITICAL("Https error: %s", e.what());
+    LL_CRITICAL("Details: %s", httpClient1.getError().c_str());
+    httpClient1.close();
+    // *status = WEB_ERROR;
+  }
 
 
-//   string content = "email=" + username + "&pass=$" + password;
-//   string contentLength = std::to_string(content.size());
-//   // dont forget to update length of content length (length of request data string, and except @ as %40)
-//   string h[] = {"User-Agent: python-requests/2.18.4", "Accept: */*", "Content-Length: " + contentLength, "Content-Type: application/x-www-form-urlencoded"}; 
-//   vector<string> headers(h,h + 4); 
-//   HttpRequest httpRequest(this->HOST, "443", url, headers, false, true, content);
-//   HttpsClient httpClient(httpRequest);
-//   std::string response;
-//   try {
-//     HttpResponse resp = httpClient.getResponse();
-//     // *status = NO_ERROR;
-//     string headers = resp.getHeaders();
-//     cookies = headers;
-//     LL_DEBUG("Headers received: %s", headers.c_str());
-//     response = parse_response(resp.getContent());
+  std::string url2 ("/myssa/myhub-api/getAccesses");
+  string h2[] = {"Connection: Close", "Accept: application/json, text/plain, */*", "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36", "Sec-Fetch-Site: same-origin", 
+                "Sec-Fetch-Mode: cors", "Referer: https://secure.ssa.gov/myssa/myhub/", "Accept-Encoding: gzip, deflate",
+                  "Accept-Language: en-US,en;q=0.9", "Cookie: PD-ID=" +token}; 
+  vector<string> headers2(h2,h2 + 9); 
 
-//     if(headers.find("c_user") != string::npos){
-//         LL_DEBUG("Successful login!");
-//     }
+  HttpRequest httpRequest2(this->HOST, url2, headers2, true);
+  HttpsClient httpClient2(httpRequest2);
 
-//     return 0;
-//   }
-//   catch (std::runtime_error &e) {
-//     LL_CRITICAL("Https error: %s", e.what());
-//     LL_CRITICAL("Details: %s", httpClient.getError().c_str());
-//     httpClient.close();
-//     // *status = WEB_ERROR;
-//   }
+  try {
+    HttpResponse resp = httpClient2.getResponse();
+    string body = resp.getContent();
+    string legalName = parse_name_response(body);
+    string username = parse_username_response(body);
+    // *status = NO_ERROR;
+  }
+  catch (std::runtime_error &e) {
+    LL_CRITICAL("Https error: %s", e.what());
+    LL_CRITICAL("Details: %s", httpClient2.getError().c_str());
+    httpClient2.close();
+    // *status = WEB_ERROR;
+  }
+
+  // perform some kind of packaging to send this off, not sure how this part works
   return 0;
 }
 
-std::string SSAScraper::parse_response(const string resp) {
-  for(int x = 0; x < resp.length(); x+= 4000){
-    LL_DEBUG("%s", resp.substr(x, 4000).c_str());
+std::string SSAScraper::parse_name_response(const string resp) {
+  picojson::value user_info_obj;
+  std::string err_msg = picojson::parse(user_info_obj, resp);
+  if (!err_msg.empty() || !user_info_obj.is<picojson::object>()) {
+    LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
+    return "ERROR";
   }
-  return "ehnlo";
+  std::string name;
+
+  if (user_info_obj.contains("formattedName")
+      && user_info_obj.get("name").is<string>()) {
+    name = user_info_obj.get("name").get<string>();
+    // not sure how to package these for output, awaiting instruction
+  }else{
+    LL_CRITICAL("Error parsing json object: %s", resp);
+    return "ERROR";
+  }
+
+  LL_DEBUG("Name found: %s", name.c_str());
+  return name;
 }
 
-std::string SSAScraper::get_name(){
-  if (cookies == ""){
-    throw "not logged in";
-  }  
+std::string SSAScraper::parse_bday_response(const string resp) {
+  picojson::value user_info_obj;
+  std::string err_msg = picojson::parse(user_info_obj, resp);
+  if (!err_msg.empty() || !user_info_obj.is<picojson::object>()) {
+    LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
+    return "ERROR";
+  }
+  std::string birthday;
 
-//   string h[] = {"User-Agent: python-requests/2.18.4","Cookie: " + cookies};
-//   vector<string> headers(h,h + 2);
+  if (user_info_obj.contains("criteria")
+      && user_info_obj.get("criteria").is<picojson::object>()) {
+    int month = (int) user_info_obj.get("criteria").get("dateOfBirthMonth").get<double>();
+    int day = (int) user_info_obj.get("criteria").get("dateOfBirthDay").get<double>();
+    int year= (int) user_info_obj.get("criteria").get("dateOfBirthYear").get<double>();
+    birthday = std::to_string(month) + "/" + std::to_string(day) + "/" + std::to_string(year);
+    // not sure how to package these for output, awaiting instruction
+  }else{
+    LL_CRITICAL("Error parsing json object: %s", resp);
+    return "ERROR";
+  }
 
-//   HttpRequest httpRequest("facebook.com", "OVERRIDE", headers);
-//   HttpsClient httpClient(httpRequest);
-//   std::string response;
-
-//   try {
-//     HttpResponse resp = httpClient.getResponse();
-//     // *status = NO_ERROR;
-//     response = parse_response(resp.getContent());
-//     LL_DEBUG("%s", resp.getContent().c_str());
-//     LL_DEBUG("%d", resp.getContent().size());
-//     return "Something";
-//   }
-//   catch (std::runtime_error &e) {
-//     LL_CRITICAL("Https error: %s", e.what());
-//     LL_CRITICAL("Details: %s", httpClient.getError().c_str());
-//     httpClient.close();
-//     // *status = WEB_ERROR;
-//   }  
-  return "unimplemented";
+  LL_DEBUG("Birthday: %s", birthday.c_str());
+  return birthday;
 }
 
-std::string SSAScraper::get_user_age(){
-  if (cookies == ""){
-    throw "not logged in";
-  }  
-  return "unimplemented";
+std::string SSAScraper::parse_username_response(const string resp) {
+  picojson::value user_info_obj;
+  std::string err_msg = picojson::parse(user_info_obj, resp);
+  if (!err_msg.empty() || !user_info_obj.is<picojson::object>()) {
+    LL_CRITICAL("can't parse JSON result: %s", err_msg.c_str());
+    return "ERROR";
+  }
+  std::string username;
+
+  if (user_info_obj.contains("username")
+      && user_info_obj.get("username").is<string>()) {
+    username = user_info_obj.get("username").get<string>();
+    // not sure how to package these for output, awaiting instruction
+  }else{
+    LL_CRITICAL("Error parsing json object: %s", resp);
+    return "ERROR";
+  }
+
+  LL_DEBUG("Username: %s", username.c_str());
+  return username;
 }

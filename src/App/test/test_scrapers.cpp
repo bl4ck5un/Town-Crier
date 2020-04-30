@@ -135,7 +135,9 @@ TEST_F(Scraper, fbgraph){
 
 TEST_F(Scraper, ssalogin){
   int ocall_status, ret;
-  ocall_status = ssa_self_test(eid, &ret);
+  std::string input;
+  std::cin >> input;
+  ocall_status = ssa_self_test(eid, &ret, input.c_str());
   ASSERT_EQ(0, ocall_status);
   ASSERT_EQ(0, ret);
 }

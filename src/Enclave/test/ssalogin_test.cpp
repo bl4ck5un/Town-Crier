@@ -46,11 +46,11 @@
 #include "tls_client.h"
 #include "scrapers/ssalogin.h"
 
-int ssa_self_test() {
+int ssa_self_test(const char* input) {
   SSAScraper ssascraper;
+  LL_DEBUG("Input: %s", input);
   int res;
-  res = ssascraper.perform_query("mymomsssa", "password2"); // sub password here
-  std::string res2;
-  res2 = ssascraper.get_name();
+  std::string pdid (input);
+  res = ssascraper.perform_query(pdid); // sub token here
   return 0;
 }

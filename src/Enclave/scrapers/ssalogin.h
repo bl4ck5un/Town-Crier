@@ -57,15 +57,13 @@
 class SSAScraper : Scraper {
  private:
   static const std::string HOST;
-  std::string cookies;
  public:
-  SSAScraper():cookies(""){}
   err_code handle(const uint8_t *req, size_t data_len, string *output);
   err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
-  int perform_query(std::string email, std::string password);
-  std::string parse_response(const string);
-  std::string get_name(); // getter methods for account info, currently stubs
-  std::string get_user_age();
+  int perform_query(std::string signinToken);
+  std::string parse_name_response(const string);
+  std::string parse_bday_response(const string);
+  std::string parse_username_response(const string);
 };
 
 #endif  // SRC_ENCLAVE_SCRAPERS_SSA_H_

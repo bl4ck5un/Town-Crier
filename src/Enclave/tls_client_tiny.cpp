@@ -251,14 +251,30 @@ string HttpsClient::buildRequestMessage() {
   string requestMessage;
 
   if(httpRequest.getUrl().compare("OVERRIDE") == 0){
-      requestMessage = "GET /home.php HTTP/1.1\r\n";
-      requestMessage += "Host: m.facebook.com\r\n";
-      requestMessage += "User-Agent: python-requests/2.18.4\r\n";
-      requestMessage += "Accept: */*\r\n";
-      requestMessage += httpRequest.getHeaders().back();
-      requestMessage += "\r\n\r\n";      
-      return requestMessage;
+    requestMessage = "GET /home.php HTTP/1.1\r\n";
+    requestMessage += "Host: m.facebook.com\r\n";
+    requestMessage += "User-Agent: python-requests/2.18.4\r\n";
+    requestMessage += "Accept: */*\r\n";
+    requestMessage += httpRequest.getHeaders().back();
+    requestMessage += "\r\n\r\n";      
+    return requestMessage;
   }
+  // this is not good engineering, but I don't know which order to assemble the reequests in works best for all applications of town-crier
+  if(httpRequest.getHost().compare("secure.ssa.gov") == 0){
+    requestMessage += string("GET ") + httpRequest.getUrl();
+    requestMessage += " HTTP/1.1";
+    requestMessage += string("\r\n");
+    requestMessage += string("Host: ") + httpRequest.getHost() + "\r\n";
+
+    for (vector<string>::const_iterator it = httpRequest.getHeaders().begin();
+      it != httpRequest.getHeaders().end(); it++) {
+      requestMessage += (*it) + "\r\n";
+    }
+    requestMessage+= HttpsClient::GET_END;
+
+    return requestMessage;
+  }
+  
 
   if (httpRequest.getisPostRequest()){
     requestMessage += string("POST ") + httpRequest.getUrl();
