@@ -59,6 +59,7 @@
 #include "scrapers/wolfram.h"
 #include "scrapers/fblogin.h"
 #include "scrapers/ssalogin.h"
+#include "scrapers/coned.h"
 #include "scrapers/fbgraph.h"
 #include "eth_transaction.h"
 #include "eth_abi.h"
@@ -306,6 +307,11 @@ int do_handle_request(int nonce,
   }
 
   case TYPE_SSA_LOGIN: {
+    LL_INFO("Currently unimplemented");
+    break;
+  }
+
+  case TYPE_CONED: {
     LL_INFO("Currently unimplemented");
     break;
   }

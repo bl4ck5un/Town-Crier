@@ -142,3 +142,10 @@ TEST_F(Scraper, ssalogin){
   ASSERT_EQ(0, ret);
 }
 
+TEST_F(Scraper, coned){
+  int ocall_status, ret;
+  ocall_status = fb_graph_self_test(eid, &ret);
+  ASSERT_EQ(0, ocall_status);
+  ASSERT_EQ(0, ret);
+}
+

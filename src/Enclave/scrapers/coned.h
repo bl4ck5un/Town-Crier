@@ -40,43 +40,28 @@
  * Google Faculty Research Awards, and a VMWare Research Award.
  */
 
-#ifndef TOWNCIRER_CONSTANTS_H
-#define TOWNCIRER_CONSTANTS_H
+#ifndef SRC_ENCLAVE_SCRAPERS_CONED_H_
+#define SRC_ENCLAVE_SCRAPERS_CONED_H_
 
-#define TX_BUF_SIZE 2048
+#include <stdio.h>
+#include <stdlib.h>
+#include <string>
+#include <vector>
 
-#define GASPRICE    0x0BA43B7400  // 50000000000
-#define GASLIMIT    0x2DC6C0      // 3000000
+#include "Scraper.h"
+#include "tls_client.h"
+#include "error_codes.h"
+#include "../log.h"
+#include "external/picojson.h"
 
-#define TC_REQUEST_PAYLOAD_LIMIT 20480 // 2k payload limit
+class ConEdScraper : Scraper {
+ private:
+  static const std::string HOST;
+ public:
+  err_code handle(const uint8_t *req, size_t data_len, string *output);
+  err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
+  int perform_query(std::string cookies);
+  std::string parse_name_response(const string);
+};
 
-/* Define any events that Town Crier Supports here */
-#define TYPE_LOOP_THROUGH   0x0
-#define TYPE_FLIGHT_INS     0x1
-#define TYPE_BITCOIN_FEE    0x2
-#define TYPE_FINANCE_INFO   0x3
-#define TYPE_UPS_TRACKING   0x4
-#define TYPE_COINMARKET     0x5
-#define TYPE_WEATHER        0x6
-#define TYPE_CURRENT_VOTE   0x7
-#define TYPE_ENCRYPT_TEST   0x8
-#define TYPE_WOLFRAM		0x9
-
-#define TYPE_FLIGHT_INS_ENC	0x10
-#define TYPE_STEAM_EX       0x11
-#define TYPE_FB_LOGIN       0x12
-#define TYPE_SSA_LOGIN      0x13
-#define TYPE_CONED          0x14
-
-/* Possible return values to be used in Enclave-Relay Connections */
-#define TC_SUCCESS          0x0
-#define TC_INPUT_ERROR      0x1
-#define TC_INTERNAL_ERROR   0x3
-#define TC_INTERNAL_TEST    0x99  // reserved for internal test
-
-/* definition for error flags */
-#define TC_ERR_FLAG_NO_ERROR      0
-#define TC_ERR_FLAG_INVALID_INPUT 1
-#define TC_ERR_FLAG_INTERNAL_ERR  2
-
-#endif
+#endif  // SRC_ENCLAVE_SCRAPERS_SSA_H_
