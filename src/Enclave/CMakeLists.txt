@@ -28,6 +28,7 @@ set(TC_SOURCE_FILES
         hybrid_cipher.cpp
         eth_ecdsa.cpp
         eth_transaction.cpp
+        pedersen_commit.cpp
         eth_abi.cpp
         ../Common/external/base64.cpp)
 

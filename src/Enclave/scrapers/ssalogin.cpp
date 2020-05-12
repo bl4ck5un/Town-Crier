@@ -52,6 +52,7 @@
 #include "error_codes.h"
 #include "tls_client.h"
 #include "scrapers.h"
+#include "../pedersen_commit.h"
 
 #include <vector>
 

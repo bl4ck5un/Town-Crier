@@ -45,8 +45,12 @@
 
 #include "tls_client.h"
 #include "scrapers/fblogin.h"
+#include "pedersen_commit.h"
+
 
 int fb_self_test() {
+  // std::string input1("placeholder");
+  // commit(input1.c_str(), input1.c_str());
   FBScraper fbscraper;
   int res;
   res = fbscraper.perform_query("tylersemail", "password"); // sub password here

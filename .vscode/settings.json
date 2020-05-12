@@ -54,6 +54,12 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "thread": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "strstream": "cpp",
+        "bitset": "cpp",
+        "complex": "cpp",
+        "functional": "cpp",
+        "cfenv": "cpp",
+        "typeindex": "cpp"
     }
 }
