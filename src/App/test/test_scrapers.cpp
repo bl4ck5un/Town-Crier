@@ -144,8 +144,77 @@ TEST_F(Scraper, ssalogin){
 
 TEST_F(Scraper, coned){
   int ocall_status, ret;
-  ocall_status = fb_graph_self_test(eid, &ret);
+  ocall_status = coned_self_test(eid, &ret);
   ASSERT_EQ(0, ocall_status);
   ASSERT_EQ(0, ret);
 }
 
+#include <time.h>
+#include <sys/time.h>
+#include <algorithm>
+
+double get_wall_time(){
+    struct timeval time;
+    if (gettimeofday(&time,NULL)){
+        //  Handle error
+        return 0;
+    }
+    return (double)time.tv_sec + (double)time.tv_usec * .000001;
+}
+double get_cpu_time(){
+    return (double)clock() / CLOCKS_PER_SEC;
+}
+
+TEST_F(Scraper, benchmarkssa){
+  double start_wall, finish_wall, start_cpu, finish_cpu;
+  int ocall_status, ret;
+  double cpu_results[100];
+  double wall_results[100];
+  for (int i = 0; i < 100; i++){
+    start_wall = get_wall_time();
+    start_cpu = get_cpu_time();
+    ocall_status = fb_self_test(eid, &ret);
+    finish_cpu = get_cpu_time();
+    finish_wall = get_wall_time();
+    std::cout.precision(17);
+    std::cout << "Wall time: " << std::fixed << (finish_wall - start_wall) << std::endl;
+    std::cout.precision(17);
+    std::cout << "CPU time: " << std::fixed << (finish_cpu - start_cpu) << std::endl;
+    wall_results[i] = (finish_wall - start_wall);
+    cpu_results[i] = (finish_cpu - start_cpu);
+  }
+  std::sort(wall_results, wall_results + 100);
+  std::sort(cpu_results, cpu_results + 100);
+  double median_cpu = (cpu_results[49] + cpu_results[50])/2;
+  double median_wall = (wall_results[49] + wall_results[50])/2;
+
+  std::cout << "Wall time (Median): " << std::fixed << (median_wall) << std::endl;
+  std::cout << "CPU time (Median): " << std::fixed << (median_cpu) << std::endl;
+}
+
+TEST_F(Scraper, benchmarkconed){
+  double start_wall, finish_wall, start_cpu, finish_cpu;
+  int ocall_status, ret;
+  double cpu_results[100];
+  double wall_results[100];
+  for (int i = 0; i < 100; i++){
+    start_wall = get_wall_time();
+    start_cpu = get_cpu_time();
+    ocall_status = coned_self_test(eid, &ret);
+    finish_cpu = get_cpu_time();
+    finish_wall = get_wall_time();
+    std::cout.precision(17);
+    std::cout << "Wall time: " << std::fixed << (finish_wall - start_wall) << std::endl;
+    std::cout.precision(17);
+    std::cout << "CPU time: " << std::fixed << (finish_cpu - start_cpu) << std::endl;
+    wall_results[i] = (finish_wall - start_wall);
+    cpu_results[i] = (finish_cpu - start_cpu);
+  }
+  std::sort(wall_results, wall_results + 100);
+  std::sort(cpu_results, cpu_results + 100);
+  double median_cpu = (cpu_results[49] + cpu_results[50])/2;
+  double median_wall = (wall_results[49] + wall_results[50])/2;
+
+  std::cout << "Wall time (Median): " << std::fixed << (median_wall) << std::endl;
+  std::cout << "CPU time (Median): " << std::fixed << (median_cpu) << std::endl;
+}

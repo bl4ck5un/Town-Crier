@@ -129,15 +129,15 @@ std::string SSAScraper::parse_name_response(const string resp) {
   std::string name;
 
   if (user_info_obj.contains("formattedName")
-      && user_info_obj.get("name").is<string>()) {
-    name = user_info_obj.get("name").get<string>();
+      && user_info_obj.get("formattedName").is<string>()) {
+    name = user_info_obj.get("formattedName").get<string>();
     // not sure how to package these for output, awaiting instruction
   }else{
-    LL_CRITICAL("Error parsing json object: %s", resp);
+    LL_CRITICAL("Error parsing json object: %s", resp.c_str());
     return "ERROR";
   }
 
-  LL_DEBUG("Name found: %s", name.c_str());
+  // LL_DEBUG("Name found: %s", name.c_str());
   return name;
 }
 
@@ -158,7 +158,7 @@ std::string SSAScraper::parse_bday_response(const string resp) {
     birthday = std::to_string(month) + "/" + std::to_string(day) + "/" + std::to_string(year);
     // not sure how to package these for output, awaiting instruction
   }else{
-    LL_CRITICAL("Error parsing json object: %s", resp);
+    LL_CRITICAL("Error parsing json object: %s", resp.c_str());
     return "ERROR";
   }
 
@@ -180,7 +180,7 @@ std::string SSAScraper::parse_username_response(const string resp) {
     username = user_info_obj.get("username").get<string>();
     // not sure how to package these for output, awaiting instruction
   }else{
-    LL_CRITICAL("Error parsing json object: %s", resp);
+    LL_CRITICAL("Error parsing json object: %s", resp.c_str());
     return "ERROR";
   }
 

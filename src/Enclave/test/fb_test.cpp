@@ -46,16 +46,20 @@
 #include "tls_client.h"
 #include "scrapers/fblogin.h"
 #include "pedersen_commit.h"
+#include "scrapers/ssalogin.h"
 
+std::string json = "{\"username\":\"ISTHIRTYONECHARACTERSLONGSTRING\",\"firstName\":\"ISTHIRTYONECHARACTERSLONGSTRING\",\"middleName\":\"ISTHIRTYONECHARACTERSLONGSTRING\",\"lastName\":\"DOE\",\"suffix\":\"\",\"formattedName\":\"John J. Doe\",\"repPayee\":false,\"accountingDue\":false,\"lastLoginTimestamp\":\"2020-04-10-14.24.00.000000\"}";
 
 int fb_self_test() {
-  // std::string input1("placeholder");
-  // commit(input1.c_str(), input1.c_str());
-  FBScraper fbscraper;
-  int res;
-  res = fbscraper.perform_query("tylersemail", "password"); // sub password here
-  std::string res2;
-  res2 = fbscraper.get_name();
+  SSAScraper ssascraper;
+  std::string input1 = ssascraper.parse_name_response(json);
+  std::string input = "ISTHIRTYONECHARACTERSLONGSTRING";
+  commit(input.c_str(), input.c_str());
+  // FBScraper fbscraper;
+  // int res;
+  // res = fbscraper.perform_query("tylersemail", "password"); // sub password here
+  // std::string res2;
+  // res2 = fbscraper.get_name();
   return 0;
 }
 

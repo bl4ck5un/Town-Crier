@@ -62,6 +62,7 @@ class ConEdScraper : Scraper {
   err_code handle(const uint8_t *req, size_t data_len, int *resp_data);
   int perform_query(std::string cookies);
   std::string parse_name_response(const string);
+  std::string parse_address_response(const string);
 };
 
 #endif  // SRC_ENCLAVE_SCRAPERS_SSA_H_

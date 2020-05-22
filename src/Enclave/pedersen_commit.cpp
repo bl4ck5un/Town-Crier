@@ -45,12 +45,16 @@
 #include <string.h>
 #include <stdexcept>
 #include <string>
+#include <stdlib.h>
 
 #include "debug.h"
 #include "log.h"
 #include "pedersen_commit.h"
 #include "external/keccak.h"
 #include "../Common/macros.h"
+
+#include "sgx.h"
+#include "sgx_trts.h"
 
 using std::runtime_error;
 
@@ -197,6 +201,22 @@ field_q new_element(const char* buf){
     return result;
 }
 
+field_q field_element_from_bytes(const char* buf){
+    field_q result;
+    field_element fq_point;
+    mbedtls_mpi modulus = bignum_from_string(Q_J_s.c_str());
+    fq_point.modulus = modulus;
+    mbedtls_mpi point;
+    mbedtls_mpi_init(&point);
+
+    size_t size = strlen(buf);
+    int error_code = mbedtls_mpi_read_binary(&point, (const unsigned char *) buf, size);
+
+    fq_point.point = point;
+    result.point = fq_point;
+    return result;
+}
+
 field_q add(field_q a, field_q b){
     field_q result;
     result.point = add_field(a.point, b.point);
@@ -323,18 +343,31 @@ jj_point mul_point(jj_point a, field_q b){
     return ret;
 }
 
+// generate random string for seed;
+std::string random_seed(){
+    char output[1000];
+    sgx_read_rand((unsigned char*) &output, 31);
+    std::string str(output);
+    return str;
+}
+
 
 const char* commit(const char* message, const char* secret) {
-    std::string output1("placeholder");
-    const char* output = output1.c_str();
     jj_point H = init_point(new_element(Hu.c_str()), new_element(Hv.c_str()));
     jj_point base = init_point(new_element(BASEu.c_str()), new_element(BASEv.c_str()));
 
-    field_q m = new_element(message);
-    field_q r = new_element(secret);
+    field_q m = field_element_from_bytes(message);
+    field_q r = new_element(random_seed().c_str());
     
     jj_point commitment = add_point(mul_point(base, m), mul_point(H, r));
-    // how does a commitment become a string?
+    // LL_DEBUG("U is %s", fq_to_string(commitment.u).c_str());
+    // LL_DEBUG("V is %s", fq_to_string(commitment.v).c_str());
+    
+    std::string u = fq_to_string(commitment.u);
+    std::string v = fq_to_string(commitment.v);
+    
+    std::string commit = "(" + u +"," + v + ")";
+    const char* output = commit.c_str();
 
     // field_q zero = new_element(ZERO.c_str()); This is my testing code
     // field_q one = new_element(ONE.c_str());
@@ -363,8 +396,7 @@ const char* commit(const char* message, const char* secret) {
     // field_q r = new_element(r_str.c_str());
 
     // jj_point commitment = add_point(mul_point(base, m), mul_point(H, r));
-    // LL_DEBUG("U is %s", fq_to_string(commitment.u).c_str());
-    // LL_DEBUG("V is %s", fq_to_string(commitment.v).c_str());
+
     // LL_DEBUG("Result: %s", result.point.point); 
     return output;
 }

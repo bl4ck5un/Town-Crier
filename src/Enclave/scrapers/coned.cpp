@@ -53,6 +53,7 @@
 #include "tls_client.h"
 #include "scrapers.h"
 #include <vector>
+#include "pedersen_commit.h"
 
 using namespace std;
 
@@ -95,6 +96,30 @@ int ConEdScraper::perform_query(string cookie) { // preprocess cookie to desired
 std::string ConEdScraper::parse_name_response(const string resp) {
     std::string output("placeholder");
     std::string dropdown("js-name-selector");
+    std::size_t found = resp.find(dropdown);
+    if(found != std::string::npos){
+        while (resp[found] != '>'){
+            found++;
+        }
+        int first_index = found+1;
+        int length = 0;
+        found++;
+        while (resp[found] != '<'){
+            length++;
+            found++;
+        }
+        std::string result = resp.substr(first_index, length);
+        return result;
+    }else{
+        LL_CRITICAL("ERROR PARSING RESPONSE");
+        return "failure, parsing did not work.";
+    }
+    return output;
+}
+
+std::string ConEdScraper::parse_address_response(const string resp) {
+    std::string output("placeholder");
+    std::string dropdown("js-service-address");
     std::size_t found = resp.find(dropdown);
     if(found != std::string::npos){
         while (resp[found] != '>'){
