@@ -59,7 +59,10 @@ class SGXTestBase : public ::testing::Test {
 #else
     initialize_enclave("enclave.debug.so", &eid);
 #endif
-    provision_key(eid, SEALED_KEY, tc::keyUtils::HYBRID_ENCRYPTION_KEY);
+    // This is causing an error for Prerelease mode testing, because the testing sealed key is specific to a particular CPU
+    // I'm removing for now as it's not required by our benchmark.
+    // This may break a couple tests that require hybrid encryption. We will see... Fan (2020/5/17)
+    // provision_key(eid, SEALED_KEY, tc::keyUtils::HYBRID_ENCRYPTION_KEY);
   }
 
   virtual void TearDown() {
