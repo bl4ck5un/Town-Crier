@@ -43,16 +43,20 @@
 #include "../log.h"
 #include "tls_client.h"
 #include "scrapers/fbgraph.h"
+#include "levenshtein.h"
 
 using namespace std;
 
 int fb_graph_self_test() {
-  LL_INFO("TEST INITIATED");
-  FBGraphScraper fbscraper;
-  int res;
-  std::string token ("redacted");
-  fbscraper.set_oauth(token);
-  res = fbscraper.perform_query();
-  LL_INFO("TEST RAN");
+  std::string input1("Homer J. Simpson");
+  std::string input2("Homer Jay Simpson");
+  const char* output = levenshtein_dist_commit(input1.c_str(), input2.c_str(), input1.c_str(), input2.c_str());
+  // LL_INFO("TEST INITIATED");
+  // FBGraphScraper fbscraper;
+  // int res;
+  // std::string token ("redacted");
+  // fbscraper.set_oauth(token);
+  // res = fbscraper.perform_query();
+  // LL_INFO("TEST RAN");
   return 0;
 }

@@ -29,6 +29,7 @@ set(TC_SOURCE_FILES
         eth_ecdsa.cpp
         eth_transaction.cpp
         pedersen_commit.cpp
+        levenshtein.cpp
         eth_abi.cpp
         ../Common/external/base64.cpp)
 

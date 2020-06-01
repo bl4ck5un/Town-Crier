@@ -218,3 +218,30 @@ TEST_F(Scraper, benchmarkconed){
   std::cout << "Wall time (Median): " << std::fixed << (median_wall) << std::endl;
   std::cout << "CPU time (Median): " << std::fixed << (median_cpu) << std::endl;
 }
+
+TEST_F(Scraper, benchmarklev){
+  double start_wall, finish_wall, start_cpu, finish_cpu;
+  int ocall_status, ret;
+  double cpu_results[50];
+  double wall_results[50];
+  for (int i = 0; i < 50; i++){
+    start_wall = get_wall_time();
+    start_cpu = get_cpu_time();
+    ocall_status = fb_graph_self_test(eid, &ret);
+    finish_cpu = get_cpu_time();
+    finish_wall = get_wall_time();
+    std::cout.precision(17);
+    std::cout << "Wall time: " << std::fixed << (finish_wall - start_wall) << std::endl;
+    std::cout.precision(17);
+    std::cout << "CPU time: " << std::fixed << (finish_cpu - start_cpu) << std::endl;
+    wall_results[i] = (finish_wall - start_wall);
+    cpu_results[i] = (finish_cpu - start_cpu);
+  }
+  std::sort(wall_results, wall_results + 50);
+  std::sort(cpu_results, cpu_results + 50);
+  double median_cpu = (cpu_results[24] + cpu_results[25])/2;
+  double median_wall = (wall_results[24] + wall_results[25])/2;
+
+  std::cout << "Wall time (Median): " << std::fixed << (median_wall) << std::endl;
+  std::cout << "CPU time (Median): " << std::fixed << (median_cpu) << std::endl;
+}
