@@ -89,7 +89,7 @@ class TCRelay:
         """
 
         self.logger.info("catching up to block %d", upto_block)
-        # check if there are unresponded transactions
+        # check if there are unanswered requests
         unrespondedCnt = self.tc_contract.functions.unrespondedCnt().call()
 
         if unrespondedCnt == 0:
@@ -98,7 +98,7 @@ class TCRelay:
 
         self.logger.info("There are %d unresponded requests", unrespondedCnt)
 
-        # get all delivered responses -- don't want to repeat them
+        # get all delivered responses -- we don't want to answer them again
         filter_all_responses = self.tc_contract.events.DeliverInfo.createFilter(fromBlock=0, toBlock=upto_block)
         processed_request_ids = set()
         for entry in filter_all_responses.get_all_entries():
@@ -121,13 +121,13 @@ class TCRelay:
         tx_hash = self.w3.eth.sendRawTransaction(response)
         receipt = self.w3.eth.waitForTransactionReceipt(tx_hash)
 
-        self.logger.info("Transaction receipt mined")
-        self.logger.info("Found response tx at https://rinkeby.etherscan.io/tx/%s", tx_hash.hex())
+        self.logger.info("Transaction receipt mined. See https://rinkeby.etherscan.io/tx/%s", tx_hash.hex())
 
     def wait_for_requests(self, poll_interval=5):
         import time
         # get all requests since last call
         filter_all_requests = self.tc_contract.events.RequestInfo.createFilter(fromBlock='latest')
+        self.logger.info("filter for RequestInfo created. ID %s.", filter_all_requests.filter_id)
 
         while True:
             try:
@@ -137,9 +137,22 @@ class TCRelay:
                     self.send_response_check(response)
             except grpc.RpcError as rpc_error:
                 self.logger.error('RPC failure: %s', rpc_error)
+            except ValueError as e:
+                try:
+                    if e.args[0]['message'] == 'filter not found':
+                        # if e is caused by that the filter we're using has been retired, we create a new one.
+                        self.logger.warning("filter %s not found. Probably retired.", filter_all_requests.filter_id)
+                        filter_all_requests = self.tc_contract.events.RequestInfo.createFilter(fromBlock='latest')
+                        self.logger.info("filter for RequestInfo created. ID %s.", filter_all_requests.filter_id)
+                except Exception:
+                    # if the except e is not due to "filter not found", pass it through (i.e., re-raise)
+                    self.logger.error('exception: %s', e)
+                    raise e
+
             except Exception as e:
                 self.logger.error('exception: %s', e)
 
+            # sleep for a few seconds (5 seconds by default)
             time.sleep(poll_interval)
 
     def dry_run(self):
@@ -157,6 +170,7 @@ class TCRelay:
 
 if __name__ == '__main__':
     from docopt import docopt
+    import sys
 
     args = docopt(__doc__)
 
@@ -169,8 +183,6 @@ if __name__ == '__main__':
 
     if args['--dryrun']:
         relay.dry_run()
-        import sys
-
         sys.exit(0)
 
     relay.wait_for_requests()
