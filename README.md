@@ -11,7 +11,7 @@ queries and manage user credentials.
 
 Please read on for build instructions for the TC enclave.
 If you want to learn how Town Crier works and how to use TC in smart contract systems,
-please visit [town-crier.org](http://town-crier.org).
+please visit https://town-crier.netlify.app.
 
 ## To run a TC node
 
